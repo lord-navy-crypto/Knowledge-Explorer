@@ -461,19 +461,19 @@ export default function MacFinderDesktop({
 
   async function emptyRecycleBin() {
     if (recycleRows.length === 0) {
-      setMessage("Recycle Bin is already empty.");
+      setMessage("垃圾桶已经是空的。");
       return;
     }
     if (
       !confirm(
-        `Empty Recycle Bin?\n\nPermanently delete all ${recycleRows.length} item(s). This cannot be undone.`
+        `清空垃圾桶？\n\n将永久删除全部 ${recycleRows.length} 项，无法恢复。`
       )
     ) {
       return;
     }
     const ok = await onMutate("empty_recycle", {});
     if (ok) {
-      setMessage("Recycle Bin emptied.");
+      setMessage("垃圾桶已清空。");
       setSelected(null);
     }
   }
@@ -492,7 +492,7 @@ export default function MacFinderDesktop({
 
   return (
     <section className="overflow-hidden rounded-2xl border border-slate-400 bg-[#c8c8c8] shadow-xl">
-      <div className="flex items-center gap-3 border-b border-slate-400 bg-gradient-to-b from-[#e8e8e8] to-[#d0d0d0] px-3 py-2">
+      <div className="flex flex-wrap items-center gap-2 border-b border-slate-400 bg-gradient-to-b from-[#e8e8e8] to-[#d0d0d0] px-3 py-2">
         <div className="flex gap-1.5" aria-hidden>
           <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
           <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
@@ -501,6 +501,16 @@ export default function MacFinderDesktop({
         <p className="min-w-0 flex-1 truncate text-center text-xs font-semibold text-slate-700">
           {titleBar}
         </p>
+        {nav.kind === "trash" ? (
+          <button
+            type="button"
+            disabled={recycleCount === 0}
+            onClick={() => void emptyRecycleBin()}
+            className="rounded-lg bg-red-600 px-3 py-1.5 text-[11px] font-bold text-white shadow hover:bg-red-700 disabled:opacity-40"
+          >
+            一键清空{recycleCount ? ` (${recycleCount})` : ""}
+          </button>
+        ) : null}
         <div className="flex gap-1">
           <button
             type="button"
@@ -648,15 +658,21 @@ export default function MacFinderDesktop({
             />
           )}
 
-          {nav.kind === "trash" && recycleCount > 0 && (
-            <div className="mb-3 flex justify-end">
-              <button
-                type="button"
-                onClick={() => void emptyRecycleBin()}
-                className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white shadow hover:bg-red-700"
-              >
-                Empty Recycle Bin ({recycleCount})
-              </button>
+          {nav.kind === "trash" && (
+            <div className="mb-3 rounded-xl border-2 border-red-400 bg-red-50/95 p-3 shadow">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-xs font-semibold text-red-950">
+                  垃圾桶里有 {recycleCount} 项 · Empty Recycle Bin
+                </p>
+                <button
+                  type="button"
+                  disabled={recycleCount === 0}
+                  onClick={() => void emptyRecycleBin()}
+                  className="rounded-lg bg-red-600 px-4 py-2 text-xs font-bold text-white shadow hover:bg-red-700 disabled:opacity-40"
+                >
+                  一键清空垃圾桶{recycleCount ? ` (${recycleCount})` : ""}
+                </button>
+              </div>
             </div>
           )}
 
@@ -756,9 +772,9 @@ export default function MacFinderDesktop({
                 type="button"
                 disabled={recycleCount === 0}
                 onClick={() => void emptyRecycleBin()}
-                className="w-full rounded-xl bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-40"
+                className="w-full rounded-xl bg-red-600 px-3 py-2.5 text-sm font-bold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                Empty Recycle Bin{recycleCount ? ` (${recycleCount})` : ""}
+                一键清空垃圾桶{recycleCount ? ` (${recycleCount})` : ""}
               </button>
             </div>
           ) : (
@@ -974,7 +990,7 @@ export default function MacFinderDesktop({
           ) : null}
 
           {nav.kind === "desktop" ? (
-            <div className="mt-6 border-t border-slate-200 pt-3">
+            <div className="mt-6 space-y-2 border-t border-slate-200 pt-3">
               <button
                 type="button"
                 className="btn-secondary w-full text-xs"
@@ -983,7 +999,15 @@ export default function MacFinderDesktop({
                   setSelected(null);
                 }}
               >
-                Open Recycle Bin ({recycleCount})
+                打开垃圾桶 Recycle Bin ({recycleCount})
+              </button>
+              <button
+                type="button"
+                disabled={recycleCount === 0}
+                className="w-full rounded-xl bg-red-600 px-3 py-2 text-xs font-bold text-white hover:bg-red-700 disabled:opacity-40"
+                onClick={() => void emptyRecycleBin()}
+              >
+                一键清空垃圾桶{recycleCount ? ` (${recycleCount})` : ""}
               </button>
             </div>
           ) : null}

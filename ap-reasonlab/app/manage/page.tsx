@@ -134,12 +134,13 @@ export default function ManagePage() {
     }
   }
 
+  const recycleTotal = (data.recycleBin?.length || 0) + trash.length;
   const tabs: Array<{ id: Tab; label: string; count?: number }> = [
     { id: "content", label: "Content", count: activeItems.length },
     { id: "subjects", label: "Subjects", count: subjects.length },
     { id: "units", label: "Units", count: data.units?.length || 0 },
     { id: "files", label: "Files", count: (data.files?.length || 0) + (data.documents?.length || 0) },
-    { id: "trash", label: "Recycle Bin", count: trash.length },
+    { id: "trash", label: "垃圾桶 Recycle Bin", count: recycleTotal },
     { id: "settings", label: "Settings" },
     { id: "ai", label: "AI Developer" },
     { id: "history", label: "History & Undo" },
@@ -322,32 +323,33 @@ export default function ManagePage() {
 
       {tab === "trash" && (
         <section className="space-y-3">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <h2 className="section-title">Recycle Bin</h2>
-              <p className="mt-1 text-sm text-slate-500">
-                Deleted manager content stays recoverable here. Empty removes everything permanently.
-              </p>
+          <div className="rounded-2xl border-2 border-red-300 bg-red-50 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-bold text-red-950">垃圾桶 · Recycle Bin</h2>
+                <p className="mt-1 text-sm text-red-900/80">
+                  共 {recycleTotal} 项。点右边红色按钮可一键清空（不可恢复）。
+                </p>
+              </div>
+              <button
+                type="button"
+                disabled={recycleTotal === 0}
+                className="rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white shadow-lg hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-40"
+                onClick={() => {
+                  if (
+                    !recycleTotal ||
+                    !window.confirm(
+                      `清空垃圾桶？\n\n将永久删除全部 ${recycleTotal} 项，无法恢复。`
+                    )
+                  ) {
+                    return;
+                  }
+                  void mutate("empty_recycle", {});
+                }}
+              >
+                一键清空垃圾桶{recycleTotal ? ` (${recycleTotal})` : ""}
+              </button>
             </div>
-            <button
-              type="button"
-              disabled={(data.recycleBin?.length || 0) + trash.length === 0}
-              className="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-40"
-              onClick={() => {
-                const n = (data.recycleBin?.length || 0) + trash.length;
-                if (
-                  !n ||
-                  !window.confirm(
-                    `Empty Recycle Bin?\n\nPermanently delete all ${n} item(s). This cannot be undone.`
-                  )
-                ) {
-                  return;
-                }
-                void mutate("empty_recycle", {});
-              }}
-            >
-              Empty Recycle Bin
-            </button>
           </div>
           {(data.recycleBin || []).map((entry) => (
             <div key={entry.id} className="card flex flex-wrap items-center justify-between gap-3">
