@@ -321,7 +321,91 @@ export default function ManagePage() {
       )}
 
       {tab === "trash" && (
-        <section className="space-y-3"><div><h2 className="section-title">Recycle Bin</h2><p className="mt-1 text-sm text-slate-500">Deleted manager content stays recoverable here.</p></div>{trash.map((item) => <div key={item.id} className="card flex flex-wrap items-center justify-between gap-3"><div><span className="badge">{item.type}</span><h3 className="mt-2 font-semibold">{item.title}</h3></div><button className="btn-secondary" onClick={() => mutate("restore_content_item", { id: item.id })}>Restore</button></div>)}{trash.length === 0 && <div className="card text-sm text-slate-500">Recycle Bin is empty.</div>}</section>
+        <section className="space-y-3">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="section-title">Recycle Bin</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Deleted manager content stays recoverable here. Empty removes everything permanently.
+              </p>
+            </div>
+            <button
+              type="button"
+              disabled={(data.recycleBin?.length || 0) + trash.length === 0}
+              className="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-40"
+              onClick={() => {
+                const n = (data.recycleBin?.length || 0) + trash.length;
+                if (
+                  !n ||
+                  !window.confirm(
+                    `Empty Recycle Bin?\n\nPermanently delete all ${n} item(s). This cannot be undone.`
+                  )
+                ) {
+                  return;
+                }
+                void mutate("empty_recycle", {});
+              }}
+            >
+              Empty Recycle Bin
+            </button>
+          </div>
+          {(data.recycleBin || []).map((entry) => (
+            <div key={entry.id} className="card flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <span className="badge">{entry.target}</span>
+                <h3 className="mt-2 font-semibold">{entry.label}</h3>
+                <p className="text-xs text-slate-500">
+                  {entry.deletedAt ? new Date(entry.deletedAt).toLocaleString() : ""}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  className="btn-secondary"
+                  onClick={() => mutate("restore_recycle", { id: entry.id })}
+                >
+                  Restore
+                </button>
+                <button
+                  className="rounded-xl bg-red-600 px-3 py-2 text-sm font-semibold text-white hover:bg-red-700"
+                  onClick={() => {
+                    if (!window.confirm(`Permanently delete “${entry.label}”?`)) return;
+                    void mutate("purge_recycle", { id: entry.id });
+                  }}
+                >
+                  Delete forever
+                </button>
+              </div>
+            </div>
+          ))}
+          {trash.map((item) => (
+            <div key={item.id} className="card flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <span className="badge">{item.type}</span>
+                <h3 className="mt-2 font-semibold">{item.title}</h3>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  className="btn-secondary"
+                  onClick={() => mutate("restore_content_item", { id: item.id })}
+                >
+                  Restore
+                </button>
+                <button
+                  className="rounded-xl bg-red-600 px-3 py-2 text-sm font-semibold text-white hover:bg-red-700"
+                  onClick={() => {
+                    if (!window.confirm(`Permanently delete “${item.title}”?`)) return;
+                    void mutate("purge_content_item", { id: item.id });
+                  }}
+                >
+                  Delete forever
+                </button>
+              </div>
+            </div>
+          ))}
+          {(data.recycleBin?.length || 0) + trash.length === 0 && (
+            <div className="card text-sm text-slate-500">Recycle Bin is empty.</div>
+          )}
+        </section>
       )}
 
       {tab === "settings" && (
