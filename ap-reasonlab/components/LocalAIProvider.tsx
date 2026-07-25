@@ -285,13 +285,48 @@ const LOCAL_MODELS: LocalModelOption[] = [
     label: "DeepSeek-R1 Distill Heavy",
     group: "heavy",
     summary:
-      "Reasoning distill — thinks privately first; the site hides <think> and shows only the final answer.",
+      "Reasoning distill — thinks privately first; the site hides <think> and shows only the final answer. Loads with a 4k context (HF ships 128k which OOMs in-browser).",
     bestFor: "Hard multi-step problems when you can wait through a short reasoning phase",
     parameterSize: "7B",
     vramMB: 5107,
     cached: null,
   },
 ];
+
+/** WebLLM chatOpts override — Distill’s HF config uses 131072 context and fails local reload/OOM. */
+function chatOptsForModel(modelId: string, contextWindow = 4096) {
+  const opts: { context_window_size: number; prefill_chunk_size: number } = {
+    context_window_size: contextWindow,
+    prefill_chunk_size: Math.min(1024, contextWindow),
+  };
+  if (/deepseek-r1-distill|r1-distill/i.test(modelId)) return opts;
+  // Other 7B/8B heavies also need a capped context on typical laptops.
+  if (/7B|8B/i.test(modelId)) return opts;
+  if (/3B|4B/i.test(modelId)) return { ...opts, context_window_size: Math.min(contextWindow, 4096) };
+  return undefined;
+}
+
+function isLocalLoadOomError(message: string): boolean {
+  return /oom|out of memory|device lost|resource.intensive|failed to allocate|local update|reload|webgpu device/i.test(
+    message
+  );
+}
+
+function explainLocalLoadError(message: string, modelId: string): string {
+  if (/webgpu|device lost|out of memory|oom|resource.intensive/i.test(message)) {
+    return `${message}\n\nTip: DeepSeek Distill needs a GPU with enough free VRAM. We already cap context to 4k — try Remove cached model then Enable again, close other GPU tabs, or use a Light/Medium model / Website API.`;
+  }
+  if (/Failed to fetch|Cache\.add|network|huggingface|integrity/i.test(message)) {
+    return `${message}\n\nTip: Model download from Hugging Face failed or cache is corrupt. Check network, free disk space, then use “Remove from cache” and Enable again.`;
+  }
+  if (/local update|update has failed|reload/i.test(message)) {
+    return `${message}\n\nTip: Local model reload failed (common for DeepSeek-R1 Distill when context is too large or cache is half-written). Remove the cached Distill model, Enable again, or switch to Qwen2.5 Heavy / Website API.`;
+  }
+  if (/deepseek-r1-distill|r1-distill/i.test(modelId)) {
+    return `${message}\n\nDeepSeek-R1 Distill is the heaviest local option. If Enable keeps failing, pick Qwen2.5 Heavy or Website API.`;
+  }
+  return message;
+}
 
 async function detectWebGPU(): Promise<boolean> {
   if (typeof navigator === "undefined") return false;
@@ -438,26 +473,62 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
         try {
           const webllm = await import("@mlc-ai/web-llm");
           let engine: MLCEngineInterface | null = null;
+          const contextAttempts = /deepseek-r1-distill|r1-distill|7B|8B/i.test(targetModelId)
+            ? [4096, 2048]
+            : [4096];
 
-          try {
-            setStatusText("Starting local AI worker…");
-            const worker = new Worker(new URL("../workers/local-ai.worker.ts", import.meta.url), {
-              type: "module",
-            });
-            workerRef.current = worker;
-            engine = await webllm.CreateWebWorkerMLCEngine(worker, targetModelId, {
-              initProgressCallback: onProgress,
-            });
-          } catch (workerError) {
-            workerRef.current?.terminate();
-            workerRef.current = null;
-            const workerMessage =
-              workerError instanceof Error ? workerError.message : String(workerError);
-            setStatusText(`Worker failed (${workerMessage}). Trying main-thread engine…`);
-            engine = await webllm.CreateMLCEngine(targetModelId, {
-              initProgressCallback: onProgress,
-            });
+          const loadWithOpts = async (contextWindow: number) => {
+            const chatOpts = chatOptsForModel(targetModelId, contextWindow);
+            setStatusText(
+              chatOpts
+                ? `Loading local AI (${Math.round(contextWindow / 1024)}k context)…`
+                : "Loading local AI…"
+            );
+            try {
+              setStatusText("Starting local AI worker…");
+              const worker = new Worker(new URL("../workers/local-ai.worker.ts", import.meta.url), {
+                type: "module",
+              });
+              workerRef.current = worker;
+              return await webllm.CreateWebWorkerMLCEngine(
+                worker,
+                targetModelId,
+                { initProgressCallback: onProgress },
+                chatOpts
+              );
+            } catch (workerError) {
+              workerRef.current?.terminate();
+              workerRef.current = null;
+              const workerMessage =
+                workerError instanceof Error ? workerError.message : String(workerError);
+              setStatusText(`Worker failed (${workerMessage}). Trying main-thread engine…`);
+              return await webllm.CreateMLCEngine(
+                targetModelId,
+                { initProgressCallback: onProgress },
+                chatOpts
+              );
+            }
+          };
+
+          let lastError: unknown;
+          for (const contextWindow of contextAttempts) {
+            try {
+              engine = await loadWithOpts(contextWindow);
+              lastError = undefined;
+              break;
+            } catch (attemptError) {
+              lastError = attemptError;
+              workerRef.current?.terminate();
+              workerRef.current = null;
+              const attemptMessage =
+                attemptError instanceof Error ? attemptError.message : String(attemptError);
+              if (!isLocalLoadOomError(attemptMessage)) throw attemptError;
+              setStatusText(
+                `Load failed at ${Math.round(contextWindow / 1024)}k context — retrying smaller…`
+              );
+            }
           }
+          if (!engine) throw lastError || new Error("Local AI failed to load.");
 
           engineRef.current = engine;
           loadedModelRef.current = targetModelId;
@@ -465,7 +536,11 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
           setStatus("ready");
           setProgress(1);
           setError("");
-          setStatusText("Local AI is ready on this device.");
+          setStatusText(
+            /deepseek-r1-distill|r1-distill/i.test(targetModelId)
+              ? "Local AI is ready (DeepSeek Distill, capped context for WebGPU)."
+              : "Local AI is ready on this device."
+          );
           setModels((current) =>
             current.map((item) => (item.id === targetModelId ? { ...item, cached: true } : item))
           );
@@ -475,11 +550,12 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
           engineRef.current = null;
           loadedModelRef.current = "";
           setLoadedModelId("");
-          const message = caught instanceof Error ? caught.message : "Local AI failed to load.";
+          const raw = caught instanceof Error ? caught.message : "Local AI failed to load.";
+          const message = explainLocalLoadError(raw, targetModelId);
           setStatus("error");
           setError(message);
-          setStatusText("Local AI could not start. See the error below, or use Cloud AI.");
-          throw caught;
+          setStatusText("Local AI could not start. See the error below, or use Website API.");
+          throw new Error(message);
         }
       })();
 
