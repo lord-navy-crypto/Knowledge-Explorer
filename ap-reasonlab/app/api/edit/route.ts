@@ -36,38 +36,6 @@ function forgetDeleted(content: ManagedContent, id?: string | null) {
   content.deletedIds = content.deletedIds.filter((entry) => entry !== id);
 }
 
-function sameLabel(a?: string | null, b?: string | null): boolean {
-  return (a || "").trim().toLowerCase() === (b || "").trim().toLowerCase() && Boolean((a || "").trim());
-}
-
-/** Remove every file/document with the same display name (any area/space). */
-function deleteAllSameName(
-  content: ManagedContent,
-  kind: "file" | "document",
-  label: string,
-  pushRecycle: (target: "file" | "document", label: string, payload: unknown) => void,
-  exceptId?: string
-) {
-  if (!label.trim()) return;
-  if (kind === "file") {
-    const victims = (content.files || []).filter(
-      (file) => file.id !== exceptId && sameLabel(file.name, label)
-    );
-    for (const file of victims) {
-      pushRecycle("file", file.name, file);
-      content.files = content.files.filter((entry) => entry.id !== file.id);
-    }
-  } else {
-    const victims = (content.documents || []).filter(
-      (doc) => doc.id !== exceptId && sameLabel(doc.title, label)
-    );
-    for (const doc of victims) {
-      pushRecycle("document", doc.title, doc);
-      content.documents = content.documents.filter((entry) => entry.id !== doc.id);
-    }
-  }
-}
-
 /** Drop heavy dataUrls from save responses so clients don't hit Request Entity Too Large. */
 function slimManagedContent(content: ManagedContent): ManagedContent {
   return {
@@ -452,40 +420,18 @@ export async function POST(req: NextRequest) {
           item.area ? String(item.area) : undefined,
           item.space ? String(item.space) : undefined
         );
-        const name = String(item.name);
-        // One file name → one stored row (replace duplicates instead of stacking copies).
-        const existing = current.files.filter((file) => sameLabel(file.name, name));
-        const keep = existing[0];
-        for (const extra of existing.slice(1)) {
-          rememberDeleted(current, extra.id);
-          current.files = current.files.filter((file) => file.id !== extra.id);
-        }
-        if (keep) {
-          keep.name = name;
-          keep.mime = String(item.mime || keep.mime || "application/octet-stream");
-          keep.dataUrl = String(item.dataUrl);
-          if (item.note) keep.note = String(item.note);
-          keep.uploadedAt = Date.now();
-          keep.uploadedBy = "change-code";
-          if (item.area) {
-            keep.area = keys.area;
-            keep.space = keys.space;
-          }
-          // Move to front
-          current.files = [keep, ...current.files.filter((file) => file.id !== keep.id)];
-        } else {
-          current.files.unshift({
-            id: uid("m-file"),
-            name,
-            mime: String(item.mime || "application/octet-stream"),
-            dataUrl: String(item.dataUrl),
-            note: item.note ? String(item.note) : undefined,
-            uploadedAt: Date.now(),
-            uploadedBy: "change-code",
-            area: item.area ? keys.area : undefined,
-            space: item.area ? keys.space : undefined,
-          });
-        }
+        // Always create a new row — similar/same display names must not overwrite each other.
+        current.files.unshift({
+          id: uid("m-file"),
+          name: String(item.name),
+          mime: String(item.mime || "application/octet-stream"),
+          dataUrl: String(item.dataUrl),
+          note: item.note ? String(item.note) : undefined,
+          uploadedAt: Date.now(),
+          uploadedBy: "change-code",
+          area: item.area ? keys.area : undefined,
+          space: item.area ? keys.space : undefined,
+        });
       }
     } else if (action === "add_concept" || action === "add_topic") {
       const item = body.item || {};
@@ -616,32 +562,16 @@ export async function POST(req: NextRequest) {
           item.space ? String(item.space) : undefined
         );
         const title = String(item.title).slice(0, 160);
-        const existing = current.documents.filter((doc) => sameLabel(doc.title, title));
-        const keep = existing[0];
-        for (const extra of existing.slice(1)) {
-          rememberDeleted(current, extra.id);
-          current.documents = current.documents.filter((doc) => doc.id !== extra.id);
-        }
-        if (keep) {
-          keep.title = title;
-          keep.content = normalizeAuthoredText(String(item.content)).slice(0, 200_000);
-          keep.category = String(item.category || keep.category || "Uploaded").slice(0, 80);
-          keep.updatedAt = Date.now();
-          if (item.area) {
-            keep.area = keys.area;
-            keep.space = keys.space;
-          }
-        } else {
-          current.documents.push({
-            id: uid("m-doc"),
-            title,
-            content: normalizeAuthoredText(String(item.content)).slice(0, 200_000),
-            category: String(item.category || "Uploaded").slice(0, 80),
-            updatedAt: Date.now(),
-            area: item.area ? keys.area : undefined,
-            space: item.area ? keys.space : undefined,
-          });
-        }
+        // Always create a new row — same/similar titles must not overwrite each other.
+        current.documents.push({
+          id: uid("m-doc"),
+          title,
+          content: normalizeAuthoredText(String(item.content)).slice(0, 200_000),
+          category: String(item.category || "Uploaded").slice(0, 80),
+          updatedAt: Date.now(),
+          area: item.area ? keys.area : undefined,
+          space: item.area ? keys.space : undefined,
+        });
       }
     } else if (action === "add_file") {
       const item = body.item || {};
@@ -658,37 +588,18 @@ export async function POST(req: NextRequest) {
           item.space ? String(item.space) : undefined
         );
         const name = String(item.name).slice(0, 200);
-        const existing = current.files.filter((file) => sameLabel(file.name, name));
-        const keep = existing[0];
-        for (const extra of existing.slice(1)) {
-          rememberDeleted(current, extra.id);
-          current.files = current.files.filter((file) => file.id !== extra.id);
-        }
-        if (keep) {
-          keep.name = name;
-          keep.mime = String(item.mime || keep.mime || "application/octet-stream");
-          keep.dataUrl = String(item.dataUrl);
-          if (item.note) keep.note = String(item.note);
-          keep.uploadedAt = Date.now();
-          keep.uploadedBy = publicMaterialsContribution ? "public-contributor" : "change-code";
-          if (item.area) {
-            keep.area = keys.area;
-            keep.space = keys.space;
-          }
-          current.files = [keep, ...current.files.filter((file) => file.id !== keep.id)];
-        } else {
-          current.files.unshift({
-            id: uid("m-file"),
-            name,
-            mime: String(item.mime || "application/octet-stream"),
-            dataUrl: String(item.dataUrl),
-            note: item.note ? String(item.note) : undefined,
-            uploadedAt: Date.now(),
-            uploadedBy: publicMaterialsContribution ? "public-contributor" : "change-code",
-            area: item.area ? keys.area : undefined,
-            space: item.area ? keys.space : undefined,
-          });
-        }
+        // Always create a new row — same/similar names must not overwrite each other.
+        current.files.unshift({
+          id: uid("m-file"),
+          name,
+          mime: String(item.mime || "application/octet-stream"),
+          dataUrl: String(item.dataUrl),
+          note: item.note ? String(item.note) : undefined,
+          uploadedAt: Date.now(),
+          uploadedBy: publicMaterialsContribution ? "public-contributor" : "change-code",
+          area: item.area ? keys.area : undefined,
+          space: item.area ? keys.space : undefined,
+        });
       }
     } else if (action === "add_member") {
       // Content-code editors can add partners; master still works too.
@@ -772,19 +683,14 @@ export async function POST(req: NextRequest) {
       } else if (target === "document") {
         const found = current.documents.find((d) => d.id === id);
         if (found) {
-          const title = found.title;
-          pushRecycle("document", title, found);
+          pushRecycle("document", found.title, found);
           current.documents = current.documents.filter((d) => d.id !== id);
-          // Wipe every same-titled copy in any folder so delete actually finishes.
-          deleteAllSameName(current, "document", title, pushRecycle);
         }
       } else if (target === "file") {
         const found = current.files.find((f) => f.id === id);
         if (found) {
-          const name = found.name;
-          pushRecycle("file", name, found);
+          pushRecycle("file", found.name, found);
           current.files = current.files.filter((f) => f.id !== id);
-          deleteAllSameName(current, "file", name, pushRecycle);
         }
       } else if (target === "member") {
         const found = current.members.find((m) => m.id === id);
