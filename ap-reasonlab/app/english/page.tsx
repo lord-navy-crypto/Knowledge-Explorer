@@ -36,7 +36,7 @@ export default function EnglishHubPage() {
         {[{ title: "1. Build", text: "Vocabulary, sentence control, reading, listening, and idea development." }, { title: "2. Apply", text: "Use those skills in TOEFL, IELTS, or SAT-style original practice." }, { title: "3. Review", text: "Save mistakes, upload class workbooks, and ask English AI for focused feedback." }].map((item) => <article key={item.title} className="card"><h2 className="font-semibold">{item.title}</h2><p className="mt-2 text-sm leading-6 text-slate-600">{item.text}</p></article>)}
       </section>
 
-      <EnglishResourcePanel space="hub" title="English shared resources" />
+      <EnglishResourcePanel space="_root" title="English shared resources" />
     </div>
   );
 }

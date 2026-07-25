@@ -4,6 +4,15 @@ import { AP_CATALOG } from "@/data/ap-catalog";
 
 export const ROOT_SPACE = "_root";
 
+/** Areas that store files per AP subject (same subject identity). */
+export const AP_SUBJECT_FILE_AREAS = [
+  "ap-subject",
+  "past-papers",
+  "practice",
+  "concepts",
+  "formulas",
+] as const;
+
 export function normalizeSpace(space?: string | null): string {
   const s = (space || "").trim();
   return s || ROOT_SPACE;
@@ -46,24 +55,68 @@ export function spaceFromSearchParams(params: {
   folder?: string | null;
 }): string {
   if (params.folder?.trim()) return folderSpaceId(params.folder.trim());
-  if (params.subject?.trim()) return params.subject.trim();
+  if (params.subject?.trim()) return canonicalSubjectSpace(params.subject.trim());
   return ROOT_SPACE;
+}
+
+/** Resolve catalog subject from slug, full name, or short name. */
+export function resolveCatalogSubject(space: string) {
+  const n = normalizeSpace(space);
+  if (n === ROOT_SPACE || isFolderSpace(n)) return null;
+  return (
+    AP_CATALOG.find((s) => s.slug === n) ||
+    AP_CATALOG.find((s) => s.name === n) ||
+    AP_CATALOG.find((s) => s.shortName === n) ||
+    null
+  );
+}
+
+/**
+ * Canonical subject space for storage writes: catalog full name when known.
+ * Keeps live data (AP Physics 2) and UI labels aligned.
+ */
+export function canonicalSubjectSpace(space?: string | null): string {
+  const n = normalizeSpace(space);
+  if (n === ROOT_SPACE || isFolderSpace(n)) return n;
+  // English hub historically used "hub" — same bucket as root.
+  if (n === "hub") return ROOT_SPACE;
+  const hit = resolveCatalogSubject(n);
+  return hit?.name || n;
+}
+
+/** Normalize area+space on write so Finder and pages share one key. */
+export function canonicalizeStorageKeys(area?: string | null, space?: string | null): {
+  area: string;
+  space: string;
+} {
+  let a = (area || "").trim();
+  let sp = canonicalSubjectSpace(space);
+  // Orphan bucket: ap + subject name → ap-subject (AP hub is only ap/_root)
+  if (a === "ap" && sp !== ROOT_SPACE && resolveCatalogSubject(sp)) {
+    a = "ap-subject";
+  }
+  if (a === "english" && sp === "hub") sp = ROOT_SPACE;
+  return { area: a || "general", space: sp };
 }
 
 /** Slug / full name / short name are the same AP subject bucket. */
 export function spaceAliases(space: string): Set<string> {
   const n = normalizeSpace(space);
   const set = new Set<string>([n]);
-  const hit =
-    AP_CATALOG.find((s) => s.slug === n) ||
-    AP_CATALOG.find((s) => s.name === n) ||
-    AP_CATALOG.find((s) => s.shortName === n);
+  if (n === "hub") set.add(ROOT_SPACE);
+  if (n === ROOT_SPACE) set.add("hub");
+  const hit = resolveCatalogSubject(n);
   if (hit) {
     set.add(hit.slug);
     set.add(hit.name);
     if (hit.shortName) set.add(hit.shortName);
   }
   return set;
+}
+
+function spacesMatch(itemSpace: string, space: string): boolean {
+  if (itemSpace === normalizeSpace(space)) return true;
+  return spaceAliases(space).has(itemSpace);
 }
 
 export function matchesSpace(
@@ -78,10 +131,26 @@ export function matchesSpace(
     return area === "materials" && space === ROOT_SPACE;
   }
   if (itemArea !== area) return false;
-  if (itemSpace === normalizeSpace(space)) return true;
-  // AP subject + exam archives were saved under full name or slug interchangeably
-  if (area === "ap-subject" || area === "past-papers") {
-    return spaceAliases(space).has(itemSpace);
+  return spacesMatch(itemSpace, space);
+}
+
+/**
+ * Macintosh HD / Manage: one AP subject folder shows files from all related
+ * page buckets (subject media, past papers, practice, concepts, formulas).
+ */
+export function matchesFolderItem(
+  item: { area?: string; space?: string },
+  area: string,
+  space: string
+): boolean {
+  if (matchesSpace(item, area, space)) return true;
+  if (area === "ap-subject" && normalizeSpace(space) !== ROOT_SPACE) {
+    for (const related of AP_SUBJECT_FILE_AREAS) {
+      if (related === "ap-subject") continue;
+      if (matchesSpace(item, related, space)) return true;
+    }
+    // Legacy orphan: ap + subject name
+    if (matchesSpace(item, "ap", space)) return true;
   }
   return false;
 }
@@ -95,9 +164,6 @@ export function spaceLabel(space: string, folderTitle?: string): string {
 /** Prefer catalog slug for /ap/[slug] links when space is a subject name. */
 export function apSubjectHref(space: string): string {
   const n = normalizeSpace(space);
-  const hit =
-    AP_CATALOG.find((s) => s.slug === n) ||
-    AP_CATALOG.find((s) => s.name === n) ||
-    AP_CATALOG.find((s) => s.shortName === n);
+  const hit = resolveCatalogSubject(n);
   return hit ? `/ap/${hit.slug}` : `/ap/${encodeURIComponent(n)}`;
 }

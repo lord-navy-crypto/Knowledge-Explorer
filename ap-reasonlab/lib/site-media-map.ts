@@ -3,7 +3,12 @@
  * Used by the top-right Media window and Manage → Mac Finder.
  */
 
-import { ROOT_SPACE, apSubjectHref } from "@/lib/storage-space";
+import {
+  ROOT_SPACE,
+  apSubjectHref,
+  canonicalSubjectSpace,
+  resolveCatalogSubject,
+} from "@/lib/storage-space";
 import { AP_CATALOG, getSubjectBySlug } from "@/data/ap-catalog";
 
 export type MediaAlsoShow = Array<
@@ -150,7 +155,7 @@ export function resolvePageMediaContext(
     if (parts.length >= 2) {
       const slug = decodeURIComponent(parts[1]!);
       const subject = getSubjectBySlug(slug);
-      const spaceKey = subject?.name || slug;
+      const spaceKey = canonicalSubjectSpace(subject?.name || slug);
       return {
         folderArea: "ap-subject",
         spaceKey,
@@ -166,39 +171,43 @@ export function resolvePageMediaContext(
   if (pathname.startsWith("/concepts")) {
     const space = folder
       ? `folder:${folder}`
-      : subject?.trim() || ROOT_SPACE;
+      : canonicalSubjectSpace(subject?.trim() || ROOT_SPACE);
     return {
       folderArea: "concepts",
       spaceKey: space,
-      title: subject ? `Concepts · ${subject}` : "Concepts",
+      title: subject ? `Concepts · ${canonicalSubjectSpace(subject)}` : "Concepts",
       href: pathname + (search.toString() ? `?${search}` : ""),
       alsoShow: UPLOAD_ONLY,
       spaceBasePath: "/concepts",
-      defaultSubject: subject || undefined,
+      defaultSubject: subject ? canonicalSubjectSpace(subject) : undefined,
     };
   }
   if (pathname.startsWith("/formulas")) {
-    const space = folder ? `folder:${folder}` : subject?.trim() || ROOT_SPACE;
+    const space = folder
+      ? `folder:${folder}`
+      : canonicalSubjectSpace(subject?.trim() || ROOT_SPACE);
     return {
       folderArea: "formulas",
       spaceKey: space,
-      title: subject ? `Formulas · ${subject}` : "Formulas",
+      title: subject ? `Formulas · ${canonicalSubjectSpace(subject)}` : "Formulas",
       href: pathname,
       alsoShow: UPLOAD_ONLY,
       spaceBasePath: "/formulas",
-      defaultSubject: subject || undefined,
+      defaultSubject: subject ? canonicalSubjectSpace(subject) : undefined,
     };
   }
   if (pathname.startsWith("/practice") || pathname.startsWith("/questionnaires")) {
-    const space = folder ? `folder:${folder}` : subject?.trim() || ROOT_SPACE;
+    const space = folder
+      ? `folder:${folder}`
+      : canonicalSubjectSpace(subject?.trim() || ROOT_SPACE);
     return {
       folderArea: "practice",
       spaceKey: space,
-      title: subject ? `Practice · ${subject}` : "Practice",
+      title: subject ? `Practice · ${canonicalSubjectSpace(subject)}` : "Practice",
       href: pathname,
       alsoShow: UPLOAD_ONLY,
       spaceBasePath: "/practice",
-      defaultSubject: subject || undefined,
+      defaultSubject: subject ? canonicalSubjectSpace(subject) : undefined,
     };
   }
 
@@ -256,7 +265,17 @@ export function apSubjectPageFolders(): SitePageFolder[] {
   }));
 }
 
-/** Dynamic AP subject page folders derived from uploaded content + known areas. */
+const DYNAMIC_PAGE_AREAS = new Set([
+  "ap-subject",
+  "past-papers",
+  "practice",
+  "concepts",
+  "formulas",
+  "ap",
+  "english",
+]);
+
+/** Dynamic page folders so every non-empty bucket appears in Macintosh HD. */
 export function collectDynamicPageFolders(
   files: Array<{ area?: string; space?: string }>,
   documents: Array<{ area?: string; space?: string }>,
@@ -272,22 +291,23 @@ export function collectDynamicPageFolders(
   const seen = new Set<string>();
 
   const consider = (area?: string, space?: string, label?: string, href?: string) => {
-    const a = area || "general";
-    const sp = space || ROOT_SPACE;
+    let a = area || "general";
+    let sp = canonicalSubjectSpace(space);
+    // Orphans under ap/{Subject} belong with the subject folder (already in catalog).
+    if (a === "ap" && sp !== ROOT_SPACE && resolveCatalogSubject(sp)) {
+      a = "ap-subject";
+    }
     const key = `${a}::${sp}`;
     if (known.has(key) || seen.has(key)) return;
-    // Skip root placeholders already covered
+
     if (a === "ap-subject" && sp !== ROOT_SPACE) {
-      // Prefer catalog name/slug aliases so we don't duplicate subject folders
-      const hit =
-        AP_CATALOG.find((s) => s.name === sp) ||
-        AP_CATALOG.find((s) => s.slug === sp) ||
-        AP_CATALOG.find((s) => s.shortName === sp);
+      const hit = resolveCatalogSubject(sp);
       if (hit) {
         const catalogKey = `${a}::${hit.name}`;
         if (known.has(catalogKey) || seen.has(catalogKey)) return;
+        sp = hit.name;
       }
-      seen.add(key);
+      seen.add(`${a}::${sp}`);
       extra.push({
         area: a,
         space: sp,
@@ -296,6 +316,7 @@ export function collectDynamicPageFolders(
       });
       return;
     }
+
     if (sp.startsWith("folder:")) {
       seen.add(key);
       const id = sp.slice("folder:".length);
@@ -304,6 +325,34 @@ export function collectDynamicPageFolders(
         space: sp,
         label: label || `Folder ${id.slice(0, 8)}`,
         href: href || `/${a}`,
+      });
+      return;
+    }
+
+    // Subject-scoped practice / concepts / formulas / past-papers → Finder pages
+    if (DYNAMIC_PAGE_AREAS.has(a) && sp !== ROOT_SPACE) {
+      seen.add(key);
+      const subject = resolveCatalogSubject(sp);
+      const pretty = subject?.shortName || sp;
+      const areaLabel =
+        a === "past-papers"
+          ? "Exams"
+          : a === "practice"
+            ? "Practice"
+            : a === "concepts"
+              ? "Concepts"
+              : a === "formulas"
+                ? "Formulas"
+                : a;
+      extra.push({
+        area: a,
+        space: sp,
+        label: label || `${pretty} · ${areaLabel}`,
+        href:
+          href ||
+          (a === "past-papers" || a === "ap-subject"
+            ? apSubjectHref(sp)
+            : `/${a}?subject=${encodeURIComponent(sp)}`),
       });
     }
   };

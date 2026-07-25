@@ -16,6 +16,12 @@ import {
 import { subjectSlug } from "@/data/ap-catalog";
 import type { QuestionFormat, QuestionnaireItem } from "@/lib/types";
 import { normalizeAuthoredText } from "@/lib/unicode-math";
+import {
+  canonicalizeStorageKeys,
+  matchesSpace,
+  normalizeSpace,
+  spaceAliases,
+} from "@/lib/storage-space";
 
 const forumWriteTimes = new Map<string, number>();
 
@@ -73,41 +79,36 @@ export async function GET(req: NextRequest) {
 
   // Optional scope: return only one area+folder bucket so panels stay separate.
   if (area) {
-    const spaceKey = space || "_root";
-    const inBucket = (item: { area?: string; space?: string }) => {
-      if (!item.area && !item.space) {
-        // Legacy unscoped rows only surface under materials/_root
-        return area === "materials" && spaceKey === "_root";
-      }
-      return item.area === area && (item.space || "_root") === spaceKey;
+    const spaceKey = normalizeSpace(space);
+    const aliasSet = spaceAliases(spaceKey);
+    const inBucket = (item: { area?: string; space?: string }) =>
+      matchesSpace(item, area, spaceKey);
+    const subjectMatch = (value?: string) => {
+      if (spaceKey === "_root") return !value || value === "_root";
+      if (spaceKey.startsWith("folder:")) return value === spaceKey || value === space;
+      return Boolean(value && aliasSet.has(value));
     };
 
     return NextResponse.json({
       concepts:
         spaceKey === "_root"
           ? (content.concepts || []).filter((c) => !c.subject || c.subject === "_root")
-          : spaceKey.startsWith("folder:")
-            ? (content.concepts || []).filter(
-                (c) => c.subject === spaceKey || c.subject === space
-              )
-            : (content.concepts || []).filter((c) => c.subject === spaceKey),
+          : (content.concepts || []).filter((c) => subjectMatch(c.subject)),
       formulas:
         spaceKey === "_root"
           ? []
-          : (content.formulas || []).filter((f) => f.subject === spaceKey),
+          : (content.formulas || []).filter((f) => subjectMatch(f.subject)),
       documents: (content.documents || []).filter(inBucket),
       files: (content.files || []).filter(inBucket),
-      folders: (content.folders || []).filter(
-        (f) => f.area === area && (f.space || "_root") === spaceKey
-      ),
+      folders: (content.folders || []).filter((f) => matchesSpace(f, area, spaceKey)),
       topics: (content.topics || []).filter((t) => {
         if (spaceKey === "_root") return !t.subject || t.subject === "_root";
-        return t.subject === spaceKey || t.space === spaceKey;
+        return subjectMatch(t.subject) || subjectMatch(t.space);
       }),
       questionnaires:
         spaceKey === "_root"
           ? content.questionnaires || []
-          : (content.questionnaires || []).filter((q) => q.subject === spaceKey),
+          : (content.questionnaires || []).filter((q) => subjectMatch(q.subject)),
       subjects: content.subjects || [],
       members: content.members || [],
       forumPosts: area === "forum" ? content.forumPosts || [] : undefined,
@@ -387,6 +388,10 @@ export async function POST(req: NextRequest) {
         if (!item.name || !item.dataUrl || String(item.dataUrl).length > 1_500_000) {
           return NextResponse.json({ error: "Each file needs a name and must stay under ~1MB" }, { status: 400 });
         }
+        const keys = canonicalizeStorageKeys(
+          item.area ? String(item.area) : undefined,
+          item.space ? String(item.space) : undefined
+        );
         current.files.unshift({
           id: uid("m-file"),
           name: String(item.name),
@@ -395,8 +400,8 @@ export async function POST(req: NextRequest) {
           note: item.note ? String(item.note) : undefined,
           uploadedAt: Date.now(),
           uploadedBy: "change-code",
-          area: item.area ? String(item.area) : undefined,
-          space: item.space ? String(item.space) : undefined,
+          area: item.area ? keys.area : undefined,
+          space: item.area ? keys.space : undefined,
         });
       }
     } else if (action === "add_concept" || action === "add_topic") {
@@ -522,15 +527,21 @@ export async function POST(req: NextRequest) {
       if (publicMaterialsContribution && String(item.content).length > 50_000) {
         return NextResponse.json({ error: "Public documents must stay under 50,000 characters" }, { status: 400 });
       }
-      current.documents.push({
-        id: uid("m-doc"),
-        title: String(item.title).slice(0, 160),
-        content: normalizeAuthoredText(String(item.content)).slice(0, 200_000),
-        category: String(item.category || "Uploaded").slice(0, 80),
-        updatedAt: Date.now(),
-        area: item.area ? String(item.area) : undefined,
-        space: item.space ? String(item.space) : undefined,
-      });
+      {
+        const keys = canonicalizeStorageKeys(
+          item.area ? String(item.area) : undefined,
+          item.space ? String(item.space) : undefined
+        );
+        current.documents.push({
+          id: uid("m-doc"),
+          title: String(item.title).slice(0, 160),
+          content: normalizeAuthoredText(String(item.content)).slice(0, 200_000),
+          category: String(item.category || "Uploaded").slice(0, 80),
+          updatedAt: Date.now(),
+          area: item.area ? keys.area : undefined,
+          space: item.area ? keys.space : undefined,
+        });
+      }
     } else if (action === "add_file") {
       const item = body.item || {};
       if (!item.name || !item.dataUrl) {
@@ -540,17 +551,23 @@ export async function POST(req: NextRequest) {
       if (String(item.dataUrl).length > publicFileLimit) {
         return NextResponse.json({ error: "File too large (keep under ~1MB)" }, { status: 400 });
       }
-      current.files.unshift({
-        id: uid("m-file"),
-        name: String(item.name).slice(0, 200),
-        mime: String(item.mime || "application/octet-stream"),
-        dataUrl: String(item.dataUrl),
-        note: item.note ? String(item.note) : undefined,
-        uploadedAt: Date.now(),
-        uploadedBy: publicMaterialsContribution ? "public-contributor" : "change-code",
-        area: item.area ? String(item.area) : undefined,
-        space: item.space ? String(item.space) : undefined,
-      });
+      {
+        const keys = canonicalizeStorageKeys(
+          item.area ? String(item.area) : undefined,
+          item.space ? String(item.space) : undefined
+        );
+        current.files.unshift({
+          id: uid("m-file"),
+          name: String(item.name).slice(0, 200),
+          mime: String(item.mime || "application/octet-stream"),
+          dataUrl: String(item.dataUrl),
+          note: item.note ? String(item.note) : undefined,
+          uploadedAt: Date.now(),
+          uploadedBy: publicMaterialsContribution ? "public-contributor" : "change-code",
+          area: item.area ? keys.area : undefined,
+          space: item.area ? keys.space : undefined,
+        });
+      }
     } else if (action === "add_member") {
       // Content-code editors can add partners; master still works too.
       if (!canEditContent(level)) {
@@ -574,14 +591,17 @@ export async function POST(req: NextRequest) {
       if (!item.title || !item.area) {
         return NextResponse.json({ error: "folder title and area required" }, { status: 400 });
       }
-      current.folders.push({
-        id: uid("folder"),
-        title: String(item.title).slice(0, 160),
-        area: String(item.area),
-        note: item.note ? String(item.note).slice(0, 500) : undefined,
-        createdAt: Date.now(),
-        space: item.space ? String(item.space) : "_root",
-      });
+      {
+        const keys = canonicalizeStorageKeys(String(item.area), item.space ? String(item.space) : "_root");
+        current.folders.push({
+          id: uid("folder"),
+          title: String(item.title).slice(0, 160),
+          area: keys.area,
+          note: item.note ? String(item.note).slice(0, 500) : undefined,
+          createdAt: Date.now(),
+          space: keys.space,
+        });
+      }
     } else if (action === "delete") {
       const target = String(body.target || "");
       const id = String(body.id || "");

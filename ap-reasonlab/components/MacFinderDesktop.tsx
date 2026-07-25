@@ -22,7 +22,7 @@ import {
 } from "@/lib/site-media-map";
 import {
   ROOT_SPACE,
-  matchesSpace,
+  matchesFolderItem,
   normalizeSpace,
   spaceAliases,
 } from "@/lib/storage-space";
@@ -111,7 +111,7 @@ function collectPageRows(data: Partial<ManagedContent>, page: SitePageFolder): C
   }
 
   for (const file of data.files || []) {
-    if (!matchesSpace(file, page.area, scoped)) continue;
+    if (!matchesFolderItem(file, page.area, scoped)) continue;
     rows.push({
       kind: "file",
       id: file.id,
@@ -119,7 +119,7 @@ function collectPageRows(data: Partial<ManagedContent>, page: SitePageFolder): C
       meta: file.mime || "file",
       icon: isImage(file) ? "🖼" : "📎",
       imageUrl: isImage(file) ? file.dataUrl : undefined,
-      previewText: file.note || undefined,
+      previewText: file.note || file.area || undefined,
       raw: file as unknown as Record<string, unknown>,
       editTarget: "file",
       deleteTarget: "file",
@@ -127,7 +127,7 @@ function collectPageRows(data: Partial<ManagedContent>, page: SitePageFolder): C
   }
 
   for (const doc of data.documents || []) {
-    if (!matchesSpace(doc, page.area, scoped)) continue;
+    if (!matchesFolderItem(doc, page.area, scoped)) continue;
     rows.push({
       kind: "document",
       id: doc.id,
