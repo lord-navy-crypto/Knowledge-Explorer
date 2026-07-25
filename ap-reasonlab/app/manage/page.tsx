@@ -91,6 +91,7 @@ export default function ManagePage() {
         action,
         changeCode: changeCode.trim() || undefined,
         githubToken: githubToken || undefined,
+        baseUpdatedAt: data.updatedAt || undefined,
         ...extra,
       }),
     });

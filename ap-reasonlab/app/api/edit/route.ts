@@ -17,6 +17,7 @@ import { subjectSlug } from "@/data/ap-catalog";
 import type { QuestionFormat, QuestionnaireItem } from "@/lib/types";
 import { normalizeAuthoredText } from "@/lib/unicode-math";
 import {
+  AP_SUBJECT_FILE_AREAS,
   canonicalizeStorageKeys,
   matchesSpace,
   normalizeSpace,
@@ -24,6 +25,17 @@ import {
 } from "@/lib/storage-space";
 
 const forumWriteTimes = new Map<string, number>();
+
+function rememberDeleted(content: ManagedContent, id?: string | null) {
+  if (!id) return;
+  if (!Array.isArray(content.deletedIds)) content.deletedIds = [];
+  if (!content.deletedIds.includes(id)) content.deletedIds.push(id);
+}
+
+function forgetDeleted(content: ManagedContent, id?: string | null) {
+  if (!id || !Array.isArray(content.deletedIds)) return;
+  content.deletedIds = content.deletedIds.filter((entry) => entry !== id);
+}
 
 /** Drop heavy dataUrls from save responses so clients don't hit Request Entity Too Large. */
 function slimManagedContent(content: ManagedContent): ManagedContent {
@@ -332,11 +344,14 @@ export async function POST(req: NextRequest) {
       if (!target) return NextResponse.json({ error: "Content item not found" }, { status: 404 });
       delete target.deletedAt;
       target.updatedAt = Date.now();
+      forgetDeleted(current, target.id);
     } else if (action === "restore_recycle") {
       const entryId = String(body.id || "");
       const entry = (current.recycleBin || []).find((item) => item.id === entryId);
       if (!entry) return NextResponse.json({ error: "Recycle item not found" }, { status: 404 });
       const payload = entry.payload as Record<string, unknown>;
+      const restoredId = typeof payload.id === "string" ? payload.id : "";
+      forgetDeleted(current, restoredId);
       if (entry.target === "file") current.files.unshift(payload as never);
       else if (entry.target === "document") current.documents.unshift(payload as never);
       else if (entry.target === "folder") current.folders.unshift(payload as never);
@@ -612,7 +627,13 @@ export async function POST(req: NextRequest) {
         );
       }
       if (!current.recycleBin) current.recycleBin = [];
+      if (!current.deletedIds) current.deletedIds = [];
       const pushRecycle = (entryTarget: typeof current.recycleBin[number]["target"], label: string, payload: unknown) => {
+        const payloadId =
+          payload && typeof payload === "object" && typeof (payload as { id?: unknown }).id === "string"
+            ? String((payload as { id: string }).id)
+            : "";
+        rememberDeleted(current, payloadId);
         current.recycleBin.unshift({
           id: uid("recycle"),
           target: entryTarget,
@@ -620,6 +641,43 @@ export async function POST(req: NextRequest) {
           deletedAt: Date.now(),
           payload,
         });
+      };
+      /** Same title/name under related AP buckets looks like “deleted file came back”. */
+      const deleteLinkedCopies = (kind: "file" | "document", seed: { id: string; area?: string; space?: string; name?: string; title?: string }) => {
+        const label = kind === "file" ? seed.name || "" : seed.title || "";
+        if (!label) return;
+        const seedArea = seed.area || "";
+        const relatedAreas = new Set<string>([seedArea]);
+        if ((AP_SUBJECT_FILE_AREAS as readonly string[]).includes(seedArea) || seedArea === "ap") {
+          for (const area of AP_SUBJECT_FILE_AREAS) relatedAreas.add(area);
+          relatedAreas.add("ap");
+        }
+        const aliases = spaceAliases(seed.space || "_root");
+        if (kind === "document") {
+          const extras = current.documents.filter(
+            (doc) =>
+              doc.id !== seed.id &&
+              doc.title === label &&
+              relatedAreas.has(doc.area || "") &&
+              aliases.has(normalizeSpace(doc.space))
+          );
+          for (const doc of extras) {
+            pushRecycle("document", doc.title, doc);
+            current.documents = current.documents.filter((entry) => entry.id !== doc.id);
+          }
+        } else {
+          const extras = current.files.filter(
+            (file) =>
+              file.id !== seed.id &&
+              file.name === label &&
+              relatedAreas.has(file.area || "") &&
+              aliases.has(normalizeSpace(file.space))
+          );
+          for (const file of extras) {
+            pushRecycle("file", file.name, file);
+            current.files = current.files.filter((entry) => entry.id !== file.id);
+          }
+        }
       };
       if (target === "content_item") {
         const item = current.contentItems.find((entry) => entry.id === id);
@@ -646,12 +704,14 @@ export async function POST(req: NextRequest) {
         if (found) {
           pushRecycle("document", found.title, found);
           current.documents = current.documents.filter((d) => d.id !== id);
+          deleteLinkedCopies("document", found);
         }
       } else if (target === "file") {
         const found = current.files.find((f) => f.id === id);
         if (found) {
           pushRecycle("file", found.name, found);
           current.files = current.files.filter((f) => f.id !== id);
+          deleteLinkedCopies("file", found);
         }
       } else if (target === "member") {
         const found = current.members.find((m) => m.id === id);
@@ -695,17 +755,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unknown action" }, { status: 400 });
     }
 
-    const result = await saveManagedContent(current, token);
+    const result = await saveManagedContent(current, token, undefined, {
+      baseUpdatedAt: Number(body.baseUpdatedAt || 0) || undefined,
+    });
     if (action === "set_advanced_default") {
       const { invalidateSiteAiTierCache } = await import("@/lib/ai-tiers-managed");
       invalidateSiteAiTierCache();
     }
+    // Re-normalize so response matches tombstone-purged saved content.
+    const saved = normalizeManagedContent(current);
     return NextResponse.json({
       ok: true,
       mode: result.mode,
       level,
       // Omit base64 payloads — full file bytes stay in storage; clients refetch scoped panels.
-      content: slimManagedContent(current),
+      content: slimManagedContent(saved),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Save failed";

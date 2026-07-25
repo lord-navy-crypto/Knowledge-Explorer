@@ -447,9 +447,44 @@ export async function listManagedContentHistory(
 export async function saveManagedContent(
   data: ManagedContent,
   token?: string,
-  message = "chore: update managed content via Admin UI"
+  message = "chore: update managed content via Admin UI",
+  options?: { baseUpdatedAt?: number }
 ): Promise<{ mode: "github" | "local" }> {
-  const next = { ...normalizeManagedContent(data), updatedAt: Date.now() };
+  const incoming = normalizeManagedContent(data);
+  let next = { ...incoming, updatedAt: Date.now() };
+
+  // Protect deletes against stale overwrites (old Manage tab / agent commit).
+  try {
+    const live = normalizeManagedContent(await loadManagedContent(token));
+    const clientFresh =
+      typeof options?.baseUpdatedAt === "number" &&
+      options.baseUpdatedAt > 0 &&
+      options.baseUpdatedAt === live.updatedAt;
+
+    const byId = new Map<string, (typeof live.recycleBin)[number]>();
+    for (const entry of [...(live.recycleBin || []), ...(incoming.recycleBin || [])]) {
+      const prev = byId.get(entry.id);
+      if (!prev || (entry.deletedAt || 0) >= (prev.deletedAt || 0)) byId.set(entry.id, entry);
+    }
+    // Restores drop recycle rows; when the client is fresh, trust that removal.
+    const mergedRecycle = clientFresh
+      ? [...(incoming.recycleBin || [])]
+      : [...byId.values()].sort((a, b) => (b.deletedAt || 0) - (a.deletedAt || 0));
+
+    const mergedDeleted = clientFresh
+      ? [...(incoming.deletedIds || [])]
+      : [...new Set([...(incoming.deletedIds || []), ...(live.deletedIds || [])])];
+
+    next = normalizeManagedContent({
+      ...incoming,
+      recycleBin: mergedRecycle,
+      deletedIds: mergedDeleted,
+      updatedAt: Date.now(),
+    });
+  } catch {
+    /* keep incoming only */
+  }
+
   const text = JSON.stringify(next, null, 2) + "\n";
   const viaGithub = await githubWrite(
     MANAGED_CONTENT_REPO_PATH,

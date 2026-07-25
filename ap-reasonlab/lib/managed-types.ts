@@ -134,6 +134,11 @@ export type ManagedContent = {
   topics: ManagedTopic[];
   /** Soft-deleted items recoverable from Macintosh HD Recycle Bin */
   recycleBin: ManagedRecycleEntry[];
+  /**
+   * Tombstone ids — once deleted, these ids stay banned from active arrays so a
+   * later stale Admin/agent save cannot resurrect them.
+   */
+  deletedIds: string[];
   settings: ManagedSiteSettings;
   updatedAt: number;
 };
@@ -197,8 +202,54 @@ export function emptyManagedContent(): ManagedContent {
     questionnaires: [],
     topics: [],
     recycleBin: [],
+    deletedIds: [],
     settings: emptySiteSettings(),
     updatedAt: 0,
+  };
+}
+
+function payloadId(payload: unknown): string | null {
+  if (!payload || typeof payload !== "object") return null;
+  const id = (payload as { id?: unknown }).id;
+  return typeof id === "string" && id.trim() ? id.trim() : null;
+}
+
+export function collectDeletedIds(content: Partial<ManagedContent> | null | undefined): string[] {
+  const ids = new Set<string>();
+  for (const id of Array.isArray(content?.deletedIds) ? content!.deletedIds! : []) {
+    if (typeof id === "string" && id.trim()) ids.add(id.trim());
+  }
+  for (const entry of Array.isArray(content?.recycleBin) ? content!.recycleBin! : []) {
+    const id = payloadId(entry?.payload);
+    if (id) ids.add(id);
+  }
+  for (const item of Array.isArray(content?.contentItems) ? content!.contentItems! : []) {
+    if (item?.deletedAt && item.id) ids.add(item.id);
+  }
+  return [...ids];
+}
+
+/** Drop active rows whose ids are tombstoned / in the recycle bin. */
+export function applyDeletionTombstones<T extends ManagedContent>(content: T): T {
+  const banned = new Set(collectDeletedIds(content));
+  if (banned.size === 0) {
+    return { ...content, deletedIds: content.deletedIds || [] };
+  }
+  const keep = <A extends { id: string }>(rows: A[]) => rows.filter((row) => !banned.has(row.id));
+  return {
+    ...content,
+    concepts: keep(content.concepts || []),
+    formulas: keep(content.formulas || []),
+    documents: keep(content.documents || []),
+    files: keep(content.files || []),
+    members: keep(content.members || []),
+    folders: keep(content.folders || []),
+    questionnaires: keep(content.questionnaires || []),
+    topics: keep(content.topics || []),
+    contentItems: (content.contentItems || []).filter(
+      (item) => !banned.has(item.id) || Boolean(item.deletedAt)
+    ),
+    deletedIds: [...banned],
   };
 }
 
@@ -293,7 +344,7 @@ export function normalizeManagedContent(
   if (!raw) {
     return { ...base, subjects: mergeBuiltinSubjects([]) };
   }
-  return {
+  return applyDeletionTombstones({
     concepts: Array.isArray(raw.concepts) ? raw.concepts : [],
     formulas: Array.isArray(raw.formulas) ? raw.formulas : [],
     documents: Array.isArray(raw.documents) ? raw.documents : [],
@@ -309,9 +360,12 @@ export function normalizeManagedContent(
     recycleBin: Array.isArray((raw as Partial<ManagedContent>).recycleBin)
       ? ((raw as Partial<ManagedContent>).recycleBin as ManagedRecycleEntry[])
       : [],
+    deletedIds: Array.isArray((raw as Partial<ManagedContent>).deletedIds)
+      ? ((raw as Partial<ManagedContent>).deletedIds as string[])
+      : [],
     settings: normalizeSiteSettings(raw.settings),
     updatedAt: typeof raw.updatedAt === "number" ? raw.updatedAt : 0,
-  };
+  });
 }
 
 export function uid(prefix = "id"): string {
