@@ -451,6 +451,15 @@ export default function ManagePage() {
               separate and unaffected. Turning Advanced Default on uses more of the shared site keys.
             </p>
           </div>
+          <div className="card space-y-2">
+            <h2 className="text-xl font-bold">Deletes stay deleted</h2>
+            <p className="text-sm text-slate-600">
+              Files, documents, nested folders, and Macintosh HD “Other page folders” you delete are
+              tombstoned. Saving Settings, Admin content, or history undo will not bring those ids /
+              page folders back. Upload into a deleted page folder again only if you want it to
+              reappear.
+            </p>
+          </div>
         </section>
       )}
 

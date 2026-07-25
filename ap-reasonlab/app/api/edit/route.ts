@@ -13,11 +13,13 @@ import {
   uid,
   type ManagedContent,
 } from "@/lib/managed-store";
+import { spaceTombstoneKey } from "@/lib/managed-types";
 import { subjectSlug } from "@/data/ap-catalog";
 import type { QuestionFormat, QuestionnaireItem } from "@/lib/types";
 import { normalizeAuthoredText } from "@/lib/unicode-math";
 import {
   canonicalizeStorageKeys,
+  folderSpaceId,
   matchesSpace,
   normalizeSpace,
   spaceAliases,
@@ -34,6 +36,19 @@ function rememberDeleted(content: ManagedContent, id?: string | null) {
 function forgetDeleted(content: ManagedContent, id?: string | null) {
   if (!id || !Array.isArray(content.deletedIds)) return;
   content.deletedIds = content.deletedIds.filter((entry) => entry !== id);
+}
+
+function rememberDeletedSpace(content: ManagedContent, area?: string | null, space?: string | null) {
+  if (!area) return;
+  const key = spaceTombstoneKey(area, space);
+  if (!Array.isArray(content.deletedSpaces)) content.deletedSpaces = [];
+  if (!content.deletedSpaces.includes(key)) content.deletedSpaces.push(key);
+}
+
+function forgetDeletedSpace(content: ManagedContent, area?: string | null, space?: string | null) {
+  if (!area || !Array.isArray(content.deletedSpaces)) return;
+  const key = spaceTombstoneKey(area, space);
+  content.deletedSpaces = content.deletedSpaces.filter((entry) => entry !== key);
 }
 
 /** Drop heavy dataUrls from save responses so clients don't hit Request Entity Too Large. */
@@ -351,9 +366,20 @@ export async function POST(req: NextRequest) {
       const payload = entry.payload as Record<string, unknown>;
       const restoredId = typeof payload.id === "string" ? payload.id : "";
       forgetDeleted(current, restoredId);
-      if (entry.target === "file") current.files.unshift(payload as never);
-      else if (entry.target === "document") current.documents.unshift(payload as never);
-      else if (entry.target === "folder") current.folders.unshift(payload as never);
+      if (entry.target === "file") {
+        const file = payload as { area?: string; space?: string };
+        forgetDeletedSpace(current, file.area, file.space);
+        current.files.unshift(payload as never);
+      } else if (entry.target === "document") {
+        const doc = payload as { area?: string; space?: string };
+        forgetDeletedSpace(current, doc.area, doc.space);
+        current.documents.unshift(payload as never);
+      } else if (entry.target === "folder") {
+        const folder = payload as { id?: string; area?: string; space?: string };
+        forgetDeletedSpace(current, folder.area, folder.space);
+        if (folder.id) forgetDeletedSpace(current, folder.area, folderSpaceId(folder.id));
+        current.folders.unshift(payload as never);
+      }
       else if (entry.target === "concept" || entry.target === "topic") {
         current.concepts.unshift(payload as never);
         if (entry.target === "topic") {
@@ -378,16 +404,34 @@ export async function POST(req: NextRequest) {
       const entryId = String(body.id || "");
       if (!entryId) {
         // One-click empty: wipe bin; keep deletedIds so items cannot resurrect.
+        for (const entry of current.recycleBin || []) {
+          const payload = entry.payload as { id?: string; area?: string; space?: string };
+          if (payload?.id) rememberDeleted(current, payload.id);
+          if (entry.target === "folder" && payload?.id) {
+            rememberDeletedSpace(current, payload.area, folderSpaceId(payload.id));
+          }
+        }
         current.recycleBin = [];
         current.contentItems = (current.contentItems || []).filter((item) => !item.deletedAt);
       } else {
+        const entry = (current.recycleBin || []).find((item) => item.id === entryId);
+        if (entry) {
+          const payload = entry.payload as { id?: string; area?: string; space?: string };
+          if (payload?.id) rememberDeleted(current, payload.id);
+          if (entry.target === "folder" && payload?.id) {
+            rememberDeletedSpace(current, payload.area, folderSpaceId(payload.id));
+          }
+        }
         current.recycleBin = (current.recycleBin || []).filter((item) => item.id !== entryId);
       }
     } else if (action === "empty_recycle") {
       // Explicit empty-all for Recycle Bin UI (Macintosh HD + Manage tab).
       for (const entry of current.recycleBin || []) {
-        const payload = entry.payload as { id?: string };
+        const payload = entry.payload as { id?: string; area?: string; space?: string };
         if (payload?.id) rememberDeleted(current, payload.id);
+        if (entry.target === "folder" && payload?.id) {
+          rememberDeletedSpace(current, payload.area, folderSpaceId(payload.id));
+        }
       }
       for (const item of current.contentItems || []) {
         if (item.deletedAt) rememberDeleted(current, item.id);
@@ -420,6 +464,7 @@ export async function POST(req: NextRequest) {
           item.area ? String(item.area) : undefined,
           item.space ? String(item.space) : undefined
         );
+        if (item.area) forgetDeletedSpace(current, keys.area, keys.space);
         // Always create a new row — similar/same display names must not overwrite each other.
         current.files.unshift({
           id: uid("m-file"),
@@ -562,6 +607,7 @@ export async function POST(req: NextRequest) {
           item.space ? String(item.space) : undefined
         );
         const title = String(item.title).slice(0, 160);
+        if (item.area) forgetDeletedSpace(current, keys.area, keys.space);
         // Always create a new row — same/similar titles must not overwrite each other.
         current.documents.push({
           id: uid("m-doc"),
@@ -588,6 +634,7 @@ export async function POST(req: NextRequest) {
           item.space ? String(item.space) : undefined
         );
         const name = String(item.name).slice(0, 200);
+        if (item.area) forgetDeletedSpace(current, keys.area, keys.space);
         // Always create a new row — same/similar names must not overwrite each other.
         current.files.unshift({
           id: uid("m-file"),
@@ -626,6 +673,7 @@ export async function POST(req: NextRequest) {
       }
       {
         const keys = canonicalizeStorageKeys(String(item.area), item.space ? String(item.space) : "_root");
+        forgetDeletedSpace(current, keys.area, keys.space);
         current.folders.push({
           id: uid("folder"),
           title: String(item.title).slice(0, 160),
@@ -646,6 +694,7 @@ export async function POST(req: NextRequest) {
       }
       if (!current.recycleBin) current.recycleBin = [];
       if (!current.deletedIds) current.deletedIds = [];
+      if (!current.deletedSpaces) current.deletedSpaces = [];
       const pushRecycle = (entryTarget: typeof current.recycleBin[number]["target"], label: string, payload: unknown) => {
         const payloadId =
           payload && typeof payload === "object" && typeof (payload as { id?: unknown }).id === "string"
@@ -703,9 +752,71 @@ export async function POST(req: NextRequest) {
         if (found) {
           pushRecycle("folder", found.title, found);
           current.folders = current.folders.filter((f) => f.id !== id);
+          // Nested content under folder:{id} must leave with the folder.
+          const childSpace = folderSpaceId(found.id);
+          rememberDeletedSpace(current, found.area, childSpace);
+          for (const file of [...current.files]) {
+            if (file.area === found.area && normalizeSpace(file.space) === childSpace) {
+              pushRecycle("file", file.name, file);
+              current.files = current.files.filter((entry) => entry.id !== file.id);
+            }
+          }
+          for (const doc of [...current.documents]) {
+            if (doc.area === found.area && normalizeSpace(doc.space) === childSpace) {
+              pushRecycle("document", doc.title, doc);
+              current.documents = current.documents.filter((entry) => entry.id !== doc.id);
+            }
+          }
+          for (const nested of [...current.folders]) {
+            if (nested.area === found.area && normalizeSpace(nested.space) === childSpace) {
+              pushRecycle("folder", nested.title, nested);
+              current.folders = current.folders.filter((entry) => entry.id !== nested.id);
+              rememberDeletedSpace(current, nested.area, folderSpaceId(nested.id));
+            }
+          }
+        }
+      } else if (target === "page_folder") {
+        // Hide a Macintosh HD / Other webpage folder permanently until content is added again.
+        const area = String(body.area || "").trim();
+        const space = normalizeSpace(body.space);
+        if (!area) {
+          return NextResponse.json({ error: "page folder area required" }, { status: 400 });
+        }
+        rememberDeletedSpace(current, area, space);
+        for (const file of [...current.files]) {
+          if (matchesSpace(file, area, space)) {
+            pushRecycle("file", file.name, file);
+            current.files = current.files.filter((entry) => entry.id !== file.id);
+          }
+        }
+        for (const doc of [...current.documents]) {
+          if (matchesSpace(doc, area, space)) {
+            pushRecycle("document", doc.title, doc);
+            current.documents = current.documents.filter((entry) => entry.id !== doc.id);
+          }
+        }
+        for (const folder of [...current.folders]) {
+          if (matchesSpace(folder, area, space) || (folder.area === area && folder.id && space === folderSpaceId(folder.id))) {
+            pushRecycle("folder", folder.title, folder);
+            current.folders = current.folders.filter((entry) => entry.id !== folder.id);
+            rememberDeleted(current, folder.id);
+            rememberDeletedSpace(current, folder.area, folderSpaceId(folder.id));
+          }
         }
       } else if (target === "subject") {
-        current.subjects = current.subjects.filter((s) => s.id !== id && s.name !== id && s.slug !== id);
+        const found = current.subjects.find(
+          (s) => s.id === id || s.name === id || s.slug === id
+        );
+        if (found) {
+          rememberDeleted(current, found.id);
+          rememberDeleted(current, found.slug);
+          rememberDeleted(current, `subject:${found.slug}`);
+        } else {
+          rememberDeleted(current, id);
+        }
+        current.subjects = current.subjects.filter(
+          (s) => s.id !== id && s.name !== id && s.slug !== id
+        );
       } else if (target === "questionnaire") {
         const found = current.questionnaires.find((q) => q.id === id);
         if (found) {

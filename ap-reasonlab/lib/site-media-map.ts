@@ -279,7 +279,8 @@ const DYNAMIC_PAGE_AREAS = new Set([
 export function collectDynamicPageFolders(
   files: Array<{ area?: string; space?: string }>,
   documents: Array<{ area?: string; space?: string }>,
-  managedFolders: Array<{ area?: string; space?: string; title?: string; id?: string }>
+  managedFolders: Array<{ area?: string; space?: string; title?: string; id?: string }>,
+  options?: { deletedSpaces?: string[]; deletedIds?: string[] }
 ): SitePageFolder[] {
   const known = new Set(
     [
@@ -287,6 +288,10 @@ export function collectDynamicPageFolders(
       ...apSubjectPageFolders().map((p) => `${p.area}::${p.space}`),
     ]
   );
+  const bannedSpaces = new Set(
+    (options?.deletedSpaces || []).map((key) => key.trim()).filter(Boolean)
+  );
+  const bannedIds = new Set((options?.deletedIds || []).map((id) => id.trim()).filter(Boolean));
   const extra: SitePageFolder[] = [];
   const seen = new Set<string>();
 
@@ -298,13 +303,17 @@ export function collectDynamicPageFolders(
       a = "ap-subject";
     }
     const key = `${a}::${sp}`;
-    if (known.has(key) || seen.has(key)) return;
+    if (known.has(key) || seen.has(key) || bannedSpaces.has(key)) return;
+    if (sp.startsWith("folder:")) {
+      const folderId = sp.slice("folder:".length);
+      if (folderId && bannedIds.has(folderId)) return;
+    }
 
     if (a === "ap-subject" && sp !== ROOT_SPACE) {
       const hit = resolveCatalogSubject(sp);
       if (hit) {
         const catalogKey = `${a}::${hit.name}`;
-        if (known.has(catalogKey) || seen.has(catalogKey)) return;
+        if (known.has(catalogKey) || seen.has(catalogKey) || bannedSpaces.has(catalogKey)) return;
         sp = hit.name;
       }
       seen.add(`${a}::${sp}`);

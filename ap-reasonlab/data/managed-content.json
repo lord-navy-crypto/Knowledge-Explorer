@@ -577,5 +577,6 @@
   "settings": {
     "advancedDefault": true
   },
-  "updatedAt": 1784951540737
+  "updatedAt": 1784951540737,
+  "deletedSpaces": []
 }
