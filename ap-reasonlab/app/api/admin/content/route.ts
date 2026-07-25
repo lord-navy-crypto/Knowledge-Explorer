@@ -51,6 +51,14 @@ export async function POST(req: NextRequest) {
             forumPosts: body.forumPosts || current.forumPosts || [],
             questionnaires: body.questionnaires || [],
             topics: body.topics || [],
+            recycleBin: body.recycleBin ?? current.recycleBin ?? [],
+            deletedIds: [
+              ...new Set([...(body.deletedIds || []), ...(current.deletedIds || [])]),
+            ],
+            deletedSpaces: [
+              ...new Set([...(body.deletedSpaces || []), ...(current.deletedSpaces || [])]),
+            ],
+            settings: body.settings ?? current.settings,
             updatedAt: Date.now(),
           }
         : {
@@ -66,6 +74,20 @@ export async function POST(req: NextRequest) {
             forumPosts: body.forumPosts ?? current.forumPosts ?? [],
             questionnaires: body.questionnaires ?? current.questionnaires ?? [],
             topics: body.topics ?? current.topics ?? [],
+            recycleBin: body.recycleBin ?? current.recycleBin ?? [],
+            deletedIds: [
+              ...new Set([
+                ...(body.deletedIds ?? current.deletedIds ?? []),
+                ...(current.deletedIds || []),
+              ]),
+            ],
+            deletedSpaces: [
+              ...new Set([
+                ...(body.deletedSpaces ?? current.deletedSpaces ?? []),
+                ...(current.deletedSpaces || []),
+              ]),
+            ],
+            settings: body.settings ?? current.settings,
             updatedAt: Date.now(),
           }
     );
@@ -168,11 +190,15 @@ export async function PUT(req: NextRequest) {
     } else if (kind === "delete") {
       const target = String(body.target || "");
       const id = String(body.id || "");
+      if (!current.deletedIds) current.deletedIds = [];
+      if (!current.deletedIds.includes(id)) current.deletedIds.push(id);
       if (target === "concept") current.concepts = current.concepts.filter((c) => c.id !== id);
       else if (target === "formula") current.formulas = current.formulas.filter((f) => f.id !== id);
       else if (target === "document") current.documents = current.documents.filter((d) => d.id !== id);
       else if (target === "file") current.files = current.files.filter((f) => f.id !== id);
-      else return NextResponse.json({ error: "Unknown delete target" }, { status: 400 });
+      else if (target === "folder") {
+        current.folders = current.folders.filter((f) => f.id !== id);
+      } else return NextResponse.json({ error: "Unknown delete target" }, { status: 400 });
     } else if (kind === "set_github_token") {
       const t = String(body.githubToken || "").trim();
       if (!t) return NextResponse.json({ error: "githubToken required" }, { status: 400 });

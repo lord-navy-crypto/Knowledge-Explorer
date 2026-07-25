@@ -3,7 +3,9 @@ import { getContentEditorLevel, getGithubTokenFromCookie } from "@/lib/auth";
 import { canEditContent } from "@/lib/change-codes";
 import {
   listManagedContentHistory,
+  loadManagedContent,
   loadManagedContentAtRef,
+  normalizeManagedContent,
   saveManagedContent,
 } from "@/lib/managed-store";
 
@@ -56,15 +58,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Could not read the selected version." }, { status: 404 });
     }
 
+    // Keep live tombstones so intentional deletes (folders/files) never resurrect from history.
+    const live = await loadManagedContent(token);
+    const merged = normalizeManagedContent({
+      ...restored,
+      deletedIds: [...new Set([...(restored.deletedIds || []), ...(live.deletedIds || [])])],
+      deletedSpaces: [
+        ...new Set([...(restored.deletedSpaces || []), ...(live.deletedSpaces || [])]),
+      ],
+      settings: live.settings ?? restored.settings,
+    });
+
     const saved = await saveManagedContent(
-      restored,
+      merged,
       token,
       `undo: restore managed content from ${sha.slice(0, 7)}`
     );
     return NextResponse.json({
       ok: true,
       mode: saved.mode,
-      content: restored,
+      content: merged,
       restoredFrom: sha,
     });
   } catch (error) {

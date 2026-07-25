@@ -467,18 +467,31 @@ export async function saveManagedContent(
       if (!prev || (entry.deletedAt || 0) >= (prev.deletedAt || 0)) byId.set(entry.id, entry);
     }
     // Restores drop recycle rows; when the client is fresh, trust that removal.
+    // Restores may drop recycle rows when the client is fresh; tombstones never shrink.
     const mergedRecycle = clientFresh
       ? [...(incoming.recycleBin || [])]
       : [...byId.values()].sort((a, b) => (b.deletedAt || 0) - (a.deletedAt || 0));
 
-    const mergedDeleted = clientFresh
-      ? [...(incoming.deletedIds || [])]
-      : [...new Set([...(incoming.deletedIds || []), ...(live.deletedIds || [])])];
+    const mergedDeleted = [
+      ...new Set([...(incoming.deletedIds || []), ...(live.deletedIds || [])]),
+    ];
+    const mergedDeletedSpaces = [
+      ...new Set([...(incoming.deletedSpaces || []), ...(live.deletedSpaces || [])]),
+    ];
 
     next = normalizeManagedContent({
       ...incoming,
       recycleBin: mergedRecycle,
       deletedIds: mergedDeleted,
+      deletedSpaces: mergedDeletedSpaces,
+      // Settings: prefer incoming when fresh, else keep live knobs if client omitted them.
+      settings: clientFresh
+        ? incoming.settings
+        : {
+            advancedDefault: Boolean(
+              incoming.settings?.advancedDefault ?? live.settings?.advancedDefault
+            ),
+          },
       updatedAt: Date.now(),
     });
   } catch {
