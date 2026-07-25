@@ -409,12 +409,26 @@ export async function POST(req: NextRequest) {
     } else if (action === "purge_recycle") {
       const entryId = String(body.id || "");
       if (!entryId) {
+        // One-click empty: wipe bin; keep deletedIds so items cannot resurrect.
         current.recycleBin = [];
+        current.contentItems = (current.contentItems || []).filter((item) => !item.deletedAt);
       } else {
         current.recycleBin = (current.recycleBin || []).filter((item) => item.id !== entryId);
       }
+    } else if (action === "empty_recycle") {
+      // Explicit empty-all for Recycle Bin UI (Macintosh HD + Manage tab).
+      for (const entry of current.recycleBin || []) {
+        const payload = entry.payload as { id?: string };
+        if (payload?.id) rememberDeleted(current, payload.id);
+      }
+      for (const item of current.contentItems || []) {
+        if (item.deletedAt) rememberDeleted(current, item.id);
+      }
+      current.recycleBin = [];
+      current.contentItems = (current.contentItems || []).filter((item) => !item.deletedAt);
     } else if (action === "purge_content_item") {
       const id = String(body.id || "");
+      rememberDeleted(current, id);
       current.contentItems = current.contentItems.filter((item) => item.id !== id);
       current.recycleBin = (current.recycleBin || []).filter((entry) => {
         const payload = entry.payload as { id?: string };

@@ -459,6 +459,25 @@ export default function MacFinderDesktop({
     }
   }
 
+  async function emptyRecycleBin() {
+    if (recycleRows.length === 0) {
+      setMessage("Recycle Bin is already empty.");
+      return;
+    }
+    if (
+      !confirm(
+        `Empty Recycle Bin?\n\nPermanently delete all ${recycleRows.length} item(s). This cannot be undone.`
+      )
+    ) {
+      return;
+    }
+    const ok = await onMutate("empty_recycle", {});
+    if (ok) {
+      setMessage("Recycle Bin emptied.");
+      setSelected(null);
+    }
+  }
+
   const titleBar =
     nav.kind === "desktop"
       ? "Knowledge Explorer · Macintosh HD"
@@ -629,6 +648,18 @@ export default function MacFinderDesktop({
             />
           )}
 
+          {nav.kind === "trash" && recycleCount > 0 && (
+            <div className="mb-3 flex justify-end">
+              <button
+                type="button"
+                onClick={() => void emptyRecycleBin()}
+                className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white shadow hover:bg-red-700"
+              >
+                Empty Recycle Bin ({recycleCount})
+              </button>
+            </div>
+          )}
+
           {(nav.kind === "page" || nav.kind === "trash") &&
             (visibleRows.length === 0 ? (
               <p className="mt-16 text-center text-sm text-white/85">
@@ -719,9 +750,17 @@ export default function MacFinderDesktop({
               folders. AP includes every built-in subject.
             </p>
           ) : nav.kind === "trash" ? (
-            <p className="mt-3 text-sm text-slate-600">
-              Recover deleted concepts, formulas, practice, files, and documents.
-            </p>
+            <div className="mt-3 space-y-3 text-sm text-slate-600">
+              <p>Recover deleted concepts, formulas, practice, files, and documents — or empty all.</p>
+              <button
+                type="button"
+                disabled={recycleCount === 0}
+                onClick={() => void emptyRecycleBin()}
+                className="w-full rounded-xl bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Empty Recycle Bin{recycleCount ? ` (${recycleCount})` : ""}
+              </button>
+            </div>
           ) : (
             <p className="mt-3 text-sm text-slate-600">
               Whole-site editing port. Same storage as every in-page media panel — plus concepts,
