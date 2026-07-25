@@ -454,10 +454,9 @@ export default function ManagePage() {
           <div className="card space-y-2">
             <h2 className="text-xl font-bold">Deletes stay deleted</h2>
             <p className="text-sm text-slate-600">
-              Files, documents, nested folders, and Macintosh HD “Other page folders” you delete are
-              tombstoned. Saving Settings, Admin content, or history undo will not bring those ids /
-              page folders back. Upload into a deleted page folder again only if you want it to
-              reappear.
+              Only items you delete yourself are removed. There is no automatic cascade clear. Your
+              deleted file / document / folder ids are tombstoned so Admin saves and history undo
+              cannot bring them back. Empty the Recycle Bin yourself when you want them gone forever.
             </p>
           </div>
         </section>

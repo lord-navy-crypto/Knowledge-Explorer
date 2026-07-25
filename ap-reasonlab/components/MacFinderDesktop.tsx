@@ -239,10 +239,9 @@ export default function MacFinderDesktop({
   const dynamicPages = useMemo(
     () =>
       collectDynamicPageFolders(data.files || [], data.documents || [], data.folders || [], {
-        deletedSpaces: data.deletedSpaces || [],
         deletedIds: data.deletedIds || [],
       }),
-    [data.deletedIds, data.deletedSpaces, data.documents, data.files, data.folders]
+    [data.deletedIds, data.documents, data.files, data.folders]
   );
 
   const catalogSubjects = useMemo(() => apSubjectPageFolders(), []);
@@ -430,28 +429,6 @@ export default function MacFinderDesktop({
       JSON.stringify({ kind: row.kind, id: row.id })
     );
     event.dataTransfer.effectAllowed = "move";
-  }
-
-  async function deletePageFolder(page: SitePageFolder) {
-    if (
-      !confirm(
-        `Delete webpage folder “${page.label}” and move its files/documents to the Recycle Bin? It will stay gone unless you add new files there.`
-      )
-    ) {
-      return;
-    }
-    const ok = await onMutate("delete", {
-      target: "page_folder",
-      area: page.area,
-      space: page.space,
-    });
-    if (ok) {
-      setMessage(`Deleted folder “${page.label}”.`);
-      setNav({ kind: "desktop" });
-      setSelected(null);
-    } else {
-      setMessage("Could not delete that page folder.");
-    }
   }
 
   async function deleteRow(row: ContentRow) {
@@ -933,23 +910,6 @@ export default function MacFinderDesktop({
           ) : (
             <p className="mt-4 text-sm text-slate-500">Select an item to preview, edit, or delete.</p>
           )}
-
-          {nav.kind === "page" &&
-          (nav.section.id === "other" || nav.page.space.startsWith("folder:")) ? (
-            <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3">
-              <p className="text-[11px] text-red-900">
-                Remove this webpage folder from Macintosh HD. Contents go to Recycle Bin and stay
-                deleted.
-              </p>
-              <button
-                type="button"
-                className="btn-ghost mt-2 w-full text-xs text-red-700"
-                onClick={() => void deletePageFolder(nav.page)}
-              >
-                Delete this page folder
-              </button>
-            </div>
-          ) : null}
 
           {nav.kind === "page" ? (
             <div className="mt-6 space-y-2 border-t border-slate-200 pt-3">

@@ -58,14 +58,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Could not read the selected version." }, { status: 404 });
     }
 
-    // Keep live tombstones so intentional deletes (folders/files) never resurrect from history.
+    // Keep live deletedIds so user-deleted files never resurrect from history.
     const live = await loadManagedContent(token);
     const merged = normalizeManagedContent({
       ...restored,
       deletedIds: [...new Set([...(restored.deletedIds || []), ...(live.deletedIds || [])])],
-      deletedSpaces: [
-        ...new Set([...(restored.deletedSpaces || []), ...(live.deletedSpaces || [])]),
-      ],
       settings: live.settings ?? restored.settings,
     });
 

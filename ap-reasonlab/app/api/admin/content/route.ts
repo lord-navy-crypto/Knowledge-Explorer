@@ -55,9 +55,6 @@ export async function POST(req: NextRequest) {
             deletedIds: [
               ...new Set([...(body.deletedIds || []), ...(current.deletedIds || [])]),
             ],
-            deletedSpaces: [
-              ...new Set([...(body.deletedSpaces || []), ...(current.deletedSpaces || [])]),
-            ],
             settings: body.settings ?? current.settings,
             updatedAt: Date.now(),
           }
@@ -79,12 +76,6 @@ export async function POST(req: NextRequest) {
               ...new Set([
                 ...(body.deletedIds ?? current.deletedIds ?? []),
                 ...(current.deletedIds || []),
-              ]),
-            ],
-            deletedSpaces: [
-              ...new Set([
-                ...(body.deletedSpaces ?? current.deletedSpaces ?? []),
-                ...(current.deletedSpaces || []),
               ]),
             ],
             settings: body.settings ?? current.settings,

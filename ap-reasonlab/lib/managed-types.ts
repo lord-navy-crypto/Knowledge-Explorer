@@ -4,14 +4,6 @@
  */
 import type { Concept, Formula, Questionnaire } from "@/lib/types";
 import { AP_CATALOG, subjectSlug } from "@/data/ap-catalog";
-import { canonicalSubjectSpace } from "@/lib/storage-space";
-
-/** Stable key for banning a webpage / Finder page folder (area + space). */
-export function spaceTombstoneKey(area?: string | null, space?: string | null): string {
-  const a = String(area || "").trim() || "general";
-  const sp = canonicalSubjectSpace(space);
-  return `${a}::${sp}`;
-}
 
 export type ManagedDocument = {
   id: string;
@@ -143,15 +135,14 @@ export type ManagedContent = {
   /** Soft-deleted items recoverable from Macintosh HD Recycle Bin */
   recycleBin: ManagedRecycleEntry[];
   /**
-   * Tombstone ids — once deleted, these ids stay banned from active arrays so a
-   * later stale Admin/agent save cannot resurrect them.
+   * Tombstone ids — once the user deletes an item, its id stays banned so a later
+   * stale Admin/agent save cannot resurrect it. No automatic cascade clears.
    */
   deletedIds: string[];
   /**
-   * Tombstone webpage/Finder folder keys (`area::space`). Deleted page folders stay
-   * hidden even if a stale save tries to bring leftover files back.
+   * @deprecated Unused. Kept for older JSON compatibility; never used to auto-clear.
    */
-  deletedSpaces: string[];
+  deletedSpaces?: string[];
   settings: ManagedSiteSettings;
   updatedAt: number;
 };
@@ -216,7 +207,6 @@ export function emptyManagedContent(): ManagedContent {
     topics: [],
     recycleBin: [],
     deletedIds: [],
-    deletedSpaces: [],
     settings: emptySiteSettings(),
     updatedAt: 0,
   };
@@ -243,54 +233,27 @@ export function collectDeletedIds(content: Partial<ManagedContent> | null | unde
   return [...ids];
 }
 
-export function collectDeletedSpaces(content: Partial<ManagedContent> | null | undefined): string[] {
-  const keys = new Set<string>();
-  for (const key of Array.isArray(content?.deletedSpaces) ? content!.deletedSpaces! : []) {
-    if (typeof key === "string" && key.trim()) keys.add(key.trim());
-  }
-  return [...keys];
-}
-
-function itemInDeletedSpace(
-  item: { area?: string; space?: string },
-  bannedSpaces: Set<string>
-): boolean {
-  if (bannedSpaces.size === 0) return false;
-  if (!item.area) return false;
-  return bannedSpaces.has(spaceTombstoneKey(item.area, item.space));
-}
-
-/** Drop active rows whose ids/spaces are tombstoned / in the recycle bin. */
+/** Drop active rows whose ids the user deleted (tombstoned / in recycle bin). */
 export function applyDeletionTombstones<T extends ManagedContent>(content: T): T {
   const banned = new Set(collectDeletedIds(content));
-  const bannedSpaces = new Set(collectDeletedSpaces(content));
-  if (banned.size === 0 && bannedSpaces.size === 0) {
-    return {
-      ...content,
-      deletedIds: content.deletedIds || [],
-      deletedSpaces: content.deletedSpaces || [],
-    };
+  if (banned.size === 0) {
+    return { ...content, deletedIds: content.deletedIds || [] };
   }
-  const keep = <A extends { id: string; area?: string; space?: string }>(rows: A[]) =>
-    rows.filter((row) => !banned.has(row.id) && !itemInDeletedSpace(row, bannedSpaces));
+  const keep = <A extends { id: string }>(rows: A[]) => rows.filter((row) => !banned.has(row.id));
   return {
     ...content,
-    concepts: (content.concepts || []).filter((row) => !banned.has(row.id)),
-    formulas: (content.formulas || []).filter((row) => !banned.has(row.id)),
+    concepts: keep(content.concepts || []),
+    formulas: keep(content.formulas || []),
     documents: keep(content.documents || []),
     files: keep(content.files || []),
-    members: (content.members || []).filter((row) => !banned.has(row.id)),
+    members: keep(content.members || []),
     folders: keep(content.folders || []),
-    subjects: (content.subjects || []).filter(
-      (row) => !banned.has(row.id) && !banned.has(row.slug) && !banned.has(`subject:${row.slug}`)
-    ),
-    questionnaires: (content.questionnaires || []).filter((row) => !banned.has(row.id)),
-    topics: (content.topics || []).filter((row) => !banned.has(row.id)),
+    questionnaires: keep(content.questionnaires || []),
+    topics: keep(content.topics || []),
     contentItems: (content.contentItems || []).filter(
       (item) => !banned.has(item.id) || Boolean(item.deletedAt)
     ),
     deletedIds: [...banned],
-    deletedSpaces: [...bannedSpaces],
   };
 }
 
@@ -339,25 +302,11 @@ export function managedSubjectNames(subjects: ManagedSubject[] | unknown): strin
 }
 
 /** Merge built-in AP catalog into managed subjects so hubs/Manage never look empty. */
-export function mergeBuiltinSubjects(
-  subjects: ManagedSubject[],
-  bannedIds: Iterable<string> = []
-): ManagedSubject[] {
-  const banned = new Set(
-    [...bannedIds].map((id) => String(id || "").trim()).filter(Boolean)
-  );
-  const isBanned = (id?: string, slug?: string) =>
-    Boolean(
-      (id && banned.has(id)) ||
-        (slug && (banned.has(slug) || banned.has(`subject:${slug}`)))
-    );
-
+export function mergeBuiltinSubjects(subjects: ManagedSubject[]): ManagedSubject[] {
   const bySlug = new Map<string, ManagedSubject>();
   AP_CATALOG.forEach((builtIn, index) => {
-    const id = builtIn.id.startsWith("subject-") ? builtIn.id : `subject-${builtIn.slug}`;
-    if (isBanned(id, builtIn.slug)) return;
     bySlug.set(builtIn.slug, {
-      id,
+      id: builtIn.id.startsWith("subject-") ? builtIn.id : `subject-${builtIn.slug}`,
       slug: builtIn.slug,
       name: builtIn.name,
       shortName: builtIn.shortName,
@@ -370,7 +319,6 @@ export function mergeBuiltinSubjects(
     });
   });
   normalizeSubjects(subjects).forEach((subject) => {
-    if (isBanned(subject.id, subject.slug)) return;
     const existing = bySlug.get(subject.slug);
     if (!existing) {
       bySlug.set(subject.slug, subject);
@@ -397,15 +345,10 @@ export function normalizeManagedContent(
   raw: Partial<ManagedContent> | null | undefined
 ): ManagedContent {
   const base = emptyManagedContent();
-  const deletedIds = Array.isArray((raw as Partial<ManagedContent> | null | undefined)?.deletedIds)
-    ? (((raw as Partial<ManagedContent>).deletedIds as string[]) || [])
-    : [];
-  const deletedSpaces = Array.isArray((raw as Partial<ManagedContent> | null | undefined)?.deletedSpaces)
-    ? (((raw as Partial<ManagedContent>).deletedSpaces as string[]) || [])
-    : [];
   if (!raw) {
     return { ...base, subjects: mergeBuiltinSubjects([]) };
   }
+  const deletedIds = Array.isArray(raw.deletedIds) ? raw.deletedIds : [];
   return applyDeletionTombstones({
     concepts: Array.isArray(raw.concepts) ? raw.concepts : [],
     formulas: Array.isArray(raw.formulas) ? raw.formulas : [],
@@ -413,17 +356,14 @@ export function normalizeManagedContent(
     files: Array.isArray(raw.files) ? raw.files : [],
     members: Array.isArray(raw.members) ? raw.members : [],
     folders: Array.isArray(raw.folders) ? raw.folders : [],
-    subjects: mergeBuiltinSubjects(normalizeSubjects(raw.subjects), deletedIds),
+    subjects: mergeBuiltinSubjects(normalizeSubjects(raw.subjects)),
     units: Array.isArray(raw.units) ? raw.units : [],
     contentItems: Array.isArray(raw.contentItems) ? raw.contentItems : [],
     forumPosts: Array.isArray(raw.forumPosts) ? raw.forumPosts : [],
     questionnaires: Array.isArray(raw.questionnaires) ? raw.questionnaires : [],
     topics: Array.isArray(raw.topics) ? raw.topics : [],
-    recycleBin: Array.isArray((raw as Partial<ManagedContent>).recycleBin)
-      ? ((raw as Partial<ManagedContent>).recycleBin as ManagedRecycleEntry[])
-      : [],
+    recycleBin: Array.isArray(raw.recycleBin) ? raw.recycleBin : [],
     deletedIds,
-    deletedSpaces,
     settings: normalizeSiteSettings(raw.settings),
     updatedAt: typeof raw.updatedAt === "number" ? raw.updatedAt : 0,
   });
