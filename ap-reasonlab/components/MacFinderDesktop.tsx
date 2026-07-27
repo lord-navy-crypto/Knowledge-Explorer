@@ -22,7 +22,9 @@ import {
 } from "@/lib/site-media-map";
 import {
   ROOT_SPACE,
+  folderSpaceId,
   matchesFolderItem,
+  matchesSpace,
   normalizeSpace,
   spaceAliases,
 } from "@/lib/storage-space";
@@ -48,12 +50,23 @@ type ContentRow = {
   raw: Record<string, unknown>;
   editTarget?: EditableTarget;
   deleteTarget?: string;
+  /** 1-based order among files in this folder (Apple-style series). */
+  seriesIndex?: number;
+  uploadedAt?: number;
 };
+
+type FolderTrailEntry = { id: string; title: string };
 
 type NavLevel =
   | { kind: "desktop" }
   | { kind: "section"; section: SiteSectionFolder }
-  | { kind: "page"; section: SiteSectionFolder; page: SitePageFolder }
+  | {
+      kind: "page";
+      section: SiteSectionFolder;
+      page: SitePageFolder;
+      /** Nested file folders opened under this webpage (Finder drill-down). */
+      folderTrail?: FolderTrailEntry[];
+    }
   | { kind: "trash" };
 
 type Props = {
@@ -90,8 +103,42 @@ function pageSupportsLearningContent(page: SitePageFolder): boolean {
   );
 }
 
-function collectPageRows(data: Partial<ManagedContent>, page: SitePageFolder): ContentRow[] {
-  const scoped = normalizeSpace(page.space);
+function kindRank(kind: ContentKind): number {
+  switch (kind) {
+    case "folder":
+      return 0;
+    case "document":
+      return 1;
+    case "file":
+      return 2;
+    case "concept":
+      return 3;
+    case "formula":
+      return 4;
+    case "questionnaire":
+      return 5;
+    default:
+      return 9;
+  }
+}
+
+function compareLabels(a: string, b: string): number {
+  return a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" });
+}
+
+function activePageSpace(nav: Extract<NavLevel, { kind: "page" }>): string {
+  const trail = nav.folderTrail || [];
+  if (trail.length > 0) return folderSpaceId(trail[trail.length - 1].id);
+  return normalizeSpace(nav.page.space);
+}
+
+function collectPageRows(
+  data: Partial<ManagedContent>,
+  page: SitePageFolder,
+  spaceOverride?: string
+): ContentRow[] {
+  const scoped = normalizeSpace(spaceOverride ?? page.space);
+  const nestedFolder = scoped.startsWith("folder:");
   const rows: ContentRow[] = [];
 
   for (const folder of data.folders || []) {
@@ -102,17 +149,22 @@ function collectPageRows(data: Partial<ManagedContent>, page: SitePageFolder): C
         label: folder.title,
         meta: "File folder",
         icon: "📁",
-        previewText: folder.note || "Nested storage folder for this webpage.",
+        previewText: folder.note || "Double-click to open this file folder.",
         raw: folder as unknown as Record<string, unknown>,
         editTarget: "folder",
         deleteTarget: "folder",
+        uploadedAt: folder.createdAt,
       });
     }
   }
 
+  const fileRows: ContentRow[] = [];
   for (const file of data.files || []) {
-    if (!matchesFolderItem(file, page.area, scoped)) continue;
-    rows.push({
+    const inHere = nestedFolder
+      ? matchesSpace(file, page.area, scoped)
+      : matchesFolderItem(file, page.area, scoped);
+    if (!inHere) continue;
+    fileRows.push({
       kind: "file",
       id: file.id,
       label: file.name,
@@ -123,11 +175,25 @@ function collectPageRows(data: Partial<ManagedContent>, page: SitePageFolder): C
       raw: file as unknown as Record<string, unknown>,
       editTarget: "file",
       deleteTarget: "file",
+      uploadedAt: file.uploadedAt,
     });
   }
+  fileRows.sort((a, b) => {
+    const byName = compareLabels(a.label, b.label);
+    if (byName !== 0) return byName;
+    return (a.uploadedAt || 0) - (b.uploadedAt || 0);
+  });
+  fileRows.forEach((row, index) => {
+    row.seriesIndex = index + 1;
+    row.meta = `File ${index + 1} · ${row.meta}`;
+  });
+  rows.push(...fileRows);
 
   for (const doc of data.documents || []) {
-    if (!matchesFolderItem(doc, page.area, scoped)) continue;
+    const inHere = nestedFolder
+      ? matchesSpace(doc, page.area, scoped)
+      : matchesFolderItem(doc, page.area, scoped);
+    if (!inHere) continue;
     rows.push({
       kind: "document",
       id: doc.id,
@@ -138,10 +204,12 @@ function collectPageRows(data: Partial<ManagedContent>, page: SitePageFolder): C
       raw: doc as unknown as Record<string, unknown>,
       editTarget: "document",
       deleteTarget: "document",
+      uploadedAt: doc.updatedAt,
     });
   }
 
-  if (pageSupportsLearningContent(page)) {
+  // Learning content only on webpage root — not inside nested file folders.
+  if (!nestedFolder && pageSupportsLearningContent(page)) {
     const showAllAtRoot =
       scoped === ROOT_SPACE &&
       (page.area === "concepts" || page.area === "formulas" || page.area === "practice");
@@ -207,7 +275,14 @@ function collectPageRows(data: Partial<ManagedContent>, page: SitePageFolder): C
     }
   }
 
-  return rows.sort((a, b) => a.label.localeCompare(b.label));
+  return rows.sort((a, b) => {
+    const byKind = kindRank(a.kind) - kindRank(b.kind);
+    if (byKind !== 0) return byKind;
+    if (a.kind === "file" && b.kind === "file") {
+      return (a.seriesIndex || 0) - (b.seriesIndex || 0);
+    }
+    return compareLabels(a.label, b.label);
+  });
 }
 
 function countInPage(data: Partial<ManagedContent>, page: SitePageFolder): number {
@@ -293,8 +368,21 @@ export default function MacFinderDesktop({
 
   const pageRows = useMemo((): ContentRow[] => {
     if (nav.kind !== "page") return [];
-    return collectPageRows(data, nav.page);
+    return collectPageRows(data, nav.page, activePageSpace(nav));
   }, [data, nav]);
+
+  const storageSpace = nav.kind === "page" ? activePageSpace(nav) : ROOT_SPACE;
+  const fileSeriesCount = useMemo(
+    () => pageRows.filter((row) => row.kind === "file").length,
+    [pageRows]
+  );
+  const folderCount = useMemo(
+    () => pageRows.filter((row) => row.kind === "folder").length,
+    [pageRows]
+  );
+
+  // Prefer Apple-like list when a folder has many items.
+  const effectiveView = pageRows.length > 36 ? "list" : view;
 
   const recycleRows = useMemo((): ContentRow[] => {
     const fromBin: ContentRow[] = (data.recycleBin || []).map((entry: ManagedRecycleEntry) => ({
@@ -350,11 +438,41 @@ export default function MacFinderDesktop({
     if (nav.kind === "page") {
       crumbs.push({
         label: nav.page.label,
-        go: () => setSelected(null),
+        go: () => {
+          setNav({ kind: "page", section: nav.section, page: nav.page, folderTrail: [] });
+          setSelected(null);
+        },
+      });
+      const trail = nav.folderTrail || [];
+      trail.forEach((folder, index) => {
+        crumbs.push({
+          label: folder.title,
+          go: () => {
+            setNav({
+              kind: "page",
+              section: nav.section,
+              page: nav.page,
+              folderTrail: trail.slice(0, index + 1),
+            });
+            setSelected(null);
+          },
+        });
       });
     }
     return crumbs;
   }, [nav]);
+
+  function openFolderRow(row: ContentRow) {
+    if (nav.kind !== "page" || row.kind !== "folder") return;
+    setNav({
+      kind: "page",
+      section: nav.section,
+      page: nav.page,
+      folderTrail: [...(nav.folderTrail || []), { id: row.id, title: row.label }],
+    });
+    setSelected(null);
+    setMessage(`Opened folder “${row.label}”.`);
+  }
 
   const relocate = useCallback(
     async (row: ContentRow, area: string, space: string) => {
@@ -391,7 +509,7 @@ export default function MacFinderDesktop({
         const payload = JSON.parse(raw) as { kind: ContentKind; id: string };
         const row = pageRows.find((item) => item.kind === payload.kind && item.id === payload.id);
         if (!row) return;
-        await relocate(row, nav.page.area, nav.page.space);
+        await relocate(row, nav.page.area, storageSpace);
       } catch {
         /* ignore */
       }
@@ -414,7 +532,7 @@ export default function MacFinderDesktop({
         mime: file.type || "application/octet-stream",
         dataUrl,
         area: nav.page.area,
-        space: nav.page.space,
+        space: storageSpace,
       });
     }
     if (!items.length) return;
@@ -526,7 +644,7 @@ export default function MacFinderDesktop({
             type="button"
             onClick={() => setView("icons")}
             className={`rounded px-2 py-0.5 text-[10px] font-medium ${
-              view === "icons" ? "bg-white shadow" : "text-slate-600 hover:bg-white/60"
+              effectiveView === "icons" ? "bg-white shadow" : "text-slate-600 hover:bg-white/60"
             }`}
           >
             Icons
@@ -535,7 +653,7 @@ export default function MacFinderDesktop({
             type="button"
             onClick={() => setView("list")}
             className={`rounded px-2 py-0.5 text-[10px] font-medium ${
-              view === "list" ? "bg-white shadow" : "text-slate-600 hover:bg-white/60"
+              effectiveView === "list" ? "bg-white shadow" : "text-slate-600 hover:bg-white/60"
             }`}
           >
             List
@@ -570,7 +688,9 @@ export default function MacFinderDesktop({
             {nav.kind === "section" &&
               "Each folder is a real webpage. Open it to view and edit concepts, formulas, practice, pictures, and files."}
             {nav.kind === "page" &&
-              "Full page storage: custom concepts, formulas, practice, documents, images, and files — edit or delete in the sidebar."}
+              (nav.folderTrail?.length
+                ? `File folder · ${folderCount} folders · ${fileSeriesCount} files in order (File 1, File 2…). Double-click a folder to open it.`
+                : `Webpage storage · ${folderCount} file folders · ${fileSeriesCount} files. Use folders so large libraries stay browsable — double-click a folder to open.`)}
             {nav.kind === "trash" &&
               "Deleted items land here. Restore them back into the site, or purge forever."}
           </p>
@@ -609,7 +729,7 @@ export default function MacFinderDesktop({
                       .find((row) => row.kind === payload.kind && row.id === payload.id);
                     if (!sourceRow) return;
                     await relocate(sourceRow, target.area, target.space);
-                    setNav({ kind: "page", section, page: target });
+                    setNav({ kind: "page", section, page: target, folderTrail: [] });
                   },
                 })),
                 {
@@ -639,7 +759,7 @@ export default function MacFinderDesktop({
                 label: page.label,
                 meta: `${countInPage(data, page)} items · ${page.href}`,
                 onOpen: () => {
-                  setNav({ kind: "page", section: nav.section, page });
+                  setNav({ kind: "page", section: nav.section, page, folderTrail: [] });
                   setSelected(null);
                 },
                 dropKey: `page:${page.area}:${page.space}`,
@@ -691,10 +811,12 @@ export default function MacFinderDesktop({
               <p className="mt-16 text-center text-sm text-white/85">
                 {nav.kind === "trash"
                   ? "Recycle Bin is empty."
-                  : "Nothing in this webpage folder yet. Use the sidebar to add concepts, formulas, practice, images, or files."}
+                  : nav.kind === "page" && (nav.folderTrail?.length || 0) > 0
+                    ? "This file folder is empty. Drop files here or use + Upload in the sidebar."
+                    : "Nothing in this webpage folder yet. Add a file folder, then put files inside — like Finder."}
               </p>
-            ) : view === "icons" ? (
-              <ul className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5">
+            ) : effectiveView === "icons" ? (
+              <ul className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
                 {visibleRows.map((row) => {
                   const active = selected?.kind === row.kind && selected.id === row.id;
                   return (
@@ -703,12 +825,47 @@ export default function MacFinderDesktop({
                         type="button"
                         draggable={row.kind === "file" || row.kind === "document"}
                         onDragStart={(e) => onItemDragStart(e, row)}
+                        onDragOver={(e) => {
+                          if (row.kind !== "folder") return;
+                          e.preventDefault();
+                          setDragOverKey(`folder:${row.id}`);
+                        }}
+                        onDragLeave={() => setDragOverKey(null)}
+                        onDrop={(e) => {
+                          if (nav.kind !== "page" || row.kind !== "folder") return;
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setDragOverKey(null);
+                          const raw = e.dataTransfer.getData("application/x-ke-media");
+                          if (!raw) return;
+                          try {
+                            const payload = JSON.parse(raw) as { kind: ContentKind; id: string };
+                            const source = pageRows.find(
+                              (item) => item.kind === payload.kind && item.id === payload.id
+                            );
+                            if (!source) return;
+                            void relocate(source, nav.page.area, folderSpaceId(row.id));
+                          } catch {
+                            /* ignore */
+                          }
+                        }}
                         onClick={() => setSelected(row)}
+                        onDoubleClick={() => {
+                          if (row.kind === "folder") openFolderRow(row);
+                        }}
                         className={`flex w-full flex-col items-center gap-1 rounded-xl p-2 text-center ${
-                          active ? "bg-sky-500/40 ring-1 ring-white/50" : "hover:bg-white/15"
+                          dragOverKey === `folder:${row.id}`
+                            ? "bg-amber-400/40 ring-2 ring-white/70"
+                            : active
+                              ? "bg-sky-500/40 ring-1 ring-white/50"
+                              : "hover:bg-white/15"
                         }`}
                       >
-                        {row.imageUrl ? (
+                        {row.kind === "folder" ? (
+                          <span className="relative flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-b from-amber-200 to-amber-400 text-3xl shadow-lg">
+                            📁
+                          </span>
+                        ) : row.imageUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={row.imageUrl}
@@ -720,6 +877,11 @@ export default function MacFinderDesktop({
                             {row.icon}
                           </span>
                         )}
+                        {row.kind === "file" && row.seriesIndex ? (
+                          <span className="rounded bg-black/35 px-1.5 text-[9px] font-bold text-white">
+                            File {row.seriesIndex}
+                          </span>
+                        ) : null}
                         <span className="line-clamp-2 w-full text-[11px] font-medium text-white drop-shadow">
                           {row.label}
                         </span>
@@ -729,28 +891,86 @@ export default function MacFinderDesktop({
                 })}
               </ul>
             ) : (
-              <ul className="overflow-hidden rounded-xl bg-white/95 shadow">
-                {visibleRows.map((row) => {
-                  const active = selected?.kind === row.kind && selected.id === row.id;
-                  return (
-                    <li key={`${row.kind}-${row.id}`}>
-                      <button
-                        type="button"
-                        draggable={row.kind === "file" || row.kind === "document"}
-                        onDragStart={(e) => onItemDragStart(e, row)}
-                        onClick={() => setSelected(row)}
-                        className={`flex w-full items-center gap-3 border-b border-slate-100 px-3 py-2 text-left text-sm ${
-                          active ? "bg-sky-100" : "hover:bg-slate-50"
-                        }`}
-                      >
-                        <span className="text-lg">{row.icon}</span>
-                        <span className="min-w-0 flex-1 truncate font-medium">{row.label}</span>
-                        <span className="truncate text-xs text-slate-500">{row.meta}</span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
+              <div className="overflow-hidden rounded-xl bg-white/95 shadow">
+                <div className="grid grid-cols-[2.5rem_minmax(0,1fr)_7rem_6rem] gap-2 border-b border-slate-200 bg-slate-100 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                  <span>#</span>
+                  <span>Name</span>
+                  <span>Kind</span>
+                  <span className="text-right">Date</span>
+                </div>
+                <ul>
+                  {visibleRows.map((row) => {
+                    const active = selected?.kind === row.kind && selected.id === row.id;
+                    const dateLabel = row.uploadedAt
+                      ? new Date(row.uploadedAt).toLocaleDateString()
+                      : "—";
+                    return (
+                      <li key={`${row.kind}-${row.id}`}>
+                        <button
+                          type="button"
+                          draggable={row.kind === "file" || row.kind === "document"}
+                          onDragStart={(e) => onItemDragStart(e, row)}
+                          onDragOver={(e) => {
+                            if (row.kind !== "folder") return;
+                            e.preventDefault();
+                            setDragOverKey(`folder:${row.id}`);
+                          }}
+                          onDragLeave={() => setDragOverKey(null)}
+                          onDrop={(e) => {
+                            if (nav.kind !== "page" || row.kind !== "folder") return;
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setDragOverKey(null);
+                            const raw = e.dataTransfer.getData("application/x-ke-media");
+                            if (!raw) return;
+                            try {
+                              const payload = JSON.parse(raw) as { kind: ContentKind; id: string };
+                              const source = pageRows.find(
+                                (item) => item.kind === payload.kind && item.id === payload.id
+                              );
+                              if (!source) return;
+                              void relocate(source, nav.page.area, folderSpaceId(row.id));
+                            } catch {
+                              /* ignore */
+                            }
+                          }}
+                          onClick={() => setSelected(row)}
+                          onDoubleClick={() => {
+                            if (row.kind === "folder") openFolderRow(row);
+                          }}
+                          className={`grid w-full grid-cols-[2.5rem_minmax(0,1fr)_7rem_6rem] items-center gap-2 border-b border-slate-100 px-3 py-2 text-left text-sm ${
+                            dragOverKey === `folder:${row.id}`
+                              ? "bg-amber-50"
+                              : active
+                                ? "bg-sky-100"
+                                : "hover:bg-slate-50"
+                          }`}
+                        >
+                          <span className="text-xs font-semibold text-slate-400">
+                            {row.kind === "file" && row.seriesIndex
+                              ? row.seriesIndex
+                              : row.kind === "folder"
+                                ? "📁"
+                                : "·"}
+                          </span>
+                          <span className="flex min-w-0 items-center gap-2">
+                            <span className="text-base">{row.icon}</span>
+                            <span className="truncate font-medium text-slate-900">{row.label}</span>
+                          </span>
+                          <span className="truncate text-xs text-slate-500">
+                            {row.kind === "file" && row.seriesIndex
+                              ? `File ${row.seriesIndex}`
+                              : row.kind === "folder"
+                                ? "Folder"
+                                : row.meta}
+                          </span>
+                          <span className="truncate text-right text-xs text-slate-400">{dateLabel}</span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
             ))}
         </div>
 
@@ -763,9 +983,23 @@ export default function MacFinderDesktop({
                 <strong className="text-slate-900">{nav.page.label}</strong>
               </p>
               <p>
-                Storage: {nav.page.area} / {nav.page.space}
+                Storage: {nav.page.area} / {storageSpace}
               </p>
-              <p>{pageRows.length} items in this webpage</p>
+              <p>
+                {folderCount} folders · {fileSeriesCount} files
+                {pageRows.length > fileSeriesCount + folderCount
+                  ? ` · ${pageRows.length} items total`
+                  : ""}
+              </p>
+              {(nav.folderTrail?.length || 0) > 0 ? (
+                <p className="text-[11px] text-amber-800">
+                  Inside file folder — files here are ordered File 1, File 2, File 3…
+                </p>
+              ) : (
+                <p className="text-[11px] text-slate-500">
+                  Tip: create file folders, then drag files into them. Double-click a folder to open.
+                </p>
+              )}
               <Link href={nav.page.href} className="inline-block text-sky-700 underline">
                 Open webpage →
               </Link>
@@ -812,6 +1046,15 @@ export default function MacFinderDesktop({
               </div>
               <p className="text-sm font-semibold text-slate-900">{selected.label}</p>
               <p className="text-[11px] text-slate-500">{selected.meta}</p>
+              {selected.kind === "folder" && nav.kind === "page" ? (
+                <button
+                  type="button"
+                  className="btn-primary w-full text-xs"
+                  onClick={() => openFolderRow(selected)}
+                >
+                  Open file folder
+                </button>
+              ) : null}
               {selected.previewText ? (
                 <div className="max-h-56 overflow-y-auto rounded-lg border border-slate-200 bg-white p-2 text-xs">
                   <RichContent className="text-xs">{selected.previewText}</RichContent>
