@@ -115,6 +115,17 @@
       "variables": "",
       "whenToUse": "",
       "sourceNote": "Added via change-code edit"
+    },
+    {
+      "id": "m-formula-ms2ryub4-r3lny",
+      "subject": "AP Physics C: Mechanics",
+      "unit": "Managed",
+      "name": "rotation equation",
+      "expression": "",
+      "content": "## Highest-Priority AP Equations\n\n$$F_g=G\\frac{Mm}{r^2}$$\n\n$$g=\\frac{GM}{r^2}$$\n\n$$a_c=\\frac{v^2}{r}$$\n\n$$G\\frac{Mm}{r^2}=\\frac{mv^2}{r}$$\n\n$$v_{\\text{orbit}}=\\sqrt{\\frac{GM}{r}}$$\n\n$$T=\\frac{2\\pi r}{v}$$\n\n$$T^2=\\frac{4\\pi^2}{GM}r^3$$\n\n$$U_g=-\\frac{GMm}{r}$$\n\n$$K=\\frac{GMm}{2r}$$\n\n$$E=-\\frac{GMm}{2r}$$\n\n$$L=mrv$$\n\n$$v_{\\text{esc}}=\\sqrt{\\frac{2GM}{r}}$$\n\n##",
+      "variables": "",
+      "whenToUse": "",
+      "sourceNote": "Added via change-code edit"
     }
   ],
   "documents": [
@@ -710,5 +721,5 @@
   "settings": {
     "advancedDefault": true
   },
-  "updatedAt": 1785128209321
+  "updatedAt": 1785129423404
 }
