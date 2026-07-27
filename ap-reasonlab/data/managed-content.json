@@ -44,6 +44,15 @@
       "keyPoints": [],
       "commonMistakes": [],
       "example": ""
+    },
+    {
+      "id": "m-concept-ms2osn7v-aerqe",
+      "title": "Pressure",
+      "subject": "AP Physics 1",
+      "summary": "## Pressure in a Fluid\n\n### Concepts\n\nPressure is the perpendicular force exerted per unit area.\n\nA fluid exerts pressure perpendicular to every surface it touches. Pressure is a scalar, although the force produced by pressure has a direction.\n\nIn a stationary fluid, pressure increases with depth because deeper points support more fluid above them.\n\nAt the same depth in the same connected stationary fluid, the pressure is the same.\n\nHydrostatic pressure depends on:\n\n- Fluid density\n- Gravitational field strength\n- Vertical depth\n- Pressure at the fluid surface\n\nIt does not depend directly on the shape of the container.\n\n### Formulas\n\n$$P=\\frac{F_{\\perp}}{A}$$\n\n$$F_{\\perp}=PA$$\n\n$$P=P_0+\\rho gh$$\n\n$$\\Delta P=\\rho g\\Delta h$$\n\n$$\\text{slope of a }P\\text{-versus-}h\\text{ graph}=\\rho g$$\n\n##",
+      "keyPoints": [],
+      "commonMistakes": [],
+      "example": ""
     }
   ],
   "formulas": [
@@ -652,5 +661,5 @@
   "settings": {
     "advancedDefault": true
   },
-  "updatedAt": 1785123429125
+  "updatedAt": 1785124095492
 }
