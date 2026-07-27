@@ -6,7 +6,7 @@ export type Collaborator = {
   org?: string;
 };
 
-/** People on the TrueJet / Knowledge Explorer collaborator roster (GitHub-linked). */
+/** People on the Knowledge Explorer collaborator roster (GitHub-linked). */
 export const trueJetMembers: Collaborator[] = [
   {
     name: "lord-navy-crypto",

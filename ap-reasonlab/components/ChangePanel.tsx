@@ -158,7 +158,7 @@ export default function ChangePanel({
         action = "add_member";
         const handle = githubUser.trim().replace(/^@/, "");
         const noteParts = [
-          memberNote.trim() || "TrueJet partner",
+          memberNote.trim() || "Knowledge Explorer partner",
           handle ? `github:${handle}` : "",
         ].filter(Boolean);
         item = { name: title.trim(), note: noteParts.join(" · ") };

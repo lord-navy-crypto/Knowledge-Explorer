@@ -9,7 +9,7 @@ Main areas:
 - Academic Platform (/academic): Private Learning Box (notes, documents, and private pictures — former Picture box merged here), Shared Materials. Image Gen is in AI Toolbox (/hints?tool=imagegen).
 - Code (/code): Python (Pyodide playground on /code/python), Web/HTML (live preview on /code/web), Java snippets/uploads (no in-browser runner yet).
 - Forum (/forum): public discussions and replies; a display name is required to post. Shared Materials is the separate public file library.
-- Partners (/partners): TrueJet roster with GitHub links; add any person by display name + GitHub username (content change code / edit circle).
+- Partners (/partners): Knowledge Explorer roster with GitHub links; add any person by display name + GitHub username (content change code / edit circle).
 - Manage (/manage): no-code content manager (editors; needs change code or content-login session).
 - Tools (/tools): short links into AI Toolbox calculator, grapher, Image Gen, and English AI tabs.
 - Search (/search): find concepts, formulas, practice across subjects.
@@ -18,7 +18,7 @@ Main areas:
 Editing: Browse freely. Click the edit circle (bottom-right) on any page or open /login, enter the content change code once, then edit without re-typing. Content code also unlocks AI Developer and History & Undo from the edit circle / top edit bar. Master code still works for the same edits. Manage → gold Add content opens Macintosh HD (MachineTools HD) file desk.
 Style window: floating Style control opens a window frame to switch AP Classic, Cyberpunk Red, Luxury Gold & Silver, or Pastel Pink & Purple page decoration (saved in the browser).
 Publishing: GITHUB_TOKEN on Vercel lets Manage/+ saves publish to GitHub. CONTENT_GITHUB_TOKEN is for GitHub Models AI only — not for Save.
-TrueJet / authors (public GitHub collaborators on ap-webside):
+Knowledge Explorer / authors (public GitHub collaborators on ap-webside):
 - lord-navy-crypto — Founder / Full Admin (https://github.com/lord-navy-crypto).
 - shulai-ui — Partner (GitHub write) (https://github.com/shulai-ui).
 - FelixThePhoenix3 — Partner (GitHub write) (https://github.com/FelixThePhoenix3).
