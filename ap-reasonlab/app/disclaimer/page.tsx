@@ -4,25 +4,21 @@ import { brand } from "@/data/brand";
 
 export const metadata = {
   title: `Copyright & disclaimers — ${brand.name}`,
-  description:
-    "AP / College Board trademark notice, original-source ownership, and content accuracy disclaimers.",
+  description: "Trademark, original-source ownership, and accuracy notices.",
 };
 
+/** Keep a simple page that points people back to the home collapsible block. */
 export default function DisclaimerPage() {
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      <DisclaimerPanel />
-      <p className="text-sm text-slate-500">
-        The same notices are posted on the{" "}
-        <Link href="/" className="font-medium text-brand-700 hover:underline">
+    <div className="mx-auto max-w-4xl space-y-4">
+      <p className="text-sm text-slate-600">
+        Full notices live on the{" "}
+        <Link href="/#copyright-disclaimers" className="font-medium text-brand-700 hover:underline">
           home page
-        </Link>
-        . Also see{" "}
-        <Link href="/about" className="font-medium text-brand-700 hover:underline">
-          About {brand.name}
-        </Link>
-        .
+        </Link>{" "}
+        (expandable). Same text below for convenience.
       </p>
+      <DisclaimerPanel />
     </div>
   );
 }

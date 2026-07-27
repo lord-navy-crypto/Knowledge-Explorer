@@ -119,10 +119,7 @@ export default function ApHubPage() {
           <p className="mt-2 max-w-2xl text-blue-100">Then open units, concepts, formulas, practice, documents, or the AI Toolbox inside that subject.</p>
           <p className="mt-4 max-w-2xl text-xs leading-relaxed text-blue-100/85">
             AP® and College Board® are trademarks of the College Board. This site is not affiliated
-            with or endorsed by the College Board. Unofficial study aid — content may contain errors.{" "}
-            <Link href="/disclaimer" className="underline underline-offset-2 hover:text-white">
-              Full disclaimers
-            </Link>
+            with or endorsed by the College Board. Unofficial study aid — content may contain errors.
           </p>
         </div>
       </section>

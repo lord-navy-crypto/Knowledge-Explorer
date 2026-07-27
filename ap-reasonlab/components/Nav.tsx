@@ -22,7 +22,6 @@ const moreGroups = [
     links: [
       { href: "/", label: "Home" },
       { href: "/about", label: "About" },
-      { href: "/disclaimer", label: "Copyright & disclaimers" },
       { href: "/tools", label: "Tools" },
       { href: "/hints?tool=calculator", label: "Calculator" },
       { href: "/hints?tool=grapher", label: "Grapher" },

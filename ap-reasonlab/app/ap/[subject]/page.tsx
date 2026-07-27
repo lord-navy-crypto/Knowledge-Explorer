@@ -354,8 +354,8 @@ function SubjectWorkspaceContent() {
           <p className="mt-1 text-sm text-slate-600">
             Upload downloadable exam files or add a text document for {subject.name}. A change code is required.
           </p>
-          <p className="mt-1 text-xs text-amber-800">
-            Upload only officially released, public-domain, original, or authorized material. Link to restricted exams instead of redistributing them.
+          <p className="mt-1 text-xs text-slate-500">
+            Uploaded files are the uploader’s responsibility. Prefer publicly shareable study files.
           </p>
         </div>
         <UnifiedMediaFrame

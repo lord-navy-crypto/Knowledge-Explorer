@@ -1,87 +1,70 @@
-import Link from "next/link";
+"use client";
+
 import { brand } from "@/data/brand";
 import { disclaimerSections } from "@/data/disclaimer";
 
 type Props = {
-  /** Show intro line that notices apply sitewide */
-  showIntro?: boolean;
-  /** Compact spacing for embedding under the home hero */
-  compact?: boolean;
   className?: string;
 };
 
 /**
- * Full copyright & disclaimer block — used on the home page and /disclaimer.
+ * Collapsible copyright & disclaimer block for the home page.
  */
-export default function DisclaimerPanel({
-  showIntro = true,
-  compact = false,
-  className = "",
-}: Props) {
+export default function DisclaimerPanel({ className = "" }: Props) {
   return (
-    <section
+    <details
       id="copyright-disclaimers"
-      className={`scroll-mt-24 rounded-2xl border border-slate-300 bg-slate-50 ${
-        compact ? "px-4 py-5 md:px-5" : "px-5 py-6 md:px-6"
-      } ${className}`}
+      className={`scroll-mt-24 group rounded-2xl border border-slate-300 bg-slate-50 open:bg-slate-50 ${className}`}
     >
-      <div className="space-y-1">
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-          Copyright &amp; disclaimers
-        </p>
-        <h2 className="text-xl font-bold text-slate-900 md:text-2xl">
-          All notices for {brand.name}
-        </h2>
-        {showIntro ? (
-          <p className="mt-2 text-sm leading-relaxed text-slate-600">
-            These notices apply to the whole website — AP, English, Academic, tools, AI Toolbox,
-            uploads, and every other section — whether or not you are studying AP. Materials belong
-            to their original sources unless clearly created by this site.
-          </p>
-        ) : null}
-      </div>
-
-      <div className={`mt-4 grid gap-3 ${compact ? "" : "md:grid-cols-2"}`}>
-        {disclaimerSections.map((section) => (
-          <article
-            key={section.id}
-            className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
-          >
-            <h3 className="text-sm font-semibold text-slate-900">{section.title}</h3>
-            <p className="mt-1.5 text-xs leading-relaxed text-slate-600 md:text-sm">
-              {section.body}
+      <summary className="cursor-pointer list-none px-4 py-4 md:px-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+              Copyright &amp; disclaimers
             </p>
-          </article>
-        ))}
-      </div>
+            <p className="mt-1 text-base font-bold text-slate-900 md:text-lg">
+              All notices for {brand.name}
+            </p>
+            <p className="mt-1 text-sm text-slate-600">
+              Trademarks, original sources, uploads, and accuracy — tap to expand or hide.
+            </p>
+          </div>
+          <span className="shrink-0 rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-600 group-open:hidden">
+            Show
+          </span>
+          <span className="hidden shrink-0 rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-600 group-open:inline">
+            Hide
+          </span>
+        </div>
+      </summary>
 
-      <ul className="mt-4 list-disc space-y-1 pl-5 text-xs text-slate-600 md:text-sm">
-        <li>Built-in notes and practice may lag curriculum updates.</li>
-        <li>User uploads and community posts are not reviewed as official curriculum.</li>
-        <li>AI hints and generated text can be wrong — treat them as starting points only.</li>
-      </ul>
+      <div className="border-t border-slate-200 px-4 pb-5 pt-4 md:px-5">
+        <p className="text-sm leading-relaxed text-slate-600">
+          These notices apply to the whole website — AP, English, Academic, tools, AI Toolbox,
+          uploads, and every other section — whether or not you are studying AP. Materials belong
+          to their original sources unless clearly created by this site.
+        </p>
 
-      <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
-        <a
-          className="btn-secondary"
-          href="https://apstudents.collegeboard.org/"
-          target="_blank"
-          rel="noreferrer"
-        >
-          AP Students (College Board) ↗
-        </a>
-        <a
-          className="btn-secondary"
-          href="https://www.ets.org/toefl.html"
-          target="_blank"
-          rel="noreferrer"
-        >
-          TOEFL (ETS) ↗
-        </a>
-        <Link href="/disclaimer" className="font-medium text-brand-700 hover:underline">
-          Open full disclaimer page
-        </Link>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          {disclaimerSections.map((section) => (
+            <article
+              key={section.id}
+              className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
+            >
+              <h3 className="text-sm font-semibold text-slate-900">{section.title}</h3>
+              <p className="mt-1.5 text-xs leading-relaxed text-slate-600 md:text-sm">
+                {section.body}
+              </p>
+            </article>
+          ))}
+        </div>
+
+        <ul className="mt-4 list-disc space-y-1 pl-5 text-xs text-slate-600 md:text-sm">
+          <li>Built-in notes and practice may lag curriculum updates.</li>
+          <li>User uploads and community posts are not reviewed as official curriculum.</li>
+          <li>AI hints and generated text can be wrong — treat them as starting points only.</li>
+        </ul>
       </div>
-    </section>
+    </details>
   );
 }

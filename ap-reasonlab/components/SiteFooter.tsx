@@ -14,11 +14,7 @@ export default function SiteFooter() {
         </p>
         <p className="text-xs text-slate-400">
           <Link href="/#copyright-disclaimers" className="font-medium text-brand-700 hover:underline">
-            Full disclaimers on home
-          </Link>
-          {" · "}
-          <Link href="/disclaimer" className="hover:underline">
-            Disclaimer page
+            Copyright &amp; disclaimers (home)
           </Link>
           {" · "}
           <Link href="/about" className="hover:underline">
