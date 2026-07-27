@@ -75,6 +75,17 @@
       "variables": "",
       "whenToUse": "",
       "sourceNote": "Added via change-code edit"
+    },
+    {
+      "id": "m-formula-ms2pek3y-j1j67",
+      "subject": "AP Physics C: Mechanics",
+      "unit": "Managed",
+      "name": "Kepler’s Third Law",
+      "expression": "",
+      "content": "## 5. Kepler’s Third Law\n\n### Concepts\n\n**Kepler’s third law is tested in AP Physics 1.**\n\nFor satellites orbiting the same central body, the square of the orbital period is proportional to the cube of the orbital radius.\n\nAP Physics 1 applies this law primarily to circular orbits.\n\nThe proportionality constant depends on the mass of the central body. Therefore, the simple ratio form can only be used directly when both objects orbit the same central body.\n\nCollege Board does not require AP Physics 1 students to know Kepler’s first or second laws.\n\n### Formulas\n\n$$T^2=\\frac{4\\pi^2}{GM}r^3$$\n\nFor satellites orbiting the same central body:\n\n$$T^2\\propto r^3$$\n\n$$T\\propto r^{3/2}$$\n\nComparison form:\n\n$$\\frac{T_1^2}{T_2^2}=\\frac{r_1^3}{r_2^3}$$\n\nEquivalent form:\n\n$$\\frac{T_1}{T_2}=\\left(\\frac{r_1}{r_2}\\right)^{3/2}$$",
+      "variables": "",
+      "whenToUse": "",
+      "sourceNote": "Added via change-code edit"
     }
   ],
   "documents": [
@@ -670,5 +681,5 @@
   "settings": {
     "advancedDefault": true
   },
-  "updatedAt": 1785125014745
+  "updatedAt": 1785125117797
 }
