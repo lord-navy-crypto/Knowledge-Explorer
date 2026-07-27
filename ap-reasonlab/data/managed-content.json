@@ -26,6 +26,15 @@
       "keyPoints": [],
       "commonMistakes": [],
       "example": ""
+    },
+    {
+      "id": "m-concept-ms2o1kpj-1s3xg",
+      "title": "Bernoulli’s Equation",
+      "subject": "AP Physics 1",
+      "summary": "## 6. Bernoulli’s Equation\n\n### Concepts\n\nBernoulli’s equation represents conservation of mechanical energy for an ideal fluid moving steadily along a streamline.\n\nThe three energy terms are:\n\n- Pressure energy per unit volume\n- Kinetic energy per unit volume\n- Gravitational potential energy per unit volume\n\nIn a horizontal pipe, a region with greater fluid speed generally has lower static pressure, provided the assumptions of Bernoulli’s equation apply.\n\nBernoulli’s equation is often combined with the continuity equation.\n\n### Formulas\n\n$$P_1+\\frac{1}{2}\\rho v_1^2+\\rho gy_1=P_2+\\frac{1}{2}\\rho v_2^2+\\rho gy_2$$\n\nFor a horizontal pipe:\n\n$$P_1+\\frac{1}{2}\\rho v_1^2=P_2+\\frac{1}{2}\\rho v_2^2$$\n\nIf the speed is unchanged:\n\n$$P_1+\\rho gy_1=P_2+\\rho gy_2$$",
+      "keyPoints": [],
+      "commonMistakes": [],
+      "example": ""
     }
   ],
   "formulas": [
@@ -623,5 +632,5 @@
   "settings": {
     "advancedDefault": true
   },
-  "updatedAt": 1785122296038
+  "updatedAt": 1785122832444
 }
