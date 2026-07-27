@@ -53,6 +53,15 @@
       "keyPoints": [],
       "commonMistakes": [],
       "example": ""
+    },
+    {
+      "id": "m-concept-ms2pcclq-o6g0q",
+      "title": "6. Kepler’s First and Second Law",
+      "subject": "AP Physics C: Mechanics",
+      "summary": "## 6. Kepler’s First and Second Laws\n\n### What Is Not Required\n\nAP Physics 1 does **not** require students to memorize or quantitatively apply:\n\n- Kepler’s first law: planets move in elliptical orbits with the central body at one focus.\n- Kepler’s second law: a line connecting the planet and central body sweeps out equal areas in equal times.\n\nHowever, AP Physics 1 does include qualitative analysis of elliptical orbits through energy and angular-momentum conservation.\n\nTherefore, students should understand that a satellite in an elliptical orbit:\n\n- Moves faster when closer to the central body.\n- Moves slower when farther from the central body.\n- Has changing kinetic energy.\n- Has changing gravitational potential energy.\n- Has constant total mechanical energy.\n- Has constant angular momentum",
+      "keyPoints": [],
+      "commonMistakes": [],
+      "example": ""
     }
   ],
   "formulas": [
@@ -661,5 +670,5 @@
   "settings": {
     "advancedDefault": true
   },
-  "updatedAt": 1785124095492
+  "updatedAt": 1785125014745
 }
