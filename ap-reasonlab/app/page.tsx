@@ -1,4 +1,5 @@
 import Link from "next/link";
+import DisclaimerPanel from "@/components/DisclaimerPanel";
 import EthicsBanner from "@/components/EthicsBanner";
 import { brand, trueJetMembers } from "@/data/brand";
 
@@ -78,6 +79,8 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
+
+      <DisclaimerPanel />
 
       <section className="rounded-2xl border border-emerald-200 bg-emerald-50/80 px-5 py-4 text-emerald-950 shadow-sm">
         <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700">
