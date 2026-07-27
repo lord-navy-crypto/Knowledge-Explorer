@@ -84,6 +84,17 @@
       "variables": "",
       "whenToUse": "",
       "sourceNote": "Added via change-code edit"
+    },
+    {
+      "id": "m-formula-ms2q2ggz-6ph1i",
+      "subject": "AP Physics C: Mechanics",
+      "unit": "Managed",
+      "name": "Final AP Focus",
+      "expression": "",
+      "content": "## Final AP Focus\n\nThe most important Kepler-related idea in AP Physics 1 is:\n\n$$T^2\\propto r^3$$\n\nBut students must also be able to derive and explain this relationship by combining universal gravitation with circular motion:\n\n$$G\\frac{Mm}{r^2}=\\frac{mv^2}{r}$$\n\nand:\n\n$$v=\\frac{2\\pi r}{T}$$\n\nAP Physics 1 therefore treats orbital motion as an application of:\n\n- Newton’s laws.\n- Circular motion.\n- Conservation of energy.\n- Conservation of angular momentum.\n- Proportional reasoning.\n\nIt does not test astrophysics as a separate subject.",
+      "variables": "",
+      "whenToUse": "",
+      "sourceNote": "Added via change-code edit"
     }
   ],
   "documents": [
@@ -679,5 +690,5 @@
   "settings": {
     "advancedDefault": true
   },
-  "updatedAt": 1785125264611
+  "updatedAt": 1785126232850
 }
