@@ -62,6 +62,15 @@
       "keyPoints": [],
       "commonMistakes": [],
       "example": ""
+    },
+    {
+      "id": "m-concept-ms2phpeu-ed6r3",
+      "title": "Elliptical Orbits",
+      "subject": "AP Physics C: Mechanics",
+      "summary": "## 9. Elliptical Orbits\n\n### Concepts\n\nAP Physics 1 can test qualitative reasoning about elliptical orbits.\n\nIn an elliptical orbit:\n\n- Total mechanical energy remains constant.\n- Angular momentum remains constant.\n- Speed is not constant.\n- Kinetic energy is not constant.\n- Gravitational potential energy is not constant.\n\nAt the closest point to the central body:\n\n- The satellite has its greatest speed.\n- Kinetic energy is greatest.\n- Gravitational potential energy is lowest.\n\nAt the farthest point:\n\n- The satellite has its lowest speed.\n- Kinetic energy is lowest.\n- Gravitational potential energy is highest.\n\nThese conclusions can be obtained from conservation of energy and conservation of angular momentum rather than from memorizing Kepler’s second law.\n\n###",
+      "keyPoints": [],
+      "commonMistakes": [],
+      "example": ""
     }
   ],
   "formulas": [
@@ -72,17 +81,6 @@
       "name": "fluid equations",
       "expression": "",
       "content": "## 7. What AP Questions Usually Require\n\nStudents should be able to:\n\n- Compare densities, pressures, buoyant forces, and flow speeds.\n- Draw free-body diagrams for submerged or floating objects.\n- Apply Newton’s second law to buoyancy problems.\n- Interpret graphs and determine physical quantities from slopes.\n- Apply conservation of mass using the continuity equation.\n- Apply conservation of energy using Bernoulli’s equation.\n- Explain answers using proportional and qualitative reasoning.\n- Design or analyze experiments involving density, pressure, or buoyancy.\n\nThe highest-priority equations are:\n\n$$\\rho=\\frac{m}{V}$$\n\n$$P=\\frac{F_{\\perp}}{A}$$\n\n$$P=P_0+\\rho gh$$\n\n$$F_B=\\rho_{\\text{fluid}}V_{\\text{displaced}}g$$\n\n$$\\sum F=ma$$\n\n$$Q=Av$$\n\n$$A_1v_1=A_2v_2$$\n\n$$P_1+\\frac{1}{2}\\rho v_1^2+\\rho gy_1=P_2+\\frac{1}{2}\\rho v_2^2+\\rho gy_2$$",
-      "variables": "",
-      "whenToUse": "",
-      "sourceNote": "Added via change-code edit"
-    },
-    {
-      "id": "m-formula-ms2pek3y-j1j67",
-      "subject": "AP Physics C: Mechanics",
-      "unit": "Managed",
-      "name": "Kepler’s Third Law",
-      "expression": "",
-      "content": "## 5. Kepler’s Third Law\n\n### Concepts\n\n**Kepler’s third law is tested in AP Physics 1.**\n\nFor satellites orbiting the same central body, the square of the orbital period is proportional to the cube of the orbital radius.\n\nAP Physics 1 applies this law primarily to circular orbits.\n\nThe proportionality constant depends on the mass of the central body. Therefore, the simple ratio form can only be used directly when both objects orbit the same central body.\n\nCollege Board does not require AP Physics 1 students to know Kepler’s first or second laws.\n\n### Formulas\n\n$$T^2=\\frac{4\\pi^2}{GM}r^3$$\n\nFor satellites orbiting the same central body:\n\n$$T^2\\propto r^3$$\n\n$$T\\propto r^{3/2}$$\n\nComparison form:\n\n$$\\frac{T_1^2}{T_2^2}=\\frac{r_1^3}{r_2^3}$$\n\nEquivalent form:\n\n$$\\frac{T_1}{T_2}=\\left(\\frac{r_1}{r_2}\\right)^{3/2}$$",
       "variables": "",
       "whenToUse": "",
       "sourceNote": "Added via change-code edit"
@@ -681,5 +679,5 @@
   "settings": {
     "advancedDefault": true
   },
-  "updatedAt": 1785125117797
+  "updatedAt": 1785125264611
 }
