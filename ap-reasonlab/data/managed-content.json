@@ -28,7 +28,19 @@
       "example": ""
     }
   ],
-  "formulas": [],
+  "formulas": [
+    {
+      "id": "m-formula-ms2nq2tx-bv2v4",
+      "subject": "AP Physics 1",
+      "unit": "Managed",
+      "name": "fluid equations",
+      "expression": "",
+      "content": "## 7. What AP Questions Usually Require\n\nStudents should be able to:\n\n- Compare densities, pressures, buoyant forces, and flow speeds.\n- Draw free-body diagrams for submerged or floating objects.\n- Apply Newton’s second law to buoyancy problems.\n- Interpret graphs and determine physical quantities from slopes.\n- Apply conservation of mass using the continuity equation.\n- Apply conservation of energy using Bernoulli’s equation.\n- Explain answers using proportional and qualitative reasoning.\n- Design or analyze experiments involving density, pressure, or buoyancy.\n\nThe highest-priority equations are:\n\n$$\\rho=\\frac{m}{V}$$\n\n$$P=\\frac{F_{\\perp}}{A}$$\n\n$$P=P_0+\\rho gh$$\n\n$$F_B=\\rho_{\\text{fluid}}V_{\\text{displaced}}g$$\n\n$$\\sum F=ma$$\n\n$$Q=Av$$\n\n$$A_1v_1=A_2v_2$$\n\n$$P_1+\\frac{1}{2}\\rho v_1^2+\\rho gy_1=P_2+\\frac{1}{2}\\rho v_2^2+\\rho gy_2$$",
+      "variables": "",
+      "whenToUse": "",
+      "sourceNote": "Added via change-code edit"
+    }
+  ],
   "documents": [
     {
       "id": "m-doc-apstats-frq-pack-concepts",
@@ -611,5 +623,5 @@
   "settings": {
     "advancedDefault": true
   },
-  "updatedAt": 1785120905468
+  "updatedAt": 1785122296038
 }
