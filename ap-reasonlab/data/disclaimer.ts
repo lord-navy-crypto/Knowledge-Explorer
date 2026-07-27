@@ -11,9 +11,6 @@ export const copyrightDisclaimer =
 export const originalSourcesDisclaimer =
   "Study materials on this site — notes, worksheets, textbooks, images, PDFs, vocabulary lists, practice sets, and similar content — remain the property of their original authors, publishers, schools, or other rightsholders. Knowledge Explorer does not claim ownership of third-party material. If content appears here from another source, copyright stays with that source.";
 
-export const userContentDisclaimer =
-  "User uploads, forum posts, and partner contributions are the responsibility of the people who add them. Uploaders must have the right to share what they post. Knowledge Explorer may remove material that appears to infringe copyright.";
-
 export const accuracyDisclaimer =
   "Study materials on this site — whether built-in, uploaded, AI-assisted, or contributed by users — may be incomplete, outdated, or incorrect. Please double-check with your teacher and reliable study sources. Use for learning only.";
 
@@ -32,6 +29,5 @@ export const disclaimerSections = [
     body: originalSourcesDisclaimer,
   },
   { id: "site-owns", title: "What this site claims", body: siteOwnsDisclaimer },
-  { id: "user-content", title: "Uploads & user content", body: userContentDisclaimer },
   { id: "accuracy", title: "Accuracy & sources", body: accuracyDisclaimer },
 ] as const;
