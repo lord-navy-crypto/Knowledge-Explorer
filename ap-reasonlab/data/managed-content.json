@@ -35,6 +35,15 @@
       "keyPoints": [],
       "commonMistakes": [],
       "example": ""
+    },
+    {
+      "id": "m-concept-ms2o5bqp-g9s1r",
+      "title": "Volume Flow Rate and Continuity",
+      "subject": "AP Physics 1",
+      "summary": "## 5. Volume Flow Rate and Continuity\n\n### Concepts\n\nVolume flow rate is the volume of fluid passing through a cross section per unit time.\n\nFor steady, incompressible flow, the same volume of fluid must pass through every section of a pipe during the same time interval.\n\nTherefore, fluid moves faster through a narrow section and slower through a wide section.\n\nThe continuity equation is an application of conservation of mass.\n\n### Formulas\n\n$$Q=\\frac{\\Delta V}{\\Delta t}$$\n\n$$Q=Av$$\n\n$$A_1v_1=A_2v_2$$\n\nFor a circular pipe:\n\n$$A=\\pi r^2$$\n\nTherefore:\n\n$$\\pi r_1^2v_1=\\pi r_2^2v_2$$",
+      "keyPoints": [],
+      "commonMistakes": [],
+      "example": ""
     }
   ],
   "formulas": [
@@ -632,5 +641,5 @@
   "settings": {
     "advancedDefault": true
   },
-  "updatedAt": 1785122832444
+  "updatedAt": 1785123007465
 }
