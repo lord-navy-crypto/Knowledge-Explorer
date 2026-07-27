@@ -46,33 +46,46 @@ type Props = {
   allowPublicContributions?: boolean;
 };
 
-/** Lazy image thumb via single-file API (lists omit dataUrl to avoid 413). */
-function ManagedImageThumb({ fileId, name }: { fileId: string; name: string }) {
-  const [src, setSrc] = useState<string | null>(null);
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const res = await fetch(`/api/edit?fileId=${encodeURIComponent(fileId)}`, {
-          cache: "no-store",
-        });
-        const parsed = await readResponseJson<{ file?: ManagedFile }>(res);
-        if (!parsed.ok || !res.ok) return;
-        const dataUrl = parsed.data.file?.dataUrl;
-        if (!cancelled && dataUrl?.startsWith("data:image")) setSrc(dataUrl);
-      } catch {
-        /* ignore */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [fileId]);
-  if (!src) {
-    return <p className="mt-2 text-xs text-slate-400">Image stored — open to view.</p>;
+function isImageFile(file: ManagedFile) {
+  return Boolean(file.mime?.startsWith("image/") || file.dataUrl?.startsWith("data:image"));
+}
+
+function isPdfFile(file: ManagedFile) {
+  return Boolean(
+    file.mime === "application/pdf" ||
+      file.name.toLowerCase().endsWith(".pdf") ||
+      file.dataUrl?.startsWith("data:application/pdf")
+  );
+}
+
+function isTextLikeFile(file: ManagedFile) {
+  const mime = file.mime || "";
+  const name = file.name.toLowerCase();
+  return (
+    mime.startsWith("text/") ||
+    mime.includes("json") ||
+    name.endsWith(".md") ||
+    name.endsWith(".txt") ||
+    name.endsWith(".csv") ||
+    name.endsWith(".json")
+  );
+}
+
+async function decodeDataUrlText(dataUrl: string): Promise<string> {
+  const comma = dataUrl.indexOf(",");
+  if (comma < 0) return "";
+  const meta = dataUrl.slice(0, comma);
+  const payload = dataUrl.slice(comma + 1);
+  try {
+    if (meta.includes(";base64")) {
+      const binary = atob(payload);
+      const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+      return new TextDecoder().decode(bytes);
+    }
+    return decodeURIComponent(payload);
+  } catch {
+    return "";
   }
-  // eslint-disable-next-line @next/next/no-img-element
-  return <img src={src} alt={name} className="mt-2 max-h-32 w-full rounded-lg object-contain" />;
 }
 
 /**
@@ -108,6 +121,11 @@ export default function UploadAndShow({
   const [githubToken, setGithubToken] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(!collapsedByDefault);
+  const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
+  const [displayFile, setDisplayFile] = useState<ManagedFile | null>(null);
+  const [displayText, setDisplayText] = useState("");
+  const [displayLoading, setDisplayLoading] = useState(false);
+  const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
 
   const scopedSpace = normalizeSpace(spaceKey);
   const subjectForForms =
@@ -200,6 +218,36 @@ export default function UploadAndShow({
     }
   }
 
+  async function openFileInDisplay(file: ManagedFile) {
+    setSelectedFileId(file.id);
+    setDisplayLoading(true);
+    setDisplayText("");
+    setError("");
+    try {
+      let full = file;
+      if (!full.dataUrl) {
+        const res = await fetch(`/api/edit?fileId=${encodeURIComponent(file.id)}`, {
+          cache: "no-store",
+        });
+        const parsed = await readResponseJson<{ file?: ManagedFile; error?: string }>(res);
+        if (!parsed.ok) throw new Error(parsed.error);
+        if (!res.ok || !parsed.data.file) {
+          throw new Error(parsed.data.error || "Could not open file");
+        }
+        full = parsed.data.file;
+      }
+      setDisplayFile(full);
+      if (full.dataUrl && isTextLikeFile(full) && !isImageFile(full)) {
+        setDisplayText(await decodeDataUrlText(full.dataUrl));
+      }
+    } catch (e) {
+      setDisplayFile(file);
+      setError(e instanceof Error ? e.message : "Could not open file");
+    } finally {
+      setDisplayLoading(false);
+    }
+  }
+
   async function handleDelete(
     target:
       | "file"
@@ -275,6 +323,25 @@ export default function UploadAndShow({
     [allDocuments, folderArea, scopedSpace]
   );
 
+  const selectedDocument = useMemo(
+    () => documents.find((d) => d.id === selectedDocId) || null,
+    [documents, selectedDocId]
+  );
+
+  useEffect(() => {
+    if (selectedFileId && !files.some((f) => f.id === selectedFileId)) {
+      setSelectedFileId(null);
+      setDisplayFile(null);
+      setDisplayText("");
+    }
+  }, [files, selectedFileId]);
+
+  useEffect(() => {
+    if (selectedDocId && !documents.some((d) => d.id === selectedDocId)) {
+      setSelectedDocId(null);
+    }
+  }, [documents, selectedDocId]);
+
   const conceptsHere = useMemo(() => {
     if (!alsoShow.includes("concept") && !alsoShow.includes("topic")) return [];
     if (scopedSpace.startsWith("folder:")) {
@@ -319,7 +386,7 @@ export default function UploadAndShow({
             {files.length} file{files.length === 1 ? "" : "s"}
             {folders.length ? ` · ${folders.length} folder${folders.length === 1 ? "" : "s"}` : ""}
             {documents.length ? ` · ${documents.length} doc${documents.length === 1 ? "" : "s"}` : ""}
-            {" · "}download anytime
+            {" · "}file browser + display browser
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -627,124 +694,264 @@ export default function UploadAndShow({
               )}
 
               <section className="space-y-2">
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                  Files · File 1, File 2, File 3…
-                </h3>
+                <div className="flex flex-wrap items-end justify-between gap-2">
+                  <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                    File browser
+                  </h3>
+                  <p className="text-[11px] text-slate-400">
+                    Click a file to open the display browser · Download stays on the right
+                  </p>
+                </div>
                 {files.length === 0 ? (
                   <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
                     No files here yet.
                   </div>
                 ) : (
-                  <ul className="overflow-hidden rounded-xl border border-slate-200">
-                    <li className="grid grid-cols-[2.5rem_minmax(0,1fr)_6.5rem] gap-2 border-b border-slate-100 bg-slate-50 px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                      <span>File</span>
-                      <span>Name</span>
-                      <span className="text-right">Action</span>
-                    </li>
-                    {files.map((f, index) => {
-                      const n = index + 1;
-                      const isPic = Boolean(
-                        f.mime?.startsWith("image/") || f.dataUrl?.startsWith("data:image")
-                      );
-                      return (
-                        <li
-                          key={f.id}
-                          className="grid grid-cols-[2.5rem_minmax(0,1fr)_6.5rem] items-center gap-2 border-b border-slate-100 px-3 py-2.5 last:border-b-0 hover:bg-slate-50/80"
-                        >
-                          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-slate-100 text-[11px] font-bold text-slate-500">
-                            {n}
-                          </span>
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-medium text-slate-900">
-                              <span className="mr-1.5 font-semibold text-slate-400">File {n}</span>
-                              {f.name}
-                            </p>
-                            <p className="truncate text-[11px] text-slate-500">
-                              {isPic ? "Picture" : f.mime || "file"}
-                              {f.note ? ` · ${f.note}` : ""}
-                            </p>
-                            {f.dataUrl?.startsWith("data:image") && (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img
-                                src={f.dataUrl}
-                                alt={f.name}
-                                className="mt-2 max-h-20 rounded-md object-contain"
-                              />
-                            )}
-                            {!f.dataUrl && f.mime?.startsWith("image/") && (
-                              <ManagedImageThumb fileId={f.id} name={f.name} />
-                            )}
-                          </div>
-                          <div className="flex flex-col items-end gap-1">
+                  <div className="grid gap-3 lg:grid-cols-2">
+                    <div className="flex h-[16rem] flex-col overflow-hidden rounded-xl border border-slate-200 bg-white md:h-[18rem]">
+                      <div className="shrink-0 border-b border-slate-100 bg-slate-50 px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                        Files · File 1, 2, 3… · scroll
+                      </div>
+                      <ul className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+                        {files.map((f, index) => {
+                          const n = index + 1;
+                          const active = selectedFileId === f.id;
+                          const isPic = isImageFile(f);
+                          return (
+                            <li
+                              key={f.id}
+                              className={`flex items-center gap-2 border-b border-slate-100 px-2 py-2 last:border-b-0 ${
+                                active ? "bg-sky-50" : "hover:bg-slate-50"
+                              }`}
+                            >
+                              <button
+                                type="button"
+                                onClick={() => void openFileInDisplay(f)}
+                                className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                              >
+                                <span
+                                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[11px] font-bold ${
+                                    active
+                                      ? "bg-sky-600 text-white"
+                                      : "bg-slate-100 text-slate-500"
+                                  }`}
+                                >
+                                  {n}
+                                </span>
+                                <span className="min-w-0">
+                                  <span className="block truncate text-sm font-medium text-slate-900">
+                                    File {n} · {f.name}
+                                  </span>
+                                  <span className="block truncate text-[11px] text-slate-500">
+                                    {isPic ? "Picture" : f.mime || "file"}
+                                    {f.note ? ` · ${f.note}` : ""}
+                                  </span>
+                                </span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => void downloadManagedFile(f)}
+                                className="shrink-0 rounded-md bg-slate-900 px-2 py-1 text-[10px] font-semibold text-white hover:bg-slate-800"
+                              >
+                                Download
+                              </button>
+                              {editMode && (
+                                <div className="flex shrink-0 items-center gap-0.5">
+                                  <ResourceEditor
+                                    target="file"
+                                    item={f}
+                                    label="Edit"
+                                    onSaved={(content) => {
+                                      if (content) applyContent(content as ManagedContent);
+                                      void refresh();
+                                    }}
+                                  />
+                                  <button
+                                    type="button"
+                                    title="Delete file"
+                                    disabled={deletingId === f.id}
+                                    onClick={() => handleDelete("file", f.id)}
+                                    className="flex h-6 w-6 items-center justify-center rounded-full text-sm font-bold text-red-600 hover:bg-red-50"
+                                  >
+                                    −
+                                  </button>
+                                </div>
+                              )}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+
+                    <div className="flex h-[16rem] flex-col overflow-hidden rounded-xl border border-slate-200 bg-slate-50 md:h-[18rem]">
+                      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-slate-200 bg-white px-3 py-2">
+                        <p className="truncate text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                          Display browser
+                        </p>
+                        {displayFile ? (
+                          <p className="truncate text-[11px] font-medium text-slate-700">
+                            {displayFile.name}
+                          </p>
+                        ) : null}
+                      </div>
+                      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3">
+                        {displayLoading ? (
+                          <p className="text-sm text-slate-500">Opening file…</p>
+                        ) : !displayFile ? (
+                          <p className="text-sm text-slate-500">
+                            Click a file on the left to preview it here. Scroll this pane to read.
+                          </p>
+                        ) : isImageFile(displayFile) && displayFile.dataUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={displayFile.dataUrl}
+                            alt={displayFile.name}
+                            className="mx-auto max-w-full rounded-lg object-contain"
+                          />
+                        ) : isPdfFile(displayFile) && displayFile.dataUrl ? (
+                          <iframe
+                            title={displayFile.name}
+                            src={displayFile.dataUrl}
+                            className="h-full min-h-[14rem] w-full rounded-lg border border-slate-200 bg-white"
+                          />
+                        ) : displayText ? (
+                          <pre className="whitespace-pre-wrap break-words rounded-lg border border-slate-200 bg-white p-3 text-xs text-slate-800">
+                            {displayText}
+                          </pre>
+                        ) : (
+                          <div className="space-y-3 text-sm text-slate-600">
+                            <p>Preview not available for this type. Download to open locally.</p>
                             <button
                               type="button"
-                              onClick={() => void downloadManagedFile(f)}
-                              className="rounded-lg bg-slate-900 px-2.5 py-1.5 text-[11px] font-semibold text-white hover:bg-slate-800"
+                              onClick={() => void downloadManagedFile(displayFile)}
+                              className="rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-800"
                             >
-                              Download
+                              Download {displayFile.name}
                             </button>
-                            {editMode && (
-                              <div className="flex items-center gap-1">
-                                <ResourceEditor
-                                  target="file"
-                                  item={f}
-                                  label="Edit"
-                                  onSaved={(content) => {
-                                    if (content) applyContent(content as ManagedContent);
-                                    void refresh();
-                                  }}
-                                />
-                                <button
-                                  type="button"
-                                  title="Delete file"
-                                  disabled={deletingId === f.id}
-                                  onClick={() => handleDelete("file", f.id)}
-                                  className="flex h-6 w-6 items-center justify-center rounded-full text-sm font-bold text-red-600 hover:bg-red-50"
-                                >
-                                  −
-                                </button>
-                              </div>
-                            )}
                           </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 )}
               </section>
 
-              {documents.length > 0 && (
-                <section className="space-y-2 border-t border-slate-100 pt-3">
-                  <h3 className="text-sm font-semibold text-slate-800">
-                    Documents ({documents.length})
+              <section className="space-y-2 border-t border-slate-100 pt-4">
+                <div className="flex flex-wrap items-end justify-between gap-2">
+                  <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                    Document browser
                   </h3>
-                  <ul className="space-y-2">
-                    {documents.map((d) => (
-                      <li key={d.id} className="flex items-start gap-2 rounded-xl border border-slate-100 bg-white p-3">
-                        <details className="group min-w-0 flex-1">
-                          <summary className="cursor-pointer list-none rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
-                            <span className="flex items-center justify-between gap-3">
-                              <span>
-                                <span className="block text-sm font-medium">{d.title}</span>
-                                <span className="block text-xs text-slate-500">{d.category}</span>
-                              </span>
-                              <span className="shrink-0 text-xs font-medium text-brand-700 group-open:hidden">Read document ↓</span>
-                              <span className="hidden shrink-0 text-xs font-medium text-brand-700 group-open:inline">Collapse ↑</span>
-                            </span>
-                          </summary>
-                          <div className="mt-3 max-h-[65vh] overflow-auto overscroll-contain rounded-xl border border-slate-100 bg-slate-50 p-4">
-                            <RichContent className="text-sm text-slate-700">{d.content}</RichContent>
+                  <p className="text-[11px] text-slate-400">
+                    Separate from files · click a document to read in the display pane
+                  </p>
+                </div>
+                {documents.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
+                    No documents in this folder yet.
+                  </div>
+                ) : (
+                  <div className="grid gap-3 lg:grid-cols-2">
+                    <div className="flex h-[14rem] flex-col overflow-hidden rounded-xl border border-slate-200 bg-white md:h-[16rem]">
+                      <div className="shrink-0 border-b border-slate-100 bg-slate-50 px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                        Documents · scroll
+                      </div>
+                      <ul className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+                        {documents.map((d, index) => {
+                          const active = selectedDocId === d.id;
+                          return (
+                            <li
+                              key={d.id}
+                              className={`flex items-center gap-2 border-b border-slate-100 px-2 py-2 last:border-b-0 ${
+                                active ? "bg-emerald-50" : "hover:bg-slate-50"
+                              }`}
+                            >
+                              <button
+                                type="button"
+                                onClick={() => setSelectedDocId(d.id)}
+                                className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                              >
+                                <span
+                                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[11px] font-bold ${
+                                    active
+                                      ? "bg-emerald-700 text-white"
+                                      : "bg-slate-100 text-slate-500"
+                                  }`}
+                                >
+                                  {index + 1}
+                                </span>
+                                <span className="min-w-0">
+                                  <span className="block truncate text-sm font-medium text-slate-900">
+                                    {d.title}
+                                  </span>
+                                  <span className="block truncate text-[11px] text-slate-500">
+                                    {d.category || "Document"}
+                                  </span>
+                                </span>
+                              </button>
+                              {editMode && (
+                                <div className="flex shrink-0 items-center gap-0.5">
+                                  <ResourceEditor
+                                    target="document"
+                                    item={d}
+                                    onSaved={(content) =>
+                                      applyContent(content as ManagedContent)
+                                    }
+                                  />
+                                  <button
+                                    type="button"
+                                    title="Delete document"
+                                    disabled={deletingId === d.id}
+                                    onClick={() => handleDelete("document", d.id)}
+                                    className="flex h-6 w-6 items-center justify-center rounded-full text-sm font-bold text-red-600 hover:bg-red-50"
+                                  >
+                                    −
+                                  </button>
+                                </div>
+                              )}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+
+                    <div className="flex h-[14rem] flex-col overflow-hidden rounded-xl border border-slate-200 bg-slate-50 md:h-[20rem]">
+                      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-slate-200 bg-white px-3 py-2">
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                          Document display
+                        </p>
+                        {selectedDocument ? (
+                          <p className="truncate text-[11px] font-medium text-slate-700">
+                            {selectedDocument.title}
+                          </p>
+                        ) : null}
+                      </div>
+                      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3">
+                        {!selectedDocument ? (
+                          <p className="text-sm text-slate-500">
+                            Click a document on the left to read it here. Scroll this pane.
+                          </p>
+                        ) : (
+                          <div className="rounded-lg border border-slate-200 bg-white p-4">
+                            <h4 className="text-base font-semibold text-slate-900">
+                              {selectedDocument.title}
+                            </h4>
+                            {selectedDocument.category ? (
+                              <p className="mt-0.5 text-xs text-slate-500">
+                                {selectedDocument.category}
+                              </p>
+                            ) : null}
+                            <div className="mt-3 border-t border-slate-100 pt-3">
+                              <RichContent className="text-sm text-slate-700">
+                                {selectedDocument.content}
+                              </RichContent>
+                            </div>
                           </div>
-                        </details>
-                        {editMode && <div className="flex shrink-0 items-center gap-1">
-                          <ResourceEditor target="document" item={d} onSaved={(content) => applyContent(content as ManagedContent)} />
-                          <button type="button" title="Delete document" disabled={deletingId === d.id} onClick={() => handleDelete("document", d.id)} className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50 text-lg font-bold text-red-600 hover:bg-red-50">−</button>
-                        </div>}
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              )}
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </section>
             </div>
           )}
         </div>
