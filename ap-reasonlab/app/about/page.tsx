@@ -1,6 +1,7 @@
 import Link from "next/link";
 import EthicsBanner from "@/components/EthicsBanner";
 import { brand, trueJetMembers } from "@/data/brand";
+import { footerDisclaimerShort } from "@/data/disclaimer";
 
 export default function AboutPage() {
   return (
@@ -16,6 +17,18 @@ export default function AboutPage() {
           or via the <strong>edit circle</strong> on any page with the{" "}
           <strong>content change code</strong>. After that, saving in this browser does not ask for
           the code again.
+        </p>
+      </section>
+
+      <section className="card space-y-3">
+        <h2 className="text-lg font-semibold">Copyright &amp; disclaimers</h2>
+        <p className="text-sm leading-relaxed text-slate-700">{footerDisclaimerShort}</p>
+        <p className="text-sm text-slate-600">
+          These notices apply sitewide — not only on AP pages. Full wording:{" "}
+          <Link href="/disclaimer" className="font-medium text-brand-700 hover:underline">
+            Copyright &amp; disclaimers
+          </Link>
+          .
         </p>
       </section>
 

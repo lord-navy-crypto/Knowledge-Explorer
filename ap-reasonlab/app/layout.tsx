@@ -8,6 +8,7 @@ import RandomPageButton from "@/components/RandomPageButton";
 import EditModeButton from "@/components/EditModeButton";
 import EditorToolsChrome from "@/components/EditorToolsChrome";
 import StyleWindow from "@/components/StyleWindow";
+import SiteFooter from "@/components/SiteFooter";
 import { EditorModeProvider } from "@/components/EditorModeProvider";
 import { LocalAIProvider } from "@/components/LocalAIProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -43,9 +44,7 @@ export default function RootLayout({
               <StyleWindow />
               <EditModeButton />
               <MobileActionBar />
-              <footer className="border-t border-slate-200 bg-white py-6 text-center text-sm text-slate-500">
-                {brand.name} — Academic box & platform. Tutor, not solver.
-              </footer>
+              <SiteFooter />
             </LocalAIProvider>
           </EditorModeProvider>
         </ThemeProvider>
