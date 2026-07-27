@@ -71,6 +71,15 @@
       "keyPoints": [],
       "commonMistakes": [],
       "example": ""
+    },
+    {
+      "id": "m-concept-ms2r8te7-zaulf",
+      "title": "Calculus Used in Rotational Motion",
+      "subject": "AP Physics C: Mechanics",
+      "summary": "## Calculus Used in Rotational Motion\n\n### Concepts\n\nAP Physics C: Mechanics uses derivatives and integrals to connect angular position, angular velocity, angular acceleration, torque, angular momentum, and rotational energy.\n\nThe rotational relationships closely parallel translational motion:\n\n- Position corresponds to angular position.\n- Velocity corresponds to angular velocity.\n- Acceleration corresponds to angular acceleration.\n- Mass corresponds to rotational inertia.\n- Force corresponds to torque.\n- Linear momentum corresponds to angular momentum.\n- Impulse corresponds to angular impulse.\n\nStudents should be able to use:\n\n- Derivatives to find instantaneous rotational quantities.\n- Definite integrals to calculate accumulated changes.\n- Integrals over mass distributions to calculate rotational inertia.\n- Graphical areas to calculate angular displacement, angular impulse, and rotational work.",
+      "keyPoints": [],
+      "commonMistakes": [],
+      "example": ""
     }
   ],
   "formulas": [
@@ -701,5 +710,5 @@
   "settings": {
     "advancedDefault": true
   },
-  "updatedAt": 1785126783465
+  "updatedAt": 1785128209321
 }
