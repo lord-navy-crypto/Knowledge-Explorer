@@ -86,12 +86,12 @@
       "sourceNote": "Added via change-code edit"
     },
     {
-      "id": "m-formula-ms2q2ggz-6ph1i",
+      "id": "m-formula-ms2q4q88-0o9je",
       "subject": "AP Physics C: Mechanics",
       "unit": "Managed",
-      "name": "Final AP Focus",
+      "name": "Escape Speed",
       "expression": "",
-      "content": "## Final AP Focus\n\nThe most important Kepler-related idea in AP Physics 1 is:\n\n$$T^2\\propto r^3$$\n\nBut students must also be able to derive and explain this relationship by combining universal gravitation with circular motion:\n\n$$G\\frac{Mm}{r^2}=\\frac{mv^2}{r}$$\n\nand:\n\n$$v=\\frac{2\\pi r}{T}$$\n\nAP Physics 1 therefore treats orbital motion as an application of:\n\n- Newton’s laws.\n- Circular motion.\n- Conservation of energy.\n- Conservation of angular momentum.\n- Proportional reasoning.\n\nIt does not test astrophysics as a separate subject.",
+      "content": "## Escape Speed\n\n### Concepts\n\nEscape speed is the minimum initial speed needed for an object to move infinitely far from a central body without additional propulsion.\n\nAt the minimum escape speed:\n\n- The object’s final speed approaches zero at infinite distance.\n- The final gravitational potential energy approaches zero.\n- The total mechanical energy is zero.\n\nEscape speed depends on:\n\n- The mass of the central body.\n- The initial distance from its center.\n\nIt does not depend on the mass of the escaping object.\n\nEscape speed is included in the current AP Physics 1 framework.\n\n### Formulas\n\nInitial mechanical energy:\n\n$$E_i=\\frac{1}{2}mv_{\\text{esc}}^2-\\frac{GMm}{r}$$\n\nAt minimum escape speed:\n\n$$E_i=E_f=0$$\n\nTherefore:\n\n$$v_{\\text{esc}}=\\sqrt{\\frac{2GM}{r}}$$\n\nComparison with circular orbital speed:\n\n$$v_{\\text{esc}}=\\sqrt{2},v_{\\text{orbit}}$$",
       "variables": "",
       "whenToUse": "",
       "sourceNote": "Added via change-code edit"
@@ -690,5 +690,5 @@
   "settings": {
     "advancedDefault": true
   },
-  "updatedAt": 1785126232850
+  "updatedAt": 1785126338854
 }
