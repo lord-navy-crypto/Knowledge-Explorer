@@ -245,14 +245,28 @@ export default function UploadAndShow({
 
   const folders = useMemo(
     () =>
-      allFolders.filter(
-        (f) => f.area === folderArea && normalizeSpace(f.space) === scopedSpace
-      ),
+      allFolders
+        .filter((f) => f.area === folderArea && normalizeSpace(f.space) === scopedSpace)
+        .slice()
+        .sort((a, b) =>
+          a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: "base" })
+        ),
     [allFolders, folderArea, scopedSpace]
   );
 
   const files = useMemo(
-    () => allFiles.filter((f) => matchesSpace(f, folderArea, scopedSpace)),
+    () =>
+      allFiles
+        .filter((f) => matchesSpace(f, folderArea, scopedSpace))
+        .slice()
+        .sort((a, b) => {
+          const byName = a.name.localeCompare(b.name, undefined, {
+            numeric: true,
+            sensitivity: "base",
+          });
+          if (byName !== 0) return byName;
+          return (a.uploadedAt || 0) - (b.uploadedAt || 0);
+        }),
     [allFiles, folderArea, scopedSpace]
   );
 
@@ -479,8 +493,11 @@ export default function UploadAndShow({
 
               {folders.length > 0 && (
                 <section className="space-y-2">
-                  <h3 className="text-sm font-semibold">Nested folders ({folders.length})</h3>
-                  <ul className="space-y-2">
+                  <h3 className="text-sm font-semibold">File folders ({folders.length})</h3>
+                  <p className="text-xs text-slate-500">
+                    Open a folder to browse its files — keeps large libraries tidy, like Finder.
+                  </p>
+                  <ul className="grid gap-2 sm:grid-cols-2">
                     {folders.map((f) => (
                       <li
                         key={f.id}
@@ -490,14 +507,18 @@ export default function UploadAndShow({
                           {spaceBasePath ? (
                             <Link
                               href={spaceHref(spaceBasePath, folderSpaceId(f.id))}
-                              className="truncate text-sm font-medium text-brand-800 hover:underline"
+                              className="flex items-center gap-2 truncate text-sm font-medium text-brand-800 hover:underline"
                             >
-                              📁 {f.title} → open its storage
+                              <span className="text-lg">📁</span>
+                              <span className="truncate">{f.title}</span>
                             </Link>
                           ) : (
-                            <p className="truncate text-sm font-medium">📁 {f.title}</p>
+                            <p className="flex items-center gap-2 truncate text-sm font-medium">
+                              <span>📁</span>
+                              {f.title}
+                            </p>
                           )}
-                          {f.note && <p className="text-xs text-slate-500">{f.note}</p>}
+                          {f.note && <p className="mt-1 text-xs text-slate-500">{f.note}</p>}
                         </div>
                         {editMode && <div className="flex shrink-0 items-center gap-1">
                           <ResourceEditor target="folder" item={f} onSaved={(content) => applyContent(content as ManagedContent)} />
@@ -602,22 +623,32 @@ export default function UploadAndShow({
 
               <section className="space-y-2">
                 <h3 className="text-sm font-semibold text-slate-800">
-                  Uploaded files ({files.length})
+                  Files in order ({files.length})
                 </h3>
                 {files.length === 0 ? (
                   <p className="text-sm text-slate-500">
                     No files in this folder yet. Upload on the left — they stay in this panel only.
                   </p>
                 ) : (
-                  <ul className="space-y-3">
-                    {files.map((f) => (
+                  <ul className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+                    <li className="grid grid-cols-[2.75rem_minmax(0,1fr)_auto] gap-2 border-b border-slate-100 bg-slate-50 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                      <span>#</span>
+                      <span>Name</span>
+                      <span>Open</span>
+                    </li>
+                    {files.map((f, index) => (
                       <li
                         key={f.id}
-                        className="flex items-start justify-between gap-2 rounded-xl border border-slate-100 bg-slate-50 p-3"
+                        className="grid grid-cols-[2.75rem_minmax(0,1fr)_auto] items-center gap-2 border-b border-slate-100 px-3 py-2 last:border-b-0"
                       >
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium text-slate-900">{f.name}</p>
-                          <p className="text-xs text-slate-500">
+                        <span className="text-xs font-bold text-slate-400">
+                          {index + 1}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium text-slate-900">
+                            File {index + 1} · {f.name}
+                          </p>
+                          <p className="truncate text-xs text-slate-500">
                             {f.mime}
                             {f.note ? ` · ${f.note}` : ""}
                           </p>
@@ -626,32 +657,44 @@ export default function UploadAndShow({
                             <img
                               src={f.dataUrl}
                               alt={f.name}
-                              className="mt-2 max-h-32 w-full rounded-lg object-contain"
+                              className="mt-2 max-h-24 w-full rounded-lg object-contain"
                             />
                           )}
                           {!f.dataUrl && f.mime?.startsWith("image/") && (
                             <ManagedImageThumb fileId={f.id} name={f.name} />
                           )}
+                        </div>
+                        <div className="flex shrink-0 flex-col items-end gap-1">
                           <button
                             type="button"
                             onClick={() => void openManagedFile(f)}
-                            className="mt-2 inline-block text-xs font-medium text-brand-600 hover:underline"
+                            className="text-xs font-medium text-brand-600 hover:underline"
                           >
-                            Open / download
+                            Open
                           </button>
+                          {editMode && (
+                            <div className="flex items-center gap-1">
+                              <ResourceEditor
+                                target="file"
+                                item={f}
+                                label="Edit"
+                                onSaved={(content) => {
+                                  if (content) applyContent(content as ManagedContent);
+                                  void refresh();
+                                }}
+                              />
+                              <button
+                                type="button"
+                                title="Delete file"
+                                disabled={deletingId === f.id}
+                                onClick={() => handleDelete("file", f.id)}
+                                className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-50 text-base font-bold text-red-600 hover:bg-red-50"
+                              >
+                                −
+                              </button>
+                            </div>
+                          )}
                         </div>
-                        {editMode && <div className="flex shrink-0 items-center gap-1">
-                          <ResourceEditor
-                            target="file"
-                            item={f}
-                            label="Change / replace"
-                            onSaved={(content) => {
-                              if (content) applyContent(content as ManagedContent);
-                              void refresh();
-                            }}
-                          />
-                          <button type="button" title="Delete file" disabled={deletingId === f.id} onClick={() => handleDelete("file", f.id)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-lg font-bold text-red-600 shadow-sm hover:bg-red-50">−</button>
-                        </div>}
                       </li>
                     ))}
                   </ul>
