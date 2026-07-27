@@ -24,9 +24,14 @@ export default function AboutPage() {
         <h2 className="text-lg font-semibold">Copyright &amp; disclaimers</h2>
         <p className="text-sm leading-relaxed text-slate-700">{footerDisclaimerShort}</p>
         <p className="text-sm text-slate-600">
-          These notices apply sitewide — not only on AP pages. Full wording:{" "}
+          These notices apply sitewide — not only on AP pages. Third-party materials belong to
+          their original sources. Full wording is posted on the{" "}
+          <Link href="/#copyright-disclaimers" className="font-medium text-brand-700 hover:underline">
+            home page
+          </Link>{" "}
+          and at{" "}
           <Link href="/disclaimer" className="font-medium text-brand-700 hover:underline">
-            Copyright &amp; disclaimers
+            /disclaimer
           </Link>
           .
         </p>

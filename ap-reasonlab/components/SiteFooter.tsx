@@ -13,8 +13,12 @@ export default function SiteFooter() {
           {footerDisclaimerShort}
         </p>
         <p className="text-xs text-slate-400">
-          <Link href="/disclaimer" className="font-medium text-brand-700 hover:underline">
-            Copyright &amp; disclaimers
+          <Link href="/#copyright-disclaimers" className="font-medium text-brand-700 hover:underline">
+            Full disclaimers on home
+          </Link>
+          {" · "}
+          <Link href="/disclaimer" className="hover:underline">
+            Disclaimer page
           </Link>
           {" · "}
           <Link href="/about" className="hover:underline">
