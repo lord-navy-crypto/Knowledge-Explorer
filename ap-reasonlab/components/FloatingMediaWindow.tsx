@@ -129,6 +129,24 @@ export function FloatingMediaWindow({
 
   const canPublish = unlocked || Boolean(changeCode.trim());
 
+  async function openFilePreview(item: ManagedFile) {
+    if (item.dataUrl) {
+      setPreview({ kind: "file", item });
+      return;
+    }
+    try {
+      const res = await fetch(`/api/edit?fileId=${encodeURIComponent(item.id)}`, {
+        cache: "no-store",
+      });
+      const parsed = await readResponseJson<{ file?: ManagedFile; error?: string }>(res);
+      if (!parsed.ok) throw new Error(parsed.error);
+      if (!res.ok || !parsed.data.file) throw new Error(parsed.data.error || "File unavailable");
+      setPreview({ kind: "file", item: parsed.data.file });
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Could not open file");
+    }
+  }
+
   async function publishFiles(fileList: FileList | File[]) {
     const chosen = Array.from(fileList).slice(0, 10);
     if (!chosen.length) return;
@@ -318,7 +336,7 @@ export function FloatingMediaWindow({
                   <li key={item.id}>
                     <button
                       type="button"
-                      onClick={() => setPreview({ kind: "file", item })}
+                      onClick={() => void openFilePreview(item)}
                       className="group block w-full overflow-hidden rounded-lg border border-slate-200 bg-slate-100"
                     >
                       {item.dataUrl ? (
@@ -328,7 +346,9 @@ export function FloatingMediaWindow({
                           alt={item.name}
                           className="aspect-square w-full object-cover transition group-hover:opacity-90"
                         />
-                      ) : null}
+                      ) : (
+                        <span className="flex aspect-square items-center justify-center text-lg">🖼</span>
+                      )}
                     </button>
                   </li>
                 ))}
@@ -341,7 +361,11 @@ export function FloatingMediaWindow({
                     <li key={`${row.kind}-${row.item.id}`}>
                       <button
                         type="button"
-                        onClick={() => setPreview(row)}
+                        onClick={() =>
+                          void (row.kind === "file"
+                            ? openFilePreview(row.item)
+                            : setPreview(row))
+                        }
                         className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left hover:bg-slate-100"
                       >
                         {row.kind === "file" && isImage(row.item) && row.item.dataUrl ? (
@@ -353,7 +377,11 @@ export function FloatingMediaWindow({
                           />
                         ) : (
                           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded bg-slate-100 text-sm">
-                            {row.kind === "document" ? "📄" : "📎"}
+                            {row.kind === "document"
+                              ? "📄"
+                              : isImage(row.item)
+                                ? "🖼"
+                                : "📎"}
                           </span>
                         )}
                         <span className="min-w-0 flex-1">
@@ -383,7 +411,7 @@ export function FloatingMediaWindow({
                     <li key={`strip-${item.id}`}>
                       <button
                         type="button"
-                        onClick={() => setPreview({ kind: "file", item })}
+                        onClick={() => void openFilePreview(item)}
                         className="block w-full overflow-hidden rounded border border-slate-200"
                       >
                         {item.dataUrl ? (
@@ -393,7 +421,9 @@ export function FloatingMediaWindow({
                             alt={item.name}
                             className="aspect-square w-full object-cover"
                           />
-                        ) : null}
+                        ) : (
+                          <span className="flex aspect-square items-center justify-center text-sm">🖼</span>
+                        )}
                       </button>
                     </li>
                   ))}
@@ -555,7 +585,7 @@ export function FloatingMediaWindow({
                   className="mx-auto max-h-[60vh] rounded-lg"
                 />
               ) : null}
-              {preview.kind === "file" && !isImage(preview.item) && preview.item.dataUrl ? (
+              {preview.kind === "file" && preview.item.dataUrl && !isImage(preview.item) ? (
                 <a
                   href={preview.item.dataUrl}
                   download={preview.item.name}
@@ -563,6 +593,9 @@ export function FloatingMediaWindow({
                 >
                   Download {preview.item.name}
                 </a>
+              ) : null}
+              {preview.kind === "file" && !preview.item.dataUrl ? (
+                <p className="text-sm text-slate-500">File stored — reopen to download.</p>
               ) : null}
               {preview.kind === "document" ? (
                 <div className="rounded-lg bg-slate-50 p-3 text-slate-800">

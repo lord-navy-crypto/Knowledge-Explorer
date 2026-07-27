@@ -110,7 +110,10 @@ export async function GET(req: NextRequest) {
           ? []
           : (content.formulas || []).filter((f) => subjectMatch(f.subject)),
       documents: (content.documents || []).filter(inBucket),
-      files: (content.files || []).filter(inBucket),
+      // Omit base64 by default — scoped AP Stats etc. was >2MB and broke frontend refresh (413).
+      files: includeData
+        ? (content.files || []).filter(inBucket)
+        : slimManagedContent(content).files.filter(inBucket),
       folders: (content.folders || []).filter((f) => matchesSpace(f, area, spaceKey)),
       topics: (content.topics || []).filter((t) => {
         if (spaceKey === "_root") return !t.subject || t.subject === "_root";

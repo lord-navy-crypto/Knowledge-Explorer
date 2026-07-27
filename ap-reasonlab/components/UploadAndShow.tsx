@@ -46,6 +46,35 @@ type Props = {
   allowPublicContributions?: boolean;
 };
 
+/** Lazy image thumb via single-file API (lists omit dataUrl to avoid 413). */
+function ManagedImageThumb({ fileId, name }: { fileId: string; name: string }) {
+  const [src, setSrc] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch(`/api/edit?fileId=${encodeURIComponent(fileId)}`, {
+          cache: "no-store",
+        });
+        const parsed = await readResponseJson<{ file?: ManagedFile }>(res);
+        if (!parsed.ok || !res.ok) return;
+        const dataUrl = parsed.data.file?.dataUrl;
+        if (!cancelled && dataUrl?.startsWith("data:image")) setSrc(dataUrl);
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [fileId]);
+  if (!src) {
+    return <p className="mt-2 text-xs text-slate-400">Image stored — open to view.</p>;
+  }
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={src} alt={name} className="mt-2 max-h-32 w-full rounded-lg object-contain" />;
+}
+
 /**
  * Per-area / per-folder storage panel.
  * Each area + folder space is its own bucket — files do not mix across panels.
@@ -134,9 +163,42 @@ export default function UploadAndShow({
     if (editMode || unlocked) setExpanded(true);
   }, [editMode, unlocked]);
 
-  const onSaved = (_content?: unknown) => {
+  const onSaved = (content?: unknown) => {
+    // Prefer the slim POST payload when present, then re-load metadata-only list.
+    if (content && typeof content === "object") {
+      applyContent(content as Partial<ManagedContent>);
+    }
     void refresh();
   };
+
+  async function openManagedFile(file: ManagedFile) {
+    try {
+      if (file.dataUrl) {
+        const link = document.createElement("a");
+        link.href = file.dataUrl;
+        link.download = file.name;
+        link.target = "_blank";
+        link.rel = "noreferrer";
+        link.click();
+        return;
+      }
+      const res = await fetch(`/api/edit?fileId=${encodeURIComponent(file.id)}`, {
+        cache: "no-store",
+      });
+      const parsed = await readResponseJson<{ file?: ManagedFile; error?: string }>(res);
+      if (!parsed.ok) throw new Error(parsed.error);
+      const dataUrl = parsed.data.file?.dataUrl;
+      if (!res.ok || !dataUrl) throw new Error(parsed.data.error || "Download unavailable");
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = file.name;
+      link.target = "_blank";
+      link.rel = "noreferrer";
+      link.click();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Download failed");
+    }
+  }
 
   async function handleDelete(
     target:
@@ -169,9 +231,11 @@ export default function UploadAndShow({
           githubToken: githubToken.trim() || undefined,
         }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Delete failed");
-      applyContent(data.content);
+      const parsed = await readResponseJson<{ error?: string; content?: ManagedContent }>(res);
+      if (!parsed.ok) throw new Error(parsed.error);
+      if (!res.ok) throw new Error(parsed.data.error || "Delete failed");
+      if (parsed.data.content) applyContent(parsed.data.content);
+      await refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Delete failed");
     } finally {
@@ -565,18 +629,27 @@ export default function UploadAndShow({
                               className="mt-2 max-h-32 w-full rounded-lg object-contain"
                             />
                           )}
-                          {f.dataUrl && (
-                            <a
-                              href={f.dataUrl}
-                              download={f.name}
-                              className="mt-2 inline-block text-xs font-medium text-brand-600 hover:underline"
-                            >
-                              Open / download
-                            </a>
+                          {!f.dataUrl && f.mime?.startsWith("image/") && (
+                            <ManagedImageThumb fileId={f.id} name={f.name} />
                           )}
+                          <button
+                            type="button"
+                            onClick={() => void openManagedFile(f)}
+                            className="mt-2 inline-block text-xs font-medium text-brand-600 hover:underline"
+                          >
+                            Open / download
+                          </button>
                         </div>
                         {editMode && <div className="flex shrink-0 items-center gap-1">
-                          <ResourceEditor target="file" item={f} label="Change / replace" onSaved={(content) => applyContent(content as ManagedContent)} />
+                          <ResourceEditor
+                            target="file"
+                            item={f}
+                            label="Change / replace"
+                            onSaved={(content) => {
+                              if (content) applyContent(content as ManagedContent);
+                              void refresh();
+                            }}
+                          />
                           <button type="button" title="Delete file" disabled={deletingId === f.id} onClick={() => handleDelete("file", f.id)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-lg font-bold text-red-600 shadow-sm hover:bg-red-50">−</button>
                         </div>}
                       </li>
