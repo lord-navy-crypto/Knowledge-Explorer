@@ -97,12 +97,12 @@
       "sourceNote": "Added via change-code edit"
     },
     {
-      "id": "m-formula-ms2q8xbu-z184g",
+      "id": "m-formula-ms2qe9ck-95x1c",
       "subject": "AP Physics C: Mechanics",
       "unit": "Managed",
-      "name": "Gravitational Potential Energy",
+      "name": "Orbital Period",
       "expression": "",
-      "content": "## 7. Gravitational Potential Energy\n\n### Concepts\n\nGravitational potential energy for astronomical systems is defined to be zero when the two objects are infinitely far apart.\n\nBecause gravity is attractive, gravitational potential energy at any finite separation is negative.\n\nAs a satellite moves farther from the central body:\n\n- Its gravitational potential energy increases.\n- The value becomes less negative.\n\nAs a satellite moves closer:\n\n- Its gravitational potential energy decreases.\n- The value becomes more negative.\n\nThe familiar equation $U_g=mgh$ is only an approximation for small height changes near a planet’s surface. Orbital problems generally use the universal gravitational-potential-energy equation.\n\n### Formulas\n\n$$U_g=-G\\frac{Mm}{r}$$\n\n$$\\Delta U_g=U_{g,f}-U_{g,i}$$\n\n$$\\Delta U_g=-\\frac{GMm}{r_f}+\\frac{GMm}{r_i}$$\n\nNear Earth’s surface, for small changes in height:\n\n$$\\Delta U_g\\approx mg\\Delta h$$",
+      "content": "## Orbital Period\n\n### Concepts\n\nThe orbital period is the time required for one complete revolution.\n\nFor uniform circular motion, the satellite travels one circumference during one period.\n\nA satellite in a larger circular orbit:\n\n- Travels a greater distance during each revolution.\n- Moves at a lower orbital speed.\n- Has a longer orbital period.\n\n### Formulas\n\n$$T=\\frac{1}{f}$$\n\n$$v=\\frac{2\\pi r}{T}$$\n\n$$T=\\frac{2\\pi r}{v}$$\n\nSubstituting the circular-orbit speed gives:\n\n$$T=2\\pi\\sqrt{\\frac{r^3}{GM}}$$",
       "variables": "",
       "whenToUse": "",
       "sourceNote": "Added via change-code edit"
@@ -701,5 +701,5 @@
   "settings": {
     "advancedDefault": true
   },
-  "updatedAt": 1785126534626
+  "updatedAt": 1785126783465
 }
