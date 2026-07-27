@@ -47,7 +47,12 @@ type Props = {
 };
 
 function isImageFile(file: ManagedFile) {
-  return Boolean(file.mime?.startsWith("image/") || file.dataUrl?.startsWith("data:image"));
+  const name = file.name.toLowerCase();
+  return Boolean(
+    file.mime?.startsWith("image/") ||
+      file.dataUrl?.startsWith("data:image") ||
+      /\.(png|jpe?g|gif|webp|bmp|svg|heic|avif)$/i.test(name)
+  );
 }
 
 function isPdfFile(file: ManagedFile) {
@@ -125,6 +130,9 @@ export default function UploadAndShow({
   const [displayFile, setDisplayFile] = useState<ManagedFile | null>(null);
   const [displayText, setDisplayText] = useState("");
   const [displayLoading, setDisplayLoading] = useState(false);
+  const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
+  const [displayImage, setDisplayImage] = useState<ManagedFile | null>(null);
+  const [imageLoading, setImageLoading] = useState(false);
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
 
   const scopedSpace = normalizeSpace(spaceKey);
@@ -248,6 +256,32 @@ export default function UploadAndShow({
     }
   }
 
+  async function openImageInDisplay(file: ManagedFile) {
+    setSelectedImageId(file.id);
+    setImageLoading(true);
+    setError("");
+    try {
+      if (file.dataUrl?.startsWith("data:image")) {
+        setDisplayImage(file);
+        return;
+      }
+      const res = await fetch(`/api/edit?fileId=${encodeURIComponent(file.id)}`, {
+        cache: "no-store",
+      });
+      const parsed = await readResponseJson<{ file?: ManagedFile; error?: string }>(res);
+      if (!parsed.ok) throw new Error(parsed.error);
+      if (!res.ok || !parsed.data.file) {
+        throw new Error(parsed.data.error || "Could not open image");
+      }
+      setDisplayImage(parsed.data.file);
+    } catch (e) {
+      setDisplayImage(file);
+      setError(e instanceof Error ? e.message : "Could not open image");
+    } finally {
+      setImageLoading(false);
+    }
+  }
+
   async function handleDelete(
     target:
       | "file"
@@ -318,6 +352,9 @@ export default function UploadAndShow({
     [allFiles, folderArea, scopedSpace]
   );
 
+  const images = useMemo(() => files.filter((f) => isImageFile(f)), [files]);
+  const otherFiles = useMemo(() => files.filter((f) => !isImageFile(f)), [files]);
+
   const documents = useMemo(
     () => allDocuments.filter((d) => matchesSpace(d, folderArea, scopedSpace)),
     [allDocuments, folderArea, scopedSpace]
@@ -329,12 +366,19 @@ export default function UploadAndShow({
   );
 
   useEffect(() => {
-    if (selectedFileId && !files.some((f) => f.id === selectedFileId)) {
+    if (selectedFileId && !otherFiles.some((f) => f.id === selectedFileId)) {
       setSelectedFileId(null);
       setDisplayFile(null);
       setDisplayText("");
     }
-  }, [files, selectedFileId]);
+  }, [otherFiles, selectedFileId]);
+
+  useEffect(() => {
+    if (selectedImageId && !images.some((f) => f.id === selectedImageId)) {
+      setSelectedImageId(null);
+      setDisplayImage(null);
+    }
+  }, [images, selectedImageId]);
 
   useEffect(() => {
     if (selectedDocId && !documents.some((d) => d.id === selectedDocId)) {
@@ -383,10 +427,13 @@ export default function UploadAndShow({
         <div>
           <p className="text-sm font-semibold text-slate-900">{panelTitle}</p>
           <p className="text-xs text-slate-500">
-            {files.length} file{files.length === 1 ? "" : "s"}
+            {images.length} image{images.length === 1 ? "" : "s"}
+            {otherFiles.length
+              ? ` · ${otherFiles.length} file${otherFiles.length === 1 ? "" : "s"}`
+              : ""}
             {folders.length ? ` · ${folders.length} folder${folders.length === 1 ? "" : "s"}` : ""}
             {documents.length ? ` · ${documents.length} doc${documents.length === 1 ? "" : "s"}` : ""}
-            {" · "}file browser + display browser
+            {" · "}image · file · document browsers
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -696,15 +743,148 @@ export default function UploadAndShow({
               <section className="space-y-2">
                 <div className="flex flex-wrap items-end justify-between gap-2">
                   <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                    Image browser · 图片浏览
+                  </h3>
+                  <p className="text-[11px] text-slate-400">
+                    Click a picture to open the image display · Download stays available
+                  </p>
+                </div>
+                {images.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
+                    No images here yet. Use “Upload image” on the left.
+                  </div>
+                ) : (
+                  <div className="grid gap-3 lg:grid-cols-2">
+                    <div className="flex h-[16rem] flex-col overflow-hidden rounded-xl border border-slate-200 bg-white md:h-[18rem]">
+                      <div className="shrink-0 border-b border-slate-100 bg-slate-50 px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                        Pictures · Image 1, 2, 3… · scroll
+                      </div>
+                      <ul className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+                        {images.map((f, index) => {
+                          const n = index + 1;
+                          const active = selectedImageId === f.id;
+                          return (
+                            <li
+                              key={f.id}
+                              className={`flex items-center gap-2 border-b border-slate-100 px-2 py-2 last:border-b-0 ${
+                                active ? "bg-rose-50" : "hover:bg-slate-50"
+                              }`}
+                            >
+                              <button
+                                type="button"
+                                onClick={() => void openImageInDisplay(f)}
+                                className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                              >
+                                <span
+                                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[11px] font-bold ${
+                                    active
+                                      ? "bg-rose-600 text-white"
+                                      : "bg-slate-100 text-slate-500"
+                                  }`}
+                                >
+                                  {n}
+                                </span>
+                                <span className="min-w-0">
+                                  <span className="block truncate text-sm font-medium text-slate-900">
+                                    Image {n} · {f.name}
+                                  </span>
+                                  <span className="block truncate text-[11px] text-slate-500">
+                                    Picture
+                                    {f.note ? ` · ${f.note}` : ""}
+                                  </span>
+                                </span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => void downloadManagedFile(f)}
+                                className="shrink-0 rounded-md bg-slate-900 px-2 py-1 text-[10px] font-semibold text-white hover:bg-slate-800"
+                              >
+                                Download
+                              </button>
+                              {editMode && (
+                                <div className="flex shrink-0 items-center gap-0.5">
+                                  <ResourceEditor
+                                    target="file"
+                                    item={f}
+                                    label="Edit"
+                                    onSaved={(content) => {
+                                      if (content) applyContent(content as ManagedContent);
+                                      void refresh();
+                                    }}
+                                  />
+                                  <button
+                                    type="button"
+                                    title="Delete image"
+                                    disabled={deletingId === f.id}
+                                    onClick={() => handleDelete("file", f.id)}
+                                    className="flex h-6 w-6 items-center justify-center rounded-full text-sm font-bold text-red-600 hover:bg-red-50"
+                                  >
+                                    −
+                                  </button>
+                                </div>
+                              )}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+
+                    <div className="flex h-[16rem] flex-col overflow-hidden rounded-xl border border-slate-200 bg-slate-50 md:h-[20rem]">
+                      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-slate-200 bg-white px-3 py-2">
+                        <p className="truncate text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                          Image display
+                        </p>
+                        {displayImage ? (
+                          <p className="truncate text-[11px] font-medium text-slate-700">
+                            {displayImage.name}
+                          </p>
+                        ) : null}
+                      </div>
+                      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3">
+                        {imageLoading ? (
+                          <p className="text-sm text-slate-500">Opening image…</p>
+                        ) : !displayImage ? (
+                          <p className="text-sm text-slate-500">
+                            Click a picture on the left to view it here. Scroll this pane to pan
+                            large images.
+                          </p>
+                        ) : displayImage.dataUrl?.startsWith("data:image") ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={displayImage.dataUrl}
+                            alt={displayImage.name}
+                            className="mx-auto max-w-full rounded-lg object-contain"
+                          />
+                        ) : (
+                          <div className="space-y-3 text-sm text-slate-600">
+                            <p>Image could not be previewed. Download to open locally.</p>
+                            <button
+                              type="button"
+                              onClick={() => void downloadManagedFile(displayImage)}
+                              className="rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-800"
+                            >
+                              Download {displayImage.name}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </section>
+
+              <section className="space-y-2 border-t border-slate-100 pt-4">
+                <div className="flex flex-wrap items-end justify-between gap-2">
+                  <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
                     File browser
                   </h3>
                   <p className="text-[11px] text-slate-400">
-                    Click a file to open the display browser · Download stays on the right
+                    Non-image files · click to open the display browser · Download stays available
                   </p>
                 </div>
-                {files.length === 0 ? (
+                {otherFiles.length === 0 ? (
                   <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
-                    No files here yet.
+                    No non-image files here yet. Pictures appear in Image browser above.
                   </div>
                 ) : (
                   <div className="grid gap-3 lg:grid-cols-2">
@@ -713,10 +893,9 @@ export default function UploadAndShow({
                         Files · File 1, 2, 3… · scroll
                       </div>
                       <ul className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-                        {files.map((f, index) => {
+                        {otherFiles.map((f, index) => {
                           const n = index + 1;
                           const active = selectedFileId === f.id;
-                          const isPic = isImageFile(f);
                           return (
                             <li
                               key={f.id}
@@ -743,7 +922,7 @@ export default function UploadAndShow({
                                     File {n} · {f.name}
                                   </span>
                                   <span className="block truncate text-[11px] text-slate-500">
-                                    {isPic ? "Picture" : f.mime || "file"}
+                                    {f.mime || "file"}
                                     {f.note ? ` · ${f.note}` : ""}
                                   </span>
                                 </span>
@@ -786,7 +965,7 @@ export default function UploadAndShow({
                     <div className="flex h-[16rem] flex-col overflow-hidden rounded-xl border border-slate-200 bg-slate-50 md:h-[18rem]">
                       <div className="flex shrink-0 items-center justify-between gap-2 border-b border-slate-200 bg-white px-3 py-2">
                         <p className="truncate text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                          Display browser
+                          File display
                         </p>
                         {displayFile ? (
                           <p className="truncate text-[11px] font-medium text-slate-700">
@@ -801,13 +980,6 @@ export default function UploadAndShow({
                           <p className="text-sm text-slate-500">
                             Click a file on the left to preview it here. Scroll this pane to read.
                           </p>
-                        ) : isImageFile(displayFile) && displayFile.dataUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={displayFile.dataUrl}
-                            alt={displayFile.name}
-                            className="mx-auto max-w-full rounded-lg object-contain"
-                          />
                         ) : isPdfFile(displayFile) && displayFile.dataUrl ? (
                           <iframe
                             title={displayFile.name}
