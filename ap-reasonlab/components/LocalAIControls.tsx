@@ -37,11 +37,16 @@ const MODEL_GROUPS: Array<{ value: LocalModelGroup; label: string }> = [
   { value: "heavy", label: "Heavy" },
 ];
 
+type Props = {
+  /** Flatten styling when nested inside the unified AI card. */
+  embedded?: boolean;
+};
+
 /**
  * One shared AI settings panel for every tool:
  * Local · Website API · Your own API.
  */
-export default function LocalAIControls() {
+export default function LocalAIControls({ embedded = false }: Props) {
   const localAI = useLocalAI();
   const [pendingModelId, setPendingModelId] = useState("");
   const [confirmLoad, setConfirmLoad] = useState(false);
@@ -105,7 +110,13 @@ export default function LocalAIControls() {
   }
 
   return (
-    <section className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+    <section
+      className={
+        embedded
+          ? "space-y-4 border-b border-slate-200 pb-4"
+          : "space-y-4 rounded-2xl border border-slate-200 bg-slate-50/80 p-4"
+      }
+    >
       <div>
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">AI settings</p>
         <p className="mt-1 text-sm text-slate-600">
@@ -185,6 +196,10 @@ export default function LocalAIControls() {
               <p className="mt-1">
                 Press <strong>Enable local AI</strong> to download/load a model in this browser, or
                 switch to Website API / Your own API.
+              </p>
+              <p className="mt-2 text-xs text-amber-900/90">
+                GPU tip: on laptops or integrated graphics, start with <strong>Super light</strong>{" "}
+                models. Close other heavy browser tabs while a local model is enabled.
               </p>
             </div>
           )}

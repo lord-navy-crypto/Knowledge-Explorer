@@ -6,8 +6,13 @@ import MarkdownLatexField from "@/components/MarkdownLatexField";
 import RichContent from "@/components/RichContent";
 import { useLocalAI } from "@/components/LocalAIProvider";
 import { appendAiSiteContext, fetchAiSiteContext } from "@/lib/ai-site-context";
+import {
+  loadToolboxPanelPrefs,
+  saveToolboxPanelPrefs,
+  type ToolboxCategory,
+} from "@/lib/ai-toolbox-prefs";
 
-type Category = "ap" | "english" | "coding";
+type Category = ToolboxCategory;
 
 type ApTask =
   | "advice"
@@ -157,13 +162,20 @@ export default function UnifiedAiPanel({
   defaultSubject,
 }: Props) {
   const localAI = useLocalAI();
-  const [category, setCategory] = useState<Category>(defaultCategory);
-  const [apTask, setApTask] = useState<ApTask>("advice");
-  const [englishTask, setEnglishTask] = useState<EnglishTask>("grammar-explanation");
-  const [codingTask, setCodingTask] = useState<CodingTask>("debug");
-  const [subject, setSubject] = useState(defaultSubject || SUBJECT_OPTIONS[0]);
-  const [englishTarget, setEnglishTarget] = useState("General academic English");
-  const [language, setLanguage] = useState<(typeof LANGUAGES)[number]>("Python");
+  const savedPrefs = useMemo(() => loadToolboxPanelPrefs(), []);
+  const [category, setCategory] = useState<Category>(defaultCategory || savedPrefs.category);
+  const [apTask, setApTask] = useState<ApTask>((savedPrefs.apTask as ApTask) || "advice");
+  const [englishTask, setEnglishTask] = useState<EnglishTask>(
+    (savedPrefs.englishTask as EnglishTask) || "grammar-explanation"
+  );
+  const [codingTask, setCodingTask] = useState<CodingTask>(
+    (savedPrefs.codingTask as CodingTask) || "debug"
+  );
+  const [subject, setSubject] = useState(defaultSubject || savedPrefs.subject || SUBJECT_OPTIONS[0]);
+  const [englishTarget, setEnglishTarget] = useState(savedPrefs.englishTarget);
+  const [language, setLanguage] = useState<(typeof LANGUAGES)[number]>(
+    (savedPrefs.language as (typeof LANGUAGES)[number]) || "Python"
+  );
   const [input, setInput] = useState("");
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
@@ -176,6 +188,26 @@ export default function UnifiedAiPanel({
     if (category === "english") return ENGLISH_TASKS.find((t) => t.value === englishTask)!;
     return CODING_TASKS.find((t) => t.value === codingTask)!;
   }, [apTask, category, codingTask, englishTask]);
+
+  useEffect(() => {
+    if (defaultCategory) setCategory(defaultCategory);
+  }, [defaultCategory]);
+
+  useEffect(() => {
+    if (defaultSubject) setSubject(defaultSubject);
+  }, [defaultSubject]);
+
+  useEffect(() => {
+    saveToolboxPanelPrefs({
+      category,
+      apTask,
+      englishTask,
+      codingTask,
+      subject,
+      englishTarget,
+      language,
+    });
+  }, [apTask, category, codingTask, englishTarget, englishTask, language, subject]);
 
   useEffect(() => {
     const node = chatRef.current;
@@ -502,7 +534,7 @@ export default function UnifiedAiPanel({
       </div>
 
       <div className="space-y-5 p-4 md:p-5">
-        <LocalAIControls />
+        <LocalAIControls embedded />
 
         <div className="grid gap-2 sm:grid-cols-3">
           {(
@@ -643,7 +675,7 @@ export default function UnifiedAiPanel({
               messages.map((message) => (
                 <div
                   key={message.id}
-                  className={`max-w-[95%] rounded-2xl px-3 py-2.5 text-sm ${
+                  className={`max-w-[95%] min-w-0 break-words rounded-2xl px-3 py-2.5 text-sm ${
                     message.role === "user"
                       ? "ml-auto bg-brand-600 text-white"
                       : "mr-auto border border-slate-200 bg-slate-50 text-slate-800"
@@ -660,9 +692,9 @@ export default function UnifiedAiPanel({
                     </p>
                   ) : null}
                   {message.role === "user" ? (
-                    <p className="whitespace-pre-wrap">{message.text}</p>
+                    <p className="whitespace-pre-wrap break-words">{message.text}</p>
                   ) : (
-                    <RichContent className="text-sm">{message.text}</RichContent>
+                    <RichContent className="min-w-0 text-sm">{message.text}</RichContent>
                   )}
                   {message.role === "assistant" && message.aiMayBeWrong ? (
                     <p className="mt-2 text-[11px] text-amber-800">{message.aiMayBeWrong}</p>
