@@ -23,6 +23,8 @@ type Props = {
    * Upload file is always available; include "document" for text documents.
    */
   alsoShow?: AlsoShow;
+  /** Files/images/documents only — no concept/formula/practice in this panel. */
+  mediaOnly?: boolean;
   onSubjectsChange?: (subjects: string[]) => void;
   onQuestionnairesChange?: (quizzes: unknown[]) => void;
   className?: string;
@@ -41,12 +43,17 @@ export default function UnifiedMediaFrame({
   collapsedByDefault = false,
   allowPublicContributions = false,
   alsoShow = ["document", "folder"],
+  mediaOnly: mediaOnlyProp,
   onSubjectsChange,
   onQuestionnairesChange,
   className = "",
 }: Props) {
+  const mediaOnly =
+    mediaOnlyProp ?? (folderArea === "ap-subject" || folderArea === "past-papers");
   // Every page panel can create nested file folders (AP, Academic, Tools, Code, Forum…).
-  const extras = Array.from(new Set([...alsoShow, "folder", "document"])) as AlsoShow;
+  const extras = mediaOnly
+    ? (["folder", "document"] as AlsoShow)
+    : (Array.from(new Set([...alsoShow, "folder", "document"])) as AlsoShow);
 
   return (
     <section
@@ -75,6 +82,7 @@ export default function UnifiedMediaFrame({
           collapsedByDefault={collapsedByDefault}
           allowPublicContributions={allowPublicContributions}
           alsoShow={extras}
+          mediaOnly={mediaOnly}
           onSubjectsChange={onSubjectsChange}
           onQuestionnairesChange={onQuestionnairesChange}
         />

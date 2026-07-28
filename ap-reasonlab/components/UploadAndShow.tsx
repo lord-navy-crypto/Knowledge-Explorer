@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import ChangePanel from "@/components/ChangePanel";
 import MediaFinderBrowser, { type MediaRow } from "@/components/MediaFinderBrowser";
-import RichContent from "@/components/RichContent";
 import ResourceEditor from "@/components/ResourceEditor";
 import { useEditorMode } from "@/components/EditorModeProvider";
 import type {
@@ -14,7 +13,6 @@ import type {
   ManagedFolder,
 } from "@/lib/managed-types";
 import { managedSubjectNames } from "@/lib/managed-types";
-import type { Concept, Formula } from "@/lib/types";
 import { readResponseJson } from "@/lib/safe-json";
 import {
   ROOT_SPACE,
@@ -45,6 +43,8 @@ type Props = {
   collapsedByDefault?: boolean;
   /** Anonymous users may add to Sharing Materials; deletion still requires a code. */
   allowPublicContributions?: boolean;
+  /** Files/images/documents only — no concept/formula/practice lists or add buttons. */
+  mediaOnly?: boolean;
 };
 
 function isImageFile(file: ManagedFile) {
@@ -72,13 +72,12 @@ export default function UploadAndShow({
   onQuestionnairesChange,
   collapsedByDefault = false,
   allowPublicContributions = false,
+  mediaOnly = false,
 }: Props) {
   const { active: editMode, unlocked } = useEditorMode();
   const [allFiles, setAllFiles] = useState<ManagedFile[]>([]);
   const [allDocuments, setAllDocuments] = useState<ManagedDocument[]>([]);
   const [allFolders, setAllFolders] = useState<ManagedFolder[]>([]);
-  const [allConcepts, setAllConcepts] = useState<Concept[]>([]);
-  const [allFormulas, setAllFormulas] = useState<Formula[]>([]);
   const [allSubjects, setAllSubjects] = useState<string[]>([]);
   const [allQuizzes, setAllQuizzes] = useState<
     Array<{ id: string; title: string; subject: string; description?: string; items?: unknown[] }>
@@ -103,8 +102,6 @@ export default function UploadAndShow({
       setAllFiles(Array.isArray(data.files) ? data.files : []);
       setAllDocuments(Array.isArray(data.documents) ? data.documents : []);
       setAllFolders(Array.isArray(data.folders) ? data.folders : []);
-      setAllConcepts(Array.isArray(data.concepts) ? data.concepts : []);
-      setAllFormulas(Array.isArray(data.formulas) ? data.formulas : []);
       const subjects = managedSubjectNames(data.subjects);
       setAllSubjects(subjects);
       onSubjectsChange?.(subjects);
@@ -317,40 +314,14 @@ export default function UploadAndShow({
     [documents]
   );
 
-  const conceptsHere = useMemo(() => {
-    if (!alsoShow.includes("concept") && !alsoShow.includes("topic")) return [];
-    if (scopedSpace.startsWith("folder:")) {
-      return allConcepts.filter(
-        (c) => c.subject === subjectForForms || c.subject === scopedSpace
-      );
-    }
-    if (scopedSpace === ROOT_SPACE) {
-      return allConcepts.filter((c) => !c.subject || c.subject === ROOT_SPACE);
-    }
-    return allConcepts.filter((c) => c.subject === scopedSpace);
-  }, [allConcepts, alsoShow, scopedSpace, subjectForForms]);
-
-  const formulasHere = useMemo(() => {
-    if (!alsoShow.includes("formula")) return [];
-    if (scopedSpace.startsWith("folder:")) {
-      return allFormulas.filter(
-        (f) => f.subject === subjectForForms || f.subject === scopedSpace
-      );
-    }
-    if (scopedSpace === ROOT_SPACE) return [];
-    return allFormulas.filter((f) => f.subject === scopedSpace);
-  }, [allFormulas, alsoShow, scopedSpace, subjectForForms]);
-
-  const quizzesHere = useMemo(() => {
-    if (!alsoShow.includes("questionnaire")) return [];
-    if (scopedSpace === ROOT_SPACE) return allQuizzes;
-    return allQuizzes.filter((q) => q.subject === scopedSpace || q.subject === subjectForForms);
-  }, [allQuizzes, alsoShow, scopedSpace, subjectForForms]);
-
   const panelTitle = `${title} · ${spaceLabel(
     scopedSpace,
     folders.find((f) => folderSpaceId(f.id) === scopedSpace)?.title
   )}`;
+
+  const uploadExtras = mediaOnly
+    ? alsoShow.filter((key) => key === "document" || key === "folder")
+    : alsoShow;
 
   return (
     <div className="space-y-4">
@@ -392,7 +363,7 @@ export default function UploadAndShow({
             Upload
           </h2>
           <div className="flex flex-col gap-3">
-            {alsoShow.includes("subject") && (
+            {uploadExtras.includes("subject") && (
               <ChangePanel
                 mode="subject"
                 label="+ Add subject folder"
@@ -418,7 +389,7 @@ export default function UploadAndShow({
               onSaved={onSaved}
               allowPublicContribution={allowPublicContributions}
             />
-            {alsoShow.includes("document") && (
+            {uploadExtras.includes("document") && (
               <ChangePanel
                 mode="document"
                 label="+ Add documents"
@@ -428,7 +399,7 @@ export default function UploadAndShow({
                 allowPublicContribution={allowPublicContributions}
               />
             )}
-            {alsoShow.includes("topic") && (
+            {uploadExtras.includes("topic") && (
               <ChangePanel
                 mode="topic"
                 label="+ Add topics"
@@ -438,7 +409,7 @@ export default function UploadAndShow({
                 onSaved={onSaved}
               />
             )}
-            {alsoShow.includes("concept") && (
+            {uploadExtras.includes("concept") && (
               <ChangePanel
                 mode="concept"
                 label="+ Add concepts"
@@ -448,7 +419,7 @@ export default function UploadAndShow({
                 onSaved={onSaved}
               />
             )}
-            {alsoShow.includes("formula") && (
+            {uploadExtras.includes("formula") && (
               <ChangePanel
                 mode="formula"
                 label="+ Add formulas"
@@ -458,7 +429,7 @@ export default function UploadAndShow({
                 onSaved={onSaved}
               />
             )}
-            {alsoShow.includes("questionnaire") && (
+            {uploadExtras.includes("questionnaire") && (
               <ChangePanel
                 mode="questionnaire"
                 label="+ Add generated practice set"
@@ -468,7 +439,7 @@ export default function UploadAndShow({
                 onSaved={onSaved}
               />
             )}
-            {alsoShow.includes("member") && (
+            {uploadExtras.includes("member") && (
               <ChangePanel mode="member" label="+ Add member" onSaved={onSaved} />
             )}
             <ChangePanel
@@ -508,7 +479,7 @@ export default function UploadAndShow({
               />
             </details>
           </div>}
-          {allSubjects.length > 0 && alsoShow.includes("subject") && (
+          {allSubjects.length > 0 && uploadExtras.includes("subject") && (
             <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 p-3 text-xs text-emerald-900">
               Custom subjects saved: {allSubjects.join(" · ")}
             </div>
@@ -574,97 +545,6 @@ export default function UploadAndShow({
                             </div>
                           )}
                         </div>
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              )}
-
-              {conceptsHere.length > 0 && (
-                <section className="space-y-2">
-                  <h3 className="text-sm font-semibold">
-                    Topics / concepts in this folder ({conceptsHere.length})
-                  </h3>
-                  <ul className="space-y-2">
-                    {conceptsHere.map((c) => (
-                      <li
-                        key={c.id}
-                        className="flex items-start justify-between gap-2 rounded-xl border border-brand-100 bg-brand-50/40 p-3"
-                      >
-                        <div className="min-w-0">
-                          <Link
-                            href={`/concepts/${c.id}`}
-                            className="text-sm font-medium text-brand-800 hover:underline"
-                          >
-                            {c.title}
-                          </Link>
-                          <RichContent clampLines={2} className="mt-1 text-xs text-slate-600">{c.summary}</RichContent>
-                        </div>
-                        {editMode && <div className="flex shrink-0 items-center gap-1">
-                          <ResourceEditor target={c.id.startsWith("m-topic") ? "topic" : "concept"} item={c} onSaved={(content) => applyContent(content as ManagedContent)} />
-                          <button type="button" title="Delete topic/concept" disabled={deletingId === c.id} onClick={() => handleDelete(c.id.startsWith("m-topic") ? "topic" : "concept", c.id)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-lg font-bold text-red-600 shadow-sm hover:bg-red-50">−</button>
-                        </div>}
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              )}
-
-              {formulasHere.length > 0 && (
-                <section className="space-y-2">
-                  <h3 className="text-sm font-semibold">
-                    Formulas in this folder ({formulasHere.length})
-                  </h3>
-                  <ul className="space-y-2">
-                    {formulasHere.map((f) => (
-                      <li
-                        key={f.id}
-                        className="flex items-start justify-between gap-2 rounded-xl border border-slate-100 bg-white p-3"
-                      >
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium">{f.name}</p>
-                          {f.content ? (
-                            <RichContent clampLines={3} className="mt-1 text-xs text-slate-600">{f.content}</RichContent>
-                          ) : (
-                            <p className="overflow-x-auto font-mono text-xs text-slate-600">{f.expression}</p>
-                          )}
-                        </div>
-                        {editMode && <div className="flex shrink-0 items-center gap-1">
-                          <ResourceEditor target="formula" item={f} onSaved={(content) => applyContent(content as ManagedContent)} />
-                          <button type="button" title="Delete formula" disabled={deletingId === f.id} onClick={() => handleDelete("formula", f.id)} className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50 text-lg font-bold text-red-600 hover:bg-red-50">−</button>
-                        </div>}
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              )}
-
-              {quizzesHere.length > 0 && (
-                <section className="space-y-2">
-                  <h3 className="text-sm font-semibold">
-                    Generated sets ({quizzesHere.length})
-                  </h3>
-                  <ul className="space-y-2">
-                    {quizzesHere.map((q) => (
-                      <li
-                        key={q.id}
-                        className="flex items-start justify-between gap-2 rounded-xl border border-violet-100 bg-violet-50/50 p-3"
-                      >
-                        <div className="min-w-0">
-                          <Link
-                            href={`/questionnaires/${q.id}`}
-                            className="text-sm font-medium text-brand-800 hover:underline"
-                          >
-                            {q.title}
-                          </Link>
-                          <RichContent clampLines={2} className="mt-1 text-xs text-slate-600">
-                            {q.description || q.subject}
-                          </RichContent>
-                        </div>
-                        {editMode && <div className="flex shrink-0 items-center gap-1">
-                          <ResourceEditor target="questionnaire" item={q} onSaved={(content) => applyContent(content as ManagedContent)} />
-                          <button type="button" title="Delete set" disabled={deletingId === q.id} onClick={() => handleDelete("questionnaire", q.id)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-lg font-bold text-red-600 shadow-sm hover:bg-red-50">−</button>
-                        </div>}
                       </li>
                     ))}
                   </ul>

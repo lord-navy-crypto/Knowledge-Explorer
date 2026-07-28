@@ -51,12 +51,6 @@ const EXTERNAL_TOOLS: ExternalTool[] = [
     blurb: "Pomodoro timer for focused study blocks without installing an app.",
     tags: ["focus", "timer", "productivity"],
   },
-  {
-    name: "College Board AP Classroom",
-    href: "https://apclassroom.collegeboard.org/",
-    blurb: "Official AP Daily videos and progress checks when your school provides access.",
-    tags: ["official", "AP", "videos"],
-  },
 ];
 
 const BUILT_IN = [

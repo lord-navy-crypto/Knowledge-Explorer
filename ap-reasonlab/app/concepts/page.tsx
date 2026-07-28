@@ -222,8 +222,11 @@ function ConceptsContent() {
           {subject === "AP Statistics" && (
             <>
               {" "}
-              The regenerated <strong>FRQ Practice Pack</strong> is in Documents below (PDF download
-              included).
+              The <strong>FRQ Practice Pack</strong> lives in{" "}
+              <Link href="/practice?subject=AP%20Statistics#frq-pack" className="font-medium text-brand-700 underline">
+                Practice &amp; exam
+              </Link>
+              .
             </>
           )}
         </p>
