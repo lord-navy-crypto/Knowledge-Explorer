@@ -80,6 +80,15 @@
       "keyPoints": [],
       "commonMistakes": [],
       "example": ""
+    },
+    {
+      "id": "m-concept-ms48h323-zuqsn",
+      "title": "Contextual Applications of Differentiation",
+      "subject": "AP Calculus AB/BC",
+      "summary": "## Contextual Applications of Differentiation\n\n### Concepts\n\nDerivatives can represent rates of change in real situations.\n\nStudents should understand:\n\n- Position, velocity, and acceleration\n- Related rates\n- Local linearization\n- Differentials\n- L’Hôpital’s Rule\n\n### Formulas\n\nVelocity:\n\n$$v(t)=s'(t)$$\n\nAcceleration:\n\n$$a(t)=v'(t)=s''(t)$$\n\nSpeed:\n\n$$\\text{speed}=|v(t)|$$\n\nLinearization:\n\n$$L(x)=f(a)+f'(a)(x-a)$$\n\nDifferential approximation:\n\n$$dy=f'(x),dx$$\n\nL’Hôpital’s Rule:\n\n$$\\lim_{x\\to a}\\frac{f(x)}{g(x)}=\\lim_{x\\to a}\\frac{f'(x)}{g'(x)}$$\n\nL’Hôpital’s Rule applies directly to the indeterminate forms:\n\n$$\\frac{0}{0}$$\n\n$$\\frac{\\infty}{\\infty}$$",
+      "keyPoints": [],
+      "commonMistakes": [],
+      "example": ""
     }
   ],
   "formulas": [
@@ -765,5 +774,5 @@
   "settings": {
     "advancedDefault": true
   },
-  "updatedAt": 1785217307877
+  "updatedAt": 1785217614596
 }
