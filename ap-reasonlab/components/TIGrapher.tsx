@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { evalExpr, formatCalc } from "@/lib/math-expr";
 
 type Range = { xmin: number; xmax: number; ymin: number; ymax: number };
@@ -13,6 +14,11 @@ const PRESETS = [
   { label: "sin & cos", y1: "sin(x)", y2: "cos(x)" },
   { label: "exp(-x²)", y1: "exp(-x^2)", y2: "" },
   { label: "abs(x)", y1: "abs(x)", y2: "x" },
+  { label: "1/x", y1: "1/x", y2: "" },
+  { label: "ln|x|", y1: "ln(abs(x))", y2: "" },
+  { label: "x³ − x", y1: "x^3-x", y2: "" },
+  { label: "sqrt(x)", y1: "sqrt(x)", y2: "" },
+  { label: "e^x", y1: "exp(x)", y2: "" },
 ];
 
 type Point = { x: number; y: number };
@@ -27,8 +33,12 @@ function sampleCurve(
   try {
     for (let i = 0; i <= steps; i += 1) {
       const x = range.xmin + ((range.xmax - range.xmin) * i) / steps;
-      const y = evalExpr(expression, { x, ans: 0 });
-      points.push({ x, y: Number.isFinite(y) ? y : Number.NaN });
+      try {
+        const y = evalExpr(expression, { x, ans: 0 });
+        points.push({ x, y: Number.isFinite(y) ? y : Number.NaN });
+      } catch {
+        points.push({ x, y: Number.NaN });
+      }
     }
     return { points };
   } catch (err) {
@@ -36,23 +46,52 @@ function sampleCurve(
   }
 }
 
+function autoRangeFromCurves(curves: Point[][]): Range | null {
+  const ys: number[] = [];
+  for (const curve of curves) {
+    for (const point of curve) {
+      if (Number.isFinite(point.y) && Math.abs(point.y) < 1e6) ys.push(point.y);
+    }
+  }
+  if (ys.length < 2) return null;
+  ys.sort((a, b) => a - b);
+  const lo = ys[Math.floor(ys.length * 0.05)]!;
+  const hi = ys[Math.floor(ys.length * 0.95)]!;
+  const pad = Math.max(0.5, (hi - lo) * 0.15);
+  return {
+    xmin: -10,
+    xmax: 10,
+    ymin: lo - pad,
+    ymax: hi + pad,
+  };
+}
+
 export default function TIGrapher() {
+  const searchParams = useSearchParams();
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [y1, setY1] = useState("sin(x)");
-  const [y2, setY2] = useState("");
+  const [y1, setY1] = useState(() => searchParams.get("y1") || "sin(x)");
+  const [y2, setY2] = useState(() => searchParams.get("y2") || "");
   const [range, setRange] = useState<Range>(DEFAULT_RANGE);
   const [error, setError] = useState("");
   const [traceX, setTraceX] = useState(0);
   const [shade, setShade] = useState(true);
   const [showTable, setShowTable] = useState(true);
+  const [hiRes, setHiRes] = useState(true);
 
-  const steps = 320;
-  const curve1 = useMemo(() => sampleCurve(y1, range, steps), [y1, range]);
-  const curve2 = useMemo(() => sampleCurve(y2, range, steps), [y2, range]);
+  useEffect(() => {
+    const fromY1 = searchParams.get("y1");
+    const fromY2 = searchParams.get("y2");
+    if (fromY1) setY1(fromY1);
+    if (fromY2) setY2(fromY2);
+  }, [searchParams]);
+
+  const steps = hiRes ? 720 : 320;
+  const curve1 = useMemo(() => sampleCurve(y1, range, steps), [y1, range, steps]);
+  const curve2 = useMemo(() => sampleCurve(y2, range, steps), [y2, range, steps]);
 
   const tableRows = useMemo(() => {
     const rows: Array<{ x: string; y1: string; y2: string }> = [];
-    const count = 11;
+    const count = 15;
     for (let i = 0; i < count; i += 1) {
       const x = range.xmin + ((range.xmax - range.xmin) * i) / (count - 1);
       let v1 = "—";
@@ -95,7 +134,7 @@ export default function TIGrapher() {
     if (!raw) return;
     const ctx: CanvasRenderingContext2D = raw;
 
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
     const cssW = canvas.clientWidth;
     const cssH = canvas.clientHeight;
     canvas.width = Math.floor(cssW * dpr);
@@ -112,15 +151,17 @@ export default function TIGrapher() {
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, w, h);
 
-    ctx.strokeStyle = "rgba(40, 55, 20, 0.22)";
+    ctx.strokeStyle = "rgba(40, 55, 20, 0.18)";
     ctx.lineWidth = 1;
-    for (let gx = Math.ceil(xmin); gx <= Math.floor(xmax); gx += 1) {
+    const xStep = niceStep(xmax - xmin);
+    const yStep = niceStep(ymax - ymin);
+    for (let gx = Math.ceil(xmin / xStep) * xStep; gx <= xmax; gx += xStep) {
       ctx.beginPath();
       ctx.moveTo(sx(gx), 0);
       ctx.lineTo(sx(gx), h);
       ctx.stroke();
     }
-    for (let gy = Math.ceil(ymin); gy <= Math.floor(ymax); gy += 1) {
+    for (let gy = Math.ceil(ymin / yStep) * yStep; gy <= ymax; gy += yStep) {
       ctx.beginPath();
       ctx.moveTo(0, sy(gy));
       ctx.lineTo(w, sy(gy));
@@ -138,10 +179,10 @@ export default function TIGrapher() {
 
     ctx.fillStyle = "#1f2a12";
     ctx.font = "11px ui-monospace, monospace";
-    ctx.fillText(`x ${xmin}`, 6, sy(0) - 6);
-    ctx.fillText(`${xmax}`, w - 28, sy(0) - 6);
-    ctx.fillText(`${ymax}`, sx(0) + 4, 12);
-    ctx.fillText(`${ymin}`, sx(0) + 4, h - 6);
+    ctx.fillText(`x ${formatCalc(xmin)}`, 6, Math.min(h - 6, Math.max(12, sy(0) - 6)));
+    ctx.fillText(formatCalc(xmax), w - 40, Math.min(h - 6, Math.max(12, sy(0) - 6)));
+    ctx.fillText(formatCalc(ymax), Math.min(w - 40, Math.max(4, sx(0) + 4)), 12);
+    ctx.fillText(formatCalc(ymin), Math.min(w - 40, Math.max(4, sx(0) + 4)), h - 6);
 
     function drawCurve(points: Point[], color: string, fill: boolean) {
       if (fill && points.length > 1) {
@@ -162,13 +203,9 @@ export default function TIGrapher() {
             ctx.lineTo(px, py);
           }
         }
-        ctx.lineTo(sx(points[points.length - 1].x), sy(0));
+        const last = points[points.length - 1];
+        if (last) ctx.lineTo(sx(last.x), sy(0));
         ctx.closePath();
-        ctx.fillStyle = color.replace(")", ", 0.18)").replace("rgb", "rgba").includes("rgba")
-          ? color.includes("#")
-            ? `${color}2e`
-            : color
-          : `${color}2e`;
         if (color.startsWith("#")) ctx.fillStyle = `${color}33`;
         ctx.fill();
       }
@@ -221,6 +258,16 @@ export default function TIGrapher() {
     }
   }, [curve1, curve2, range, shade, traceX, traceY1, traceY2, y1, y2]);
 
+  function niceStep(span: number): number {
+    const raw = span / 8;
+    const pow = 10 ** Math.floor(Math.log10(Math.max(raw, 1e-9)));
+    const n = raw / pow;
+    if (n < 1.5) return pow;
+    if (n < 3.5) return 2 * pow;
+    if (n < 7.5) return 5 * pow;
+    return 10 * pow;
+  }
+
   function zoom(factor: number) {
     setRange((prev) => {
       const mx = (prev.xmin + prev.xmax) / 2;
@@ -229,6 +276,20 @@ export default function TIGrapher() {
       const hy = ((prev.ymax - prev.ymin) / 2) * factor;
       return { xmin: mx - hx, xmax: mx + hx, ymin: my - hy, ymax: my + hy };
     });
+  }
+
+  function fitY() {
+    const next = autoRangeFromCurves([curve1.points, curve2.points]);
+    if (next) setRange((prev) => ({ ...prev, ymin: next.ymin, ymax: next.ymax }));
+  }
+
+  function exportPng() {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const link = document.createElement("a");
+    link.download = `ke-graph-${Date.now()}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
   }
 
   function onCanvasClick(event: React.MouseEvent<HTMLCanvasElement>) {
@@ -244,7 +305,7 @@ export default function TIGrapher() {
     <div className="ti-shell ti-shell--wide">
       <div className="ti-brand-row">
         <span className="ti-brand">KE Graph CE</span>
-        <span className="ti-sub">Dual plots · table · click-to-trace · shade</span>
+        <span className="ti-sub">Function plotter · hi-res · fit · export</span>
       </div>
       <div className="ti-layout">
         <div>
@@ -295,6 +356,9 @@ export default function TIGrapher() {
               <button type="button" className="ti-key" onClick={() => setRange(DEFAULT_RANGE)}>
                 ZStandard
               </button>
+              <button type="button" className="ti-key" onClick={fitY}>
+                Fit Y
+              </button>
               <button
                 type="button"
                 className={`ti-key ${shade ? "ti-key-2nd-on" : ""}`}
@@ -308,6 +372,16 @@ export default function TIGrapher() {
                 onClick={() => setShowTable((value) => !value)}
               >
                 Table
+              </button>
+              <button
+                type="button"
+                className={`ti-key ${hiRes ? "ti-key-2nd-on" : ""}`}
+                onClick={() => setHiRes((value) => !value)}
+              >
+                Hi-res
+              </button>
+              <button type="button" className="ti-key" onClick={exportPng}>
+                Export PNG
               </button>
             </div>
             <div className="ti-presets">
@@ -386,7 +460,8 @@ export default function TIGrapher() {
         )}
       </div>
       <p className="ti-hint">
-        Dual curves (Y1 green, Y2 blue), optional shade under Y1, and a value table for visualization.
+        Plots functions of x (not AI images). Supports abs, ln, exp, 1/x, nCr-style constants from
+        the computer. Open from Calculator with → Graph.
       </p>
     </div>
   );

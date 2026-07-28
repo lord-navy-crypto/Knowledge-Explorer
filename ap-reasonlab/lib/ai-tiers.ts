@@ -14,15 +14,15 @@ export function resolveSiteCloudTierFromEnv(): "public" | "author" {
 }
 
 const TOKEN_CAPS: Record<CloudSpendTier, number> = {
-  public: 800,
-  author: 1600,
-  byok: 1800,
+  public: 1400,
+  author: 2400,
+  byok: 3000,
 };
 
 const TOKEN_DEFAULTS: Record<CloudSpendTier, number> = {
-  public: 700,
-  author: 1200,
-  byok: 1400,
+  public: 1100,
+  author: 1800,
+  byok: 2200,
 };
 
 export function capMaxTokens(requested: number | undefined, tier: CloudSpendTier): number {

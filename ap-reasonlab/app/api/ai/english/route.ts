@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     const siteModel = parseSiteModelChoice(body.siteModel);
 
     if (!input) return NextResponse.json({ error: "Enter English text or a learning question." }, { status: 400 });
-    if (input.length > 10_000) return NextResponse.json({ error: "Input is too long (maximum 10,000 characters)." }, { status: 400 });
+    if (input.length > 16_000) return NextResponse.json({ error: "Input is too long (maximum 16,000 characters)." }, { status: 400 });
     if (mode.length > 60 || target.length > 100) return NextResponse.json({ error: "Invalid mode or target." }, { status: 400 });
     if (isClearlyOutsideEnglishScope(input, mode)) return NextResponse.json(scopeRefusal());
 
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
       const result = await runChatJson({
         system: ENGLISH_TUTOR_SYSTEM,
         user: userWithSite,
-        maxTokens: 900,
+        maxTokens: 1200,
         userApiKey: userApiKey || undefined,
         provider,
         siteModel,
