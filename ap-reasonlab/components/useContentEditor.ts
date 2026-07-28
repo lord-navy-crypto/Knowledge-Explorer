@@ -19,11 +19,16 @@ export function useContentEditor() {
 
   const refresh = useCallback(async () => {
     try {
-      const res = await fetch("/api/auth/me", { cache: "no-store" });
-      const data = await res.json();
+      const res = await fetch("/api/auth/me", {
+        cache: "no-store",
+        credentials: "include",
+      });
+      // Keep the previous unlock state on network / transient failures.
+      if (!res.ok) return;
+      const data = (await res.json()) as { contentEditor?: ContentEditorInfo };
       setEditor(data.contentEditor || null);
     } catch {
-      setEditor(null);
+      /* keep previous editor */
     } finally {
       setLoading(false);
     }

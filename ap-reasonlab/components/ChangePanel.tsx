@@ -67,6 +67,7 @@ export default function ChangePanel({
   const [file, setFile] = useState<File | null>(null);
   const [firstPrompt, setFirstPrompt] = useState("");
   const [minutes, setMinutes] = useState("20");
+  const [forceCodeField, setForceCodeField] = useState(false);
 
   useEffect(() => {
     setSubject(defaultSubject);
@@ -85,7 +86,7 @@ export default function ChangePanel({
   };
 
   const scopedSpace = normalizeSpace(spaceKey);
-  const needsCodeField = !allowPublicContribution && !unlocked;
+  const needsCodeField = !allowPublicContribution && (!unlocked || forceCodeField);
 
   function reset() {
     setTitle("");
@@ -189,6 +190,7 @@ export default function ChangePanel({
       const res = await fetch("/api/edit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           action,
           item,
@@ -199,9 +201,18 @@ export default function ChangePanel({
       });
       const parsed = await readResponseJson<{ error?: string; content?: unknown; note?: string }>(res);
       if (!parsed.ok) throw new Error(parsed.error);
+      if (res.status === 401) {
+        setForceCodeField(true);
+        void refresh();
+        throw new Error(
+          parsed.data.error ||
+            "Editor session expired. Enter the content change code below, or unlock again with ✎."
+        );
+      }
       if (!res.ok) throw new Error(parsed.data.error || "Save failed");
 
       setNote(parsed.data.note || "Saved. It should appear in this panel / subject list now.");
+      setForceCodeField(false);
       reset();
       setOpen(false);
       onSaved?.(parsed.data.content);
@@ -406,14 +417,23 @@ export default function ChangePanel({
             </>
           )}
 
-          {!allowPublicContribution && unlocked && (
-            <p className="rounded-xl bg-emerald-50 px-3 py-3 text-xs text-emerald-900">
-              Editor unlocked ({editor?.level}). Saves use your login session — no change code
-              needed.{" "}
-              <Link href="/login" className="font-medium underline">
-                Manage login
-              </Link>
-            </p>
+          {!allowPublicContribution && unlocked && !forceCodeField && (
+            <div className="space-y-2 rounded-xl bg-emerald-50 px-3 py-3 text-xs text-emerald-900">
+              <p>
+                Editor unlocked ({editor?.level}). Saves use your login session — no change code
+                needed.{" "}
+                <Link href="/login" className="font-medium underline">
+                  Manage login
+                </Link>
+              </p>
+              <button
+                type="button"
+                className="font-medium text-emerald-950 underline"
+                onClick={() => setForceCodeField(true)}
+              >
+                Use change code override
+              </button>
+            </div>
           )}
 
           {!allowPublicContribution && needsCodeField && (

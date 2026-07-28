@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useDeferredValue, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
@@ -22,16 +22,18 @@ function SearchPageInner() {
   const [type, setType] = useState(initialType);
   const [managed, setManaged] = useState<Partial<ManagedContent>>({});
   const [loading, setLoading] = useState(true);
+  const deferredQuery = useDeferredValue(query.trim());
 
   useEffect(() => {
     let cancelled = false;
     void (async () => {
       try {
-        const res = await fetch("/api/edit", { cache: "no-store" });
+        const res = await fetch("/api/edit", { cache: "no-store", credentials: "include" });
+        if (!res.ok) return;
         const data = (await res.json()) as Partial<ManagedContent>;
         if (!cancelled) setManaged(data);
       } catch {
-        /* ignore */
+        /* ignore — keep empty managed index */
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -41,20 +43,27 @@ function SearchPageInner() {
     };
   }, []);
 
+  // Debounce URL sync so typing does not thrash the router on every keystroke.
   useEffect(() => {
-    const q = query.trim();
-    const params = new URLSearchParams();
-    if (q) params.set("q", q);
-    if (type && type !== "all") params.set("type", type);
-    const next = params.toString();
-    router.replace(next ? `/search?${next}` : "/search", { scroll: false });
+    const handle = window.setTimeout(() => {
+      const q = query.trim();
+      const params = new URLSearchParams();
+      if (q) params.set("q", q);
+      if (type && type !== "all") params.set("type", type);
+      const next = params.toString();
+      const target = next ? `/search?${next}` : "/search";
+      const current = `${window.location.pathname}${window.location.search}`;
+      if (current !== target) {
+        router.replace(target, { scroll: false });
+      }
+    }, 250);
+    return () => window.clearTimeout(handle);
   }, [query, type, router]);
 
   const results = useMemo<SiteSearchHit[]>(() => {
-    const needle = query.trim();
-    if (needle.length < 2) return [];
-    return searchSiteEngine(needle, managed, { type, limit: 100 });
-  }, [managed, query, type]);
+    if (deferredQuery.length < 2) return [];
+    return searchSiteEngine(deferredQuery, managed, { type, limit: 100 });
+  }, [managed, deferredQuery, type]);
 
   const counts = useMemo(() => {
     const map = new Map<string, number>();
@@ -101,7 +110,7 @@ function SearchPageInner() {
         <p className="text-sm text-slate-500">Loading live site content into the index…</p>
       ) : null}
 
-      {query.trim().length >= 2 ? (
+      {deferredQuery.length >= 2 ? (
         <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
           <span className="font-semibold text-slate-700">
             {results.length} result{results.length === 1 ? "" : "s"}
@@ -153,7 +162,7 @@ function SearchPageInner() {
             <p className="mt-1 truncate text-[11px] text-brand-700">{item.href}</p>
           </Link>
         ))}
-        {query.trim().length >= 2 && results.length === 0 && (
+        {deferredQuery.length >= 2 && results.length === 0 && (
           <div className="card text-sm text-slate-500">No matching content in the site index.</div>
         )}
       </section>

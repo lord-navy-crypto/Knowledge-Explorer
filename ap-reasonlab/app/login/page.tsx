@@ -30,10 +30,16 @@ function LoginForm() {
       const res = await fetch("/api/auth/content-login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ changeCode: changeCode.trim() }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Login failed");
+      try {
+        sessionStorage.setItem("results-editor-ui", "on");
+      } catch {
+        /* ignore */
+      }
       await refresh();
       setNote(
         data.note ||

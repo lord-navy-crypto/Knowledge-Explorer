@@ -4,12 +4,24 @@ import {
   formatAiSiteSearchContext,
   searchKnowledgeExplorerContent,
 } from "@/lib/ai-site-search";
-import { loadManagedContent, normalizeManagedContent } from "@/lib/managed-store";
+import { loadManagedContent, normalizeManagedContent, type ManagedContent } from "@/lib/managed-store";
 
 /**
  * Search Knowledge Explorer study content for AI context.
  * Free of LLM token cost — only reads site data.
  */
+function slimManagedForSearch(content: ManagedContent): ManagedContent {
+  return {
+    ...content,
+    files: (content.files || []).map((file) => {
+      if (!file.dataUrl) return file;
+      const { dataUrl: _omit, ...rest } = file;
+      return rest;
+    }),
+    recycleBin: [],
+  };
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
@@ -28,7 +40,7 @@ export async function POST(req: NextRequest) {
     }
 
     const token = await getGithubTokenFromCookie();
-    const managed = normalizeManagedContent(await loadManagedContent(token));
+    const managed = slimManagedForSearch(normalizeManagedContent(await loadManagedContent(token)));
     const hits = searchKnowledgeExplorerContent(query, managed, limit);
     const context = formatAiSiteSearchContext(hits);
     return NextResponse.json({

@@ -38,15 +38,24 @@ function forgetDeleted(content: ManagedContent, id?: string | null) {
 
 /** Drop heavy dataUrls from save responses so clients don't hit Request Entity Too Large. */
 function slimManagedContent(content: ManagedContent): ManagedContent {
+  const slimFile = <T extends { dataUrl?: string; note?: string }>(file: T): Omit<T, "dataUrl"> => {
+    if (!file.dataUrl) return file;
+    const { dataUrl: _omit, ...rest } = file;
+    return {
+      ...rest,
+      note: rest.note || "File stored — open this page folder to download.",
+    };
+  };
+
   return {
     ...content,
-    files: (content.files || []).map((file) => {
-      if (!file.dataUrl) return file;
-      const { dataUrl: _omit, ...rest } = file;
-      return {
-        ...rest,
-        note: rest.note || "File stored — open this page folder to download.",
-      };
+    files: (content.files || []).map((file) => slimFile(file)),
+    recycleBin: (content.recycleBin || []).map((entry) => {
+      const payload = entry.payload;
+      if (!payload || typeof payload !== "object") return entry;
+      const record = payload as { dataUrl?: string; note?: string };
+      if (!record.dataUrl) return entry;
+      return { ...entry, payload: slimFile(record) };
     }),
   };
 }

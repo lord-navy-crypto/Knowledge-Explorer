@@ -36,28 +36,24 @@ export function EditorModeProvider({ children }: { children: React.ReactNode }) 
     }
   }, [active, session.loading, session.unlocked]);
 
-  const setActive = useCallback(
-    (next: boolean) => {
-      const safeNext = next && session.unlocked;
-      setActiveState(safeNext);
-      if (safeNext) sessionStorage.setItem("results-editor-ui", "on");
-      else {
-        sessionStorage.removeItem("results-editor-ui");
-        setToolsPanel(null);
-      }
-    },
-    [session.unlocked]
-  );
-
-  const openTools = useCallback(
-    (panel: Exclude<EditorToolsPanel, null>) => {
-      if (!session.unlocked) return;
+  // Prefer turning edit UI on without reading a stale unlocked flag from the previous render.
+  // The effect above still clears active when the session is truly locked.
+  const setActive = useCallback((next: boolean) => {
+    if (next) {
       setActiveState(true);
       sessionStorage.setItem("results-editor-ui", "on");
-      setToolsPanel(panel);
-    },
-    [session.unlocked]
-  );
+      return;
+    }
+    setActiveState(false);
+    sessionStorage.removeItem("results-editor-ui");
+    setToolsPanel(null);
+  }, []);
+
+  const openTools = useCallback((panel: Exclude<EditorToolsPanel, null>) => {
+    setActiveState(true);
+    sessionStorage.setItem("results-editor-ui", "on");
+    setToolsPanel(panel);
+  }, []);
 
   const closeTools = useCallback(() => setToolsPanel(null), []);
 

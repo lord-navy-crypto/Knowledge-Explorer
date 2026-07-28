@@ -51,12 +51,19 @@ export default function EditModeButton() {
       const res = await fetch("/api/auth/content-login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ changeCode: changeCode.trim() }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Unlock failed");
       setNote(data.note || "Unlocked. AI Developer and History are available from this menu.");
       setChangeCode("");
+      // Turn edit UI on immediately — do not wait for a re-render of unlocked.
+      try {
+        sessionStorage.setItem("results-editor-ui", "on");
+      } catch {
+        /* ignore */
+      }
       await refresh();
       setActive(true);
     } catch (err) {
@@ -67,7 +74,7 @@ export default function EditModeButton() {
   }
 
   async function lock() {
-    await fetch("/api/auth/content-logout", { method: "POST" });
+    await fetch("/api/auth/content-logout", { method: "POST", credentials: "include" });
     await refresh();
     setActive(false);
     setNote("Editor locked on this browser.");
