@@ -17,9 +17,6 @@ import type {
 import type { AiProvider, SiteModelChoice } from "@/lib/ai-site-models";
 import { parseSiteModelChoice } from "@/lib/ai-site-models";
 import {
-  isInsideOpenThinkBlock,
-  isReasoningLocalModel,
-  REASONING_MODEL_DIRECT_ANSWER,
   stripReasoningTrace,
 } from "@/lib/ai-reasoning-strip";
 
@@ -280,27 +277,15 @@ const LOCAL_MODELS: LocalModelOption[] = [
     vramMB: 5107,
     cached: null,
   },
-  {
-    id: "DeepSeek-R1-Distill-Qwen-7B-q4f16_1-MLC",
-    label: "DeepSeek-R1 Distill Heavy",
-    group: "heavy",
-    summary:
-      "Reasoning distill — thinks privately first; the site hides <think> and shows only the final answer. Loads with a 4k context (HF ships 128k which OOMs in-browser).",
-    bestFor: "Hard multi-step problems when you can wait through a short reasoning phase",
-    parameterSize: "7B",
-    vramMB: 5107,
-    cached: null,
-  },
 ];
 
-/** WebLLM chatOpts override — Distill’s HF config uses 131072 context and fails local reload/OOM. */
+/** Cap context on heavier WebLLM models so typical laptop GPUs do not OOM. */
 function chatOptsForModel(modelId: string, contextWindow = 4096) {
   const opts: { context_window_size: number; prefill_chunk_size: number } = {
     context_window_size: contextWindow,
     prefill_chunk_size: Math.min(1024, contextWindow),
   };
-  if (/deepseek-r1-distill|r1-distill/i.test(modelId)) return opts;
-  // Other 7B/8B heavies also need a capped context on typical laptops.
+  // 7B/8B heavies need a capped context on typical laptops.
   if (/7B|8B/i.test(modelId)) return opts;
   if (/3B|4B/i.test(modelId)) return { ...opts, context_window_size: Math.min(contextWindow, 4096) };
   return undefined;
@@ -314,16 +299,16 @@ function isLocalLoadOomError(message: string): boolean {
 
 function explainLocalLoadError(message: string, modelId: string): string {
   if (/webgpu|device lost|out of memory|oom|resource.intensive/i.test(message)) {
-    return `${message}\n\nTip: DeepSeek Distill needs a GPU with enough free VRAM. We already cap context to 4k — try Remove cached model then Enable again, close other GPU tabs, or use a Light/Medium model / Website API.`;
+    return `${message}\n\nTip: Free GPU VRAM — close other heavy tabs, try a Light/Medium model, Remove cached model then Enable again, or use Website API.`;
   }
   if (/Failed to fetch|Cache\.add|network|huggingface|integrity/i.test(message)) {
     return `${message}\n\nTip: Model download from Hugging Face failed or cache is corrupt. Check network, free disk space, then use “Remove from cache” and Enable again.`;
   }
   if (/local update|update has failed|reload/i.test(message)) {
-    return `${message}\n\nTip: Local model reload failed (common for DeepSeek-R1 Distill when context is too large or cache is half-written). Remove the cached Distill model, Enable again, or switch to Qwen2.5 Heavy / Website API.`;
+    return `${message}\n\nTip: Local model reload failed (often a half-written cache). Remove the cached model, Enable again, or switch to Website API.`;
   }
-  if (/deepseek-r1-distill|r1-distill/i.test(modelId)) {
-    return `${message}\n\nDeepSeek-R1 Distill is the heaviest local option. If Enable keeps failing, pick Qwen2.5 Heavy or Website API.`;
+  if (/deepseek/i.test(modelId)) {
+    return `${message}\n\nDeepSeek Distill was removed from this site because the thinking-phase path was too laggy in-browser. Pick Qwen2.5 / Llama or Website API.`;
   }
   return message;
 }
@@ -370,7 +355,11 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem(MODE_KEY, savedMode);
     }
     const savedModel = localStorage.getItem(MODEL_KEY);
-    if (LOCAL_MODELS.some((item) => item.id === savedModel)) {
+    if (savedModel && /deepseek-r1|r1-distill/i.test(savedModel)) {
+      // Retired: Distill’s private-thinking path made answers feel stuck on “thinking”.
+      localStorage.setItem(MODEL_KEY, DEFAULT_MODEL_ID);
+      setSelectedModelIdState(DEFAULT_MODEL_ID);
+    } else if (LOCAL_MODELS.some((item) => item.id === savedModel)) {
       setSelectedModelIdState(String(savedModel));
     }
     const savedSiteModel = parseSiteModelChoice(localStorage.getItem(SITE_MODEL_KEY));
@@ -473,9 +462,7 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
         try {
           const webllm = await import("@mlc-ai/web-llm");
           let engine: MLCEngineInterface | null = null;
-          const contextAttempts = /deepseek-r1-distill|r1-distill|7B|8B/i.test(targetModelId)
-            ? [4096, 2048]
-            : [4096];
+          const contextAttempts = /7B|8B/i.test(targetModelId) ? [4096, 2048] : [4096];
 
           const loadWithOpts = async (contextWindow: number) => {
             const chatOpts = chatOptsForModel(targetModelId, contextWindow);
@@ -536,11 +523,7 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
           setStatus("ready");
           setProgress(1);
           setError("");
-          setStatusText(
-            /deepseek-r1-distill|r1-distill/i.test(targetModelId)
-              ? "Local AI is ready (DeepSeek Distill, capped context for WebGPU)."
-              : "Local AI is ready on this device."
-          );
+          setStatusText("Local AI is ready on this device.");
           setModels((current) =>
             current.map((item) => (item.id === targetModelId ? { ...item, cached: true } : item))
           );
@@ -627,46 +610,26 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
       if (!engine) throw new Error("Enable local AI before sending a local request.");
       setStatus("generating");
       setError("");
+      setStatusText("Generating answer…");
       try {
-        const modelId = loadedModelRef.current || selectedModelId;
-        const reasoningModel = isReasoningLocalModel(modelId);
-        const requestMessages: ChatCompletionMessageParam[] = reasoningModel
-          ? [{ role: "system", content: REASONING_MODEL_DIRECT_ANSWER }, ...messages]
-          : messages;
-
-        if (reasoningModel) {
-          setStatusText("DeepSeek is reasoning privately… the final answer will appear next.");
-        }
-
         const stream = await engine.chat.completions.create({
-          messages: requestMessages,
+          messages,
           stream: true,
-          temperature: reasoningModel ? 0.4 : 0.5,
-          // R1 spends many tokens inside <think>; keep enough budget for the answer after.
-          ...(reasoningModel ? { max_tokens: 2800 } : {}),
+          temperature: 0.5,
         });
         let raw = "";
         let visible = "";
-        let announcedAnswer = false;
         for await (const chunk of stream) {
           const token = chunk.choices[0]?.delta?.content ?? "";
           raw += token;
-          visible = stripReasoningTrace(raw);
-          if (reasoningModel && isInsideOpenThinkBlock(raw)) {
-            setStatusText("DeepSeek is reasoning privately… the final answer will appear next.");
-          } else if (reasoningModel && visible && !announcedAnswer) {
-            announcedAnswer = true;
-            setStatusText("Final answer ready — reasoning hidden.");
-          }
-          // Push only the stripped answer so the UI never fills with <think> dumps.
+          // Soft-strip any accidental <think> dumps; do not stall on a reasoning phase.
+          visible = stripReasoningTrace(raw) || raw;
+          setStatusText("Generating answer…");
           onToken?.(token, visible);
         }
-        const cleaned = stripReasoningTrace(raw);
-        if (reasoningModel && !cleaned) {
-          throw new Error(
-            "DeepSeek-R1 only produced hidden thinking and no final answer. Try again, shorten the prompt, or use Qwen / Llama."
-          );
-        }
+        const cleaned = stripReasoningTrace(raw) || raw.trim();
+        if (!cleaned) throw new Error("Local model returned an empty answer. Try again.");
+        setStatusText("Local AI is ready on this device.");
         return cleaned;
       } catch (caught) {
         const message = caught instanceof Error ? caught.message : "Local generation failed.";
@@ -677,7 +640,7 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
         if (engineRef.current) setStatus("ready");
       }
     },
-    [selectedModelId]
+    []
   );
 
   const value = useMemo<LocalAIContextValue>(

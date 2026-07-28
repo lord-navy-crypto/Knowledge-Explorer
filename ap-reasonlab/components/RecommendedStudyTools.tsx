@@ -55,9 +55,11 @@ const EXTERNAL_TOOLS: ExternalTool[] = [
 
 const BUILT_IN = [
   { name: "Unified AI", href: "/hints", blurb: "Local / API tutoring for AP, English, and coding." },
+  { name: "Black draft paper", href: "/tools/draft", blurb: "Dual-blended dark desk — notes + stylus drawing." },
+  { name: "Dual-column editor", href: "/tools/dual", blurb: "Markdown left, live render right." },
   { name: "KE-84 Calculator", href: "/hints?tool=calculator", blurb: "Scientific keypad in the toolbox." },
   { name: "KE Graph", href: "/hints?tool=grapher", blurb: "Plot y = f(x) with trace and zoom." },
-  { name: "Image Gen", href: "/hints?tool=imagegen", blurb: "Generate study diagrams from a prompt." },
+  { name: "Study timer", href: "/tools/timer", blurb: "Pomodoro and exam countdowns on this device." },
 ];
 
 export default function RecommendedStudyTools() {
@@ -66,8 +68,8 @@ export default function RecommendedStudyTools() {
       <div>
         <h2 className="section-title">Recommended study tools</h2>
         <p className="mt-1 max-w-2xl text-sm text-slate-600">
-          Built-in tools stay in this site; these trusted external sites complement Calculator, Grapher,
-          and Unified AI. Always follow your teacher’s rules on calculators and AI during graded work.
+          Built-in tools stay on this site (AI Toolbox + /tools suite). External links below are
+          optional complements — follow your teacher’s rules on calculators and AI during graded work.
         </p>
       </div>
 
