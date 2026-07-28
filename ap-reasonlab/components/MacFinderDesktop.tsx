@@ -1161,7 +1161,7 @@ export default function MacFinderDesktop({
               </p>
               <ChangePanel
                 mode="file"
-                label="+ Upload file"
+                label="+ Upload files"
                 folderArea={nav.page.area}
                 spaceKey={nav.page.space}
                 onSaved={(content) => {
@@ -1170,7 +1170,7 @@ export default function MacFinderDesktop({
               />
               <ChangePanel
                 mode="file"
-                label="+ Upload image"
+                label="+ Upload images"
                 fileAccept="image/*"
                 folderArea={nav.page.area}
                 spaceKey={nav.page.space}
@@ -1180,6 +1180,7 @@ export default function MacFinderDesktop({
               />
               <ChangePanel
                 mode="document"
+                label="+ Add documents"
                 folderArea={nav.page.area}
                 spaceKey={nav.page.space}
                 onSaved={(content) => {
@@ -1188,7 +1189,7 @@ export default function MacFinderDesktop({
               />
               <ChangePanel
                 mode="folder"
-                label="+ Add file folder"
+                label="+ Add file folders"
                 folderArea={nav.page.area}
                 spaceKey={nav.page.space}
                 onSaved={(content) => {
@@ -1199,7 +1200,7 @@ export default function MacFinderDesktop({
                 <>
                   <ChangePanel
                     mode="concept"
-                    label="+ Add concept"
+                    label="+ Add concepts"
                     defaultSubject={pageDefaultSubject(nav.page)}
                     folderArea={nav.page.area === "ap-subject" ? "concepts" : nav.page.area}
                     spaceKey={nav.page.space}
@@ -1209,7 +1210,7 @@ export default function MacFinderDesktop({
                   />
                   <ChangePanel
                     mode="topic"
-                    label="+ Add topic"
+                    label="+ Add topics"
                     defaultSubject={pageDefaultSubject(nav.page)}
                     folderArea={nav.page.area === "ap-subject" ? "concepts" : nav.page.area}
                     spaceKey={nav.page.space}
@@ -1219,7 +1220,7 @@ export default function MacFinderDesktop({
                   />
                   <ChangePanel
                     mode="formula"
-                    label="+ Add formula"
+                    label="+ Add formulas"
                     defaultSubject={pageDefaultSubject(nav.page)}
                     folderArea={nav.page.area === "ap-subject" ? "formulas" : nav.page.area}
                     spaceKey={nav.page.space}

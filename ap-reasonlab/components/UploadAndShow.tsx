@@ -472,7 +472,7 @@ export default function UploadAndShow({
             )}
             <ChangePanel
               mode="file"
-              label="+ Upload file"
+              label="+ Upload files"
               folderArea={folderArea}
               spaceKey={scopedSpace}
               onSaved={onSaved}
@@ -480,7 +480,7 @@ export default function UploadAndShow({
             />
             <ChangePanel
               mode="file"
-              label="+ Upload image"
+              label="+ Upload images"
               fileAccept="image/*"
               folderArea={folderArea}
               spaceKey={scopedSpace}
@@ -490,7 +490,7 @@ export default function UploadAndShow({
             {alsoShow.includes("document") && (
               <ChangePanel
                 mode="document"
-                label="+ Add document"
+                label="+ Add documents"
                 folderArea={folderArea}
                 spaceKey={scopedSpace}
                 onSaved={onSaved}
@@ -500,7 +500,7 @@ export default function UploadAndShow({
             {alsoShow.includes("topic") && (
               <ChangePanel
                 mode="topic"
-                label="+ Add topic"
+                label="+ Add topics"
                 defaultSubject={subjectForForms}
                 folderArea={folderArea}
                 spaceKey={scopedSpace}
@@ -510,7 +510,7 @@ export default function UploadAndShow({
             {alsoShow.includes("concept") && (
               <ChangePanel
                 mode="concept"
-                label="+ Add concept"
+                label="+ Add concepts"
                 defaultSubject={subjectForForms}
                 folderArea={folderArea}
                 spaceKey={scopedSpace}
@@ -520,7 +520,7 @@ export default function UploadAndShow({
             {alsoShow.includes("formula") && (
               <ChangePanel
                 mode="formula"
-                label="+ Add formula"
+                label="+ Add formulas"
                 defaultSubject={subjectForForms}
                 folderArea={folderArea}
                 spaceKey={scopedSpace}
@@ -542,7 +542,7 @@ export default function UploadAndShow({
             )}
             <ChangePanel
               mode="folder"
-              label="+ Add file folder"
+              label="+ Add file folders"
               folderArea={folderArea}
               spaceKey={scopedSpace}
               onSaved={onSaved}
