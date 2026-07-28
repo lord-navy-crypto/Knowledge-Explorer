@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import RichContent from "@/components/RichContent";
-import MarkdownLatexField from "@/components/MarkdownLatexField";
+import BulkEntryEditor from "@/components/BulkEntryEditor";
 import { useEditorMode } from "@/components/EditorModeProvider";
 import type { ManagedDocument, ManagedFile, ManagedFolder } from "@/lib/managed-types";
+import { blankBulkDraftEntry, type BulkDraftEntry } from "@/lib/bulk-draft-rows";
 import {
   ROOT_SPACE,
   folderSpaceId,
@@ -65,11 +66,10 @@ export function FloatingMediaWindow({
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
   const [dragOver, setDragOver] = useState(false);
-  const [docTitle, setDocTitle] = useState("");
-  const [docBody, setDocBody] = useState("");
+  const [docEntries, setDocEntries] = useState<BulkDraftEntry[]>([blankBulkDraftEntry()]);
   const [showDocForm, setShowDocForm] = useState(false);
   const [showFolderForm, setShowFolderForm] = useState(false);
-  const [folderTitle, setFolderTitle] = useState("");
+  const [folderEntries, setFolderEntries] = useState<BulkDraftEntry[]>([blankBulkDraftEntry()]);
   const uploadId = useId();
   const uploadRef = useRef<HTMLInputElement>(null);
 
@@ -212,6 +212,7 @@ export function FloatingMediaWindow({
       const res = await fetch("/api/edit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           action: "add_files",
           items,
@@ -235,9 +236,26 @@ export function FloatingMediaWindow({
 
   async function publishDocument(event: React.FormEvent) {
     event.preventDefault();
-    if (!docTitle.trim() || !docBody.trim()) return;
+    const cleaned = docEntries
+      .map((row) => ({
+        ...row,
+        title: row.title.trim(),
+        content: row.content.trim(),
+        category: row.category.trim() || "Uploaded",
+      }))
+      .filter((row) => row.title || row.content);
+    if (cleaned.length === 0) {
+      setError("Add at least one document row.");
+      return;
+    }
+    for (const row of cleaned) {
+      if (!row.title || !row.content) {
+        setError("Each document needs a title and content.");
+        return;
+      }
+    }
     if (!canPublish) {
-      setError("Unlock edit mode or paste the content code to add a document.");
+      setError("Unlock edit mode or paste the content code to add documents.");
       return;
     }
     setBusy(true);
@@ -247,25 +265,25 @@ export function FloatingMediaWindow({
       const res = await fetch("/api/edit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
-          action: "add_document",
-          item: {
-            title: docTitle.trim(),
-            content: docBody.trim(),
-            category: "Uploaded",
+          action: "add_documents",
+          items: cleaned.map((row) => ({
+            title: row.title,
+            content: row.content,
+            category: row.category,
             area: folderArea,
             space: activeSpace,
-          },
+          })),
           changeCode: changeCode.trim() || undefined,
         }),
       });
       const parsed = await readResponseJson<{ error?: string }>(res);
       if (!parsed.ok) throw new Error(parsed.error);
       if (!res.ok) throw new Error(parsed.data.error || "Save failed");
-      setDocTitle("");
-      setDocBody("");
+      setDocEntries([blankBulkDraftEntry()]);
       setShowDocForm(false);
-      setNote("Document added to this folder.");
+      setNote(`Added ${cleaned.length} document${cleaned.length === 1 ? "" : "s"} to this folder.`);
       setTab("docs");
       await refresh();
     } catch (caught) {
@@ -277,9 +295,19 @@ export function FloatingMediaWindow({
 
   async function publishFolder(event: React.FormEvent) {
     event.preventDefault();
-    if (!folderTitle.trim()) return;
+    const cleaned = folderEntries
+      .map((row) => ({
+        ...row,
+        title: row.title.trim(),
+        note: row.note.trim(),
+      }))
+      .filter((row) => row.title);
+    if (cleaned.length === 0) {
+      setError("Add at least one folder name.");
+      return;
+    }
     if (!canPublish) {
-      setError("Unlock edit mode or paste the content code to add a folder.");
+      setError("Unlock edit mode or paste the content code to add folders.");
       return;
     }
     setBusy(true);
@@ -289,26 +317,32 @@ export function FloatingMediaWindow({
       const res = await fetch("/api/edit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
-          action: "add_folder",
-          item: {
-            title: folderTitle.trim(),
+          action: "add_folders",
+          items: cleaned.map((row) => ({
+            title: row.title,
+            note: row.note || undefined,
             area: folderArea,
             space: activeSpace,
-          },
+          })),
           changeCode: changeCode.trim() || undefined,
         }),
       });
       const parsed = await readResponseJson<{ error?: string }>(res);
       if (!parsed.ok) throw new Error(parsed.error);
-      if (!res.ok) throw new Error(parsed.data.error || "Could not create folder");
-      setFolderTitle("");
+      if (!res.ok) throw new Error(parsed.data.error || "Could not create folders");
+      setFolderEntries([blankBulkDraftEntry()]);
       setShowFolderForm(false);
-      setNote(`Folder “${folderTitle.trim()}” ready — open it, then add File 1, File 2…`);
+      setNote(
+        cleaned.length === 1
+          ? `Folder “${cleaned[0]!.title}” ready — open it, then add File 1, File 2…`
+          : `Created ${cleaned.length} folders.`
+      );
       setTab("folders");
       await refresh();
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Could not create folder");
+      setError(caught instanceof Error ? caught.message : "Could not create folders");
     } finally {
       setBusy(false);
     }
@@ -572,43 +606,47 @@ export function FloatingMediaWindow({
               <button
                 type="button"
                 onClick={() => {
-                  setShowFolderForm((v) => !v);
+                  setShowFolderForm((v) => {
+                    if (!v) setFolderEntries([blankBulkDraftEntry()]);
+                    return !v;
+                  });
                   setShowDocForm(false);
                 }}
                 className="rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-[10px] font-semibold text-amber-900 hover:bg-amber-100"
               >
-                {showFolderForm ? "Hide folder" : "+ File folder"}
+                {showFolderForm ? "Hide folders" : "+ File folders"}
               </button>
               <button
                 type="button"
                 onClick={() => {
-                  setShowDocForm((v) => !v);
+                  setShowDocForm((v) => {
+                    if (!v) setDocEntries([blankBulkDraftEntry()]);
+                    return !v;
+                  });
                   setShowFolderForm(false);
                 }}
                 className="rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-[10px] font-semibold text-slate-700 hover:bg-slate-100"
               >
-                {showDocForm ? "Hide doc" : "+ Document"}
+                {showDocForm ? "Hide docs" : "+ Documents"}
               </button>
             </div>
 
             {showFolderForm ? (
               <form
                 onSubmit={(e) => void publishFolder(e)}
-                className="flex gap-1.5 rounded-lg border border-amber-200 bg-white p-2"
+                className="space-y-2 rounded-lg border border-amber-200 bg-white p-2"
               >
-                <input
-                  className="min-w-0 flex-1 rounded border border-slate-200 px-2 py-1 text-[11px]"
-                  placeholder="Folder name (e.g. Pack A)"
-                  value={folderTitle}
-                  onChange={(e) => setFolderTitle(e.target.value)}
-                  required
+                <BulkEntryEditor
+                  variant="folder"
+                  entries={folderEntries}
+                  onChange={setFolderEntries}
                 />
                 <button
                   type="submit"
                   className="rounded bg-amber-600 px-2 py-1 text-[10px] font-semibold text-white"
                   disabled={busy}
                 >
-                  Create
+                  Create folders
                 </button>
               </form>
             ) : null}
@@ -616,30 +654,15 @@ export function FloatingMediaWindow({
             {showDocForm ? (
               <form
                 onSubmit={(e) => void publishDocument(e)}
-                className="space-y-1.5 rounded-lg border border-slate-200 bg-white p-2"
+                className="space-y-2 rounded-lg border border-slate-200 bg-white p-2"
               >
-                <input
-                  className="w-full rounded border border-slate-200 px-2 py-1 text-[11px]"
-                  placeholder="Document title"
-                  value={docTitle}
-                  onChange={(e) => setDocTitle(e.target.value)}
-                  required
-                />
-                <MarkdownLatexField
-                  label=""
-                  help="Markdown + LaTeX supported."
-                  value={docBody}
-                  onChange={setDocBody}
-                  required
-                  minHeightClass="min-h-[5rem]"
-                  placeholder="Paste text…"
-                />
+                <BulkEntryEditor variant="document" entries={docEntries} onChange={setDocEntries} />
                 <button
                   type="submit"
                   className="rounded bg-sky-600 px-2 py-1 text-[10px] font-semibold text-white"
                   disabled={busy}
                 >
-                  Save document
+                  Save documents
                 </button>
               </form>
             ) : null}

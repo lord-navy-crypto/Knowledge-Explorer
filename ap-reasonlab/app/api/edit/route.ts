@@ -275,6 +275,42 @@ export async function POST(req: NextRequest) {
         createdAt: Date.now(),
         updatedAt: Date.now(),
       });
+    } else if (action === "add_content_items") {
+      const items = Array.isArray(body.items) ? body.items : [];
+      if (items.length === 0 || items.length > 20) {
+        return NextResponse.json({ error: "Add between 1 and 20 content items at once" }, { status: 400 });
+      }
+      const allowedTypes = ["concept", "formula", "practice", "document", "file", "folder"];
+      for (const item of items) {
+        if (!item?.subjectId || !item?.title || !item?.type) {
+          return NextResponse.json({ error: "Each item needs subject, type, and title" }, { status: 400 });
+        }
+        if (!allowedTypes.includes(String(item.type))) {
+          return NextResponse.json({ error: "Unknown content type in batch" }, { status: 400 });
+        }
+        current.contentItems.unshift({
+          id: uid("content"),
+          subjectId: String(item.subjectId),
+          unitId: item.unitId ? String(item.unitId) : undefined,
+          type: String(item.type) as "concept" | "formula" | "practice" | "document" | "file" | "folder",
+          title: String(item.title),
+          content: normalizeAuthoredText(String(item.content || "")).slice(0, 200_000),
+          tags: Array.isArray(item.tags)
+            ? item.tags.map(String)
+            : String(item.tags || "")
+                .split(",")
+                .map((tag) => tag.trim())
+                .filter(Boolean),
+          difficulty: ["intro", "standard", "challenge"].includes(String(item.difficulty))
+            ? item.difficulty
+            : "standard",
+          source: item.source ? String(item.source) : undefined,
+          status: item.status === "draft" ? "draft" : "published",
+          order: Number.isFinite(Number(item.order)) ? Number(item.order) : 0,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+      }
     } else if (action === "update") {
       const target = String(body.target || "");
       const id = String(body.id || "");
@@ -633,6 +669,54 @@ export async function POST(req: NextRequest) {
         tags: Array.isArray(item.tags) ? item.tags.map(String) : ["generated", "managed"],
         items,
       });
+    } else if (action === "add_questionnaires") {
+      const items = Array.isArray(body.items) ? body.items : [];
+      if (items.length === 0 || items.length > 20) {
+        return NextResponse.json({ error: "Add between 1 and 20 practice sets at once" }, { status: 400 });
+      }
+      for (const item of items) {
+        if (!item?.title || !item?.subject) {
+          return NextResponse.json({ error: "Each practice set needs title and subject" }, { status: 400 });
+        }
+        const setId = uid("m-quiz");
+        const firstPrompt = normalizeAuthoredText(String(item.firstPrompt || item.prompt || "")).trim();
+        const quizItems: QuestionnaireItem[] = [];
+        if (firstPrompt) {
+          quizItems.push({
+            id: uid("m-item"),
+            format: (String(item.format || "concept_check") as QuestionFormat) || "concept_check",
+            prompt: firstPrompt,
+            hints: Array.isArray(item.hints)
+              ? item.hints.map((h: unknown) => normalizeAuthoredText(String(h)))
+              : [normalizeAuthoredText(String(item.hint || "Attempt before asking AI for more hints."))],
+            visibleSteps: Array.isArray(item.visibleSteps)
+              ? item.visibleSteps.map((s: unknown) => normalizeAuthoredText(String(s)))
+              : undefined,
+            blankSteps: Array.isArray(item.blankSteps)
+              ? item.blankSteps.map((s: unknown) => normalizeAuthoredText(String(s)))
+              : undefined,
+            choices: Array.isArray(item.choices) ? item.choices.map(String) : undefined,
+            conceptIntro: item.conceptIntro
+              ? normalizeAuthoredText(String(item.conceptIntro))
+              : undefined,
+          });
+        }
+        current.questionnaires.push({
+          id: setId,
+          title: String(item.title),
+          subject: String(item.subject),
+          kind: "generated",
+          description: normalizeAuthoredText(
+            String(item.description || "AI-generated practice set added from the UI.")
+          ),
+          generationNote: String(
+            item.generationNote || `Added via change-code UI · ${new Date().toISOString().slice(0, 10)}`
+          ),
+          estimatedMinutes: Number(item.estimatedMinutes) || 20,
+          tags: Array.isArray(item.tags) ? item.tags.map(String) : ["generated", "managed"],
+          items: quizItems,
+        });
+      }
     } else if (action === "add_questionnaire_item") {
       const setId = String(body.setId || body.id || "");
       const item = body.item || {};
