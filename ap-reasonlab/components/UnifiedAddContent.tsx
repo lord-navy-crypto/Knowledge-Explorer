@@ -2,9 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import type { ManagedUnit } from "@/lib/managed-types";
-import MarkdownLatexField from "@/components/MarkdownLatexField";
+import BulkEntryEditor from "@/components/BulkEntryEditor";
 import { useEditorMode } from "@/components/EditorModeProvider";
+import {
+  BULK_FILE_LIMIT,
+  blankBulkDraftEntry,
+  type BulkDraftEntry,
+} from "@/lib/bulk-draft-rows";
 import { readResponseJson } from "@/lib/safe-json";
 
 type ContentType = "concept" | "formula" | "practice" | "document" | "file" | "image" | "folder";
@@ -17,22 +21,22 @@ type SubjectOption = {
 type Props = {
   subjectId?: string;
   subjectName?: string;
-  /** When provided, Subject is a chooser (not a locked field). */
   subjects?: SubjectOption[];
-  units?: ManagedUnit[];
   onSaved?: () => void;
   label?: string;
 };
 
 const contentTypes: Array<{ value: ContentType; label: string }> = [
-  { value: "concept", label: "Concept" },
-  { value: "formula", label: "Formula" },
-  { value: "practice", label: "Practice set" },
-  { value: "document", label: "Document" },
-  { value: "file", label: "File" },
-  { value: "image", label: "Image" },
-  { value: "folder", label: "File folder" },
+  { value: "concept", label: "Concepts" },
+  { value: "formula", label: "Formulas" },
+  { value: "practice", label: "Practice sets" },
+  { value: "document", label: "Documents" },
+  { value: "file", label: "Files" },
+  { value: "image", label: "Images" },
+  { value: "folder", label: "Folders" },
 ];
+
+const BULK_TYPES: ContentType[] = ["concept", "formula", "practice", "document", "folder"];
 
 export default function UnifiedAddContent({
   subjectId = "",
@@ -48,19 +52,17 @@ export default function UnifiedAddContent({
     return subjects?.[0]?.id || "";
   }, [subjectId, subjects]);
   const [chosenSubjectId, setChosenSubjectId] = useState(initialSubjectId);
-  const storageKey = useMemo(
-    () => `results-content-draft:${chosenSubjectId || subjectId || "general"}`,
-    [chosenSubjectId, subjectId]
-  );
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<ContentType>("concept");
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+  const [entries, setEntries] = useState<BulkDraftEntry[]>([blankBulkDraftEntry()]);
   const [changeCode, setChangeCode] = useState("");
   const [githubToken, setGithubToken] = useState("");
   const [files, setFiles] = useState<File[]>([]);
+  const [fileNote, setFileNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+
+  const bulkMode = BULK_TYPES.includes(type);
 
   useEffect(() => {
     setChosenSubjectId(initialSubjectId);
@@ -70,37 +72,17 @@ export default function UnifiedAddContent({
     const fromList = subjects?.find((subject) => subject.id === chosenSubjectId);
     if (fromList) return fromList;
     if (chosenSubjectId) {
-      return {
-        id: chosenSubjectId,
-        name: subjectName || chosenSubjectId,
-      };
+      return { id: chosenSubjectId, name: subjectName || chosenSubjectId };
     }
-    return {
-      id: subjectId,
-      name: subjectName || subjectId || "Content manager",
-    };
+    return { id: subjectId, name: subjectName || subjectId || "Content manager" };
   }, [chosenSubjectId, subjectId, subjectName, subjects]);
 
   useEffect(() => {
-    const stored = localStorage.getItem(storageKey);
-    if (!stored) return;
-    try {
-      const draft = JSON.parse(stored) as Record<string, string>;
-      setType((draft.type as ContentType) || "concept");
-      setTitle(draft.title || "");
-      setContent(draft.content || "");
-    } catch {
-      localStorage.removeItem(storageKey);
-    }
-  }, [storageKey]);
-
-  useEffect(() => {
     if (!open) return;
-    localStorage.setItem(
-      storageKey,
-      JSON.stringify({ type, title, content, subjectId: chosenSubject.id })
-    );
-  }, [chosenSubject.id, content, open, storageKey, title, type]);
+    setEntries([blankBulkDraftEntry()]);
+    setFiles([]);
+    setFileNote("");
+  }, [type, open]);
 
   async function fileAsDataUrl(selected: File): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -118,62 +100,83 @@ export default function UnifiedAddContent({
     setBusy(true);
     setMessage("");
     try {
-      if (!chosenSubject.id) {
-        throw new Error("Choose a subject first.");
-      }
+      if (!chosenSubject.id) throw new Error("Choose a subject first.");
       const subjectLabel = chosenSubject.name || chosenSubject.id;
-      let action =
-        type === "file" || type === "image"
-          ? "add_files"
-          : type === "folder"
-            ? "add_folder"
-            : type === "practice"
-              ? "add_questionnaire"
-              : "add_content_item";
-      let item: Record<string, unknown> = {
-        subjectId: chosenSubject.id,
-        type: type === "image" ? "file" : type,
-        title,
-        content,
-        tags: [],
-        difficulty: "standard",
-        status: requestedStatus,
-      };
+      const space = subjectLabel;
+
+      let action = "";
+      let item: Record<string, unknown> | undefined;
       let items: Record<string, unknown>[] | undefined;
-      if (type === "practice") {
-        if (!title.trim()) throw new Error("Practice set needs a title.");
-        if (!content.trim()) throw new Error("Paste at least one question or set description.");
-        action = "add_questionnaire";
-        item = {
-          title: title.trim(),
-          subject: subjectLabel,
-          description: content.trim().slice(0, 4_000),
-          firstPrompt: content.trim(),
-          estimatedMinutes: 25,
-          generationNote: `Added from Manage · ${new Date().toISOString().slice(0, 10)}`,
-          hint: "Attempt before asking for more hints.",
-        };
-      } else if (type === "file" || type === "image") {
-        if (files.length === 0) throw new Error(type === "image" ? "Choose at least one image" : "Choose at least one file");
+
+      if (type === "file" || type === "image") {
+        if (files.length === 0) {
+          throw new Error(type === "image" ? "Choose at least one image" : "Choose at least one file");
+        }
         if (type === "image" && files.some((f) => !f.type.startsWith("image/"))) {
           throw new Error("Image upload accepts image files only.");
         }
-        items = await Promise.all(files.map(async (file) => ({
-          name: file.name,
-          mime: file.type,
-          dataUrl: await fileAsDataUrl(file),
-          note: title,
-          area: "ap-subject",
-          space: chosenSubject.name || chosenSubject.id,
-        })));
-      } else if (type === "folder") {
-        item = {
-          title,
-          note: content,
-          area: "ap-subject",
-          space: chosenSubject.name || chosenSubject.id,
-        };
+        action = "add_files";
+        items = await Promise.all(
+          files.map(async (file) => ({
+            name: file.name,
+            mime: file.type,
+            dataUrl: await fileAsDataUrl(file),
+            note: fileNote || undefined,
+            area: "ap-subject",
+            space,
+          }))
+        );
+      } else if (bulkMode) {
+        const cleaned = entries
+          .map((row) => ({
+            ...row,
+            title: row.title.trim(),
+            content: row.content.trim(),
+            note: row.note.trim(),
+          }))
+          .filter((row) => row.title || row.content || row.note);
+
+        if (cleaned.length === 0) throw new Error("Add at least one row.");
+        for (const row of cleaned) {
+          if (!row.title) throw new Error("Each row needs a title.");
+          if (type !== "folder" && !row.content) throw new Error("Each row needs content.");
+        }
+
+        if (type === "practice") {
+          action = "add_questionnaires";
+          items = cleaned.map((row) => ({
+            title: row.title,
+            subject: subjectLabel,
+            description: row.content.slice(0, 4_000),
+            firstPrompt: row.content,
+            estimatedMinutes: 25,
+            generationNote: `Added from Manage · ${new Date().toISOString().slice(0, 10)}`,
+            hint: "Attempt before asking for more hints.",
+          }));
+        } else if (type === "folder") {
+          action = "add_folders";
+          items = cleaned.map((row) => ({
+            title: row.title,
+            note: row.note || undefined,
+            area: "ap-subject",
+            space,
+          }));
+        } else {
+          action = "add_content_items";
+          items = cleaned.map((row) => ({
+            subjectId: chosenSubject.id,
+            type,
+            title: row.title,
+            content: row.content,
+            tags: type === "document" && row.category.trim() ? [row.category.trim()] : [],
+            difficulty: "standard",
+            status: requestedStatus,
+          }));
+        }
+      } else {
+        throw new Error("Unknown content type.");
       }
+
       const response = await fetch("/api/edit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -186,27 +189,33 @@ export default function UnifiedAddContent({
           githubToken: githubToken.trim() || undefined,
         }),
       });
-      const parsed = await readResponseJson<{ error?: string; content?: { questionnaires?: Array<{ id: string }> } }>(response);
+      const parsed = await readResponseJson<{
+        error?: string;
+        content?: { questionnaires?: Array<{ title: string; id: string }> };
+      }>(response);
       if (!parsed.ok) throw new Error(parsed.error);
       if (!response.ok) throw new Error(parsed.data.error || "Save failed");
-      localStorage.removeItem(storageKey);
-      setTitle("");
-      setContent("");
-      setFiles([]);
-      if (type === "practice") {
-        const created = parsed.data.content?.questionnaires?.find(
-          (q) => q.title === title.trim()
-        );
+
+      const count =
+        type === "file" || type === "image"
+          ? files.length
+          : cleanedCount(entries);
+
+      if (type === "practice" && count === 1) {
+        const title = entries[0]?.title.trim();
+        const created = parsed.data.content?.questionnaires?.find((q) => q.title === title);
         const setHref = created?.id
           ? `/questionnaires/${created.id}`
           : `/practice?subject=${encodeURIComponent(subjectLabel)}`;
-        setMessage(`Practice set saved — opens on Practice & exam.`);
-        window.setTimeout(() => {
-          window.location.assign(setHref);
-        }, 600);
+        setMessage(`Saved 1 practice set. Opening…`);
+        window.setTimeout(() => window.location.assign(setHref), 600);
       } else {
-        setMessage(requestedStatus === "draft" ? "Draft saved." : "Published successfully.");
+        setMessage(`Saved ${count} item${count === 1 ? "" : "s"} successfully.`);
       }
+
+      setEntries([blankBulkDraftEntry()]);
+      setFiles([]);
+      setFileNote("");
       onSaved?.();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Save failed");
@@ -219,23 +228,47 @@ export default function UnifiedAddContent({
 
   return (
     <>
-      <button type="button" className="btn-primary" onClick={() => setOpen(true)}>{label}</button>
+      <button type="button" className="btn-primary" onClick={() => setOpen(true)}>
+        {label}
+      </button>
       {open && (
-        <div className="fixed inset-0 z-[70] flex items-start justify-center overflow-y-auto bg-slate-950/55 p-4 pt-[8vh]" role="dialog" aria-modal="true" aria-labelledby="add-content-title">
-          <form onSubmit={submit} className="w-full max-w-2xl space-y-4 rounded-3xl bg-white p-5 shadow-2xl md:p-7">
+        <div
+          className="fixed inset-0 z-[70] flex items-start justify-center overflow-y-auto bg-slate-950/55 p-4 pt-[8vh]"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="add-content-title"
+        >
+          <form
+            onSubmit={(e) => void submit(e)}
+            className="w-full max-w-2xl space-y-4 rounded-3xl bg-white p-5 shadow-2xl md:p-7"
+          >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-brand-600">{chosenSubject.name || "Content manager"}</p>
-                <h2 id="add-content-title" className="mt-1 text-2xl font-bold">Add content</h2>
+                <p className="text-xs font-semibold uppercase tracking-wider text-brand-600">
+                  {chosenSubject.name || "Content manager"}
+                </p>
+                <h2 id="add-content-title" className="mt-1 text-2xl font-bold">
+                  Batch add content
+                </h2>
+                <p className="mt-1 text-xs text-slate-500">
+                  Up to 20 rows per type · up to {BULK_FILE_LIMIT} files/images at once
+                </p>
               </div>
-              <button type="button" className="btn-ghost" onClick={() => setOpen(false)} aria-label="Close">✕</button>
+              <button type="button" className="btn-ghost" onClick={() => setOpen(false)} aria-label="Close">
+                ✕
+              </button>
             </div>
 
             <fieldset>
               <legend className="mb-2 text-sm font-semibold">Content type</legend>
               <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-7">
                 {contentTypes.map((option) => (
-                  <button key={option.value} type="button" onClick={() => setType(option.value)} className={type === option.value ? "filter-pill-active" : "filter-pill"}>
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setType(option.value)}
+                    className={type === option.value ? "filter-pill-active" : "filter-pill"}
+                  >
                     {option.label}
                   </button>
                 ))}
@@ -266,61 +299,44 @@ export default function UnifiedAddContent({
             )}
 
             {type === "file" || type === "image" ? (
-              <label className="block text-sm font-medium">
-                {type === "image" ? "Choose up to 10 images" : "Choose up to 10 files"}
+              <>
                 <input
-                  className="mt-2 block w-full text-sm"
-                  type="file"
-                  multiple
-                  accept={type === "image" ? "image/*" : undefined}
-                  onChange={(event) => setFiles(Array.from(event.target.files || []).slice(0, 10))}
-                  required
+                  className="input"
+                  placeholder="Shared note for this batch (optional)"
+                  value={fileNote}
+                  onChange={(event) => setFileNote(event.target.value)}
                 />
-                <span className="mt-1 block text-xs text-slate-500">
-                  {files.length} selected · each must stay under ~1MB
-                </span>
-              </label>
-            ) : null}
-            <input
-              className="input"
-              placeholder={type === "file" || type === "image" ? "Note (optional)" : `${type} title`}
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              required={type !== "file" && type !== "image"}
-            />
-            {type !== "file" && type !== "image" && (
-              type === "folder" ? (
                 <label className="block text-sm font-medium">
-                  Note (optional)
-                  <textarea
-                    className="textarea mt-1 min-h-28 resize-y"
-                    placeholder="Optional folder note…"
-                    value={content}
-                    onChange={(event) => setContent(event.target.value)}
+                  {type === "image"
+                    ? `Choose up to ${BULK_FILE_LIMIT} images`
+                    : `Choose up to ${BULK_FILE_LIMIT} files`}
+                  <input
+                    className="mt-2 block w-full text-sm"
+                    type="file"
+                    multiple
+                    accept={type === "image" ? "image/*" : undefined}
+                    onChange={(event) =>
+                      setFiles(Array.from(event.target.files || []).slice(0, BULK_FILE_LIMIT))
+                    }
+                    required={files.length === 0}
                   />
+                  <span className="mt-1 block text-xs text-slate-500">
+                    {files.length} selected · each must stay under ~1MB
+                  </span>
                 </label>
-              ) : (
-                <MarkdownLatexField
-                  label="Full content"
-                  value={content}
-                  onChange={setContent}
-                  required
-                  minHeightClass="min-h-[22rem]"
-                />
-              )
+              </>
+            ) : (
+              <BulkEntryEditor
+                variant={type === "concept" ? "concept" : type}
+                entries={entries}
+                onChange={setEntries}
+              />
             )}
-
-            {type !== "file" && type !== "image" && type !== "folder" && content && title ? (
-              <div className="rounded-2xl border border-slate-200 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Title in preview</p>
-                <h3 className="mt-1 text-lg font-semibold">{title}</h3>
-              </div>
-            ) : null}
 
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
               {unlocked ? (
                 <p className="text-sm text-emerald-800">
-                  Editor unlocked — publish uses your login session.{" "}
+                  Editor unlocked — batch save uses your login session.{" "}
                   <Link href="/login" className="font-medium underline">
                     /login
                   </Link>
@@ -355,27 +371,39 @@ export default function UnifiedAddContent({
               )}
             </div>
 
-            {message && <p role="status" className={/failed|Wrong|Choose/.test(message) ? "text-sm text-red-600" : "text-sm text-emerald-700"}>{message}</p>}
-            <div className="flex flex-wrap justify-end gap-2">
-              <button type="button" className="btn-secondary" onClick={() => setOpen(false)}>Cancel</button>
-              {type !== "file" && type !== "image" && type !== "folder" && type !== "practice" && (
-                <button type="submit" value="draft" className="btn-secondary" disabled={busy}>
-                  Save draft
-                </button>
-              )}
-              <button type="submit" value="published" className="btn-primary" disabled={busy}>
-                {busy ? "Saving…" : type === "practice" ? "Save practice set" : "Publish"}
-              </button>
-            </div>
-            {type === "practice" ? (
-              <p className="text-xs text-slate-500">
-                Saves as a generated practice set on Practice &amp; exam (not only Manage content).
+            {message ? (
+              <p
+                role="status"
+                className={
+                  /failed|Wrong|Choose|needs|least/i.test(message)
+                    ? "text-sm text-red-600"
+                    : "text-sm text-emerald-700"
+                }
+              >
+                {message}
               </p>
             ) : null}
-            <p className="text-xs text-slate-500">Your unfinished form is saved automatically in this browser.</p>
+
+            <div className="flex flex-wrap justify-end gap-2">
+              <button type="button" className="btn-secondary" onClick={() => setOpen(false)}>
+                Cancel
+              </button>
+              {bulkMode && type !== "practice" && type !== "folder" ? (
+                <button type="submit" value="draft" className="btn-secondary" disabled={busy}>
+                  Save drafts
+                </button>
+              ) : null}
+              <button type="submit" value="published" className="btn-primary" disabled={busy}>
+                {busy ? "Saving…" : "Save batch"}
+              </button>
+            </div>
           </form>
         </div>
       )}
     </>
   );
+}
+
+function cleanedCount(entries: BulkDraftEntry[]) {
+  return entries.filter((row) => row.title.trim() || row.content.trim() || row.note.trim()).length;
 }

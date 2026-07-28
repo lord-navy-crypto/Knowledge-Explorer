@@ -307,7 +307,6 @@ export default function ManagePage() {
               subjectId={selectedSubject?.id}
               subjectName={selectedSubject?.name}
               subjects={subjects.map((subject) => ({ id: subject.id, name: subject.name }))}
-              units={units}
               onSaved={refresh}
               label="+ Add content (quick form)"
             />
