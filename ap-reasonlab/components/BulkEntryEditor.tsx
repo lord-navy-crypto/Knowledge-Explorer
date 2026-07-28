@@ -99,7 +99,6 @@ export default function BulkEntryEditor({ variant, entries, onChange }: Props) {
               onChange={(value) => updateEntry(row.key, { content: value })}
               required
               minHeightClass="min-h-[10rem]"
-              showPreview={false}
             />
           ) : null}
         </div>

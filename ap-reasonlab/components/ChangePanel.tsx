@@ -436,7 +436,6 @@ export default function ChangePanel({
                       onChange={(value) => updateEntry(row.key, { content: value })}
                       required
                       minHeightClass="min-h-[12rem]"
-                      showPreview={false}
                     />
                   )}
                 </div>

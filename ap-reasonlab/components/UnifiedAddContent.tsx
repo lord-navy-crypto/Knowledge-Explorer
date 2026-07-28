@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import BulkEntryEditor from "@/components/BulkEntryEditor";
+import RichContent from "@/components/RichContent";
 import { useEditorMode } from "@/components/EditorModeProvider";
 import {
   BULK_FILE_LIMIT,
@@ -326,11 +327,30 @@ export default function UnifiedAddContent({
                 </label>
               </>
             ) : (
-              <BulkEntryEditor
-                variant={type === "concept" ? "concept" : type}
-                entries={entries}
-                onChange={setEntries}
-              />
+              <>
+                <BulkEntryEditor
+                  variant={type === "concept" ? "concept" : type}
+                  entries={entries}
+                  onChange={setEntries}
+                />
+                {entries.some((row) => row.title.trim() && row.content.trim()) ? (
+                  <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Live preview before save
+                    </p>
+                    {entries
+                      .filter((row) => row.title.trim() && row.content.trim())
+                      .map((row) => (
+                        <div key={`preview-${row.key}`} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
+                          <h3 className="text-base font-semibold text-slate-900">{row.title.trim()}</h3>
+                          <div className="mt-2">
+                            <RichContent className="text-sm">{row.content}</RichContent>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                ) : null}
+              </>
             )}
 
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
