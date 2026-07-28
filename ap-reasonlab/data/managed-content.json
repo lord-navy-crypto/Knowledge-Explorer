@@ -148,6 +148,17 @@
       "variables": "",
       "whenToUse": "",
       "sourceNote": "Added via change-code edit"
+    },
+    {
+      "id": "m-formula-ms482aqn-swlzd",
+      "subject": "AP Physics C: Mechanics",
+      "unit": "Managed",
+      "name": " Torque as the Rate of Change of Angular Momentum",
+      "expression": "",
+      "content": "## Torque as the Rate of Change of Angular Momentum\n\n### Concepts\n\nNet external torque is the time rate of change of angular momentum.\n\nThis is the more general rotational form of Newton’s second law.\n\nThe equation $\\sum\\tau=I\\alpha$ is a special case that assumes the rotational inertia is constant.\n\n### Formulas\n\n$$\\sum\\vec{\\tau}_{\\text{ext}}=\\frac{d\\vec{L}}{dt}$$\n\nFor fixed-axis rotation with constant $I$:\n\n$$\\sum\\tau_{\\text{ext}}=\\frac{d(I\\omega)}{dt}$$\n\n$$\\sum\\tau_{\\text{ext}}=I\\frac{d\\omega}{dt}$$\n\nTherefore:\n\n$$\\sum\\tau_{\\text{ext}}=I\\alpha$$\n\nIf $I$ changes with time:\n\n$$\\sum\\tau_{\\text{ext}}=\\frac{d(I\\omega)}{dt}$$\n\nUsing the product rule:\n\n$$\\sum\\tau_{\\text{ext}}=I\\frac{d\\omega}{dt}+\\omega\\frac{dI}{dt}$$\n\nTherefore:\n\n$$\\sum\\tau_{\\text{ext}}=I\\alpha+\\omega\\frac{dI}{dt}$$",
+      "variables": "",
+      "whenToUse": "",
+      "sourceNote": "Added via change-code edit"
     }
   ],
   "documents": [
@@ -743,5 +754,5 @@
   "settings": {
     "advancedDefault": true
   },
-  "updatedAt": 1785216786860
+  "updatedAt": 1785216924728
 }
