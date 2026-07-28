@@ -159,6 +159,17 @@
       "variables": "",
       "whenToUse": "",
       "sourceNote": "Added via change-code edit"
+    },
+    {
+      "id": "m-formula-ms48aicp-4mm71",
+      "subject": "AP Physics C: Mechanics",
+      "unit": "Managed",
+      "name": "Rotational Inertia of a Uniform Rod",
+      "expression": "",
+      "content": "## Rotational Inertia of a Uniform Rod About Its Center\n\n### Concepts\n\nFor a uniform rod rotating about its center, the coordinate extends from $-L/2$ to $L/2$.\n\nThe squared distance $x^2$ ensures that mass on both sides contributes positively.\n\n### Formulas\n\n$$dm=\\frac{M}{L},dx$$\n\n$$I=\\int_{-L/2}^{L/2}x^2,dm$$\n\n$$I=\\frac{M}{L}\\int_{-L/2}^{L/2}x^2,dx$$\n\n$$I=\\frac{M}{L}\\left[\\frac{x^3}{3}\\right]_{-L/2}^{L/2}$$\n\nTherefore:\n\n$$I=\\frac{1}{12}ML^2$$",
+      "variables": "",
+      "whenToUse": "",
+      "sourceNote": "Added via change-code edit"
     }
   ],
   "documents": [
@@ -754,5 +765,5 @@
   "settings": {
     "advancedDefault": true
   },
-  "updatedAt": 1785217039635
+  "updatedAt": 1785217307877
 }
