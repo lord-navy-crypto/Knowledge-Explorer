@@ -18,9 +18,10 @@ import type { AiProvider, SiteModelChoice } from "@/lib/ai-site-models";
 import { parseSiteModelChoice } from "@/lib/ai-site-models";
 import {
   isInsideOpenThinkBlock,
+  localNudgeForModel,
   mergeLocalDirectNudge,
+  shouldDisableThinking,
   stripReasoningTrace,
-  supportsDisableThinking,
 } from "@/lib/ai-reasoning-strip";
 
 /**
@@ -160,7 +161,7 @@ const LOCAL_MODELS: LocalModelOption[] = [
     id: "Qwen3-0.6B-q4f16_1-MLC",
     label: "Qwen3 Micro",
     group: "superlight",
-    summary: "Newer Qwen3 micro — thinking disabled for fast visible answers.",
+    summary: "Newer Qwen3 micro — light thinking allowed for quality.",
     bestFor: "Newer bilingual micro replies on modest GPUs",
     parameterSize: "0.6B",
     vramMB: 1403,
@@ -234,7 +235,7 @@ const LOCAL_MODELS: LocalModelOption[] = [
     id: "Qwen3-4B-q4f16_1-MLC",
     label: "Qwen3 Medium+",
     group: "medium",
-    summary: "Newer Qwen3 4B — thinking disabled so TeX/text appears immediately.",
+    summary: "Newer Qwen3 4B — mid-size with light thinking; formulas still stream live.",
     bestFor: "Harder bilingual study help when VRAM allows",
     parameterSize: "4B",
     vramMB: 3432,
@@ -639,7 +640,8 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
       setStatusText("Writing answer…");
 
       const prepared = mergeLocalDirectNudge(
-        messages as Array<{ role: string; content: string }>
+        messages as Array<{ role: string; content: string }>,
+        localNudgeForModel(modelId)
       ) as ChatCompletionMessageParam[];
 
       let timedOut = false;
@@ -659,8 +661,8 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
           stream: true,
           temperature: 0.45,
           max_tokens: maxTokensForModel(modelId),
-          // Qwen3/3.5: skip hidden thinking so TeX appears while streaming.
-          ...(supportsDisableThinking(modelId)
+          // Only large Qwen3: skip hidden thinking (mid/small keep default thinking).
+          ...(shouldDisableThinking(modelId)
             ? { extra_body: { enable_thinking: false } }
             : {}),
         });

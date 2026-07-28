@@ -35,9 +35,9 @@ export function stripReasoningTrace(text: string): string {
 
 /** WebLLM allows only one system message (index 0). Merge the nudge into it. */
 export function mergeLocalDirectNudge(
-  messages: Array<{ role: string; content: string }>
+  messages: Array<{ role: string; content: string }>,
+  nudge: string = LOCAL_MARKDOWN_NUDGE
 ): Array<{ role: string; content: string }> {
-  const nudge = LOCAL_DIRECT_ANSWER_NUDGE;
   const sysIdx = messages.findIndex((m) => m.role === "system");
   if (sysIdx >= 0) {
     return messages.map((m, i) =>
@@ -51,9 +51,25 @@ export function isReasoningLocalModel(modelId: string): boolean {
   return /deepseek-r1|r1-distill|reasoning/i.test(modelId);
 }
 
-/** Qwen3 / Qwen3.5 support WebLLM `extra_body.enable_thinking: false` to skip hidden thinking. */
+/** True for Qwen3 / Qwen3.5 builds that accept `extra_body.enable_thinking`. */
 export function supportsDisableThinking(modelId: string): boolean {
   return /Qwen3/i.test(modelId);
+}
+
+/**
+ * Only large / heavy Qwen3 should force-disable hidden thinking.
+ * Super-light / light / medium stay faster even with light thinking, so leave them alone.
+ */
+export function shouldDisableThinking(modelId: string): boolean {
+  return supportsDisableThinking(modelId) && isHeavyLocalModel(modelId);
+}
+
+export function isHeavyLocalModel(modelId: string): boolean {
+  return /7B|8B|9B/i.test(modelId);
+}
+
+export function localNudgeForModel(modelId: string): string {
+  return shouldDisableThinking(modelId) ? LOCAL_DIRECT_ANSWER_NUDGE : LOCAL_MARKDOWN_NUDGE;
 }
 
 /**
@@ -63,6 +79,10 @@ export function supportsDisableThinking(modelId: string): boolean {
 export const REASONING_MODEL_DIRECT_ANSWER =
   "You may reason privately inside <think>...</think> if needed. After </think>, output ONLY the final answer in the requested format — no meta commentary about your thinking.";
 
-/** Keep local answers short and visible — no hidden chain-of-thought dumps. */
+/** Soft nudge for mid/small local models — keep formulas visible, allow light reasoning. */
+export const LOCAL_MARKDOWN_NUDGE =
+  "Reply in markdown. Use $...$ / $$...$$ for math formulas. Put key steps and formulas in the visible reply.";
+
+/** Stronger nudge for large / heavy local models where hidden thinking is too slow. */
 export const LOCAL_DIRECT_ANSWER_NUDGE =
   "Answer immediately in markdown. Use $...$ / $$...$$ for math. Do not write <think> blocks or private reasoning — put formulas and steps in the visible reply only.";
