@@ -52,8 +52,9 @@ export default function ToolsPage() {
           <Link href="/hints" className="font-medium text-brand-700 underline">
             AI Toolbox
           </Link>
-          . Links jump straight to each tab. Use the panel below for this page’s shared pictures,
-          documents, files, and file folders.
+          . Links jump straight to each tab. Your AI path, model, and last toolbox tab are saved in
+          this browser. Use the panel below for this page’s shared pictures, documents, files, and
+          file folders.
         </p>
       </section>
       <div className="grid gap-4 md:grid-cols-2">

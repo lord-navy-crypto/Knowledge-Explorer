@@ -9,8 +9,13 @@ import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import TICalculator from "@/components/TICalculator";
 import TIGrapher from "@/components/TIGrapher";
 import ImageGenPanel from "@/components/ImageGenPanel";
+import {
+  loadToolboxExtraTool,
+  saveToolboxExtraTool,
+  type ToolboxExtraTool,
+} from "@/lib/ai-toolbox-prefs";
 
-type ExtraTool = "ai" | "calculator" | "grapher" | "imagegen";
+type ExtraTool = ToolboxExtraTool;
 
 function resolveSubject(raw: string | null): string | undefined {
   if (!raw?.trim()) return undefined;
@@ -19,6 +24,9 @@ function resolveSubject(raw: string | null): string | undefined {
 
 function resolveExtraTool(raw: string | null): ExtraTool {
   if (raw === "calculator" || raw === "grapher" || raw === "imagegen") return raw;
+  if (raw === "english" || raw === "coding" || raw === "concept" || raw === "guide" || raw === "hint") {
+    return "ai";
+  }
   return "ai";
 }
 
@@ -35,8 +43,19 @@ function ToolboxContent() {
   const category = resolveCategory(searchParams.get("tool"));
 
   useEffect(() => {
-    setExtra(resolveExtraTool(searchParams.get("tool")));
+    const fromUrl = searchParams.get("tool");
+    if (fromUrl) {
+      setExtra(resolveExtraTool(fromUrl));
+      return;
+    }
+    const saved = loadToolboxExtraTool();
+    if (saved) setExtra(saved);
   }, [searchParams]);
+
+  function selectExtra(next: ExtraTool) {
+    setExtra(next);
+    saveToolboxExtraTool(next);
+  }
 
   return (
     <div className="space-y-8">
@@ -47,7 +66,8 @@ function ToolboxContent() {
         <h1 className="mt-3 text-3xl font-bold md:text-4xl">One AI panel for study help</h1>
         <p className="mt-2 max-w-2xl text-blue-100">
           Choose Local, Website API, or Your own API inside one box — then pick AP, English, or
-          Coding tasks. Calculator, Grapher, and Image Gen stay as extra tools.
+          Coding tasks. Calculator, Grapher, and Image Gen stay as extra tools. Your AI path, model,
+          and last tab are remembered in this browser.
         </p>
       </section>
 
@@ -65,7 +85,7 @@ function ToolboxContent() {
           <button
             key={item.id}
             type="button"
-            onClick={() => setExtra(item.id)}
+            onClick={() => selectExtra(item.id)}
             className={`rounded-full border px-3 py-1.5 text-sm font-medium ${
               extra === item.id
                 ? "border-brand-500 bg-brand-50 text-brand-800"
