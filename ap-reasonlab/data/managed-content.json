@@ -139,12 +139,12 @@
       "sourceNote": "Added via change-code edit"
     },
     {
-      "id": "m-formula-ms47wivc-he05u",
+      "id": "m-formula-ms47zcec-73fwb",
       "subject": "AP Physics C: Mechanics",
       "unit": "Managed",
-      "name": "Rotational Inertia of a Uniform Disk",
+      "name": "Parallel-Axis Theorem",
       "expression": "",
-      "content": "## Example: Rotational Inertia of a Uniform Disk\n\n### Concepts\n\nA disk can be divided into thin concentric rings.\n\nEach ring has radius $r$, thickness $dr$, and area $dA$.\n\nEvery point on one thin ring is approximately the same distance from the axis, so the ring contributes:\n\n$$dI=r^2,dm$$\n\n### Formulas\n\nThe disk’s surface mass density is:\n\n$$\\sigma=\\frac{M}{\\pi R^2}$$\n\nThe area of a thin ring is:\n\n$$dA=2\\pi r,dr$$\n\nThe mass of the ring is:\n\n$$dm=\\sigma,dA$$\n\n$$dm=\\frac{M}{\\pi R^2}(2\\pi r,dr)$$\n\n$$dm=\\frac{2Mr}{R^2},dr$$\n\nThe rotational inertia is:\n\n$$I=\\int_0^R r^2,dm$$\n\n$$I=\\int_0^R r^2\\frac{2Mr}{R^2},dr$$\n\n$$I=\\frac{2M}{R^2}\\int_0^R r^3,dr$$\n\n$$I=\\frac{2M}{R^2}\\left[\\frac{r^4}{4}\\right]_0^R$$\n\nTherefore:\n\n$$I=\\frac{1}{2}MR^2$$",
+      "content": "## Parallel-Axis Theorem\n\n### Concepts\n\nThe parallel-axis theorem relates the rotational inertia about an axis through the center of mass to the rotational inertia about a parallel axis.\n\nThe distance $d$ is the perpendicular distance between the two axes.\n\nAP students should be able to apply this theorem, although a full proof by integration is usually less important than correct application.\n\n### Formulas\n\n$$I=I_{\\mathrm{cm}}+Md^2$$\n\nFor a rod about one end:\n\n$$I_{\\mathrm{end}}=I_{\\mathrm{cm}}+M\\left(\\frac{L}{2}\\right)^2$$\n\n$$I_{\\mathrm{end}}=\\frac{1}{12}ML^2+\\frac{1}{4}ML^2$$\n\nTherefore:\n\n$$I_{\\mathrm{end}}=\\frac{1}{3}ML^2$$",
       "variables": "",
       "whenToUse": "",
       "sourceNote": "Added via change-code edit"
@@ -743,5 +743,5 @@
   "settings": {
     "advancedDefault": true
   },
-  "updatedAt": 1785216655280
+  "updatedAt": 1785216786860
 }
