@@ -285,11 +285,11 @@ function LearningBoxContent() {
                 className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-violet-600 file:px-4 file:py-2 file:text-white hover:file:bg-violet-700"
               />
               <p className="mt-1 text-xs text-slate-500">
-                Pictures open in the Pictures tab. Generate diagrams in{" "}
-                <Link href="/hints?tool=imagegen" className="underline">
-                  AI Toolbox · Image Gen
-                </Link>
-                .
+                Pictures open in the Pictures tab. Use{" "}
+                <Link href="/hints?tool=grapher" className="underline">
+                  AI Toolbox · Grapher
+                </Link>{" "}
+                to plot functions, or upload your own images here.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">

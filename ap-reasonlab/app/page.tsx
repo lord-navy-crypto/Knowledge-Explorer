@@ -22,7 +22,7 @@ const boxes = [
   {
     title: "AI Toolbox",
     description:
-      "Local AI first — hints, concepts, Site Guide, calculator, grapher, Image Gen, English AI.",
+      "Local AI first — hints, concepts, Site Guide, calculator, grapher, English AI.",
     href: "/hints",
   },
   {
