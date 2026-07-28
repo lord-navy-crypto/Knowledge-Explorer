@@ -82,10 +82,10 @@
       "example": ""
     },
     {
-      "id": "m-concept-ms48h323-zuqsn",
-      "title": "Contextual Applications of Differentiation",
+      "id": "m-concept-ms48jgor-km9zm",
+      "title": "Analytical Applications of Differentiation",
       "subject": "AP Calculus AB/BC",
-      "summary": "## Contextual Applications of Differentiation\n\n### Concepts\n\nDerivatives can represent rates of change in real situations.\n\nStudents should understand:\n\n- Position, velocity, and acceleration\n- Related rates\n- Local linearization\n- Differentials\n- L’Hôpital’s Rule\n\n### Formulas\n\nVelocity:\n\n$$v(t)=s'(t)$$\n\nAcceleration:\n\n$$a(t)=v'(t)=s''(t)$$\n\nSpeed:\n\n$$\\text{speed}=|v(t)|$$\n\nLinearization:\n\n$$L(x)=f(a)+f'(a)(x-a)$$\n\nDifferential approximation:\n\n$$dy=f'(x),dx$$\n\nL’Hôpital’s Rule:\n\n$$\\lim_{x\\to a}\\frac{f(x)}{g(x)}=\\lim_{x\\to a}\\frac{f'(x)}{g'(x)}$$\n\nL’Hôpital’s Rule applies directly to the indeterminate forms:\n\n$$\\frac{0}{0}$$\n\n$$\\frac{\\infty}{\\infty}$$",
+      "summary": "## Analytical Applications of Differentiation\n\n### Concepts\n\nDerivatives are used to analyze the behavior and shape of functions.\n\nStudents should understand:\n\n- The Mean Value Theorem\n- The Extreme Value Theorem\n- Increasing and decreasing intervals\n- Local and absolute extrema\n- Concavity\n- Inflection points\n- First- and second-derivative tests\n- Optimization\n- Graph analysis\n\n### Formulas\n\nCritical points occur where:\n\n$$f'(x)=0$$\n\nor where:\n\n$$f'(x)\\text{ does not exist}$$\n\nMean Value Theorem:\n\n$$f'(c)=\\frac{f(b)-f(a)}{b-a}$$\n\nIncreasing:\n\n$$f'(x)>0$$\n\nDecreasing:\n\n$$f'(x)<0$$\n\nConcave up:\n\n$$f''(x)>0$$\n\nConcave down:\n\n$$f''(x)<0$$\n\nSecond-derivative test:\n\n$$f'(c)=0\\text{ and }f''(c)>0\\Rightarrow\\text{local minimum}$$\n\n$$f'(c)=0\\text{ and }f''(c)<0\\Rightarrow\\text{local maximum}$$",
       "keyPoints": [],
       "commonMistakes": [],
       "example": ""
@@ -774,5 +774,5 @@
   "settings": {
     "advancedDefault": true
   },
-  "updatedAt": 1785217614596
+  "updatedAt": 1785217725544
 }
