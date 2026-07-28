@@ -1,7 +1,8 @@
+import Link from "next/link";
 import EnglishAiTutor from "@/components/EnglishAiTutor";
 import EnglishPageHeader from "@/components/EnglishPageHeader";
 import EnglishResourcePanel from "@/components/EnglishResourcePanel";
-import Link from "next/link";
+import LocalAiRecommendation from "@/components/LocalAiRecommendation";
 
 export default function EnglishAiPage() {
   return (
@@ -18,6 +19,7 @@ export default function EnglishAiPage() {
         </Link>
         .
       </p>
+      <LocalAiRecommendation />
       <EnglishAiTutor />
       <EnglishResourcePanel space="ai" title="English AI · pictures, documents & files" />
     </div>

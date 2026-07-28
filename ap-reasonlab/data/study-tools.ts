@@ -29,7 +29,8 @@ export const STUDY_TOOLS: StudyTool[] = [
     id: "ai",
     href: "/hints",
     title: "Unified AI panel",
-    blurb: "Local / Website API / Your own API — AP, English, or Coding in one dialogue.",
+    blurb:
+      "作者亲测：本地 AI 更聪明，优先使用；云端作备用。AP / English / Coding 一体对话。",
     category: "ai",
   },
   {

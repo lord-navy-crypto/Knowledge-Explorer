@@ -5,6 +5,7 @@ import Link from "next/link";
 import AIDeveloperBlocks from "@/components/AIDeveloperBlocks";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import EditHistory from "@/components/EditHistory";
+import LocalAiRecommendation from "@/components/LocalAiRecommendation";
 import UnifiedAddContent from "@/components/UnifiedAddContent";
 import { useEditorMode } from "@/components/EditorModeProvider";
 import ResourceEditor from "@/components/ResourceEditor";
@@ -311,6 +312,7 @@ export default function ManagePage() {
               label="+ Add content (quick form)"
             />
           </div>
+          <LocalAiRecommendation className="max-w-3xl" />
           <MacFinderDesktop
             data={data}
             changeCode={changeCode}

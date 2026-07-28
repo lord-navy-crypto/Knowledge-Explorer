@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import EthicsBanner from "@/components/EthicsBanner";
+import LocalAiRecommendation from "@/components/LocalAiRecommendation";
 import RecommendedStudyTools from "@/components/RecommendedStudyTools";
 import UnifiedAiPanel from "@/components/UnifiedAiPanel";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
@@ -70,6 +71,7 @@ function ToolboxContent() {
           Coding tasks. Extra tools: Calculator (computer) and Grapher (function plotter). Your AI
           path, model, and last tab are remembered in this browser.
         </p>
+        <LocalAiRecommendation variant="hero" className="mt-4 max-w-2xl" />
       </section>
 
       <EthicsBanner />

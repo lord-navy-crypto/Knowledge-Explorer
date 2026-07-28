@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import ChangePanel from "@/components/ChangePanel";
+import LocalAiRecommendation from "@/components/LocalAiRecommendation";
 import ResourceEditor, { type EditableTarget } from "@/components/ResourceEditor";
 import RichContent from "@/components/RichContent";
 import { useEditorMode } from "@/components/EditorModeProvider";
@@ -694,6 +695,12 @@ export default function MacFinderDesktop({
             {nav.kind === "trash" &&
               "Deleted items land here. Restore them back into the site, or purge forever."}
           </p>
+
+          {nav.kind === "desktop" && (
+            <div className="mb-4 max-w-xl mx-auto">
+              <LocalAiRecommendation variant="hero" compact />
+            </div>
+          )}
 
           {nav.kind === "desktop" && (
             <FolderIconGrid

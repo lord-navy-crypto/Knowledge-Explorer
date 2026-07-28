@@ -1,6 +1,10 @@
 import Link from "next/link";
 import DisclaimerPanel from "@/components/DisclaimerPanel";
 import EthicsBanner from "@/components/EthicsBanner";
+import {
+  LOCAL_AI_RECOMMENDATION_EN,
+  LOCAL_AI_RECOMMENDATION_ZH,
+} from "@/lib/ai-local-recommendation";
 import { brand, trueJetMembers } from "@/data/brand";
 
 const boxes = [
@@ -22,7 +26,7 @@ const boxes = [
   {
     title: "AI Toolbox",
     description:
-      "Local AI first — hints, concepts, Site Guide, calculator, grapher, English AI.",
+      "本地 AI 优先（作者亲测更聪明）— hints、concepts、Site Guide、calculator、grapher、English AI。",
     href: "/hints",
   },
   {
@@ -86,13 +90,8 @@ export default function HomePage() {
         <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700">
           We recommend
         </p>
-        <p className="mt-1 text-lg font-bold text-emerald-900">
-          Local AI is the best. We recommend using Local AI. There are no restrictions.
-        </p>
-        <p className="mt-2 max-w-2xl text-sm text-emerald-900/85">
-          Run study tools on your own device — private, free for the site, with no product-side
-          caps. Open the AI Toolbox, enable a Local model, and use Cloud Instant only as backup.
-        </p>
+        <p className="mt-1 text-lg font-bold text-emerald-900">{LOCAL_AI_RECOMMENDATION_ZH}</p>
+        <p className="mt-2 max-w-2xl text-sm text-emerald-900/85">{LOCAL_AI_RECOMMENDATION_EN}</p>
         <Link
           href="/hints"
           className="mt-3 inline-flex rounded-xl bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800"

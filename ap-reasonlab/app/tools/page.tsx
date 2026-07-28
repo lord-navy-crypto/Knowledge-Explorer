@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import LocalAiRecommendation from "@/components/LocalAiRecommendation";
 import RecommendedStudyTools from "@/components/RecommendedStudyTools";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import { STUDY_TOOL_CATEGORIES, STUDY_TOOLS } from "@/data/study-tools";
@@ -25,6 +26,7 @@ export default function ToolsPage() {
           conversion — tuned for laptop screens and stylus/drawing devices. Settings that matter for
           AI stay saved in this browser.
         </p>
+        <LocalAiRecommendation className="mt-3 max-w-3xl" />
       </section>
 
       {STUDY_TOOL_CATEGORIES.map((category) => {
