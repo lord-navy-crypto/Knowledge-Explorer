@@ -180,6 +180,7 @@ export default function UnifiedAiPanel({
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [siteSearchNote, setSiteSearchNote] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const chatRef = useRef<HTMLDivElement>(null);
 
@@ -238,10 +239,21 @@ export default function UnifiedAiPanel({
     onToken?: (token: string, fullText: string) => void
   ) {
     await ensureLocalReady();
-    const withHistory = `${buildHistoryBlock(history)}${user}`;
-    const { context } = await fetchAiSiteContext(withHistory, localAI.siteSearchEnabled);
+    // Search the latest question only — history pollutes keyword retrieval.
+    const { context, note, hitCount } = await fetchAiSiteContext(
+      user,
+      localAI.siteSearchEnabled
+    );
+    setSiteSearchNote(
+      localAI.siteSearchEnabled
+        ? note || (hitCount ? `Using ${hitCount} site hit(s).` : "No site matches.")
+        : "Site search off."
+    );
     const chatMessages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
-      { role: "system", content: system },
+      {
+        role: "system",
+        content: `${system}\n\nWhen Knowledge Explorer site materials are appended below, prefer their formulas/definitions and cite the hit titles. Ignore off-topic hits.`,
+      },
     ];
     for (const message of history.slice(-8)) {
       chatMessages.push({
@@ -598,8 +610,12 @@ export default function UnifiedAiPanel({
         </h2>
         <p className="mt-1 text-sm text-slate-600">
           Choose Local / Website API / Your own API, pick a task, then chat in the dialogue box.
-          Follow-up questions stay in the same conversation.
+          Follow-up questions stay in the same conversation. Keep{" "}
+          <strong>Always search Knowledge Explorer</strong> on so AI teaches from site materials.
         </p>
+        {siteSearchNote ? (
+          <p className="mt-2 text-xs font-medium text-emerald-800">{siteSearchNote}</p>
+        ) : null}
       </div>
 
       <div className="space-y-5 p-4 md:p-5">

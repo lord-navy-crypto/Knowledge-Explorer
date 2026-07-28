@@ -158,9 +158,10 @@ export default function LocalAIControls({ embedded = false }: Props) {
           <span>
             <span className="font-semibold text-slate-900">Always search Knowledge Explorer</span>
             <span className="mt-0.5 block text-xs text-slate-500">
-              Before answering, look up matching concepts/formulas/practice on this site and pass
-              them to the AI. Free to search — only a little extra prompt size if matches exist. Not
-              Google / open-web search.
+              Before answering, look up matching concepts / formulas / practice / documents on this
+              site and feed them to the AI so it can teach from your materials. Free to search —
+              only a little extra prompt size if matches exist. Not Google / open-web search.
+              Author tip: keep this ON — Local AI works best with site content.
             </span>
           </span>
         </label>
