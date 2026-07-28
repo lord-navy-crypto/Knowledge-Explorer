@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-/** Image Gen lives in the AI Toolbox only. */
+/** Image Gen removed — keep plotter (Grapher) for function graphs. */
 export default function ImageGenPage() {
-  redirect("/hints?tool=imagegen");
+  redirect("/hints?tool=grapher");
 }

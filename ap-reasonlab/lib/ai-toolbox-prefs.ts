@@ -1,4 +1,4 @@
-export type ToolboxExtraTool = "ai" | "calculator" | "grapher" | "imagegen";
+export type ToolboxExtraTool = "ai" | "calculator" | "grapher";
 export type ToolboxCategory = "ap" | "english" | "coding";
 
 export type ToolboxPanelPrefs = {
@@ -36,7 +36,9 @@ function readJson<T>(raw: string | null): T | null {
 export function loadToolboxExtraTool(): ToolboxExtraTool | null {
   if (typeof window === "undefined") return null;
   const raw = localStorage.getItem(EXTRA_TOOL_KEY);
-  if (raw === "ai" || raw === "calculator" || raw === "grapher" || raw === "imagegen") return raw;
+  if (raw === "ai" || raw === "calculator" || raw === "grapher") return raw;
+  // Retired Image Gen → function plotter
+  if (raw === "imagegen") return "grapher";
   return null;
 }
 

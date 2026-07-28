@@ -17,9 +17,9 @@ const academicTools = [
       "Public materials everyone can upload and view without a change code.",
   },
   {
-    href: "/hints?tool=imagegen",
-    title: "Image Generation",
-    description: "In AI Toolbox — generate study visuals from a prompt.",
+    href: "/hints?tool=grapher",
+    title: "Function plotter",
+    description: "In AI Toolbox — plot y = f(x) with zoom and trace.",
   },
 ];
 

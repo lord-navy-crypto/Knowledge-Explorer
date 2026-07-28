@@ -6,15 +6,15 @@ Purpose: Learn by reasoning. Hints and half-process guidance only — no final e
 Main areas:
 - AP (/ap): subject-first workspace → concepts, formulas, practice & exam, AI Toolbox. Documents/files live in the page storage panel.
 - English (/english): English Learning Hub → TOEFL, IELTS, SAT, vocabulary, grammar/sentences, writing, uploaded resources, and English AI Tutor (/english/ai and AI Toolbox · English AI).
-- Academic Platform (/academic): Private Learning Box (notes, documents, and private pictures — former Picture box merged here), Shared Materials. Image Gen is in AI Toolbox (/hints?tool=imagegen).
+- Academic Platform (/academic): Private Learning Box (notes, documents, and private pictures — former Picture box merged here), Shared Materials. Function graphs are in AI Toolbox (/hints?tool=grapher).
 - Code (/code): Python (Pyodide playground on /code/python), Web/HTML (live preview on /code/web), Java snippets/uploads (no in-browser runner yet).
 - Forum (/forum): public discussions and replies; a display name is required to post. Shared Materials is the separate public file library.
 - Partners (/partners): Knowledge Explorer roster with GitHub links; add any person by display name + GitHub username (content change code / edit circle).
 - Manage (/manage): no-code content manager (editors; needs change code or content-login session).
-- Tools (/tools): short links into AI Toolbox calculator, grapher, Image Gen, and English AI tabs.
+- Tools (/tools): short links into AI Toolbox calculator, grapher, and English AI tabs, plus study utilities.
 - Search (/search): find concepts, formulas, practice across subjects.
 - About (/about): brand, ethics, how change codes work (codes themselves are not published on the page — ask an admin).
-- AI Toolbox (/hints): One unified AI panel — choose Local, Website API, or Your own API, then pick AP / English / Coding tasks. Optional Always search Knowledge Explorer. Extra tools: Calculator, Grapher, Image Gen.
+- AI Toolbox (/hints): One unified AI panel — choose Local, Website API, or Your own API, then pick AP / English / Coding tasks. Optional Always search Knowledge Explorer. Extra tools: Calculator (computer) and Grapher (function plotter).
 Editing: Browse freely. Click the edit circle (bottom-right) on any page or open /login, enter the content change code once, then edit without re-typing. Content code also unlocks AI Developer and History & Undo from the edit circle / top edit bar. Master code still works for the same edits. Manage → gold Add content opens Macintosh HD (MachineTools HD) file desk.
 Style window: floating Style control opens a window frame to switch AP Classic, Cyberpunk Red, Luxury Gold & Silver, or Pastel Pink & Purple page decoration (saved in the browser).
 Publishing: GITHUB_TOKEN on Vercel lets Manage/+ saves publish to GitHub. CONTENT_GITHUB_TOKEN is for GitHub Models AI only — not for Save.

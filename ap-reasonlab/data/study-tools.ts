@@ -43,14 +43,7 @@ export const STUDY_TOOLS: StudyTool[] = [
     id: "grapher",
     href: "/hints?tool=grapher",
     title: "KE Graph",
-    blurb: "Plot y = f(x) with zoom and trace.",
-    category: "ai",
-  },
-  {
-    id: "imagegen",
-    href: "/hints?tool=imagegen",
-    title: "Image Gen",
-    blurb: "Generate study diagrams from a prompt.",
+    blurb: "Function plotter — plot y = f(x) with zoom and trace.",
     category: "ai",
   },
   {
