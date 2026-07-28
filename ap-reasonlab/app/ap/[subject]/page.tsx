@@ -4,6 +4,7 @@ import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import FrqPackCard from "@/components/FrqPackCard";
 import RichContent from "@/components/RichContent";
 import UnifiedAddContent from "@/components/UnifiedAddContent";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
@@ -13,15 +14,12 @@ import { concepts } from "@/data/content";
 import { formulas } from "@/data/formulas";
 import { questionnaires } from "@/data/questionnaires";
 import { getSubjectBySlug } from "@/data/ap-catalog";
-import type { ManagedContent, ManagedContentItem, ManagedUnit } from "@/lib/managed-types";
+import type { ManagedContent, ManagedContentItem } from "@/lib/managed-types";
 
 const sectionConfig = [
-  { key: "units", label: "Units", icon: "▦" },
   { key: "concept", label: "Concepts", icon: "◇" },
   { key: "formula", label: "Formulas", icon: "∑" },
-  { key: "practice", label: "Practice", icon: "✓" },
-  { key: "document", label: "Documents", icon: "▤" },
-  { key: "past-papers", label: "Released Exams", icon: "▧" },
+  { key: "practice", label: "Practice & exam", icon: "✓" },
   { key: "hints", label: "AI Toolbox", icon: "✦" },
 ] as const;
 
@@ -34,14 +32,10 @@ function SubjectWorkspaceContent() {
   const [query, setQuery] = useState("");
   const [type, setType] = useState(() => {
     const fromQuery = searchParams.get("type");
-    return fromQuery === "concept" ||
-      fromQuery === "formula" ||
-      fromQuery === "practice" ||
-      fromQuery === "document"
+    return fromQuery === "concept" || fromQuery === "formula" || fromQuery === "practice"
       ? fromQuery
       : "all";
   });
-  const [unitId, setUnitId] = useState("all");
   const [actionError, setActionError] = useState("");
 
   const refresh = useCallback(() => {
@@ -57,20 +51,14 @@ function SubjectWorkspaceContent() {
 
   useEffect(() => {
     const fromQuery = searchParams.get("type");
-    if (
-      fromQuery === "concept" ||
-      fromQuery === "formula" ||
-      fromQuery === "practice" ||
-      fromQuery === "document"
-    ) {
+    if (fromQuery === "concept" || fromQuery === "formula" || fromQuery === "practice") {
       setType(fromQuery);
     }
   }, [searchParams]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (window.location.hash === "#document" || window.location.hash === "#subject-content") {
-      if (window.location.hash === "#document") setType("document");
+    if (window.location.hash === "#subject-content") {
       requestAnimationFrame(() => {
         document.getElementById("subject-content")?.scrollIntoView({ behavior: "smooth" });
       });
@@ -102,26 +90,6 @@ function SubjectWorkspaceContent() {
 
   const subjectName = subject?.name || "";
   const managedSubjectId = managedSubject?.id || params.subject;
-  const units = useMemo<ManagedUnit[]>(() => {
-    const configured = (managed.units || []).filter(
-      (unit) => unit.subjectId === managedSubjectId && unit.enabled
-    );
-    const names = new Set(
-      formulas.filter((formula) => formula.subject === subjectName).map((formula) => formula.unit)
-    );
-    const derived = [...names].map((title, index) => ({
-      id: `derived-${index}`,
-      subjectId: managedSubjectId,
-      title,
-      order: index,
-      enabled: true,
-      createdAt: 0,
-    }));
-    return [
-      ...configured,
-      ...derived.filter((unit) => !configured.some((existing) => existing.title === unit.title)),
-    ].sort((a, b) => a.order - b.order);
-  }, [managed.units, managedSubjectId, subjectName]);
 
   const items = useMemo(
     () =>
@@ -136,12 +104,12 @@ function SubjectWorkspaceContent() {
       .filter(
         (item) =>
           (type === "all" || item.type === type) &&
-          (unitId === "all" || item.unitId === unitId) &&
+          item.type !== "document" &&
           (!needle ||
             `${item.title} ${item.content} ${item.tags.join(" ")}`.toLowerCase().includes(needle))
       )
       .sort((a, b) => a.order - b.order || b.updatedAt - a.updatedAt);
-  }, [items, query, type, unitId]);
+  }, [items, query, type]);
 
   async function deleteContentItem(item: ManagedContentItem) {
     if (!window.confirm(`Delete “${item.title}”? It can be restored from Manage → Recycle Bin.`)) return;
@@ -172,7 +140,6 @@ function SubjectWorkspaceContent() {
   }
 
   const counts: Record<string, number> = {
-    units: units.length,
     concept:
       concepts.filter((item) => item.subject === subjectName).length +
       items.filter((item) => item.type === "concept").length,
@@ -182,20 +149,20 @@ function SubjectWorkspaceContent() {
     practice:
       questionnaires.filter((item) => item.subject === subjectName).length +
       items.filter((item) => item.type === "practice").length,
-    document: items.filter((item) => item.type === "document").length,
     hints: 1,
-    "past-papers": 0,
   };
 
   const hrefFor = (key: string) => {
     if (key === "concept") return `/concepts?subject=${encodeURIComponent(subjectName)}`;
     if (key === "formula") return `/formulas?subject=${encodeURIComponent(subjectName)}`;
-    if (key === "practice") return `/practice?subject=${encodeURIComponent(subjectName)}`;
+    if (key === "practice") {
+      return `/practice?subject=${encodeURIComponent(subjectName)}`;
+    }
     if (key === "hints") return `/hints?subject=${encodeURIComponent(subjectName)}`;
-    if (key === "document") return `?type=document#subject-content`;
-    if (key === "past-papers") return "#past-papers";
     return `#${key}`;
   };
+
+  const isStatistics = params.subject === "statistics" || subjectName === "AP Statistics";
 
   return (
     <div className="space-y-7">
@@ -210,7 +177,9 @@ function SubjectWorkspaceContent() {
         </div>
       </section>
 
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {isStatistics ? <FrqPackCard /> : null}
+
+      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {sectionConfig.map((section) => (
           <Link
             key={section.key}
@@ -223,7 +192,9 @@ function SubjectWorkspaceContent() {
             <div>
               <h2 className="font-semibold">{section.label}</h2>
               <p className="text-sm text-slate-500">
-                {section.key === "past-papers" ? "Upload area" : `${counts[section.key]} available`}
+                {section.key === "practice"
+                  ? "Sets, drills & released exams"
+                  : `${counts[section.key]} available`}
               </p>
             </div>
           </Link>
@@ -234,8 +205,8 @@ function SubjectWorkspaceContent() {
         <div>
           <h2 className="section-title">Pictures, documents &amp; files</h2>
           <p className="mt-1 text-sm text-slate-600">
-            In-page storage for this AP subject — scrolls with the page. Upload pictures, documents,
-            and files; add nested folders when needed.
+            In-page storage for this AP subject — upload pictures, documents, and files; browse by
+            month folder and download.
           </p>
         </div>
         <UnifiedMediaFrame
@@ -247,71 +218,31 @@ function SubjectWorkspaceContent() {
         />
       </section>
 
-      <section id="units" className="space-y-3">
-        <h2 className="section-title">Units</h2>
-        {units.length ? (
-          <div className="grid gap-3 md:grid-cols-2">
-            {units.map((unit) => (
-              <button
-                key={unit.id}
-                type="button"
-                onClick={() => {
-                  setUnitId(unit.id);
-                  document.getElementById("subject-content")?.scrollIntoView({ behavior: "smooth" });
-                }}
-                className="card-hover text-left"
-              >
-                <span className="badge">Unit {unit.order + 1}</span>
-                <h3 className="mt-3 font-semibold">{unit.title}</h3>
-                {unit.description && (
-                  <p className="mt-1 text-sm text-slate-600">{unit.description}</p>
-                )}
-              </button>
-            ))}
-          </div>
-        ) : (
-          <div className="card text-sm text-slate-500">
-            No units configured yet. Add them from Manage.
-          </div>
-        )}
-      </section>
-
       <section id="subject-content" className="space-y-4">
-        <div id="document">
+        <div>
           <h2 className="section-title">Subject content</h2>
           <p className="mt-1 text-sm text-slate-500">
-            Search and filter content published through the new manager.
+            Search concepts, formulas, and practice published through Manage. Documents live in the
+            storage panel above.
           </p>
         </div>
-        <div className="card grid gap-3 md:grid-cols-3">
+        <div className="card grid gap-3 md:grid-cols-2">
           <input
             type="search"
-            className="input md:col-span-3"
+            className="input md:col-span-2"
             placeholder="Search title, content, or tags…"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
           <select
-            className="input"
+            className="input md:col-span-2"
             value={type}
             onChange={(event) => setType(event.target.value)}
           >
             <option value="all">All types</option>
-            {["concept", "formula", "practice", "document"].map((value) => (
+            {["concept", "formula", "practice"].map((value) => (
               <option key={value} value={value}>
                 {value}
-              </option>
-            ))}
-          </select>
-          <select
-            className="input md:col-span-2"
-            value={unitId}
-            onChange={(event) => setUnitId(event.target.value)}
-          >
-            <option value="all">All units</option>
-            {units.map((unit) => (
-              <option key={unit.id} value={unit.id}>
-                {unit.title}
               </option>
             ))}
           </select>
@@ -325,10 +256,22 @@ function SubjectWorkspaceContent() {
                   <span className="badge">{item.type}</span>
                   <span className="badge">{item.difficulty}</span>
                 </div>
-                {editMode && <div className="flex items-center gap-1">
-                  <ResourceEditor target="content_item" item={item} onSaved={(content) => setManaged(content as ManagedContent)} />
-                  <button type="button" className="btn-ghost px-2 py-1 text-xs text-red-600" onClick={() => void deleteContentItem(item)}>− Delete</button>
-                </div>}
+                {editMode && (
+                  <div className="flex items-center gap-1">
+                    <ResourceEditor
+                      target="content_item"
+                      item={item}
+                      onSaved={(content) => setManaged(content as ManagedContent)}
+                    />
+                    <button
+                      type="button"
+                      className="btn-ghost px-2 py-1 text-xs text-red-600"
+                      onClick={() => void deleteContentItem(item)}
+                    >
+                      − Delete
+                    </button>
+                  </div>
+                )}
               </div>
               <h3 className="mt-3 text-lg font-semibold">{item.title}</h3>
               <div className="mt-2 max-h-[65vh] overflow-auto overscroll-contain">
@@ -342,43 +285,23 @@ function SubjectWorkspaceContent() {
         </div>
         {filteredItems.length === 0 && (
           <div className="card text-sm text-slate-500">
-            No managed content matches these filters yet. Built-in materials remain available
-            through the section cards above.
+            No managed content matches these filters yet. Built-in materials remain available through
+            the section cards above.
           </div>
         )}
-      </section>
-
-      <section id="past-papers" className="space-y-3 scroll-mt-24">
-        <div>
-          <h2 className="section-title">Released exams & past papers</h2>
-          <p className="mt-1 text-sm text-slate-600">
-            Upload downloadable exam files or add a text document for {subject.name}. A change code is required.
-          </p>
-          <p className="mt-1 text-xs text-slate-500">
-            Uploaded files are the uploader’s responsibility. Prefer publicly shareable study files.
-          </p>
-        </div>
-        <UnifiedMediaFrame
-          title={`${subject.shortName} · Exam archive`}
-          folderArea="past-papers"
-          spaceKey={subjectName}
-          defaultSubject={subjectName}
-          alsoShow={["document", "folder"]}
-          collapsedByDefault
-        />
       </section>
 
       <section className="card flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-semibold text-slate-900">Add content for this subject</h2>
           <p className="mt-1 text-sm text-slate-500">
-            Editors can publish concepts, formulas, practice, and documents here.
+            Editors can publish concepts, formulas, and practice here. Use the storage panel for
+            documents and files.
           </p>
         </div>
         <UnifiedAddContent
           subjectId={managedSubjectId}
           subjectName={subjectName}
-          units={units}
           onSaved={refresh}
         />
       </section>

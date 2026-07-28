@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import EthicsBanner from "@/components/EthicsBanner";
+import RecommendedStudyTools from "@/components/RecommendedStudyTools";
 import UnifiedAiPanel from "@/components/UnifiedAiPanel";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import TICalculator from "@/components/TICalculator";
@@ -88,6 +89,8 @@ function ToolboxContent() {
         folderArea="hints"
         alsoShow={["document", "folder"]}
       />
+
+      <RecommendedStudyTools />
     </div>
   );
 }

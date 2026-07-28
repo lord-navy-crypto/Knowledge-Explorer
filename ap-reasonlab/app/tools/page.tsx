@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import RecommendedStudyTools from "@/components/RecommendedStudyTools";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 
 export const metadata = {
@@ -63,6 +64,8 @@ export default function ToolsPage() {
           </Link>
         ))}
       </div>
+
+      <RecommendedStudyTools />
 
       <UnifiedMediaFrame
         title="Tools · pictures, documents, files & folders"

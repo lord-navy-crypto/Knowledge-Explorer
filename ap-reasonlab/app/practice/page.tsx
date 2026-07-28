@@ -10,6 +10,7 @@ import {
 } from "@/data/questionnaires";
 import { AP_SUBJECTS } from "@/data/ap-expanded";
 import FolderGrid from "@/components/FolderGrid";
+import FrqPackCard from "@/components/FrqPackCard";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import { ROOT_SPACE, spaceFromSearchParams } from "@/lib/storage-space";
 import RichContent from "@/components/RichContent";
@@ -86,9 +87,9 @@ function PracticeContent() {
           <Link href="/ap" className="text-sm text-brand-600 hover:underline">
             ← AP Area
           </Link>
-          <h1 className="mt-2 text-3xl font-bold">Practice</h1>
+          <h1 className="mt-2 text-3xl font-bold">Practice &amp; exam</h1>
           <p className="mt-2 text-slate-600">
-            Open a subject (e.g. <strong>AP Statistics</strong>) to add generated FRQ sets. Or use{" "}
+            Open a subject for generated FRQ sets, drills, and released exam files. Use{" "}
             <strong>+ Add subject folder</strong> to create a new subject.
           </p>
         </div>
@@ -122,19 +123,18 @@ function PracticeContent() {
         <Link href="/practice" className="text-sm text-brand-600 hover:underline">
           ← All subject folders
         </Link>
-        <h1 className="mt-2 text-3xl font-bold">{subject}</h1>
+        <h1 className="mt-2 text-3xl font-bold">Practice &amp; exam · {subject}</h1>
         <p className="mt-2 text-slate-600">
-          Practice for this subject — hints only. Use{" "}
-          <strong>+ Add generated practice set</strong> to create a new AI FRQ set here.
-          {subject === "AP Statistics" && (
-            <>
-              {" "}
-              Open <strong>Documents</strong> in the storage panel below for the regenerated FRQ
-              Practice Pack (with reference answers) and download the PDF.
-            </>
-          )}
+          Generated sets, half-process drills, and released exam uploads for this subject. Hints only
+          — use <strong>+ Add generated practice set</strong> to create a new FRQ set.
         </p>
       </div>
+
+      {subject === "AP Statistics" ? (
+        <div id="frq-pack">
+          <FrqPackCard />
+        </div>
+      ) : null}
 
       <UnifiedMediaFrame
         alsoShow={["questionnaire", "document", "folder"]}
@@ -142,10 +142,28 @@ function PracticeContent() {
         folderArea="practice"
         spaceKey={spaceKey}
         spaceBasePath="/practice"
-        title={`${subject} · pictures, documents, files & practice sets`}
+        title={`${subject} · practice sets & files`}
         onSubjectsChange={setManagedSubjects}
         onQuestionnairesChange={(q) => setManagedQuizzes(q as Questionnaire[])}
       />
+
+      <section id="released-exams" className="space-y-3 scroll-mt-24">
+        <div>
+          <h2 className="section-title">Released exams &amp; past papers</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Upload downloadable exam PDFs or study files for {subject}. Browse by month folder and
+            download — no separate preview pane.
+          </p>
+        </div>
+        <UnifiedMediaFrame
+          title={`${subject} · exam archive`}
+          folderArea="past-papers"
+          spaceKey={subject}
+          defaultSubject={subject}
+          alsoShow={["document", "folder"]}
+          collapsedByDefault
+        />
+      </section>
 
       <div className="card p-2">
         <div className="grid grid-cols-2 gap-2">

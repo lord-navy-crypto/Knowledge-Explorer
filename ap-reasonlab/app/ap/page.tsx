@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import FrqPackCard from "@/components/FrqPackCard";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import { AP_CATALOG, type SubjectDefinition, type SubjectGroup } from "@/data/ap-catalog";
 import { AP_SUBJECTS } from "@/data/ap-expanded";
@@ -116,7 +117,7 @@ export default function ApHubPage() {
         <div>
           <span className="inline-block rounded-full bg-white/20 px-3 py-1 text-xs font-semibold">AP SUBJECT LIBRARY</span>
           <h1 className="mt-3 text-3xl font-bold md:text-4xl">Choose your AP subject first</h1>
-          <p className="mt-2 max-w-2xl text-blue-100">Then open units, concepts, formulas, practice, documents, or the AI Toolbox inside that subject.</p>
+          <p className="mt-2 max-w-2xl text-blue-100">Then open concepts, formulas, practice &amp; exam, or the AI Toolbox inside that subject.</p>
           <p className="mt-4 max-w-2xl text-xs leading-relaxed text-blue-100/85">
             AP® and College Board® are trademarks of the College Board. This site is not affiliated
             with or endorsed by the College Board. Unofficial study aid — content may contain errors.
@@ -124,24 +125,14 @@ export default function ApHubPage() {
         </div>
       </section>
 
-      <section className="card space-y-3 border-brand-100 bg-brand-50/40">
-        <h2 className="text-lg font-bold text-slate-900">AP Statistics FRQ pack</h2>
-        <p className="text-sm text-slate-600">
-          Generated FRQ sets plus the regenerated practice pack (PDF/MD with reference answers) live
-          under Concepts, Practice, and subject storage.
-        </p>
-        <div className="flex flex-wrap gap-2">
-          <Link href="/practice?subject=AP%20Statistics" className="btn-primary">
-            Statistics practice
-          </Link>
-          <Link href="/concepts?subject=AP%20Statistics" className="btn-secondary">
-            Statistics topics & docs
-          </Link>
-          <Link href="/ap/statistics" className="btn-ghost">
-            Open Statistics subject
-          </Link>
-        </div>
-      </section>
+      {catalog.some((s) => s.slug === "statistics") ? (
+        <section className="space-y-2">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
+            Featured for AP Statistics
+          </h2>
+          <FrqPackCard compact />
+        </section>
+      ) : null}
 
       {favoriteSubjects.length > 0 && (
         <section>

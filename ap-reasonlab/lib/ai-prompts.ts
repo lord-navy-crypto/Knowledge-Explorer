@@ -4,7 +4,7 @@ export const SITE_GUIDE_FACTS = `
 Site name: Knowledge Explorer — academic box & platform (tutor, not solver).
 Purpose: Learn by reasoning. Hints and half-process guidance only — no final exam answers by design.
 Main areas:
-- AP (/ap): subject-first workspace → units, concepts, formulas, practice, documents, AI Toolbox.
+- AP (/ap): subject-first workspace → concepts, formulas, practice & exam, AI Toolbox. Documents/files live in the page storage panel.
 - English (/english): English Learning Hub → TOEFL, IELTS, SAT, vocabulary, grammar/sentences, writing, uploaded resources, and English AI Tutor (/english/ai and AI Toolbox · English AI).
 - Academic Platform (/academic): Private Learning Box (notes, documents, and private pictures — former Picture box merged here), Shared Materials. Image Gen is in AI Toolbox (/hints?tool=imagegen).
 - Code (/code): Python (Pyodide playground on /code/python), Web/HTML (live preview on /code/web), Java snippets/uploads (no in-browser runner yet).
