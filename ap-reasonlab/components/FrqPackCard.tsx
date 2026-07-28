@@ -7,7 +7,7 @@ export default function FrqPackCard({ compact = false }: { compact?: boolean }) 
       <p className="text-sm text-slate-600">
         <strong>FRQ Practice Pack</strong> (regenerated, with reference answers) lives in{" "}
         <Link href="/practice?subject=AP%20Statistics#frq-pack" className="font-medium text-brand-700 underline">
-          Practice &amp; exam → FRQ pack
+          Practice → FRQ pack
         </Link>
         .
       </p>
@@ -19,11 +19,11 @@ export default function FrqPackCard({ compact = false }: { compact?: boolean }) 
       <h2 className="text-lg font-bold text-slate-900">AP Statistics FRQ Practice Pack</h2>
       <p className="text-sm text-slate-600">
         Regenerated FRQ set: four topics, difficulty levels, and Part II reference answers. Download
-        the pack from Practice &amp; exam storage — same place as generated sets and released exams.
+        the pack from Practice — same place as generated sets and exam papers.
       </p>
       <div className="flex flex-wrap gap-2">
         <Link href="/practice?subject=AP%20Statistics#frq-pack" className="btn-primary">
-          Open in Practice &amp; exam
+          Open in Practice
         </Link>
         <Link href="/ap/statistics" className="btn-secondary">
           Statistics subject
