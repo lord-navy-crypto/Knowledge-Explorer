@@ -137,6 +137,17 @@
       "variables": "",
       "whenToUse": "",
       "sourceNote": "Added via change-code edit"
+    },
+    {
+      "id": "m-formula-ms47wivc-he05u",
+      "subject": "AP Physics C: Mechanics",
+      "unit": "Managed",
+      "name": "Rotational Inertia of a Uniform Disk",
+      "expression": "",
+      "content": "## Example: Rotational Inertia of a Uniform Disk\n\n### Concepts\n\nA disk can be divided into thin concentric rings.\n\nEach ring has radius $r$, thickness $dr$, and area $dA$.\n\nEvery point on one thin ring is approximately the same distance from the axis, so the ring contributes:\n\n$$dI=r^2,dm$$\n\n### Formulas\n\nThe disk’s surface mass density is:\n\n$$\\sigma=\\frac{M}{\\pi R^2}$$\n\nThe area of a thin ring is:\n\n$$dA=2\\pi r,dr$$\n\nThe mass of the ring is:\n\n$$dm=\\sigma,dA$$\n\n$$dm=\\frac{M}{\\pi R^2}(2\\pi r,dr)$$\n\n$$dm=\\frac{2Mr}{R^2},dr$$\n\nThe rotational inertia is:\n\n$$I=\\int_0^R r^2,dm$$\n\n$$I=\\int_0^R r^2\\frac{2Mr}{R^2},dr$$\n\n$$I=\\frac{2M}{R^2}\\int_0^R r^3,dr$$\n\n$$I=\\frac{2M}{R^2}\\left[\\frac{r^4}{4}\\right]_0^R$$\n\nTherefore:\n\n$$I=\\frac{1}{2}MR^2$$",
+      "variables": "",
+      "whenToUse": "",
+      "sourceNote": "Added via change-code edit"
     }
   ],
   "documents": [
@@ -732,5 +743,5 @@
   "settings": {
     "advancedDefault": true
   },
-  "updatedAt": 1785216390800
+  "updatedAt": 1785216655280
 }
