@@ -19,7 +19,7 @@ export default function FrqPackCard({ compact = false }: { compact?: boolean }) 
       <h2 className="text-lg font-bold text-slate-900">AP Statistics FRQ Practice Pack</h2>
       <p className="text-sm text-slate-600">
         Regenerated FRQ set: four topics, difficulty levels, and Part II reference answers. Download
-        the pack from Practice — same place as generated sets and exam papers.
+        the pack from Practice — same place as generated sets and exam &amp; paper materials.
       </p>
       <div className="flex flex-wrap gap-2">
         <Link href="/practice?subject=AP%20Statistics#frq-pack" className="btn-primary">

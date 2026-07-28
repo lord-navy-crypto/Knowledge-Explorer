@@ -136,7 +136,7 @@ export function matchesSpace(
 
 /**
  * Macintosh HD / Manage: one AP subject folder shows files from all related
- * page buckets (subject media, past papers, practice, concepts, formulas).
+ * page buckets (subject media, exam-and-paper media, practice, concepts, formulas).
  */
 export function matchesFolderItem(
   item: { area?: string; space?: string },

@@ -193,7 +193,7 @@ function SubjectWorkspaceContent() {
               <h2 className="font-semibold">{section.label}</h2>
               <p className="text-sm text-slate-500">
                 {section.key === "practice"
-                  ? "Sets, drills & exam papers"
+                  ? "Sets, drills & exam & paper"
                   : `${counts[section.key]} available`}
               </p>
             </div>
