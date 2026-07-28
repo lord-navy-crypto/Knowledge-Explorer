@@ -23,6 +23,8 @@ const moreGroups = [
       { href: "/", label: "Home" },
       { href: "/about", label: "About" },
       { href: "/tools", label: "Tools" },
+      { href: "/tools/draft", label: "Black draft paper" },
+      { href: "/tools/dual", label: "Dual-column editor" },
       { href: "/hints?tool=calculator", label: "Calculator" },
       { href: "/hints?tool=grapher", label: "Grapher" },
       { href: "/hints?tool=imagegen", label: "Image Gen" },

@@ -2,69 +2,57 @@ import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import RecommendedStudyTools from "@/components/RecommendedStudyTools";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
+import { STUDY_TOOL_CATEGORIES, STUDY_TOOLS } from "@/data/study-tools";
 
 export const metadata = {
   title: "Tools — Knowledge Explorer",
-  description: "Calculator and grapher live in AI Toolbox; /tools keeps short links.",
+  description:
+    "AI Toolbox plus draft paper, dual-column editor, LaTeX, units, timer, flashcards, Markdown→PDF, and Word import.",
 };
-
-const tools = [
-  {
-    href: "/hints",
-    title: "Unified AI panel",
-    blurb: "One box: Local / Website API / Your own API — then AP, English, or Coding tasks.",
-  },
-  {
-    href: "/hints?tool=calculator",
-    title: "KE-84 Calculator",
-    blurb: "Open inside AI Toolbox — TI-inspired scientific keypad.",
-  },
-  {
-    href: "/hints?tool=grapher",
-    title: "KE Graph",
-    blurb: "Open inside AI Toolbox — plot y = f(x) with zoom and trace.",
-  },
-  {
-    href: "/hints?tool=imagegen",
-    title: "Image Gen",
-    blurb: "Open inside AI Toolbox — generate study diagrams from a prompt.",
-  },
-  {
-    href: "/hints?tool=english",
-    title: "English AI",
-    blurb: "Opens the unified AI panel on English tasks (grammar, vocab, reading, corpus).",
-  },
-  {
-    href: "/hints?tool=coding",
-    title: "Coding AI",
-    blurb: "Opens the unified AI panel on Coding tasks (debug, write, explain).",
-  },
-];
 
 export default function ToolsPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Tools" }]} />
       <section className="space-y-2">
         <h1 className="section-title">Online tools</h1>
-        <p className="max-w-2xl text-sm text-slate-600">
-          These tools live in the{" "}
+        <p className="max-w-3xl text-sm text-slate-600">
+          AI helpers live in the{" "}
           <Link href="/hints" className="font-medium text-brand-700 underline">
             AI Toolbox
           </Link>
-          . Links jump straight to each tab. Your AI path, model, and last toolbox tab are saved in
-          this browser. Use the panel below for this page’s shared pictures, documents, files, and
-          file folders.
+          . Below are study utilities for drafting, drawing, math, timing, flashcards, and file
+          conversion — tuned for laptop screens and stylus/drawing devices. Settings that matter for
+          AI stay saved in this browser.
         </p>
       </section>
-      <div className="grid gap-4 md:grid-cols-2">
-        {tools.map((tool) => (
-          <Link key={tool.href} href={tool.href} className="card-hover block">
-            <h2 className="text-lg font-bold">{tool.title}</h2>
-            <p className="mt-2 text-sm text-slate-600">{tool.blurb}</p>
-          </Link>
-        ))}
-      </div>
+
+      {STUDY_TOOL_CATEGORIES.map((category) => {
+        const items = STUDY_TOOLS.filter((tool) => tool.category === category.id);
+        if (!items.length) return null;
+        return (
+          <section key={category.id} className="space-y-3">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+              {category.label}
+            </h2>
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {items.map((tool) => (
+                <Link key={tool.id} href={tool.href} className="card-hover block min-h-[8.5rem]">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="text-lg font-bold text-slate-900">{tool.title}</h3>
+                    {tool.badge ? (
+                      <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-800">
+                        {tool.badge}
+                      </span>
+                    ) : null}
+                  </div>
+                  <p className="mt-2 text-sm text-slate-600">{tool.blurb}</p>
+                </Link>
+              ))}
+            </div>
+          </section>
+        );
+      })}
 
       <RecommendedStudyTools />
 

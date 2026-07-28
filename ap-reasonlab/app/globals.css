@@ -1316,3 +1316,21 @@ html[data-theme="pastel"] .style-window-titlebar {
   background: linear-gradient(90deg, #ffe4ef, #f3e8ff, #ffd6e7);
   border-bottom: 1px solid rgba(249, 168, 212, 0.55);
 }
+
+@media print {
+  header,
+  footer,
+  nav,
+  .no-print,
+  .style-window-launcher,
+  [class*="MobileAction"] {
+    display: none !important;
+  }
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+  body {
+    background: white !important;
+  }
+}
