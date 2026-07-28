@@ -128,12 +128,12 @@
       "sourceNote": "Added via change-code edit"
     },
     {
-      "id": "m-formula-ms47okbv-vq2ti",
-      "subject": "AP Physics C: Mechanics",
+      "id": "m-formula-ms47qusr-rumi2",
+      "subject": "AP Physics C: E&M",
       "unit": "Managed",
-      "name": "Rotational Kinetic Energy",
+      "name": " Rotational Inertia of a Uniform Disk",
       "expression": "",
-      "content": "## 1Deriving Rotational Kinetic Energy by Integration\n\n### Concepts\n\nRotational kinetic energy can be derived by integrating the kinetic energies of all infinitesimal mass elements.\n\nEvery mass element in a rigid body has the same angular velocity but a different linear speed depending on its distance from the axis.\n\n### Formulas\n\nThe kinetic energy of one mass element is:\n\n$$dK=\\frac{1}{2}v^2,dm$$\n\nUsing:\n\n$$v=r\\omega$$\n\nThen:\n\n$$dK=\\frac{1}{2}r^2\\omega^2,dm$$\n\nIntegrate over the body:\n\n$$K_{\\text{rot}}=\\int dK$$\n\n$$K_{\\text{rot}}=\\frac{1}{2}\\omega^2\\int r^2,dm$$\n\nSince:\n\n$$I=\\int r^2,dm$$\n\nTherefore:\n\n$$K_{\\text{rot}}=\\frac{1}{2}I\\omega^2$$\n\n##",
+      "content": "## Example: Rotational Inertia of a Uniform Disk\n\n### Concepts\n\nA disk can be divided into thin concentric rings.\n\nEach ring has radius $r$, thickness $dr$, and area $dA$.\n\nEvery point on one thin ring is approximately the same distance from the axis, so the ring contributes:\n\n$$dI=r^2,dm$$\n\n### Formulas\n\nThe disk’s surface mass density is:\n\n$$\\sigma=\\frac{M}{\\pi R^2}$$\n\nThe area of a thin ring is:\n\n$$dA=2\\pi r,dr$$\n\nThe mass of the ring is:\n\n$$dm=\\sigma,dA$$\n\n$$dm=\\frac{M}{\\pi R^2}(2\\pi r,dr)$$\n\n$$dm=\\frac{2Mr}{R^2},dr$$\n\nThe rotational inertia is:\n\n$$I=\\int_0^R r^2,dm$$\n\n$$I=\\int_0^R r^2\\frac{2Mr}{R^2},dr$$\n\n$$I=\\frac{2M}{R^2}\\int_0^R r^3,dr$$\n\n$$I=\\frac{2M}{R^2}\\left[\\frac{r^4}{4}\\right]_0^R$$\n\nTherefore:\n\n$$I=\\frac{1}{2}MR^2$$",
       "variables": "",
       "whenToUse": "",
       "sourceNote": "Added via change-code edit"
@@ -732,5 +732,5 @@
   "settings": {
     "advancedDefault": true
   },
-  "updatedAt": 1785216283938
+  "updatedAt": 1785216390800
 }
