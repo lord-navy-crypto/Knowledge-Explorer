@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ROOT_SPACE, normalizeSpace } from "@/lib/storage-space";
 import { useEditorMode } from "@/components/EditorModeProvider";
@@ -34,10 +34,29 @@ type Props = {
   fileAccept?: string;
 };
 
+type DraftEntry = {
+  key: string;
+  title: string;
+  content: string;
+  note: string;
+  category: string;
+};
+
+function blankEntry(): DraftEntry {
+  return {
+    key: `row-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    title: "",
+    content: "",
+    note: "",
+    category: "Uploaded",
+  };
+}
+
+const MULTI_MODES: ChangeMode[] = ["concept", "topic", "formula", "document", "folder", "file"];
+
 /**
  * Plus-button editor: fill the form, then enter a change code to save.
- * New concepts, topics, and formulas use one complete Markdown + LaTeX body.
- * Legacy split-field records remain compatible and are not migrated.
+ * Concept / formula / document / folder / file support adding many at once.
  */
 export default function ChangePanel({
   mode,
@@ -64,23 +83,26 @@ export default function ChangePanel({
   const [category, setCategory] = useState("Uploaded");
   const [memberNote, setMemberNote] = useState("");
   const [githubUser, setGithubUser] = useState("");
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [firstPrompt, setFirstPrompt] = useState("");
   const [minutes, setMinutes] = useState("20");
   const [forceCodeField, setForceCodeField] = useState(false);
+  const [entries, setEntries] = useState<DraftEntry[]>([blankEntry()]);
+
+  const multiMode = MULTI_MODES.includes(mode);
 
   useEffect(() => {
     setSubject(defaultSubject);
   }, [defaultSubject]);
 
   const titles: Record<ChangeMode, string> = {
-    concept: "Add concept",
-    topic: "Add topic",
-    formula: "Add formula",
-    document: "Add document",
-    file: fileAccept?.includes("image") ? "Upload image" : "Upload file",
+    concept: "Add concepts",
+    topic: "Add topics",
+    formula: "Add formulas",
+    document: "Add documents",
+    file: fileAccept?.includes("image") ? "Upload images" : "Upload files",
     member: "Add partner (any name + GitHub)",
-    folder: "Add file folder",
+    folder: "Add file folders",
     subject: "Add subject folder",
     questionnaire: "Add generated practice set",
   };
@@ -88,17 +110,65 @@ export default function ChangePanel({
   const scopedSpace = normalizeSpace(spaceKey);
   const needsCodeField = !allowPublicContribution && (!unlocked || forceCodeField);
 
+  const entryNoun = useMemo(() => {
+    if (mode === "formula") return "formula";
+    if (mode === "document") return "document";
+    if (mode === "folder") return "folder";
+    if (mode === "topic") return "topic";
+    if (mode === "file") return "file";
+    return "concept";
+  }, [mode]);
+
   function reset() {
     setTitle("");
     setSummary("");
     setContent("");
     setMemberNote("");
     setGithubUser("");
-    setFile(null);
+    setFiles([]);
     setFirstPrompt("");
     setMinutes("20");
     setChangeCode("");
     setError("");
+    setEntries([blankEntry()]);
+  }
+
+  function updateEntry(key: string, patch: Partial<DraftEntry>) {
+    setEntries((prev) => prev.map((row) => (row.key === key ? { ...row, ...patch } : row)));
+  }
+
+  function addEntry() {
+    setEntries((prev) => (prev.length >= 20 ? prev : [...prev, blankEntry()]));
+  }
+
+  function removeEntry(key: string) {
+    setEntries((prev) => (prev.length <= 1 ? prev : prev.filter((row) => row.key !== key)));
+  }
+
+  async function postSave(payload: Record<string, unknown>) {
+    const res = await fetch("/api/edit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        ...payload,
+        changeCode: changeCode.trim() || undefined,
+        githubToken: githubToken.trim() || undefined,
+        publicContribution: allowPublicContribution || undefined,
+      }),
+    });
+    const parsed = await readResponseJson<{ error?: string; content?: unknown; note?: string }>(res);
+    if (!parsed.ok) throw new Error(parsed.error);
+    if (res.status === 401) {
+      setForceCodeField(true);
+      void refresh();
+      throw new Error(
+        parsed.data.error ||
+          "Editor session expired. Enter the content change code below, or unlock again with ✎."
+      );
+    }
+    if (!res.ok) throw new Error(parsed.data.error || "Save failed");
+    return parsed.data;
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -111,51 +181,119 @@ export default function ChangePanel({
         throw new Error("Enter the content change code, or unlock once at /login.");
       }
 
+      if (mode === "file") {
+        if (files.length === 0) throw new Error("Choose one or more files first");
+        if (files.length > 10) throw new Error("Upload at most 10 files at once");
+        for (const file of files) {
+          if (fileAccept?.includes("image") && !file.type.startsWith("image/")) {
+            throw new Error(`Image upload only — “${file.name}” is not an image.`);
+          }
+        }
+        const items = [];
+        for (const file of files) {
+          const dataUrl = await readFileAsDataURL(file);
+          items.push({
+            name: file.name,
+            mime: file.type,
+            dataUrl,
+            note: title || category || undefined,
+            area: folderArea,
+            space: scopedSpace,
+          });
+        }
+        const data = await postSave({ action: "add_files", items });
+        setNote(data.note || `Saved ${items.length} file${items.length === 1 ? "" : "s"}.`);
+        setForceCodeField(false);
+        reset();
+        setOpen(false);
+        onSaved?.(data.content);
+        void refresh();
+        return;
+      }
+
+      if (multiMode) {
+        const cleaned = entries
+          .map((row) => ({
+            ...row,
+            title: row.title.trim(),
+            content: row.content.trim(),
+            note: row.note.trim(),
+          }))
+          .filter((row) => row.title || row.content || row.note);
+
+        if (cleaned.length === 0) {
+          throw new Error(`Add at least one ${entryNoun}.`);
+        }
+        for (const row of cleaned) {
+          if (!row.title) throw new Error(`Each ${entryNoun} needs a title/name.`);
+          if ((mode === "concept" || mode === "topic" || mode === "formula" || mode === "document") && !row.content) {
+            throw new Error(`Each ${entryNoun} needs content.`);
+          }
+        }
+
+        let action = "";
+        let items: Record<string, unknown>[] = [];
+
+        if (mode === "concept" || mode === "topic") {
+          action = mode === "topic" ? "add_topics" : "add_concepts";
+          items = cleaned.map((row) => ({
+            title: row.title,
+            subject,
+            summary: row.content,
+            keyPoints: [],
+            commonMistakes: [],
+            example: "",
+            area: folderArea,
+            space: scopedSpace,
+          }));
+        } else if (mode === "formula") {
+          action = "add_formulas";
+          items = cleaned.map((row) => ({
+            name: row.title,
+            subject,
+            unit: "Managed",
+            expression: "",
+            content: row.content,
+            variables: "",
+            whenToUse: "",
+          }));
+        } else if (mode === "document") {
+          action = "add_documents";
+          items = cleaned.map((row) => ({
+            title: row.title,
+            content: row.content,
+            category: row.category || category || "Uploaded",
+            area: folderArea,
+            space: scopedSpace,
+          }));
+        } else if (mode === "folder") {
+          action = "add_folders";
+          items = cleaned.map((row) => ({
+            title: row.title,
+            area: folderArea,
+            note: row.note || row.content || undefined,
+            space: scopedSpace,
+          }));
+        }
+
+        const data = await postSave({ action, items });
+        setNote(
+          data.note ||
+            `Saved ${cleaned.length} ${entryNoun}${cleaned.length === 1 ? "" : "s"}.`
+        );
+        setForceCodeField(false);
+        reset();
+        setOpen(false);
+        onSaved?.(data.content);
+        void refresh();
+        return;
+      }
+
+      // Single-add modes: member / subject / questionnaire
       let action = "";
       let item: Record<string, unknown> = {};
 
-      if (mode === "concept" || mode === "topic") {
-        action = mode === "topic" ? "add_topic" : "add_concept";
-        item = {
-          title,
-          subject,
-          summary: content,
-          keyPoints: [],
-          commonMistakes: [],
-          example: "",
-          area: folderArea,
-          space: scopedSpace,
-        };
-      } else if (mode === "formula") {
-        action = "add_formula";
-        item = {
-          name: title,
-          subject,
-          unit: "Managed",
-          expression: "",
-          content,
-          variables: "",
-          whenToUse: "",
-        };
-      } else if (mode === "document") {
-        action = "add_document";
-        item = { title, content, category, area: folderArea, space: scopedSpace };
-      } else if (mode === "file") {
-        if (!file) throw new Error("Choose a file first");
-        if (fileAccept?.includes("image") && !file.type.startsWith("image/")) {
-          throw new Error("Image upload accepts image files only.");
-        }
-        action = "add_file";
-        const dataUrl = await readFileAsDataURL(file);
-        item = {
-          name: file.name,
-          mime: file.type,
-          dataUrl,
-          note: title || category,
-          area: folderArea,
-          space: scopedSpace,
-        };
-      } else if (mode === "member") {
+      if (mode === "member") {
         action = "add_member";
         const handle = githubUser.trim().replace(/^@/, "");
         const noteParts = [
@@ -163,14 +301,6 @@ export default function ChangePanel({
           handle ? `github:${handle}` : "",
         ].filter(Boolean);
         item = { name: title.trim(), note: noteParts.join(" · ") };
-      } else if (mode === "folder") {
-        action = "add_folder";
-        item = {
-          title,
-          area: folderArea,
-          note: memberNote || summary,
-          space: scopedSpace,
-        };
       } else if (mode === "subject") {
         action = "add_subject";
         item = { title, name: title };
@@ -187,35 +317,12 @@ export default function ChangePanel({
         };
       }
 
-      const res = await fetch("/api/edit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          action,
-          item,
-          changeCode: changeCode.trim() || undefined,
-          githubToken: githubToken.trim() || undefined,
-          publicContribution: allowPublicContribution || undefined,
-        }),
-      });
-      const parsed = await readResponseJson<{ error?: string; content?: unknown; note?: string }>(res);
-      if (!parsed.ok) throw new Error(parsed.error);
-      if (res.status === 401) {
-        setForceCodeField(true);
-        void refresh();
-        throw new Error(
-          parsed.data.error ||
-            "Editor session expired. Enter the content change code below, or unlock again with ✎."
-        );
-      }
-      if (!res.ok) throw new Error(parsed.data.error || "Save failed");
-
-      setNote(parsed.data.note || "Saved. It should appear in this panel / subject list now.");
+      const data = await postSave({ action, item });
+      setNote(data.note || "Saved. It should appear in this panel / subject list now.");
       setForceCodeField(false);
       reset();
       setOpen(false);
-      onSaved?.(parsed.data.content);
+      onSaved?.(data.content);
       void refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Save failed");
@@ -223,19 +330,6 @@ export default function ChangePanel({
       setLoading(false);
     }
   }
-
-  const showTitleField =
-    mode === "concept" ||
-    mode === "topic" ||
-    mode === "formula" ||
-    mode === "document" ||
-    mode === "member" ||
-    mode === "folder" ||
-    mode === "subject" ||
-    mode === "questionnaire";
-
-  const showSubjectField =
-    mode === "concept" || mode === "topic" || mode === "formula" || mode === "questionnaire";
 
   if (!editMode && !unlocked && !allowPublicContribution) return null;
 
@@ -253,94 +347,185 @@ export default function ChangePanel({
       </button>
 
       {open && (
-        <form onSubmit={handleSubmit} className="card space-y-3 border-brand-200">
-          <h3 className="font-semibold text-slate-900">{titles[mode]}</h3>
+        <form onSubmit={(e) => void handleSubmit(e)} className="card space-y-3 border-brand-200">
+          <h3 className="font-semibold text-slate-900">{label || titles[mode]}</h3>
           <p className="text-xs text-slate-500">
-            {mode === "subject"
-              ? "Creates a new subject folder on Concepts / Formulas / Practice."
-              : mode === "topic"
-                ? "Adds a topic (concept card) inside this subject — searchable on the Concepts page."
+            {multiMode
+              ? `Add one or many ${entryNoun}s in one save (up to ${mode === "file" ? 10 : 20}).`
+              : mode === "subject"
+                ? "Creates a new subject folder on Concepts / Formulas / Practice."
                 : mode === "questionnaire"
                   ? "Creates an AI-generated practice set in this subject (hints only)."
-                  : "Saves only into this area + folder bucket — not mixed with other panels."}
+                  : "Saves only into this area + folder bucket."}
           </p>
 
-          {showTitleField && (
+          {(mode === "concept" ||
+            mode === "topic" ||
+            mode === "formula" ||
+            mode === "questionnaire") && (
             <input
               className="input"
-              placeholder={
-                mode === "formula"
-                  ? "Formula name"
-                  : mode === "member"
-                    ? "Member name"
-                    : mode === "folder"
-                      ? "Folder name (becomes its own storage)"
-                      : mode === "subject"
-                        ? "Subject name (e.g. AP Statistics FRQ Lab)"
-                        : mode === "topic"
-                          ? "Topic title (e.g. One-proportion z-interval)"
-                          : mode === "concept"
-                            ? "Name (concept title)"
-                            : mode === "questionnaire"
-                              ? "Set title (e.g. Stats — Inference Sprint B)"
-                              : "Title"
-              }
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-            />
-          )}
-
-          {mode === "folder" && (
-            <input
-              className="input"
-              placeholder="Note (optional)"
-              value={memberNote}
-              onChange={(e) => setMemberNote(e.target.value)}
-            />
-          )}
-
-          {showSubjectField && (
-            <input
-              className="input"
-              placeholder="Subject (e.g. AP Statistics)"
+              placeholder="Subject (shared for all rows, e.g. AP Statistics)"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               required
             />
           )}
 
-          {(mode === "concept" || mode === "topic" || mode === "formula") && (
-            <MarkdownLatexField
-              label="Full content"
-              value={content}
-              onChange={setContent}
-              required
-              minHeightClass="min-h-[22rem]"
-            />
-          )}
+          {multiMode && mode !== "file" ? (
+            <div className="space-y-3">
+              {entries.map((row, index) => (
+                <div
+                  key={row.key}
+                  className="space-y-2 rounded-xl border border-slate-200 bg-slate-50/70 p-3"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      {entryNoun} {index + 1}
+                    </p>
+                    {entries.length > 1 ? (
+                      <button
+                        type="button"
+                        className="text-xs font-medium text-red-600 hover:underline"
+                        onClick={() => removeEntry(row.key)}
+                      >
+                        Remove
+                      </button>
+                    ) : null}
+                  </div>
+                  <input
+                    className="input"
+                    placeholder={
+                      mode === "formula"
+                        ? "Formula name"
+                        : mode === "folder"
+                          ? "Folder name"
+                          : mode === "topic"
+                            ? "Topic title"
+                            : mode === "concept"
+                              ? "Concept title"
+                              : "Title"
+                    }
+                    value={row.title}
+                    onChange={(e) => updateEntry(row.key, { title: e.target.value })}
+                    required
+                  />
+                  {mode === "folder" ? (
+                    <input
+                      className="input"
+                      placeholder="Note (optional)"
+                      value={row.note}
+                      onChange={(e) => updateEntry(row.key, { note: e.target.value })}
+                    />
+                  ) : null}
+                  {mode === "document" ? (
+                    <input
+                      className="input"
+                      placeholder="Category"
+                      value={row.category}
+                      onChange={(e) => updateEntry(row.key, { category: e.target.value })}
+                    />
+                  ) : null}
+                  {(mode === "concept" ||
+                    mode === "topic" ||
+                    mode === "formula" ||
+                    mode === "document") && (
+                    <MarkdownLatexField
+                      label={mode === "document" ? "Document text" : "Full content"}
+                      value={row.content}
+                      onChange={(value) => updateEntry(row.key, { content: value })}
+                      required
+                      minHeightClass="min-h-[12rem]"
+                      showPreview={false}
+                    />
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addEntry}
+                className="btn-secondary text-sm"
+                disabled={entries.length >= 20}
+              >
+                + Add another {entryNoun}
+              </button>
+            </div>
+          ) : null}
 
-          {mode === "document" && (
+          {mode === "file" ? (
             <>
               <input
                 className="input"
-                placeholder="Category"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                placeholder="Shared note for this batch (optional)"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
               />
-              <MarkdownLatexField
-                label="Document text"
-                value={content}
-                onChange={setContent}
+              <input
+                type="file"
+                multiple
+                accept={fileAccept || undefined}
+                onChange={(e) => setFiles(Array.from(e.target.files || []).slice(0, 10))}
+                className="block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-brand-600 file:px-4 file:py-2 file:text-white"
+                required={files.length === 0}
+              />
+              {files.length > 0 ? (
+                <ul className="space-y-1 text-xs text-slate-600">
+                  {files.map((file) => (
+                    <li key={`${file.name}-${file.size}`}>
+                      {file.name} · {Math.max(1, Math.round(file.size / 1024))} KB
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+              <p className="text-xs text-slate-500">
+                Select multiple files at once (max 10). Keep each under ~1MB.
+              </p>
+            </>
+          ) : null}
+
+          {mode === "subject" ? (
+            <input
+              className="input"
+              placeholder="Subject name (e.g. AP Statistics FRQ Lab)"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+            />
+          ) : null}
+
+          {mode === "member" ? (
+            <>
+              <input
+                className="input"
+                placeholder="Member name"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
                 required
-                minHeightClass="min-h-[16rem]"
-                placeholder="Paste document Markdown + LaTeX…"
+              />
+              <input
+                className="input"
+                placeholder="Note (optional)"
+                value={memberNote}
+                onChange={(e) => setMemberNote(e.target.value)}
+              />
+              <input
+                className="input"
+                placeholder="GitHub username (e.g. octocat)"
+                value={githubUser}
+                onChange={(e) => setGithubUser(e.target.value)}
               />
             </>
-          )}
+          ) : null}
 
-          {mode === "questionnaire" && (
+          {mode === "questionnaire" ? (
             <>
+              <input
+                className="input"
+                placeholder="Set title (e.g. Stats — Inference Sprint B)"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+              />
               <MarkdownLatexField
                 label="Set description"
                 help="Short description shown on Practice. Markdown + LaTeX supported."
@@ -370,52 +555,7 @@ export default function ChangePanel({
                 onChange={(e) => setMemberNote(e.target.value)}
               />
             </>
-          )}
-
-          {mode === "file" && (
-            <>
-              <input
-                className="input"
-                placeholder="Note (optional)"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-              />
-              <input
-                type="file"
-                accept={fileAccept || undefined}
-                onChange={(e) => setFile(e.target.files?.[0] || null)}
-                className="block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-brand-600 file:px-4 file:py-2 file:text-white"
-                required
-              />
-              {fileAccept?.includes("image") ? (
-                <p className="text-xs text-slate-500">
-                  Shared image for this page (PNG, JPG, WebP…). Keep under ~1MB.
-                </p>
-              ) : (
-                <p className="text-xs text-slate-500">Any file type. Keep under ~1MB.</p>
-              )}
-            </>
-          )}
-
-          {mode === "member" && (
-            <input
-              className="input"
-              placeholder="Note (optional)"
-              value={memberNote}
-              onChange={(e) => setMemberNote(e.target.value)}
-            />
-          )}
-
-          {mode === "member" && (
-            <>
-              <input
-                className="input"
-                placeholder="GitHub username (e.g. octocat)"
-                value={githubUser}
-                onChange={(e) => setGithubUser(e.target.value)}
-              />
-            </>
-          )}
+          ) : null}
 
           {!allowPublicContribution && unlocked && !forceCodeField && (
             <div className="space-y-2 rounded-xl bg-emerald-50 px-3 py-3 text-xs text-emerald-900">
@@ -454,15 +594,14 @@ export default function ChangePanel({
                 <Link href="/login" className="font-medium underline">
                   /login
                 </Link>{" "}
-                once — then this field stays hidden. Master code can also add members.
+                once — then this field stays hidden.
               </p>
             </div>
           )}
 
           {allowPublicContribution && (
             <p className="rounded-xl bg-emerald-50 px-3 py-3 text-xs text-emerald-900">
-              Public contribution: no change code is needed. Do not upload private, sensitive, or
-              copyrighted material you cannot share.
+              Public contribution: no change code is needed.
             </p>
           )}
 
@@ -484,7 +623,11 @@ export default function ChangePanel({
 
           <div className="flex flex-wrap gap-2">
             <button type="submit" className="btn-primary" disabled={loading}>
-              {loading ? "Saving..." : "Save"}
+              {loading
+                ? "Saving…"
+                : multiMode
+                  ? `Save all (${mode === "file" ? files.length || 0 : entries.length})`
+                  : "Save"}
             </button>
             <button type="button" className="btn-ghost" onClick={() => setOpen(false)}>
               Cancel

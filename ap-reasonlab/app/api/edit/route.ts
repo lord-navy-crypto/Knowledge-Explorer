@@ -149,10 +149,14 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const action = String(body.action || "");
     const item = body.item || {};
+    const bulkItems = Array.isArray(body.items) ? body.items : [];
     const publicMaterialsContribution =
       body.publicContribution === true &&
-      ["add_document", "add_file", "add_folder"].includes(action) &&
-      String(item.area || "") === "materials";
+      ["add_document", "add_documents", "add_file", "add_files", "add_folder", "add_folders"].includes(
+        action
+      ) &&
+      (String(item.area || "") === "materials" ||
+        bulkItems.some((entry: { area?: string }) => String(entry?.area || "") === "materials"));
     const publicForumContribution = ["add_forum_post", "add_forum_reply"].includes(action);
     if (publicForumContribution && forumRateLimited(req)) {
       return NextResponse.json({ error: "Please wait a few seconds before posting again" }, { status: 429 });
@@ -449,9 +453,115 @@ export async function POST(req: NextRequest) {
           dataUrl: String(item.dataUrl),
           note: item.note ? String(item.note) : undefined,
           uploadedAt: Date.now(),
-          uploadedBy: "change-code",
+          uploadedBy: publicMaterialsContribution ? "public-contributor" : "change-code",
           area: item.area ? keys.area : undefined,
           space: item.area ? keys.space : undefined,
+        });
+      }
+    } else if (action === "add_concepts" || action === "add_topics") {
+      const items = Array.isArray(body.items) ? body.items : [];
+      if (items.length === 0 || items.length > 20) {
+        return NextResponse.json({ error: "Add between 1 and 20 concepts/topics at once" }, { status: 400 });
+      }
+      const asTopic = action === "add_topics";
+      for (const item of items) {
+        if (!item?.title || !item?.subject) {
+          return NextResponse.json({ error: "Each item needs title and subject" }, { status: 400 });
+        }
+        const conceptId = uid(asTopic ? "m-topic" : "m-concept");
+        current.concepts.push({
+          id: conceptId,
+          title: String(item.title),
+          subject: String(item.subject),
+          summary: normalizeAuthoredText(String(item.summary || "")),
+          keyPoints: Array.isArray(item.keyPoints) ? item.keyPoints.map(String) : [],
+          commonMistakes: Array.isArray(item.commonMistakes) ? item.commonMistakes.map(String) : [],
+          example: String(item.example || ""),
+        });
+        if (asTopic) {
+          current.topics.push({
+            id: conceptId,
+            title: String(item.title),
+            subject: String(item.subject),
+            summary: normalizeAuthoredText(String(item.summary || "")),
+            createdAt: Date.now(),
+            area: item.area ? String(item.area) : undefined,
+            space: item.space ? String(item.space) : undefined,
+          });
+        }
+      }
+    } else if (action === "add_formulas") {
+      const items = Array.isArray(body.items) ? body.items : [];
+      if (items.length === 0 || items.length > 20) {
+        return NextResponse.json({ error: "Add between 1 and 20 formulas at once" }, { status: 400 });
+      }
+      for (const item of items) {
+        if (!item?.name || (!item?.content && !item?.expression) || !item?.subject) {
+          return NextResponse.json(
+            { error: "Each formula needs name, content, and subject" },
+            { status: 400 }
+          );
+        }
+        current.formulas.push({
+          id: uid("m-formula"),
+          subject: String(item.subject),
+          unit: String(item.unit || "Managed"),
+          name: String(item.name),
+          expression: String(item.expression || ""),
+          content: item.content
+            ? normalizeAuthoredText(String(item.content)).slice(0, 200_000)
+            : undefined,
+          variables: String(item.variables || ""),
+          whenToUse: String(item.whenToUse || ""),
+          sourceNote: "Added via change-code edit",
+        });
+      }
+    } else if (action === "add_documents") {
+      const items = Array.isArray(body.items) ? body.items : [];
+      if (items.length === 0 || items.length > 20) {
+        return NextResponse.json({ error: "Add between 1 and 20 documents at once" }, { status: 400 });
+      }
+      for (const item of items) {
+        if (!item?.title || !item?.content) {
+          return NextResponse.json({ error: "Each document needs title and content" }, { status: 400 });
+        }
+        if (publicMaterialsContribution && String(item.content).length > 50_000) {
+          return NextResponse.json(
+            { error: "Public documents must stay under 50,000 characters" },
+            { status: 400 }
+          );
+        }
+        const keys = canonicalizeStorageKeys(
+          item.area ? String(item.area) : undefined,
+          item.space ? String(item.space) : undefined
+        );
+        current.documents.push({
+          id: uid("m-doc"),
+          title: String(item.title).slice(0, 160),
+          content: normalizeAuthoredText(String(item.content)).slice(0, 200_000),
+          category: String(item.category || "Uploaded").slice(0, 80),
+          updatedAt: Date.now(),
+          area: item.area ? keys.area : undefined,
+          space: item.area ? keys.space : undefined,
+        });
+      }
+    } else if (action === "add_folders") {
+      const items = Array.isArray(body.items) ? body.items : [];
+      if (items.length === 0 || items.length > 20) {
+        return NextResponse.json({ error: "Add between 1 and 20 folders at once" }, { status: 400 });
+      }
+      for (const item of items) {
+        if (!item?.title || !item?.area) {
+          return NextResponse.json({ error: "Each folder needs title and area" }, { status: 400 });
+        }
+        const keys = canonicalizeStorageKeys(String(item.area), item.space ? String(item.space) : undefined);
+        current.folders.push({
+          id: uid("folder"),
+          title: String(item.title).slice(0, 160),
+          area: keys.area,
+          note: item.note ? String(item.note).slice(0, 500) : undefined,
+          createdAt: Date.now(),
+          space: keys.space,
         });
       }
     } else if (action === "add_concept" || action === "add_topic") {
