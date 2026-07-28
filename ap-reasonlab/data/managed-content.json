@@ -150,12 +150,12 @@
       "sourceNote": "Added via change-code edit"
     },
     {
-      "id": "m-formula-ms482aqn-swlzd",
+      "id": "m-formula-ms484reu-jojw2",
       "subject": "AP Physics C: Mechanics",
       "unit": "Managed",
-      "name": " Torque as the Rate of Change of Angular Momentum",
+      "name": "Converting the Mass Element",
       "expression": "",
-      "content": "## Torque as the Rate of Change of Angular Momentum\n\n### Concepts\n\nNet external torque is the time rate of change of angular momentum.\n\nThis is the more general rotational form of Newton’s second law.\n\nThe equation $\\sum\\tau=I\\alpha$ is a special case that assumes the rotational inertia is constant.\n\n### Formulas\n\n$$\\sum\\vec{\\tau}_{\\text{ext}}=\\frac{d\\vec{L}}{dt}$$\n\nFor fixed-axis rotation with constant $I$:\n\n$$\\sum\\tau_{\\text{ext}}=\\frac{d(I\\omega)}{dt}$$\n\n$$\\sum\\tau_{\\text{ext}}=I\\frac{d\\omega}{dt}$$\n\nTherefore:\n\n$$\\sum\\tau_{\\text{ext}}=I\\alpha$$\n\nIf $I$ changes with time:\n\n$$\\sum\\tau_{\\text{ext}}=\\frac{d(I\\omega)}{dt}$$\n\nUsing the product rule:\n\n$$\\sum\\tau_{\\text{ext}}=I\\frac{d\\omega}{dt}+\\omega\\frac{dI}{dt}$$\n\nTherefore:\n\n$$\\sum\\tau_{\\text{ext}}=I\\alpha+\\omega\\frac{dI}{dt}$$",
+      "content": "## Converting the Mass Element\n\n### Concepts\n\nTo evaluate rotational inertia, $dm$ must usually be rewritten using a linear, surface, or volume mass density.\n\nThe choice depends on the shape of the object:\n\n- Use linear density for a thin rod or wire.\n- Use surface density for a thin plate or disk.\n- Use volume density for a three-dimensional solid.\n\n### Formulas\n\nLinear mass density:\n\n$$\\lambda=\\frac{dm}{d\\ell}$$\n\n$$dm=\\lambda,d\\ell$$\n\nFor a uniform thin object:\n\n$$\\lambda=\\frac{M}{L}$$\n\nSurface mass density:\n\n$$\\sigma=\\frac{dm}{dA}$$\n\n$$dm=\\sigma,dA$$\n\nFor a uniform thin surface:\n\n$$\\sigma=\\frac{M}{A}$$\n\nVolume mass density:\n\n$$\\rho=\\frac{dm}{dV}$$\n\n$$dm=\\rho,dV$$\n\nFor a uniform solid:\n\n$$\\rho=\\frac{M}{V}$$",
       "variables": "",
       "whenToUse": "",
       "sourceNote": "Added via change-code edit"
@@ -754,5 +754,5 @@
   "settings": {
     "advancedDefault": true
   },
-  "updatedAt": 1785216924728
+  "updatedAt": 1785217039635
 }
