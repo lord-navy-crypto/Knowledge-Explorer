@@ -89,6 +89,15 @@
       "keyPoints": [],
       "commonMistakes": [],
       "example": ""
+    },
+    {
+      "id": "m-concept-ms48r4ug-iospv",
+      "title": "Integration and Accumulation of Change",
+      "subject": "AP Calculus AB/BC",
+      "summary": "## Integration and Accumulation of Change\n\n### Concepts\n\nA definite integral represents accumulated change and signed area.\n\nStudents should understand:\n\n- Riemann sums\n- Definite and indefinite integrals\n- The Fundamental Theorem of Calculus\n- Accumulation functions\n- Substitution\n- Integration by parts\n- Partial fractions\n- Improper integrals\n\nIntegration by parts, partial fractions, and improper integrals are especially important BC extensions.\n\n### Formulas\n\nRiemann sum:\n\n$$\\int_a^b f(x),dx=\\lim_{n\\to\\infty}\\sum_{i=1}^{n}f(x_i^*)\\Delta x$$\n\nFundamental Theorem of Calculus:\n\n$$\\frac{d}{dx}\\left[\\int_a^x f(t),dt\\right]=f(x)$$\n\n$$\\int_a^b f'(x),dx=f(b)-f(a)$$\n\nBasic antiderivative:\n\n$$\\int x^n,dx=\\frac{x^{n+1}}{n+1}+C,\\qquad n\\ne-1$$\n\n$$\\int\\frac{1}{x},dx=\\ln|x|+C$$\n\n$$\\int e^x,dx=e^x+C$$\n\n$$\\int\\sin x,dx=-\\cos x+C$$\n\n$$\\int\\cos x,dx=\\sin x+C$$\n\nSubstitution:\n\n$$\\int f(g(x))g'(x),dx=\\int f(u),du$$\n\nIntegration by parts:\n\n$$\\int u,dv=uv-\\int v,du$$\n\nImproper integral:\n\n$$\\int_a^\\infty f(x),dx=\\lim_{b\\to\\infty}\\int_a^b f(x),dx$$",
+      "keyPoints": [],
+      "commonMistakes": [],
+      "example": ""
     }
   ],
   "formulas": [
@@ -774,5 +783,5 @@
   "settings": {
     "advancedDefault": true
   },
-  "updatedAt": 1785217826295
+  "updatedAt": 1785218083534
 }
