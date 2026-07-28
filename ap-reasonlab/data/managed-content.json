@@ -237,6 +237,15 @@
       "updatedAt": 1784909453751,
       "area": "practice",
       "space": "AP Physics 2"
+    },
+    {
+      "id": "m-doc-ms4hbvub-jkbj3",
+      "title": "document1",
+      "content": "public ArrayList<DebateMatch> createMatches()\n{\n    ArrayList<DebateMatch> result =\n        new ArrayList<DebateMatch>();\n\n    int start = debaters.size() % 2;\n\n    for (int i = start;\n         i < debaters.size() / 2 + start;\n         i++)\n    {\n        int opposite =\n            debaters.size() - 1 - (i - start);\n\n        result.add(\n            new DebateMatch(\n                debaters.get(i),\n                debaters.get(opposite)\n            )\n        );\n    }\n\n    return result;\n}",
+      "category": "Uploaded",
+      "updatedAt": 1785232488179,
+      "area": "code-java",
+      "space": "_root"
     }
   ],
   "files": [
@@ -845,5 +854,5 @@
   "settings": {
     "advancedDefault": true
   },
-  "updatedAt": 1785231351719
+  "updatedAt": 1785232488497
 }
