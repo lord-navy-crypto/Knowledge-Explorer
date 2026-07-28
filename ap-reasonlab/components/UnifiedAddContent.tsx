@@ -27,7 +27,7 @@ type Props = {
 const contentTypes: Array<{ value: ContentType; label: string }> = [
   { value: "concept", label: "Concept" },
   { value: "formula", label: "Formula" },
-  { value: "practice", label: "Practice" },
+  { value: "practice", label: "Practice set" },
   { value: "document", label: "Document" },
   { value: "file", label: "File" },
   { value: "image", label: "Image" },
@@ -121,12 +121,15 @@ export default function UnifiedAddContent({
       if (!chosenSubject.id) {
         throw new Error("Choose a subject first.");
       }
-      const action =
+      const subjectLabel = chosenSubject.name || chosenSubject.id;
+      let action =
         type === "file" || type === "image"
           ? "add_files"
           : type === "folder"
             ? "add_folder"
-            : "add_content_item";
+            : type === "practice"
+              ? "add_questionnaire"
+              : "add_content_item";
       let item: Record<string, unknown> = {
         subjectId: chosenSubject.id,
         type: type === "image" ? "file" : type,
@@ -137,7 +140,20 @@ export default function UnifiedAddContent({
         status: requestedStatus,
       };
       let items: Record<string, unknown>[] | undefined;
-      if (type === "file" || type === "image") {
+      if (type === "practice") {
+        if (!title.trim()) throw new Error("Practice set needs a title.");
+        if (!content.trim()) throw new Error("Paste at least one question or set description.");
+        action = "add_questionnaire";
+        item = {
+          title: title.trim(),
+          subject: subjectLabel,
+          description: content.trim().slice(0, 4_000),
+          firstPrompt: content.trim(),
+          estimatedMinutes: 25,
+          generationNote: `Added from Manage · ${new Date().toISOString().slice(0, 10)}`,
+          hint: "Attempt before asking for more hints.",
+        };
+      } else if (type === "file" || type === "image") {
         if (files.length === 0) throw new Error(type === "image" ? "Choose at least one image" : "Choose at least one file");
         if (type === "image" && files.some((f) => !f.type.startsWith("image/"))) {
           throw new Error("Image upload accepts image files only.");
@@ -161,6 +177,7 @@ export default function UnifiedAddContent({
       const response = await fetch("/api/edit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           action,
           item,
@@ -169,14 +186,27 @@ export default function UnifiedAddContent({
           githubToken: githubToken.trim() || undefined,
         }),
       });
-      const parsed = await readResponseJson<{ error?: string }>(response);
+      const parsed = await readResponseJson<{ error?: string; content?: { questionnaires?: Array<{ id: string }> } }>(response);
       if (!parsed.ok) throw new Error(parsed.error);
       if (!response.ok) throw new Error(parsed.data.error || "Save failed");
       localStorage.removeItem(storageKey);
       setTitle("");
       setContent("");
       setFiles([]);
-      setMessage(requestedStatus === "draft" ? "Draft saved." : "Published successfully.");
+      if (type === "practice") {
+        const created = parsed.data.content?.questionnaires?.find(
+          (q) => q.title === title.trim()
+        );
+        const setHref = created?.id
+          ? `/questionnaires/${created.id}`
+          : `/practice?subject=${encodeURIComponent(subjectLabel)}`;
+        setMessage(`Practice set saved — opens on Practice & exam.`);
+        window.setTimeout(() => {
+          window.location.assign(setHref);
+        }, 600);
+      } else {
+        setMessage(requestedStatus === "draft" ? "Draft saved." : "Published successfully.");
+      }
       onSaved?.();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Save failed");
@@ -328,9 +358,20 @@ export default function UnifiedAddContent({
             {message && <p role="status" className={/failed|Wrong|Choose/.test(message) ? "text-sm text-red-600" : "text-sm text-emerald-700"}>{message}</p>}
             <div className="flex flex-wrap justify-end gap-2">
               <button type="button" className="btn-secondary" onClick={() => setOpen(false)}>Cancel</button>
-              {type !== "file" && type !== "image" && type !== "folder" && <button type="submit" value="draft" className="btn-secondary" disabled={busy}>Save draft</button>}
-              <button type="submit" value="published" className="btn-primary" disabled={busy}>{busy ? "Saving…" : "Publish"}</button>
+              {type !== "file" && type !== "image" && type !== "folder" && type !== "practice" && (
+                <button type="submit" value="draft" className="btn-secondary" disabled={busy}>
+                  Save draft
+                </button>
+              )}
+              <button type="submit" value="published" className="btn-primary" disabled={busy}>
+                {busy ? "Saving…" : type === "practice" ? "Save practice set" : "Publish"}
+              </button>
             </div>
+            {type === "practice" ? (
+              <p className="text-xs text-slate-500">
+                Saves as a generated practice set on Practice &amp; exam (not only Manage content).
+              </p>
+            ) : null}
             <p className="text-xs text-slate-500">Your unfinished form is saved automatically in this browser.</p>
           </form>
         </div>

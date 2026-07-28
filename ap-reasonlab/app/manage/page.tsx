@@ -87,6 +87,7 @@ export default function ManagePage() {
     const response = await fetch("/api/edit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({
         action,
         changeCode: changeCode.trim() || undefined,

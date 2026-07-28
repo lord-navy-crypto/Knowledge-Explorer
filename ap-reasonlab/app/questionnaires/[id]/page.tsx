@@ -37,7 +37,7 @@ export default function QuestionnaireDetailPage() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/edit", { cache: "no-store" });
+        const res = await fetch("/api/edit", { cache: "no-store", credentials: "include" });
         const data = await res.json();
         if (cancelled) return;
         const found = (data.questionnaires || []).find(
@@ -70,6 +70,7 @@ export default function QuestionnaireDetailPage() {
       const res = await fetch("/api/edit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           action: "add_questionnaire_item",
           setId: quiz.id,
