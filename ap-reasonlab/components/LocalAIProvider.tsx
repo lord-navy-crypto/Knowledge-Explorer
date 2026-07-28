@@ -18,7 +18,7 @@ import type { AiProvider, SiteModelChoice } from "@/lib/ai-site-models";
 import { parseSiteModelChoice } from "@/lib/ai-site-models";
 import {
   isInsideOpenThinkBlock,
-  LOCAL_DIRECT_ANSWER_NUDGE,
+  mergeLocalDirectNudge,
   stripReasoningTrace,
   supportsDisableThinking,
 } from "@/lib/ai-reasoning-strip";
@@ -93,10 +93,15 @@ type LocalAIContextValue = {
   interruptGeneration: () => void;
 };
 
-/** Soft cap so local models finish quickly instead of spinning for minutes. */
-const LOCAL_MAX_TOKENS = 768;
-/** Hard wall-clock limit; interrupt if still generating. */
-const LOCAL_GENERATE_TIMEOUT_MS = 75_000;
+/** Balanced cap — enough for formulas/steps without multi-minute runs. */
+const LOCAL_MAX_TOKENS_DEFAULT = 1200;
+const LOCAL_MAX_TOKENS_HEAVY = 1400;
+/** Safety net only — normal answers should finish well before this. */
+const LOCAL_GENERATE_TIMEOUT_MS = 180_000;
+
+function maxTokensForModel(modelId: string): number {
+  return /7B|8B|9B/i.test(modelId) ? LOCAL_MAX_TOKENS_HEAVY : LOCAL_MAX_TOKENS_DEFAULT;
+}
 
 const LocalAIContext = createContext<LocalAIContextValue | null>(null);
 const MODE_KEY = "results-ai-mode";
@@ -633,13 +638,9 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
       setError("");
       setStatusText("Writing answer…");
 
-      const withNudge: ChatCompletionMessageParam[] = [
-        {
-          role: "system",
-          content: LOCAL_DIRECT_ANSWER_NUDGE,
-        },
-        ...messages,
-      ];
+      const prepared = mergeLocalDirectNudge(
+        messages as Array<{ role: string; content: string }>
+      ) as ChatCompletionMessageParam[];
 
       let timedOut = false;
       const timeoutId = window.setTimeout(() => {
@@ -649,39 +650,32 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
         } catch {
           // ignore
         }
-        setStatusText("Stopped — local answer took too long. Try a lighter model or Website API.");
+        setStatusText("Stopped — answer took too long. Try a lighter model or Website API.");
       }, LOCAL_GENERATE_TIMEOUT_MS);
 
       try {
         const stream = await engine.chat.completions.create({
-          messages: withNudge,
+          messages: prepared,
           stream: true,
-          temperature: 0.4,
-          max_tokens: LOCAL_MAX_TOKENS,
-          // Qwen3/3.5 otherwise emit a long hidden <think> phase with no visible TeX.
+          temperature: 0.45,
+          max_tokens: maxTokensForModel(modelId),
+          // Qwen3/3.5: skip hidden thinking so TeX appears while streaming.
           ...(supportsDisableThinking(modelId)
             ? { extra_body: { enable_thinking: false } }
             : {}),
         });
         let raw = "";
-        let visible = "";
-        let sawVisible = false;
         for await (const chunk of stream) {
           if (timedOut) break;
           const token = chunk.choices[0]?.delta?.content ?? "";
           raw += token;
-          visible = stripReasoningTrace(raw) || "";
+          const visible = stripReasoningTrace(raw);
           if (isInsideOpenThinkBlock(raw) && !visible) {
-            setStatusText("Model tried hidden thinking — skipping to the visible answer…");
-          } else if (visible) {
-            if (!sawVisible) {
-              sawVisible = true;
-              setStatusText("Writing answer…");
-            }
+            setStatusText("Skipping hidden thinking — answer will appear next…");
           } else {
             setStatusText("Writing answer…");
           }
-          onToken?.(token, visible);
+          onToken?.(token, visible || raw);
         }
         if (timedOut) {
           const partial = stripReasoningTrace(raw) || raw.trim();
@@ -690,13 +684,13 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
             return partial;
           }
           throw new Error(
-            "Local AI timed out after ~75s with little or no answer. Switch to Website API, or pick a lighter local model (Qwen2.5 / Llama, not a heavy Qwen3)."
+            "Local AI timed out. Try Website API or a lighter model (Qwen2.5 / Llama)."
           );
         }
         const cleaned = stripReasoningTrace(raw) || raw.trim();
         if (!cleaned) {
           throw new Error(
-            "Local model returned an empty answer (often stuck in hidden thinking). Switch model to Qwen2.5 / Llama, or use Website API."
+            "Local model returned an empty answer. Try again or switch to Website API."
           );
         }
         setStatusText("Local AI is ready on this device.");
@@ -705,7 +699,7 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
         if (timedOut) {
           setStatus("error");
           const message =
-            "Local AI timed out after ~75s with little or no answer. Switch to Website API, or pick a lighter local model.";
+            "Local AI timed out. Try Website API or a lighter local model.";
           setError(message);
           throw new Error(message);
         }

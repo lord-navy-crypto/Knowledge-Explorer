@@ -4,8 +4,8 @@
  * phase made the UI feel stuck; this helper is only a safety net now.
  */
 
-const THINK_OPEN = /<think\b[^>]*>/i;
-const THINK_CLOSE = /<\/think>/i;
+const THINK_OPEN = /<(?:redacted_)?think(?:ing)?\b[^>]*>/i;
+const THINK_CLOSE = /<\/(?:redacted_)?think(?:ing)?>/i;
 
 export function isInsideOpenThinkBlock(text: string): boolean {
   const openIdx = text.search(THINK_OPEN);
@@ -18,19 +18,33 @@ export function stripReasoningTrace(text: string): string {
   if (!text) return "";
 
   let out = text
-    .replace(/<think\b[^>]*>[\s\S]*?<\/think>/gi, "")
+    .replace(/<(?:redacted_)?think\b[^>]*>[\s\S]*?<\/(?:redacted_)?think>/gi, "")
     .replace(/<thinking\b[^>]*>[\s\S]*?<\/thinking>/gi, "")
     .replace(/<reason(?:ing)?\b[^>]*>[\s\S]*?<\/reason(?:ing)?>/gi, "")
     .replace(/◁think▷[\s\S]*?◁\/think▷/gi, "")
     .replace(/\[thinking\][\s\S]*?\[\/thinking\]/gi, "");
 
   // Unclosed thinking block — hide from the open tag onward until it closes.
-  const openIdx = out.search(/<think(?:ing)?\b/i);
-  if (openIdx >= 0 && !/<\/think(?:ing)?>/i.test(out.slice(openIdx))) {
+  const openIdx = out.search(/<(?:redacted_)?think(?:ing)?\b/i);
+  if (openIdx >= 0 && !/<\/(?:redacted_)?think(?:ing)?>/i.test(out.slice(openIdx))) {
     out = out.slice(0, openIdx);
   }
 
   return out.replace(/\n{3,}/g, "\n\n").trim();
+}
+
+/** WebLLM allows only one system message (index 0). Merge the nudge into it. */
+export function mergeLocalDirectNudge(
+  messages: Array<{ role: string; content: string }>
+): Array<{ role: string; content: string }> {
+  const nudge = LOCAL_DIRECT_ANSWER_NUDGE;
+  const sysIdx = messages.findIndex((m) => m.role === "system");
+  if (sysIdx >= 0) {
+    return messages.map((m, i) =>
+      i === sysIdx ? { ...m, content: `${m.content}\n\n${nudge}` } : m
+    );
+  }
+  return [{ role: "system", content: nudge }, ...messages];
 }
 
 export function isReasoningLocalModel(modelId: string): boolean {
