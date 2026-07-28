@@ -188,6 +188,17 @@
       "variables": "",
       "whenToUse": "",
       "sourceNote": "Added via change-code edit"
+    },
+    {
+      "id": "m-formula-ms48vf38-1831u",
+      "subject": "AP Calculus AB/BC",
+      "unit": "Managed",
+      "name": " Important Maclaurin Series",
+      "expression": "",
+      "content": "# Important Maclaurin Series\n\nExponential function:\n\n$$e^x=\\sum_{n=0}^{\\infty}\\frac{x^n}{n!}$$\n\n$$e^x=1+x+\\frac{x^2}{2!}+\\frac{x^3}{3!}+\\cdots$$\n\nSine:\n\n$$\\sin x=\\sum_{n=0}^{\\infty}(-1)^n\\frac{x^{2n+1}}{(2n+1)!}$$\n\n$$\\sin x=x-\\frac{x^3}{3!}+\\frac{x^5}{5!}-\\cdots$$\n\nCosine:\n\n$$\\cos x=\\sum_{n=0}^{\\infty}(-1)^n\\frac{x^{2n}}{(2n)!}$$\n\n$$\\cos x=1-\\frac{x^2}{2!}+\\frac{x^4}{4!}-\\cdots$$\n\nGeometric series:\n\n$$\\frac{1}{1-x}=\\sum_{n=0}^{\\infty}x^n,\\qquad |x|<1$$\n\nNatural logarithm:\n\n$$\\ln(1+x)=\\sum_{n=1}^{\\infty}(-1)^{n+1}\\frac{x^n}{n}$$\n\n$$\\ln(1+x)=x-\\frac{x^2}{2}+\\frac{x^3}{3}-\\cdots$$\n\nInverse tangent:\n\n$$\\arctan x=\\sum_{n=0}^{\\infty}(-1)^n\\frac{x^{2n+1}}{2n+1}$$\n\n$$\\arctan x=x-\\frac{x^3}{3}+\\frac{x^5}{5}-\\cdots$$",
+      "variables": "",
+      "whenToUse": "",
+      "sourceNote": "Added via change-code edit"
     }
   ],
   "documents": [
@@ -783,5 +794,5 @@
   "settings": {
     "advancedDefault": true
   },
-  "updatedAt": 1785218083534
+  "updatedAt": 1785218283398
 }
