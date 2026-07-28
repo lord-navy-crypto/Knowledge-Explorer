@@ -17,7 +17,10 @@ import type {
 import type { AiProvider, SiteModelChoice } from "@/lib/ai-site-models";
 import { parseSiteModelChoice } from "@/lib/ai-site-models";
 import {
+  isInsideOpenThinkBlock,
+  LOCAL_DIRECT_ANSWER_NUDGE,
   stripReasoningTrace,
+  supportsDisableThinking,
 } from "@/lib/ai-reasoning-strip";
 
 /**
@@ -86,7 +89,14 @@ type LocalAIContextValue = {
     messages: ChatCompletionMessageParam[],
     onToken?: (token: string, fullText: string) => void
   ) => Promise<string>;
+  /** Stop an in-flight local generation (WebLLM interrupt). */
+  interruptGeneration: () => void;
 };
+
+/** Soft cap so local models finish quickly instead of spinning for minutes. */
+const LOCAL_MAX_TOKENS = 768;
+/** Hard wall-clock limit; interrupt if still generating. */
+const LOCAL_GENERATE_TIMEOUT_MS = 75_000;
 
 const LocalAIContext = createContext<LocalAIContextValue | null>(null);
 const MODE_KEY = "results-ai-mode";
@@ -145,8 +155,8 @@ const LOCAL_MODELS: LocalModelOption[] = [
     id: "Qwen3-0.6B-q4f16_1-MLC",
     label: "Qwen3 Micro",
     group: "superlight",
-    summary: "Newer Qwen3 micro — better than older tiny models when it fits.",
-    bestFor: "Newer bilingual micro reasoning on modest GPUs",
+    summary: "Newer Qwen3 micro — thinking disabled for fast visible answers.",
+    bestFor: "Newer bilingual micro replies on modest GPUs",
     parameterSize: "0.6B",
     vramMB: 1403,
     cached: null,
@@ -219,8 +229,8 @@ const LOCAL_MODELS: LocalModelOption[] = [
     id: "Qwen3-4B-q4f16_1-MLC",
     label: "Qwen3 Medium+",
     group: "medium",
-    summary: "Newer Qwen3 4B — top pick in the medium class when VRAM allows.",
-    bestFor: "Harder bilingual reasoning and richer answers",
+    summary: "Newer Qwen3 4B — thinking disabled so TeX/text appears immediately.",
+    bestFor: "Harder bilingual study help when VRAM allows",
     parameterSize: "4B",
     vramMB: 3432,
     cached: null,
@@ -601,6 +611,16 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
     [releaseEngine]
   );
 
+  const interruptGeneration = useCallback(() => {
+    const engine = engineRef.current;
+    if (!engine) return;
+    try {
+      void engine.interruptGenerate();
+    } catch {
+      // ignore — engine may already be idle
+    }
+  }, []);
+
   const complete = useCallback(
     async (
       messages: ChatCompletionMessageParam[],
@@ -608,39 +628,97 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
     ) => {
       const engine = engineRef.current;
       if (!engine) throw new Error("Enable local AI before sending a local request.");
+      const modelId = loadedModelRef.current || selectedModelId;
       setStatus("generating");
       setError("");
-      setStatusText("Generating answer…");
+      setStatusText("Writing answer…");
+
+      const withNudge: ChatCompletionMessageParam[] = [
+        {
+          role: "system",
+          content: LOCAL_DIRECT_ANSWER_NUDGE,
+        },
+        ...messages,
+      ];
+
+      let timedOut = false;
+      const timeoutId = window.setTimeout(() => {
+        timedOut = true;
+        try {
+          void engine.interruptGenerate();
+        } catch {
+          // ignore
+        }
+        setStatusText("Stopped — local answer took too long. Try a lighter model or Website API.");
+      }, LOCAL_GENERATE_TIMEOUT_MS);
+
       try {
         const stream = await engine.chat.completions.create({
-          messages,
+          messages: withNudge,
           stream: true,
-          temperature: 0.5,
+          temperature: 0.4,
+          max_tokens: LOCAL_MAX_TOKENS,
+          // Qwen3/3.5 otherwise emit a long hidden <think> phase with no visible TeX.
+          ...(supportsDisableThinking(modelId)
+            ? { extra_body: { enable_thinking: false } }
+            : {}),
         });
         let raw = "";
         let visible = "";
+        let sawVisible = false;
         for await (const chunk of stream) {
+          if (timedOut) break;
           const token = chunk.choices[0]?.delta?.content ?? "";
           raw += token;
-          // Soft-strip any accidental <think> dumps; do not stall on a reasoning phase.
-          visible = stripReasoningTrace(raw) || raw;
-          setStatusText("Generating answer…");
+          visible = stripReasoningTrace(raw) || "";
+          if (isInsideOpenThinkBlock(raw) && !visible) {
+            setStatusText("Model tried hidden thinking — skipping to the visible answer…");
+          } else if (visible) {
+            if (!sawVisible) {
+              sawVisible = true;
+              setStatusText("Writing answer…");
+            }
+          } else {
+            setStatusText("Writing answer…");
+          }
           onToken?.(token, visible);
         }
+        if (timedOut) {
+          const partial = stripReasoningTrace(raw) || raw.trim();
+          if (partial) {
+            setStatusText("Stopped on timeout — showing partial answer.");
+            return partial;
+          }
+          throw new Error(
+            "Local AI timed out after ~75s with little or no answer. Switch to Website API, or pick a lighter local model (Qwen2.5 / Llama, not a heavy Qwen3)."
+          );
+        }
         const cleaned = stripReasoningTrace(raw) || raw.trim();
-        if (!cleaned) throw new Error("Local model returned an empty answer. Try again.");
+        if (!cleaned) {
+          throw new Error(
+            "Local model returned an empty answer (often stuck in hidden thinking). Switch model to Qwen2.5 / Llama, or use Website API."
+          );
+        }
         setStatusText("Local AI is ready on this device.");
         return cleaned;
       } catch (caught) {
+        if (timedOut) {
+          setStatus("error");
+          const message =
+            "Local AI timed out after ~75s with little or no answer. Switch to Website API, or pick a lighter local model.";
+          setError(message);
+          throw new Error(message);
+        }
         const message = caught instanceof Error ? caught.message : "Local generation failed.";
         setStatus("error");
         setError(message);
         throw caught;
       } finally {
+        window.clearTimeout(timeoutId);
         if (engineRef.current) setStatus("ready");
       }
     },
-    []
+    [selectedModelId]
   );
 
   const value = useMemo<LocalAIContextValue>(
@@ -679,12 +757,14 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
       refreshCacheStatus,
       removeCachedModel,
       complete,
+      interruptGeneration,
     }),
     [
       cacheScanning,
       complete,
       enable,
       error,
+      interruptGeneration,
       loadedModelId,
       mode,
       models,

@@ -231,7 +231,12 @@ export default function UnifiedAiPanel({
     }
   }
 
-  async function runLocal(system: string, user: string, history: ChatMessage[]) {
+  async function runLocal(
+    system: string,
+    user: string,
+    history: ChatMessage[],
+    onToken?: (token: string, fullText: string) => void
+  ) {
     await ensureLocalReady();
     const withHistory = `${buildHistoryBlock(history)}${user}`;
     const { context } = await fetchAiSiteContext(withHistory, localAI.siteSearchEnabled);
@@ -248,13 +253,14 @@ export default function UnifiedAiPanel({
       role: "user",
       content: appendAiSiteContext(user, context),
     });
-    return localAI.complete(chatMessages);
+    return localAI.complete(chatMessages, onToken);
   }
 
   async function askOnce(
     userText: string,
     history: ChatMessage[],
-    codePaste: string
+    codePaste: string,
+    onToken?: (token: string, fullText: string) => void
   ): Promise<ChatMessage> {
     const historyPrefix = buildHistoryBlock(history);
     const stampedUser = `${historyPrefix}Latest student message:\n${userText}`;
@@ -266,9 +272,10 @@ export default function UnifiedAiPanel({
     if (category === "ap" && apTask === "advice") {
       if (localAI.usesLocal) {
         const text = await runLocal(
-          "You are an advanced AP tutor. Always include concrete formulas, knowns/unknowns with units, and a partial worked intermediate. Never give the final graded answer. Continue the dialogue. Reply in markdown with clear headings.",
+          "You are an advanced AP tutor. Always include concrete formulas, knowns/unknowns with units, and a partial worked intermediate. Never give the final graded answer. Continue the dialogue. Reply in markdown with clear headings and $LaTeX$.",
           `Subject: ${subject}\nQuestion:\n${userText}`,
-          history
+          history,
+          onToken
         );
         return {
           id: `a-${Date.now()}`,
@@ -313,7 +320,8 @@ export default function UnifiedAiPanel({
         const text = await runLocal(
           "You are Site Guide for Knowledge Explorer. Only answer how to use the site. Refuse homework solving. Continue the dialogue.",
           userText,
-          history
+          history,
+          onToken
         );
         return {
           id: `a-${Date.now()}`,
@@ -350,9 +358,10 @@ export default function UnifiedAiPanel({
               : "ask";
       if (localAI.usesLocal) {
         const text = await runLocal(
-          "You are an advanced AP concept tutor. Always include key formulas and one mini numeric example when possible. Never finish graded finals. Continue the dialogue. Reply in markdown.",
+          "You are an advanced AP concept tutor. Always include key formulas in $LaTeX$ and one mini numeric example when possible. Never finish graded finals. Continue the dialogue. Reply in markdown.",
           `Subject: ${subject}\nMode: ${mode}\nInput:\n${userText}`,
-          history
+          history,
+          onToken
         );
         return {
           id: `a-${Date.now()}`,
@@ -397,7 +406,8 @@ export default function UnifiedAiPanel({
         const text = await runLocal(
           "You are English AI Tutor. Only English learning help. Refuse AP science solving. Continue the dialogue. Reply in markdown.",
           `Mode: ${mode}\nTarget: ${englishTarget}\n\nStudent input:\n${userText}`,
-          history
+          history,
+          onToken
         );
         return {
           id: `a-${Date.now()}`,
@@ -445,7 +455,8 @@ export default function UnifiedAiPanel({
       const text = await runLocal(
         "You are Coding AI. Teach with hints and short examples. Prefer partial solutions for graded work. Continue the dialogue. Reply in markdown.",
         `Language: ${language}\nFocus: ${codingTask}\nTask: ${taskText}\nCode:\n${codePaste || "(none)"}`,
-        history
+        history,
+        onToken
       );
       return {
         id: `a-${Date.now()}`,
@@ -512,12 +523,64 @@ export default function UnifiedAiPanel({
     setLoading(true);
     setError("");
 
+    const draftId = `a-${Date.now()}`;
+    const streamLocal = localAI.usesLocal;
+    if (streamLocal) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: draftId,
+          role: "assistant",
+          text: "",
+          meta: `${taskMeta.label} · Local · writing…`,
+        },
+      ]);
+    }
+
     try {
-      const assistant = await askOnce(userText || "(see code)", historyBefore, code);
-      setMessages((prev) => [...prev, assistant]);
+      const assistant = await askOnce(
+        userText || "(see code)",
+        historyBefore,
+        code,
+        streamLocal
+          ? (_token, fullText) => {
+              setMessages((prev) =>
+                prev.map((message) =>
+                  message.id === draftId
+                    ? {
+                        ...message,
+                        text: fullText,
+                        meta: `${taskMeta.label} · Local · writing…`,
+                      }
+                    : message
+                )
+              );
+            }
+          : undefined
+      );
+      if (streamLocal) {
+        setMessages((prev) =>
+          prev.map((message) =>
+            message.id === draftId
+              ? {
+                  ...assistant,
+                  id: draftId,
+                  text: assistant.text || message.text,
+                }
+              : message
+          )
+        );
+      } else {
+        setMessages((prev) => [...prev, assistant]);
+      }
       if (category === "coding") setCode("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "AI request failed");
+      if (streamLocal) {
+        setMessages((prev) =>
+          prev.filter((message) => message.id !== draftId || message.text.trim())
+        );
+      }
       // Keep the user message so they can retry / edit the follow-up.
     } finally {
       setLoading(false);
@@ -709,11 +772,22 @@ export default function UnifiedAiPanel({
               ))
             )}
             {loading ? (
-              <p className="text-xs text-slate-500">
-                {localAI.usesLocal && localAI.status === "generating"
-                  ? localAI.statusText || "Generating answer…"
-                  : "Working…"}
-              </p>
+              <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                <p>
+                  {localAI.usesLocal && localAI.status === "generating"
+                    ? localAI.statusText || "Writing answer…"
+                    : "Working…"}
+                </p>
+                {localAI.usesLocal ? (
+                  <button
+                    type="button"
+                    className="rounded-md border border-slate-300 px-2 py-0.5 text-[11px] font-medium text-slate-700 hover:bg-white"
+                    onClick={() => localAI.interruptGeneration()}
+                  >
+                    Stop
+                  </button>
+                ) : null}
+              </div>
             ) : null}
           </div>
 
