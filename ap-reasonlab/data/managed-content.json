@@ -80,6 +80,15 @@
       "keyPoints": [],
       "commonMistakes": [],
       "example": ""
+    },
+    {
+      "id": "m-concept-ms47mt26-iv1o5",
+      "title": "Parallel-Axis Theorem",
+      "subject": "AP Physics C: Mechanics",
+      "summary": "## 19. Parallel-Axis Theorem\n\n### Concepts\n\nThe parallel-axis theorem relates the rotational inertia about an axis through the center of mass to the rotational inertia about a parallel axis.\n\nThe distance $d$ is the perpendicular distance between the two axes.\n\nAP students should be able to apply this theorem, although a full proof by integration is usually less important than correct application.\n\n### Formulas\n\n$$I=I_{\\mathrm{cm}}+Md^2$$\n\nFor a rod about one end:\n\n$$I_{\\mathrm{end}}=I_{\\mathrm{cm}}+M\\left(\\frac{L}{2}\\right)^2$$\n\n$$I_{\\mathrm{end}}=\\frac{1}{12}ML^2+\\frac{1}{4}ML^2$$\n\nTherefore:\n\n$$I_{\\mathrm{end}}=\\frac{1}{3}ML^2$$",
+      "keyPoints": [],
+      "commonMistakes": [],
+      "example": ""
     }
   ],
   "formulas": [
@@ -721,5 +730,5 @@
   "settings": {
     "advancedDefault": true
   },
-  "updatedAt": 1785129423404
+  "updatedAt": 1785216201941
 }
