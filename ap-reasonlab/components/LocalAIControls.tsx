@@ -109,7 +109,8 @@ export default function LocalAIControls() {
       <div>
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">AI settings</p>
         <p className="mt-1 text-sm text-slate-600">
-          Same three paths for every AI tool: Local, Website API, or Your own API.
+          One shared panel for every AI task: Local, Website API, or Your own API — then choose the
+          work below.
         </p>
         <div className="mt-3 grid gap-2 md:grid-cols-3">
           {PATHS.map((item) => (

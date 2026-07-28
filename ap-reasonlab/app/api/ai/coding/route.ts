@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
     const language = String(body.language || "Python").trim();
     const task = String(body.task || body.input || "").trim();
     const code = String(body.code || "").trim();
+    const focus = String(body.focus || "general").trim();
     const userApiKey = String(body.userApiKey || "").trim();
     const provider = parseAiProvider(body.provider);
     const siteModel = parseSiteModelChoice(body.siteModel);
@@ -38,6 +39,7 @@ export async function POST(req: NextRequest) {
     }
 
     const user = `Language / stack: ${language}
+Focus: ${focus}
 Task / question:
 ${task}
 

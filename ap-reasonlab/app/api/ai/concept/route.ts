@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     const subject = String(body.subject || "").trim();
     const conceptTitle = String(body.conceptTitle || body.concept || "").trim();
     const conceptSummary = String(body.conceptSummary || "").trim();
-    const mode = String(body.mode || "explain") as "explain" | "quiz" | "ask";
+    const mode = String(body.mode || "explain").trim();
     const question = String(body.question || "").trim();
     const userApiKey = String(body.userApiKey || "").trim();
     const provider = parseAiProvider(body.provider);
@@ -26,13 +26,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Concept request is too long" }, { status: 400 });
     }
 
+    const modeHint =
+      mode === "formula-derive"
+        ? "Mode focus: derive/explain the pasted formula or relation (assumptions, meaning). Do not finish a graded numeric answer."
+        : mode === "generate-questions"
+          ? "Mode focus: invent short original practice questions from the pasted topic/problem stem. No copyrighted exam items."
+          : `Mode: ${mode}`;
+
     const user = `Subject: ${subject || "AP"}
 Concept title: ${conceptTitle || "(user will name it in the question)"}
 Concept summary (may be empty): ${conceptSummary || "(none)"}
-Mode: ${mode}
+${modeHint}
 Lock to this concept only: ${lockToConcept ? "yes" : "no — still must stay on learning/AP concepts"}
 User message:
-${question || (mode === "quiz" ? "Quiz me on this concept." : "Explain this concept clearly for AP study.")}
+${question || (mode === "quiz" || mode === "generate-questions" ? "Quiz me / generate practice on this concept." : "Explain this concept clearly for AP study.")}
 
 Return JSON with refused, reply, quizPrompt, aiMayBeWrong.`;
 

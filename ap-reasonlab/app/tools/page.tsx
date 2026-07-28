@@ -9,6 +9,11 @@ export const metadata = {
 
 const tools = [
   {
+    href: "/hints",
+    title: "Unified AI panel",
+    blurb: "One box: Local / Website API / Your own API — then AP, English, or Coding tasks.",
+  },
+  {
     href: "/hints?tool=calculator",
     title: "KE-84 Calculator",
     blurb: "Open inside AI Toolbox — TI-inspired scientific keypad.",
@@ -26,12 +31,12 @@ const tools = [
   {
     href: "/hints?tool=english",
     title: "English AI",
-    blurb: "Open inside AI Toolbox — writing, grammar, vocabulary, test strategy.",
+    blurb: "Opens the unified AI panel on English tasks (grammar, vocab, reading, corpus).",
   },
   {
     href: "/hints?tool=coding",
     title: "Coding AI",
-    blurb: "Open inside AI Toolbox — Python, Java, and web coaching (Local / Website API / Your own API).",
+    blurb: "Opens the unified AI panel on Coding tasks (debug, write, explain).",
   },
 ];
 
