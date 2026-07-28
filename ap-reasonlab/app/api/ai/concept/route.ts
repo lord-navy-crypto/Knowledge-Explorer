@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    if (subject.length > 120 || conceptTitle.length > 160 || conceptSummary.length > 4_000 || question.length > 3_000) {
+    if (subject.length > 160 || conceptTitle.length > 200 || conceptSummary.length > 8_000 || question.length > 8_000) {
       return NextResponse.json({ error: "Concept request is too long" }, { status: 400 });
     }
 
@@ -54,7 +54,7 @@ Return JSON with refused, reply, quizPrompt, aiMayBeWrong.`;
       const result = await runChatJson({
         system: CONCEPT_EXPLAIN_SYSTEM,
         user: userWithSite,
-        maxTokens: 650,
+        maxTokens: 1100,
         userApiKey: userApiKey || undefined,
         provider,
         siteModel,
@@ -69,6 +69,9 @@ Return JSON with refused, reply, quizPrompt, aiMayBeWrong.`;
             ? "Sorry — that is unrelated to this concept or to learning, so I will not answer."
             : "No response generated."),
         quizPrompt: String(data.quizPrompt || "").trim(),
+        formulas: Array.isArray(data.formulas)
+          ? data.formulas.map(String).slice(0, 8)
+          : [],
         aiMayBeWrong:
           String(data.aiMayBeWrong || "").trim() ||
           "AI may be wrong. Verify with your notes or textbook.",

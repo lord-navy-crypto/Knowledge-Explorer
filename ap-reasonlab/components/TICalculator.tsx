@@ -1,12 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { evalExpr, formatCalc } from "@/lib/math-expr";
 
 const KEYS: Array<{ label: string; insert?: string; action?: string }> = [
   { label: "2nd", action: "2nd" },
   { label: "MODE", action: "mode" },
-  { label: "π", insert: "π" },
+  { label: "SCI", action: "sci" },
   { label: "CLR", action: "clear" },
   { label: "sin", insert: "sin(" },
   { label: "cos", insert: "cos(" },
@@ -22,7 +23,7 @@ const KEYS: Array<{ label: string; insert?: string; action?: string }> = [
   { label: "−", insert: "-" },
   { label: "(", insert: "(" },
   { label: ")", insert: ")" },
-  { label: "e", insert: "e" },
+  { label: "nCr", insert: "nCr(" },
   { label: "+", insert: "+" },
   { label: "7", insert: "7" },
   { label: "8", insert: "8" },
@@ -38,11 +39,23 @@ const KEYS: Array<{ label: string; insert?: string; action?: string }> = [
   { label: "M+", action: "mplus" },
   { label: "0", insert: "0" },
   { label: ".", insert: "." },
-  { label: "MR", action: "mr" },
+  { label: "!", insert: "!" },
   { label: "ENTER", action: "enter" },
 ];
 
+const CONST_CHIPS = [
+  { label: "π", insert: "π" },
+  { label: "e", insert: "e" },
+  { label: "g", insert: "g" },
+  { label: "c", insert: "c" },
+  { label: "h", insert: "h" },
+  { label: "k", insert: "k" },
+  { label: "N_A", insert: "Na" },
+  { label: "R", insert: "R" },
+];
+
 type HistoryRow = { expr: string; value: string };
+type SciStyle = "auto" | "sci" | "fixed";
 
 function wrapTrig(source: string, mode: "RAD" | "DEG") {
   if (mode === "RAD") return source;
@@ -60,6 +73,7 @@ export default function TICalculator() {
   const [error, setError] = useState("");
   const [second, setSecond] = useState(false);
   const [mode, setMode] = useState<"RAD" | "DEG">("RAD");
+  const [sci, setSci] = useState<SciStyle>("auto");
   const [history, setHistory] = useState<HistoryRow[]>([]);
 
   const viz = useMemo(() => {
@@ -68,6 +82,13 @@ export default function TICalculator() {
     const magnitude = Math.min(100, Math.abs(n) * (Math.abs(n) <= 1 ? 100 : 5));
     return { n, magnitude, positive: n >= 0 };
   }, [display]);
+
+  const plotHref = useMemo(() => {
+    const source = (expr.trim() || "sin(x)").replace(/\bans\b/gi, String(ans));
+    // Only send if it looks like a function of x, else wrap as constant + 0*x
+    const y1 = /\bx\b/i.test(source) ? source : `${source}+0*x`;
+    return `/hints?tool=grapher&y1=${encodeURIComponent(y1)}`;
+  }, [ans, expr]);
 
   function evaluate(sourceRaw: string) {
     let source = sourceRaw.trim();
@@ -105,6 +126,10 @@ export default function TICalculator() {
       setMode((value) => (value === "RAD" ? "DEG" : "RAD"));
       return;
     }
+    if (key.action === "sci") {
+      setSci((value) => (value === "auto" ? "sci" : value === "sci" ? "fixed" : "auto"));
+      return;
+    }
     if (key.action === "mplus") {
       try {
         const value = evaluate(expr.trim() || display);
@@ -112,10 +137,6 @@ export default function TICalculator() {
       } catch (err) {
         setError(err instanceof Error ? err.message : "Error");
       }
-      return;
-    }
-    if (key.action === "mr") {
-      setExpr((value) => value + String(memory));
       return;
     }
     if (key.action === "square") {
@@ -130,10 +151,10 @@ export default function TICalculator() {
       try {
         const source = expr.trim() || display;
         const value = evaluate(source);
-        const formatted = formatCalc(value);
+        const formatted = formatCalc(value, sci);
         setAns(value);
         setDisplay(formatted);
-        setHistory((prev) => [{ expr: source, value: formatted }, ...prev].slice(0, 8));
+        setHistory((prev) => [{ expr: source, value: formatted }, ...prev].slice(0, 12));
         setExpr("");
         setSecond(false);
       } catch (err) {
@@ -151,7 +172,7 @@ export default function TICalculator() {
     <div className="ti-shell ti-shell--wide">
       <div className="ti-brand-row">
         <span className="ti-brand">KE-84 Plus CE</span>
-        <span className="ti-sub">Upgraded scientific · history · visualize</span>
+        <span className="ti-sub">Computer · constants · nCr/n! · plot handoff</span>
       </div>
       <div className="ti-layout">
         <div>
@@ -159,10 +180,10 @@ export default function TICalculator() {
             <div className="ti-screen-meta">
               <span>
                 {second ? "2nd · " : ""}
-                {mode}
+                {mode} · {sci.toUpperCase()}
                 {memory !== 0 ? " · M" : ""}
               </span>
-              <span>ANS={formatCalc(ans)}</span>
+              <span>ANS={formatCalc(ans, sci)}</span>
             </div>
             <div className="ti-screen-expr">{expr || " "}</div>
             <div className="ti-screen-value">{display}</div>
@@ -178,6 +199,21 @@ export default function TICalculator() {
                 </div>
               </div>
             )}
+          </div>
+          <div className="ti-presets" style={{ marginBottom: "0.5rem" }}>
+            {CONST_CHIPS.map((chip) => (
+              <button
+                key={chip.label}
+                type="button"
+                className="ti-preset"
+                onClick={() => setExpr((value) => value + chip.insert)}
+              >
+                {chip.label}
+              </button>
+            ))}
+            <Link href={plotHref} className="ti-preset" title="Send expression to Grapher">
+              → Graph
+            </Link>
           </div>
           <div className="ti-keys">
             {KEYS.map((key) => (
@@ -217,16 +253,20 @@ export default function TICalculator() {
           )}
           <div className="ti-mem">
             <span>Memory</span>
-            <strong>{formatCalc(memory)}</strong>
+            <strong>{formatCalc(memory, sci)}</strong>
             <button type="button" className="ti-key" onClick={() => setMemory(0)}>
               MC
             </button>
           </div>
+          <p className="ti-hint">
+            Examples: <code>nCr(10,3)</code>, <code>5!</code>, <code>g*2</code>,{" "}
+            <code>sqrt(2)*π</code>
+          </p>
         </aside>
       </div>
       <p className="ti-hint">
-        MODE toggles RAD/DEG. 2nd + ENTER uses asin/acos/atan. Try{" "}
-        <code>2*sin(π/6)</code> or <code>cos(60)</code> in DEG.
+        MODE = RAD/DEG · SCI cycles Auto/Sci/Fixed · 2nd remaps sin/cos/tan to inverse · → Graph
+        opens the function plotter.
       </p>
     </div>
   );

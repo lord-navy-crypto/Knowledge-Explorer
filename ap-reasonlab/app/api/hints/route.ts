@@ -11,11 +11,12 @@ import { appendAiSiteContext, buildServerAiSiteContext } from "@/lib/ai-site-con
 function mockHints(question: string, subject: string) {
   return {
     hints: [
-      `Identify what ${subject} concept this question is testing before choosing a formula.`,
-      "List knowns, unknowns, and units. Sketch if helpful.",
-      "Pick one linking equation, then solve the last step yourself.",
+      `Identify what ${subject} concept this question is testing and write the main linking equation before substituting numbers.`,
+      "List knowns, unknowns, and units. Sketch a diagram if the setup is physical.",
+      "Compute one intermediate quantity with units, then finish the last step yourself.",
     ],
     keyFormulas: ["Write the main equation symbols for this topic (from your sheet)."],
+    knownsUnknowns: ["known: list given quantities with units", "unknown: name the target quantity"],
     checkpoints: [
       "Check units of any intermediate quantity before substituting.",
       "Confirm sign convention matches your diagram.",
@@ -27,6 +28,7 @@ function mockHints(question: string, subject: string) {
       "Compute/check an intermediate",
       "Finish the last algebra yourself",
     ],
+    workedPartial: ["Intermediate: leave a symbolic or partially substituted expression with units."],
     aiMayBeWrong:
       "AI may make formula or reasoning errors. Verify every step with your textbook or teacher.",
     note: `Mock mode (no API key yet). Question received: "${question.slice(0, 80)}${question.length > 80 ? "..." : ""}"`,
@@ -46,10 +48,10 @@ export async function POST(req: NextRequest) {
     if (!question) {
       return NextResponse.json({ error: "Question is required" }, { status: 400 });
     }
-    if (question.length > 6000) {
-      return NextResponse.json({ error: "Question is too long (max 6000 characters)." }, { status: 400 });
+    if (question.length > 12_000) {
+      return NextResponse.json({ error: "Question is too long (max 12,000 characters)." }, { status: 400 });
     }
-    if (subject.length > 120 || notes.length > 8_000) {
+    if (subject.length > 120 || notes.length > 12_000) {
       return NextResponse.json({ error: "Subject or notes are too long" }, { status: 400 });
     }
 
@@ -60,7 +62,7 @@ ${question}
 
 ${notes ? `Student notes / attempt (optional):\n${notes}` : ""}
 
-Return JSON with hints, keyFormulas, checkpoints, processOutline, aiMayBeWrong.`;
+Return JSON with hints, keyFormulas, knownsUnknowns, checkpoints, processOutline, workedPartial, aiMayBeWrong.`;
 
     try {
       const siteSearch = body.siteSearch !== false;
@@ -73,7 +75,7 @@ Return JSON with hints, keyFormulas, checkpoints, processOutline, aiMayBeWrong.`
       const result = await runChatJson({
         system: HINT_PROCESS_SYSTEM,
         user: userWithSite,
-        maxTokens: 750,
+        maxTokens: 1200,
         userApiKey: userApiKey || undefined,
         provider,
         siteModel,
@@ -81,10 +83,12 @@ Return JSON with hints, keyFormulas, checkpoints, processOutline, aiMayBeWrong.`
 
       const data = result.data;
       return NextResponse.json({
-        hints: asStringList(data.hints).slice(0, 4),
-        keyFormulas: asStringList(data.keyFormulas).slice(0, 5),
-        checkpoints: asStringList(data.checkpoints).slice(0, 5),
-        processOutline: asStringList(data.processOutline).slice(0, 6),
+        hints: asStringList(data.hints).slice(0, 6),
+        keyFormulas: asStringList(data.keyFormulas).slice(0, 8),
+        knownsUnknowns: asStringList(data.knownsUnknowns).slice(0, 10),
+        checkpoints: asStringList(data.checkpoints).slice(0, 8),
+        processOutline: asStringList(data.processOutline).slice(0, 8),
+        workedPartial: asStringList(data.workedPartial).slice(0, 6),
         aiMayBeWrong:
           String(data.aiMayBeWrong || "").trim() ||
           "AI may make mistakes. Verify with your textbook or teacher.",

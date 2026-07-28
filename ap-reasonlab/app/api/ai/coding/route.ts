@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     if (!task) {
       return NextResponse.json({ error: "Describe what you are trying to code or debug." }, { status: 400 });
     }
-    if (task.length > 8_000 || code.length > 12_000 || language.length > 40) {
+    if (task.length > 12_000 || code.length > 20_000 || language.length > 40) {
       return NextResponse.json({ error: "Request is too long." }, { status: 400 });
     }
 
@@ -55,7 +55,7 @@ Return Coding AI JSON.`;
       const result = await runChatJson({
         system: CODING_AI_SYSTEM,
         user: userWithSite,
-        maxTokens: 900,
+        maxTokens: 1200,
         userApiKey: userApiKey || undefined,
         provider,
         siteModel,

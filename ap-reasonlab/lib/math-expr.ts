@@ -1,15 +1,49 @@
 /**
- * Small safe expression evaluator for calculator / grapher.
- * Supports + - * / ^ % parentheses, unary minus, and common functions.
+ * Safe expression evaluator for calculator / function plotter.
+ * Supports + - * / ^ % parentheses, unary minus, 1–2 arg functions, and study constants.
  */
 
 const CONSTANTS: Record<string, number> = {
   pi: Math.PI,
   π: Math.PI,
   e: Math.E,
+  g: 9.8,
+  c: 2.99792458e8,
+  h: 6.62607015e-34,
+  k: 1.380649e-23,
+  na: 6.02214076e23,
+  r: 8.314462618,
+  eps0: 8.8541878128e-12,
+  mu0: 1.25663706212e-6,
+  gconst: 6.6743e-11,
 };
 
-const FUNCTIONS: Record<string, (n: number) => number> = {
+function factorial(n: number): number {
+  if (!Number.isFinite(n) || n < 0 || Math.floor(n) !== n) throw new Error("n! needs non-negative integer");
+  if (n > 170) throw new Error("n! overflow");
+  let out = 1;
+  for (let i = 2; i <= n; i += 1) out *= i;
+  return out;
+}
+
+function nCr(n: number, r: number): number {
+  if (r < 0 || n < 0 || Math.floor(n) !== n || Math.floor(r) !== r) throw new Error("nCr needs integers");
+  if (r > n) return 0;
+  r = Math.min(r, n - r);
+  let out = 1;
+  for (let i = 1; i <= r; i += 1) out = (out * (n - r + i)) / i;
+  return out;
+}
+
+function nPr(n: number, r: number): number {
+  if (r < 0 || n < 0 || Math.floor(n) !== n || Math.floor(r) !== r) throw new Error("nPr needs integers");
+  if (r > n) return 0;
+  let out = 1;
+  for (let i = 0; i < r; i += 1) out *= n - i;
+  return out;
+}
+
+const FUNCTIONS1: Record<string, (n: number) => number> = {
   sin: Math.sin,
   cos: Math.cos,
   tan: Math.tan,
@@ -23,11 +57,25 @@ const FUNCTIONS: Record<string, (n: number) => number> = {
   log: Math.log10,
   log10: Math.log10,
   sqrt: Math.sqrt,
+  cbrt: Math.cbrt,
   abs: Math.abs,
   exp: Math.exp,
   floor: Math.floor,
   ceil: Math.ceil,
   round: Math.round,
+  fact: factorial,
+  sign: Math.sign,
+};
+
+const FUNCTIONS2: Record<string, (a: number, b: number) => number> = {
+  ncr: nCr,
+  npr: nPr,
+  min: Math.min,
+  max: Math.max,
+  atan2: Math.atan2,
+  hypot: Math.hypot,
+  pow: Math.pow,
+  logb: (a, b) => Math.log(a) / Math.log(b),
 };
 
 type Tok =
@@ -39,28 +87,38 @@ type Tok =
   | { t: "comma" };
 
 function tokenize(input: string): Tok[] {
-  const src = input.replace(/\s+/g, "").replace(/·/g, "*").replace(/×/g, "*").replace(/÷/g, "/");
+  const src = input
+    .replace(/\s+/g, "")
+    .replace(/·/g, "*")
+    .replace(/×/g, "*")
+    .replace(/÷/g, "/")
+    .replace(/√/g, "sqrt");
   const out: Tok[] = [];
   let i = 0;
   while (i < src.length) {
-    const ch = src[i];
+    const ch = src[i]!;
     if (/[0-9.]/.test(ch)) {
-      let j = i + 1;
-      while (j < src.length && /[0-9.]/.test(src[j])) j += 1;
-      const n = Number(src.slice(i, j));
+      let k = i + 1;
+      while (k < src.length && /[0-9.]/.test(src[k]!)) k += 1;
+      if (k < src.length && /[eE]/.test(src[k]!)) {
+        k += 1;
+        if (k < src.length && /[+-]/.test(src[k]!)) k += 1;
+        while (k < src.length && /[0-9]/.test(src[k]!)) k += 1;
+      }
+      const n = Number(src.slice(i, k));
       if (!Number.isFinite(n)) throw new Error("Bad number");
       out.push({ t: "num", v: n });
-      i = j;
+      i = k;
       continue;
     }
     if (/[A-Za-zπ_]/.test(ch)) {
       let j = i + 1;
-      while (j < src.length && /[A-Za-z0-9π_]/.test(src[j])) j += 1;
+      while (j < src.length && /[A-Za-z0-9π_]/.test(src[j]!)) j += 1;
       out.push({ t: "id", v: src.slice(i, j).toLowerCase() });
       i = j;
       continue;
     }
-    if ("+-*/^%".includes(ch)) {
+    if ("+-*/^%!".includes(ch)) {
       out.push({ t: "op", v: ch });
       i += 1;
       continue;
@@ -110,7 +168,7 @@ class Parser {
 
   private expr(): number {
     let left = this.term();
-    while (this.peek()?.t === "op" && (this.peek() as { v: string }).v && "+-".includes((this.peek() as { v: string }).v)) {
+    while (this.peek()?.t === "op" && "+-".includes((this.peek() as { v: string }).v)) {
       const op = (this.eat() as { v: string }).v;
       const right = this.term();
       left = op === "+" ? left + right : left - right;
@@ -149,7 +207,16 @@ class Parser {
       this.eat();
       return this.unary();
     }
-    return this.primary();
+    return this.postfix();
+  }
+
+  private postfix(): number {
+    let value = this.primary();
+    while (this.peek()?.t === "op" && (this.peek() as { v: string }).v === "!") {
+      this.eat();
+      value = factorial(value);
+    }
+    return value;
   }
 
   private primary(): number {
@@ -163,15 +230,25 @@ class Parser {
       this.eat();
       if (this.peek()?.t === "lp") {
         this.eat();
-        const arg = this.expr();
+        const args: number[] = [];
+        if (this.peek()?.t !== "rp") {
+          args.push(this.expr());
+          while (this.peek()?.t === "comma") {
+            this.eat();
+            args.push(this.expr());
+          }
+        }
         if (this.peek()?.t !== "rp") throw new Error("Missing )");
         this.eat();
-        const fn = FUNCTIONS[tok.v];
-        if (!fn) throw new Error(`Unknown function ${tok.v}`);
-        return fn(arg);
+        if (args.length === 1 && FUNCTIONS1[tok.v]) return FUNCTIONS1[tok.v]!(args[0]!);
+        if (args.length === 2 && FUNCTIONS2[tok.v]) return FUNCTIONS2[tok.v]!(args[0]!, args[1]!);
+        if (FUNCTIONS1[tok.v] || FUNCTIONS2[tok.v]) {
+          throw new Error(`Wrong arity for ${tok.v}`);
+        }
+        throw new Error(`Unknown function ${tok.v}`);
       }
-      if (tok.v in this.vars) return this.vars[tok.v];
-      if (tok.v in CONSTANTS) return CONSTANTS[tok.v];
+      if (tok.v in this.vars) return this.vars[tok.v]!;
+      if (tok.v in CONSTANTS) return CONSTANTS[tok.v]!;
       throw new Error(`Unknown symbol ${tok.v}`);
     }
     if (tok.t === "lp") {
@@ -188,15 +265,23 @@ class Parser {
 export function evalExpr(expression: string, vars: Record<string, number> = {}): number {
   const trimmed = expression.trim();
   if (!trimmed) throw new Error("Empty expression");
-  const value = new Parser(tokenize(trimmed), vars).parse();
+  const normalizedVars: Record<string, number> = {};
+  for (const [key, value] of Object.entries(vars)) {
+    normalizedVars[key.toLowerCase()] = value;
+  }
+  const value = new Parser(tokenize(trimmed), normalizedVars).parse();
   if (!Number.isFinite(value)) throw new Error("Not a finite number");
   return value;
 }
 
-export function formatCalc(value: number): string {
+export function formatCalc(value: number, style: "auto" | "sci" | "fixed" = "auto"): string {
   if (!Number.isFinite(value)) return "Error";
+  if (style === "sci") return value.toExponential(6);
+  if (style === "fixed") return (Math.round(value * 1e10) / 1e10).toFixed(6).replace(/\.?0+$/, "");
   const abs = Math.abs(value);
   if (abs !== 0 && (abs >= 1e10 || abs < 1e-6)) return value.toExponential(6);
   const rounded = Math.round(value * 1e10) / 1e10;
   return String(rounded);
 }
+
+export const MATH_CONSTANTS = CONSTANTS;

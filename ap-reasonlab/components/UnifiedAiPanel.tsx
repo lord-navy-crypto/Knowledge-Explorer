@@ -266,7 +266,7 @@ export default function UnifiedAiPanel({
     if (category === "ap" && apTask === "advice") {
       if (localAI.usesLocal) {
         const text = await runLocal(
-          "You are an AP tutor. Give strategy hints and half-process steps only. Never give the final answer. Continue the dialogue helpfully. Reply in plain markdown.",
+          "You are an advanced AP tutor. Always include concrete formulas, knowns/unknowns with units, and a partial worked intermediate. Never give the final graded answer. Continue the dialogue. Reply in markdown with clear headings.",
           `Subject: ${subject}\nQuestion:\n${userText}`,
           history
         );
@@ -293,8 +293,10 @@ export default function UnifiedAiPanel({
       const lists = [
         { label: "Hints", items: data.hints || [] },
         { label: "Key formulas", items: data.keyFormulas || [] },
+        { label: "Knowns / unknowns", items: data.knownsUnknowns || [] },
         { label: "Checkpoints", items: data.checkpoints || [] },
         { label: "Process outline", items: data.processOutline || [] },
+        { label: "Worked partial", items: data.workedPartial || [] },
       ];
       return {
         id: `a-${Date.now()}`,
@@ -348,7 +350,7 @@ export default function UnifiedAiPanel({
               : "ask";
       if (localAI.usesLocal) {
         const text = await runLocal(
-          "You are an AP concept tutor. Teach clearly. Never finish graded finals. Continue the dialogue. Reply in markdown.",
+          "You are an advanced AP concept tutor. Always include key formulas and one mini numeric example when possible. Never finish graded finals. Continue the dialogue. Reply in markdown.",
           `Subject: ${subject}\nMode: ${mode}\nInput:\n${userText}`,
           history
         );
@@ -375,11 +377,15 @@ export default function UnifiedAiPanel({
       const body = [data.reply, data.quizPrompt ? `\n\n**Try this:** ${data.quizPrompt}` : ""]
         .filter(Boolean)
         .join("");
+      const lists = [
+        { label: "Key formulas", items: Array.isArray(data.formulas) ? data.formulas : [] },
+      ];
       return {
         id: `a-${Date.now()}`,
         role: "assistant",
-        text: body,
+        text: formatAssistantText({ body, lists }),
         meta: data.note || taskMeta.label,
+        lists,
         refused: data.refused,
         aiMayBeWrong: data.aiMayBeWrong,
       };
