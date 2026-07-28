@@ -98,6 +98,15 @@
       "keyPoints": [],
       "commonMistakes": [],
       "example": ""
+    },
+    {
+      "id": "m-concept-ms4kqpp0-ufomb",
+      "title": "lord-navy-crypto",
+      "subject": "AP Computer Science A",
+      "summary": "# Unit 2: Selection and Iteration\n\n## Boolean Expressions\n\n```\n# Boolean Expressions\n\nA Boolean expression has only two possible values: `true` or `false`.\n\nBoolean expressions are commonly used in conditions and loops.\n\n```java\nint age = 16;\nboolean eligible = age >= 13;\n```\n\nCommon comparison operators are:\n\n```\n==   // equal to\n!=   // not equal to\n>    // greater than\n<    // less than\n>=   // greater than or equal to\n<=   // less than or equal to\n```\n\n```\n---\n\n## Logical Operators\n\n```markdown\n# Logical Operators\n\nLogical operators combine or reverse Boolean expressions.\n\n```java\n&&   // AND\n||   // OR\n!    // NOT\n```\n\nThe `&&` operator is true only when both conditions are true.\n\n```\nboolean accepted = hasTicket && isOnTime;\n```\n\nThe `||` operator is true when at least one condition is true.\n\n```\nboolean discount = isStudent || isSenior;\n```\n\nThe `!` operator reverses a Boolean value.\n\n```\nboolean closed = !open;\n```\n\n```\n---\n\n## If Statements\n\n```markdown\n# If Statements\n\nAn `if` statement executes code only when its condition is true.\n\n```java\nif (score >= 90)\n{\n    System.out.println(\"Excellent\");\n}\n```\n\nIf the condition is false, Java skips the entire block.\n\nBraces should normally be used to clearly show which statements belong to the condition.",
+      "keyPoints": [],
+      "commonMistakes": [],
+      "example": ""
     }
   ],
   "formulas": [
@@ -854,5 +863,5 @@
   "settings": {
     "advancedDefault": true
   },
-  "updatedAt": 1785232488497
+  "updatedAt": 1785238219254
 }
