@@ -703,7 +703,11 @@ export default function UnifiedAiPanel({
               ))
             )}
             {loading ? (
-              <p className="text-xs text-slate-500">AI is thinking…</p>
+              <p className="text-xs text-slate-500">
+                {localAI.usesLocal && localAI.status === "generating"
+                  ? localAI.statusText || "Generating answer…"
+                  : "Working…"}
+              </p>
             ) : null}
           </div>
 

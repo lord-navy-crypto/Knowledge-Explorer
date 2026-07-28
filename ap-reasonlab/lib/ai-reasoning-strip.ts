@@ -1,6 +1,7 @@
 /**
- * Strip chain-of-thought / reasoning dumps that DeepSeek-R1 Distill (and similar)
- * emit before the real answer. Keeps the model usable without flooding the UI.
+ * Soft-strip accidental chain-of-thought dumps (e.g. leftover <think> tags).
+ * Local DeepSeek-R1 Distill was removed because waiting on a private thinking
+ * phase made the UI feel stuck; this helper is only a safety net now.
  */
 
 const THINK_OPEN = /<think\b[^>]*>/i;
