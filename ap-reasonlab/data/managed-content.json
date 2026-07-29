@@ -116,6 +116,15 @@
       "keyPoints": [],
       "commonMistakes": [],
       "example": ""
+    },
+    {
+      "id": "m-concept-ms5llgjv-dp3k7",
+      "title": "Angular Position, Velocity, and Acceleration",
+      "subject": "AP Physics C: Mechanics",
+      "summary": "## Angular Position, Velocity, and Acceleration\n\n### Concepts\n\nAngular velocity is the time derivative of angular position.\n\nAngular acceleration is the time derivative of angular velocity and the second derivative of angular position.\n\nIf angular velocity or angular acceleration varies with time, integration is used to find the accumulated change.\n\n### Formulas\n\n$$\\omega=\\frac{d\\theta}{dt}$$\n\n$$\\alpha=\\frac{d\\omega}{dt}=\\frac{d^2\\theta}{dt^2}$$\n\nAngular displacement from angular velocity:\n\n$$\\theta_f-\\theta_i=\\int_{t_i}^{t_f}\\omega(t),dt$$\n\nChange in angular velocity from angular acceleration:\n\n$$\\omega_f-\\omega_i=\\int_{t_i}^{t_f}\\alpha(t),dt$$\n\nTherefore:\n\n$$\\theta_f=\\theta_i+\\int_{t_i}^{t_f}\\omega(t),dt$$\n\n$$\\omega_f=\\omega_i+\\int_{t_i}^{t_f}\\alpha(t),dt$$",
+      "keyPoints": [],
+      "commonMistakes": [],
+      "example": ""
     }
   ],
   "formulas": [
@@ -872,5 +881,5 @@
   "settings": {
     "advancedDefault": true
   },
-  "updatedAt": 1785238652475
+  "updatedAt": 1785300119902
 }
