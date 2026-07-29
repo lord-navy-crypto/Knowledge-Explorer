@@ -28,6 +28,31 @@ const styles: Array<{
     name: "Pastel Pink & Purple",
     blurb: "Blush pink leads, soft purple accents — cute layered candy study vibe.",
   },
+  {
+    id: "crimson",
+    name: "红霞 Crimson Glow",
+    blurb: "Warm sunset crimson haze — soft red sky light without the neon dark deck.",
+  },
+  {
+    id: "verdant",
+    name: "翠绿 Emerald Green",
+    blurb: "Fresh forest green panels and jade accents for calm study focus.",
+  },
+  {
+    id: "violet",
+    name: "紫晶 Deep Violet",
+    blurb: "Rich violet crystal tones — deeper than pastel candy purple.",
+  },
+  {
+    id: "amber",
+    name: "橙晖 Amber Orange",
+    blurb: "Bright amber–orange warmth, like late-afternoon study light.",
+  },
+  {
+    id: "silver",
+    name: "银霜 Pure Silver",
+    blurb: "Cool silver chrome and frost highlights — metallic without gold.",
+  },
 ];
 
 /**
@@ -98,7 +123,7 @@ export default function StyleWindow() {
                 <span className="sw-dot sw-dot-max" />
               </div>
               <h2 id="style-window-title" className="style-window-heading">
-                Style window
+                Style window · visual spectrum
               </h2>
               <button type="button" className="style-window-close-text" onClick={() => setOpen(false)}>
                 Esc
@@ -108,10 +133,10 @@ export default function StyleWindow() {
             {!minimized && (
               <div className="style-window-body">
                 <p className="style-window-lead">
-                  Four richer looks: AP Classic, Cyberpunk Red, Luxury Gold &amp; Silver, and Pastel
-                  Pink &amp; Purple. Choice is saved in this browser.
+                  Nine looks across the color spectrum — Classic, Cyberpunk, Luxury, Pastel, plus
+                  Crimson / Emerald / Violet / Amber / Silver. Choice is saved in this browser.
                 </p>
-                <div className="style-window-grid style-window-grid--4">
+                <div className="style-window-grid style-window-grid--spectrum">
                   {styles.map((item) => {
                     const active = theme === item.id;
                     return (

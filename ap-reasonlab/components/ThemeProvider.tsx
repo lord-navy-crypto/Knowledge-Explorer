@@ -10,10 +10,30 @@ import {
   type ReactNode,
 } from "react";
 
-export type SiteTheme = "ap" | "cyberpunk" | "luxury" | "pastel";
+/** Visual spectrum themes for the whole site (Style window). */
+export type SiteTheme =
+  | "ap"
+  | "cyberpunk"
+  | "luxury"
+  | "pastel"
+  | "crimson"
+  | "verdant"
+  | "violet"
+  | "amber"
+  | "silver";
 
 const STORAGE_KEY = "ke-site-theme";
-const THEMES: SiteTheme[] = ["ap", "cyberpunk", "luxury", "pastel"];
+export const SITE_THEMES: SiteTheme[] = [
+  "ap",
+  "cyberpunk",
+  "luxury",
+  "pastel",
+  "crimson",
+  "verdant",
+  "violet",
+  "amber",
+  "silver",
+];
 
 type ThemeContextValue = {
   theme: SiteTheme;
@@ -24,7 +44,7 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 function isSiteTheme(value: string | null): value is SiteTheme {
-  return !!value && THEMES.includes(value as SiteTheme);
+  return !!value && SITE_THEMES.includes(value as SiteTheme);
 }
 
 function applyTheme(theme: SiteTheme) {
@@ -49,8 +69,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const cycleTheme = useCallback(() => {
-    const index = THEMES.indexOf(theme);
-    setTheme(THEMES[(index + 1) % THEMES.length]);
+    const index = SITE_THEMES.indexOf(theme);
+    setTheme(SITE_THEMES[(index + 1) % SITE_THEMES.length]);
   }, [setTheme, theme]);
 
   const value = useMemo(
