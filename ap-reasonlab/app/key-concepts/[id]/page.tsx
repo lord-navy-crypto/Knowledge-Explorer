@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getGuideById } from "@/data/key-concepts";
+import { getAnyGuideById } from "@/lib/ai-for-ap-guides";
+import { toolboxLinkForGuide } from "@/lib/ai-for-ap-guides";
+import { toolboxHref } from "@/lib/ai-toolbox-url";
 import RichContent from "@/components/RichContent";
 
 const categoryLabel = {
@@ -15,13 +17,18 @@ export default async function KeyConceptDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const guide = getGuideById(id);
+  const guide = getAnyGuideById(id);
   if (!guide) notFound();
+
+  const toolbox = toolboxLinkForGuide(guide.id);
 
   return (
     <div className="space-y-6">
-      <Link href="/key-concepts" className="text-sm text-brand-600 hover:underline">
-        ← Back to key concepts
+      <Link
+        href={guide.category === "ai_for_ap" ? "/ai-for-ap" : "/key-concepts"}
+        className="text-sm text-brand-600 hover:underline"
+      >
+        ← {guide.category === "ai_for_ap" ? "AI for AP" : "Key concepts"}
       </Link>
 
       <section className="card space-y-3">
@@ -30,6 +37,22 @@ export default async function KeyConceptDetailPage({
           <span className="badge">{categoryLabel[guide.category]}</span>
         </div>
         <h1 className="text-3xl font-bold">{guide.title}</h1>
+        {guide.category === "ai_for_ap" ? (
+          <div className="rounded-lg border border-[var(--ke-border)] bg-[var(--ke-surface)] p-4">
+            <p className="text-sm text-slate-600">{toolbox.blurb}</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Link href={toolbox.href} className="btn-primary text-sm">
+                {toolbox.label}
+              </Link>
+              <Link
+                href={toolboxHref({ apTask: "advice", subject: guide.subject })}
+                className="btn-secondary text-sm"
+              >
+                Hints &amp; process
+              </Link>
+            </div>
+          </div>
+        ) : null}
       </section>
 
       <section className="card space-y-3">

@@ -5,6 +5,7 @@ import LocalAIControls from "@/components/LocalAIControls";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
 import RichContent from "@/components/RichContent";
 import VoiceInputButton from "@/components/VoiceInputButton";
+import SaveGeneratedPractice from "@/components/SaveGeneratedPractice";
 import { useLocalAI } from "@/components/LocalAIProvider";
 import { appendAiSiteContext, fetchAiSiteContext } from "@/lib/ai-site-context";
 import {
@@ -28,7 +29,9 @@ type EnglishTask =
   | "optimize-reading"
   | "corpus-find"
   | "corpus-generate"
-  | "writing-feedback";
+  | "writing-feedback"
+  | "test-strategy"
+  | "original-practice";
 
 type CodingTask = "debug" | "write" | "explain";
 
@@ -107,6 +110,16 @@ const ENGLISH_TASKS: Array<{ value: EnglishTask; label: string; hint: string }> 
     label: "Writing feedback",
     hint: "Feedback on a draft you paste.",
   },
+  {
+    value: "test-strategy",
+    label: "TOEFL / IELTS / SAT strategy",
+    hint: "Exam strategy and section tips — not AP science.",
+  },
+  {
+    value: "original-practice",
+    label: "Original practice",
+    hint: "Short original sentences or mini passages for your target exam.",
+  },
 ];
 
 const CODING_TASKS: Array<{ value: CodingTask; label: string; hint: string }> = [
@@ -120,6 +133,9 @@ const LANGUAGES = ["Python", "Java", "HTML / CSS / JS", "General algorithms", "O
 type Props = {
   defaultCategory?: Category;
   defaultSubject?: string;
+  defaultApTask?: string;
+  defaultEnglishTask?: string;
+  defaultCodingTask?: string;
 };
 
 type ChatMessage = {
@@ -131,6 +147,8 @@ type ChatMessage = {
   snippet?: string;
   refused?: boolean;
   aiMayBeWrong?: string;
+  /** Show editor save for generate-practice replies */
+  saveAsPractice?: boolean;
 };
 
 function formatAssistantText(parts: {
@@ -161,17 +179,31 @@ function buildHistoryBlock(messages: ChatMessage[]): string {
 export default function UnifiedAiPanel({
   defaultCategory = "ap",
   defaultSubject,
+  defaultApTask,
+  defaultEnglishTask,
+  defaultCodingTask,
 }: Props) {
   const localAI = useLocalAI();
   const savedPrefs = useMemo(() => loadToolboxPanelPrefs(), []);
   const [category, setCategory] = useState<Category>(defaultCategory || savedPrefs.category);
-  const [apTask, setApTask] = useState<ApTask>((savedPrefs.apTask as ApTask) || "advice");
-  const [englishTask, setEnglishTask] = useState<EnglishTask>(
-    (savedPrefs.englishTask as EnglishTask) || "grammar-explanation"
-  );
-  const [codingTask, setCodingTask] = useState<CodingTask>(
-    (savedPrefs.codingTask as CodingTask) || "debug"
-  );
+  const [apTask, setApTask] = useState<ApTask>(() => {
+    if (defaultApTask && AP_TASKS.some((t) => t.value === defaultApTask)) {
+      return defaultApTask as ApTask;
+    }
+    return (savedPrefs.apTask as ApTask) || "advice";
+  });
+  const [englishTask, setEnglishTask] = useState<EnglishTask>(() => {
+    if (defaultEnglishTask && ENGLISH_TASKS.some((t) => t.value === defaultEnglishTask)) {
+      return defaultEnglishTask as EnglishTask;
+    }
+    return (savedPrefs.englishTask as EnglishTask) || "grammar-explanation";
+  });
+  const [codingTask, setCodingTask] = useState<CodingTask>(() => {
+    if (defaultCodingTask && CODING_TASKS.some((t) => t.value === defaultCodingTask)) {
+      return defaultCodingTask as CodingTask;
+    }
+    return (savedPrefs.codingTask as CodingTask) || "debug";
+  });
   const [subject, setSubject] = useState(defaultSubject || savedPrefs.subject || SUBJECT_OPTIONS[0]);
   const [englishTarget, setEnglishTarget] = useState(savedPrefs.englishTarget);
   const [language, setLanguage] = useState<(typeof LANGUAGES)[number]>(
@@ -198,6 +230,24 @@ export default function UnifiedAiPanel({
   useEffect(() => {
     if (defaultSubject) setSubject(defaultSubject);
   }, [defaultSubject]);
+
+  useEffect(() => {
+    if (defaultApTask && AP_TASKS.some((t) => t.value === defaultApTask)) {
+      setApTask(defaultApTask as ApTask);
+    }
+  }, [defaultApTask]);
+
+  useEffect(() => {
+    if (defaultEnglishTask && ENGLISH_TASKS.some((t) => t.value === defaultEnglishTask)) {
+      setEnglishTask(defaultEnglishTask as EnglishTask);
+    }
+  }, [defaultEnglishTask]);
+
+  useEffect(() => {
+    if (defaultCodingTask && CODING_TASKS.some((t) => t.value === defaultCodingTask)) {
+      setCodingTask(defaultCodingTask as CodingTask);
+    }
+  }, [defaultCodingTask]);
 
   useEffect(() => {
     saveToolboxPanelPrefs({
@@ -381,6 +431,7 @@ export default function UnifiedAiPanel({
           role: "assistant",
           text,
           meta: `${taskMeta.label} · Local`,
+          saveAsPractice: apTask === "generate-questions",
         };
       }
       const response = await fetch("/api/ai/concept", {
@@ -410,6 +461,7 @@ export default function UnifiedAiPanel({
         lists,
         refused: data.refused,
         aiMayBeWrong: data.aiMayBeWrong,
+        saveAsPractice: apTask === "generate-questions",
       };
     }
 
@@ -784,6 +836,13 @@ export default function UnifiedAiPanel({
                   )}
                   {message.role === "assistant" && message.aiMayBeWrong ? (
                     <p className="mt-2 text-[11px] text-amber-800">{message.aiMayBeWrong}</p>
+                  ) : null}
+                  {message.role === "assistant" && message.saveAsPractice ? (
+                    <SaveGeneratedPractice
+                      practiceText={message.text}
+                      defaultSubject={subject}
+                      suggestedTitle={`${subject} practice · ${new Date().toISOString().slice(0, 10)}`}
+                    />
                   ) : null}
                 </div>
               ))

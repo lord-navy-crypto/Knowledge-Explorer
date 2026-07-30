@@ -99,6 +99,7 @@ export default function ChangePanel({
   const [files, setFiles] = useState<File[]>([]);
   const [forceCodeField, setForceCodeField] = useState(false);
   const [entries, setEntries] = useState<DraftEntry[]>([blankEntry()]);
+  const [structuringKey, setStructuringKey] = useState<string | null>(null);
 
   const multiMode = MULTI_MODES.includes(mode);
 
@@ -152,6 +153,54 @@ export default function ChangePanel({
 
   function removeEntry(key: string) {
     setEntries((prev) => (prev.length <= 1 ? prev : prev.filter((row) => row.key !== key)));
+  }
+
+  async function structureEntry(key: string) {
+    const row = entries.find((entry) => entry.key === key);
+    if (!row?.title.trim()) {
+      setError("Enter a concept title before sorting notes with AI.");
+      return;
+    }
+    if (!row.content.trim()) {
+      setError("Paste related notes in the content field first.");
+      return;
+    }
+    setStructuringKey(key);
+    setError("");
+    try {
+      const res = await fetch("/api/structure-concept", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: row.title.trim(),
+          area: subject.trim(),
+          subject: subject.trim(),
+          content: row.content,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Structure failed");
+      const keyPoints = Array.isArray(data.keyPoints) ? data.keyPoints : [];
+      const mistakes = Array.isArray(data.commonMistakes) ? data.commonMistakes : [];
+      const formatted = [
+        String(data.summary || "").trim(),
+        keyPoints.length
+          ? `\n\n**Key points**\n${keyPoints.map((p: string) => `- ${p}`).join("\n")}`
+          : "",
+        mistakes.length
+          ? `\n\n**Common mistakes**\n${mistakes.map((p: string) => `- ${p}`).join("\n")}`
+          : "",
+        data.example ? `\n\n**Example**\n${String(data.example).trim()}` : "",
+      ]
+        .filter(Boolean)
+        .join("");
+      updateEntry(key, { content: formatted.trim() });
+      setNote(data.note || "Notes sorted — review every field before saving.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Structure failed");
+    } finally {
+      setStructuringKey(null);
+    }
   }
 
   async function postSave(payload: Record<string, unknown>) {
@@ -446,13 +495,27 @@ export default function ChangePanel({
                     mode === "topic" ||
                     mode === "formula" ||
                     mode === "document") && (
-                    <MarkdownLatexField
-                      label={mode === "document" ? "Document text" : "Full content"}
-                      value={row.content}
-                      onChange={(value) => updateEntry(row.key, { content: value })}
-                      required
-                      minHeightClass="min-h-[12rem]"
-                    />
+                    <>
+                      <MarkdownLatexField
+                        label={mode === "document" ? "Document text" : "Full content"}
+                        value={row.content}
+                        onChange={(value) => updateEntry(row.key, { content: value })}
+                        required
+                        minHeightClass="min-h-[12rem]"
+                      />
+                      {(mode === "concept" || mode === "topic") && row.content.trim() ? (
+                        <button
+                          type="button"
+                          className="btn-secondary text-xs"
+                          disabled={structuringKey === row.key}
+                          onClick={() => void structureEntry(row.key)}
+                        >
+                          {structuringKey === row.key
+                            ? "Sorting notes with AI…"
+                            : "Sort notes with AI (Website API)"}
+                        </button>
+                      ) : null}
+                    </>
                   )}
                   {mode === "questionnaire" ? (
                     <>

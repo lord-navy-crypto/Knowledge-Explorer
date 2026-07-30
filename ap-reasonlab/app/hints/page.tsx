@@ -14,8 +14,28 @@ import {
   saveToolboxExtraTool,
   type ToolboxExtraTool,
 } from "@/lib/ai-toolbox-prefs";
+import { legacyToolToApTask } from "@/lib/ai-toolbox-url";
 
 type ExtraTool = ToolboxExtraTool;
+
+const AP_TASKS = new Set([
+  "advice",
+  "concept",
+  "guide",
+  "formula-derive",
+  "generate-questions",
+]);
+const ENGLISH_TASKS = new Set([
+  "grammar-explanation",
+  "vocab-extract",
+  "optimize-reading",
+  "corpus-find",
+  "corpus-generate",
+  "writing-feedback",
+  "test-strategy",
+  "original-practice",
+]);
+const CODING_TASKS = new Set(["debug", "write", "explain"]);
 
 function resolveSubject(raw: string | null): string | undefined {
   if (!raw?.trim()) return undefined;
@@ -24,10 +44,15 @@ function resolveSubject(raw: string | null): string | undefined {
 
 function resolveExtraTool(raw: string | null): ExtraTool {
   if (raw === "calculator" || raw === "grapher") return raw;
-  if (raw === "english" || raw === "coding" || raw === "concept" || raw === "guide" || raw === "hint") {
+  if (
+    raw === "english" ||
+    raw === "coding" ||
+    raw === "concept" ||
+    raw === "guide" ||
+    raw === "hint"
+  ) {
     return "ai";
   }
-  // Retired Image Gen links land on the function plotter instead.
   if (raw === "imagegen") return "grapher";
   return "ai";
 }
@@ -38,11 +63,37 @@ function resolveCategory(raw: string | null): "ap" | "english" | "coding" {
   return "ap";
 }
 
+function resolveApTask(
+  searchParams: URLSearchParams,
+  tool: string | null
+): string | undefined {
+  const direct = searchParams.get("apTask");
+  if (direct && AP_TASKS.has(direct)) return direct;
+  const legacy = legacyToolToApTask(tool);
+  return legacy;
+}
+
+function resolveEnglishTask(searchParams: URLSearchParams): string | undefined {
+  const direct = searchParams.get("englishTask");
+  if (direct && ENGLISH_TASKS.has(direct)) return direct;
+  return undefined;
+}
+
+function resolveCodingTask(searchParams: URLSearchParams): string | undefined {
+  const direct = searchParams.get("codingTask");
+  if (direct && CODING_TASKS.has(direct)) return direct;
+  return undefined;
+}
+
 function ToolboxContent() {
   const searchParams = useSearchParams();
-  const [extra, setExtra] = useState<ExtraTool>(() => resolveExtraTool(searchParams.get("tool")));
+  const tool = searchParams.get("tool");
+  const [extra, setExtra] = useState<ExtraTool>(() => resolveExtraTool(tool));
   const subject = resolveSubject(searchParams.get("subject"));
-  const category = resolveCategory(searchParams.get("tool"));
+  const category = resolveCategory(tool);
+  const apTask = resolveApTask(searchParams, tool);
+  const englishTask = resolveEnglishTask(searchParams);
+  const codingTask = resolveCodingTask(searchParams);
 
   useEffect(() => {
     const fromUrl = searchParams.get("tool");
@@ -100,7 +151,13 @@ function ToolboxContent() {
       </div>
 
       {extra === "ai" ? (
-        <UnifiedAiPanel defaultCategory={category} defaultSubject={subject} />
+        <UnifiedAiPanel
+          defaultCategory={category}
+          defaultSubject={subject}
+          defaultApTask={apTask}
+          defaultEnglishTask={englishTask}
+          defaultCodingTask={codingTask}
+        />
       ) : null}
       {extra === "calculator" ? <TICalculator /> : null}
       {extra === "grapher" ? <TIGrapher /> : null}
