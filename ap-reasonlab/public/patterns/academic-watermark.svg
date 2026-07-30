@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="360" viewBox="0 0 480 360">
+  <defs>
+    <style>
+      .g { fill: none; stroke: #1e3a5f; stroke-width: 1.2; opacity: 0.55; }
+      .t { fill: #1e3a5f; font-family: "Times New Roman", Georgia, serif; opacity: 0.5; }
+    </style>
+  </defs>
+  <!-- Graph paper lattice -->
+  <g class="g" opacity="0.28">
+    <path d="M40 40h400M40 80h400M40 120h400M40 160h400M40 200h400M40 240h400M40 280h400M40 320h400"/>
+    <path d="M40 40v280M80 40v280M120 40v280M160 40v280M200 40v280M240 40v280M280 40v280M320 40v280M360 40v280M400 40v280M440 40v280"/>
+  </g>
+  <!-- Academic glyphs / light print -->
+  <text class="t" x="56" y="72" font-size="22">AP</text>
+  <text class="t" x="120" y="78" font-size="16">+ f(x) dx</text>
+  <text class="t" x="280" y="70" font-size="18">£</text>
+  <text class="t" x="320" y="74" font-size="14">À · 2</text>
+  <text class="t" x="60" y="140" font-size="15">”x ’ 0</text>
+  <text class="t" x="200" y="148" font-size="17">E = mc²</text>
+  <text class="t" x="340" y="142" font-size="14">F = ma</text>
+  <text class="t" x="70" y="210" font-size="13">lim</text>
+  <text class="t" x="110" y="220" font-size="16">y/x</text>
+  <text class="t" x="240" y="215" font-size="15">¸ · Æ</text>
+  <text class="t" x="340" y="222" font-size="14">. B · dl</text>
+  <text class="t" x="80" y="280" font-size="14">CED</text>
+  <text class="t" x="160" y="286" font-size="13">FRQ</text>
+  <text class="t" x="240" y="282" font-size="15">¼ ± Ã</text>
+  <text class="t" x="340" y="288" font-size="13">H€</text>
+  <!-- Seal rings -->
+  <circle class="g" cx="400" cy="300" r="28"/>
+  <circle class="g" cx="400" cy="300" r="18"/>
+  <text class="t" x="388" y="305" font-size="11">KE</text>
+  <circle class="g" cx="90" cy="300" r="22"/>
+  <text class="t" x="78" y="305" font-size="10">AP</text>
+</svg>

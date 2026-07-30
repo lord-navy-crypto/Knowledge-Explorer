@@ -89,13 +89,15 @@ export default function Nav() {
   );
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-[var(--ke-border)] bg-[rgba(255,252,247,0.92)] backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
-        <Link href="/" className="flex shrink-0 items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-xs font-bold text-white">
+        <Link href="/" className="flex shrink-0 items-center gap-2.5">
+          <span className="flex h-8 w-8 items-center justify-center rounded border border-[var(--ke-border-strong)] bg-[var(--ke-navy)] font-display text-[11px] font-bold tracking-wide text-[#f7f4ee]">
             {brand.shortName}
           </span>
-          <span className="text-lg font-bold text-slate-900">{brand.name}</span>
+          <span className="font-display text-lg font-semibold tracking-tight text-[var(--ke-ink)]">
+            {brand.name}
+          </span>
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex" aria-label="Primary">
