@@ -13,6 +13,7 @@ import {
   saveToolboxPanelPrefs,
   type ToolboxCategory,
 } from "@/lib/ai-toolbox-prefs";
+import { takeToolboxPrefill } from "@/lib/ai-toolbox-prefill";
 
 type Category = ToolboxCategory;
 
@@ -214,6 +215,9 @@ export default function UnifiedAiPanel({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [siteSearchNote, setSiteSearchNote] = useState("");
+  const [siteHits, setSiteHits] = useState<Array<{ title: string; href: string; subject?: string }>>(
+    []
+  );
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const chatRef = useRef<HTMLDivElement>(null);
 
@@ -248,6 +252,11 @@ export default function UnifiedAiPanel({
       setCodingTask(defaultCodingTask as CodingTask);
     }
   }, [defaultCodingTask]);
+
+  useEffect(() => {
+    const prefill = takeToolboxPrefill();
+    if (prefill) setInput(prefill);
+  }, []);
 
   useEffect(() => {
     saveToolboxPanelPrefs({
@@ -291,10 +300,11 @@ export default function UnifiedAiPanel({
   ) {
     await ensureLocalReady();
     // Search the latest question only — history pollutes keyword retrieval.
-    const { context, note, hitCount } = await fetchAiSiteContext(
+    const { context, note, hitCount, hits } = await fetchAiSiteContext(
       user,
       localAI.siteSearchEnabled
     );
+    setSiteHits(hits);
     setSiteSearchNote(
       localAI.siteSearchEnabled
         ? note || (hitCount ? `Using ${hitCount} site hit(s).` : "No site matches.")
@@ -667,7 +677,23 @@ export default function UnifiedAiPanel({
           <strong>Always search Knowledge Explorer</strong> on so AI teaches from site materials.
         </p>
         {siteSearchNote ? (
-          <p className="mt-2 text-xs font-medium text-emerald-800">{siteSearchNote}</p>
+          <div className="mt-2 space-y-1">
+            <p className="text-xs font-medium text-emerald-800">{siteSearchNote}</p>
+            {siteHits.length > 0 ? (
+              <ul className="flex flex-wrap gap-2">
+                {siteHits.slice(0, 6).map((hit) => (
+                  <li key={hit.href}>
+                    <a
+                      href={hit.href}
+                      className="rounded-md border border-emerald-200 bg-emerald-50/80 px-2 py-0.5 text-[10px] font-medium text-emerald-900 hover:underline"
+                    >
+                      {hit.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
         ) : null}
       </div>
 

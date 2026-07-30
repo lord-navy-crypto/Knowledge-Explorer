@@ -6,6 +6,7 @@ import { ROOT_SPACE, normalizeSpace } from "@/lib/storage-space";
 import { useEditorMode } from "@/components/EditorModeProvider";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
 import { readResponseJson } from "@/lib/safe-json";
+import { sortNotesWithAi } from "@/lib/structure-concept-client";
 
 export type ChangeMode =
   | "concept"
@@ -168,34 +169,13 @@ export default function ChangePanel({
     setStructuringKey(key);
     setError("");
     try {
-      const res = await fetch("/api/structure-concept", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: row.title.trim(),
-          area: subject.trim(),
-          subject: subject.trim(),
-          content: row.content,
-        }),
+      const { formatted, note: sortNote } = await sortNotesWithAi({
+        name: row.title.trim(),
+        area: subject.trim(),
+        content: row.content,
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Structure failed");
-      const keyPoints = Array.isArray(data.keyPoints) ? data.keyPoints : [];
-      const mistakes = Array.isArray(data.commonMistakes) ? data.commonMistakes : [];
-      const formatted = [
-        String(data.summary || "").trim(),
-        keyPoints.length
-          ? `\n\n**Key points**\n${keyPoints.map((p: string) => `- ${p}`).join("\n")}`
-          : "",
-        mistakes.length
-          ? `\n\n**Common mistakes**\n${mistakes.map((p: string) => `- ${p}`).join("\n")}`
-          : "",
-        data.example ? `\n\n**Example**\n${String(data.example).trim()}` : "",
-      ]
-        .filter(Boolean)
-        .join("");
       updateEntry(key, { content: formatted.trim() });
-      setNote(data.note || "Notes sorted — review every field before saving.");
+      setNote(sortNote);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Structure failed");
     } finally {

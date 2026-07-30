@@ -11,6 +11,7 @@ import {
   type BulkDraftEntry,
 } from "@/lib/bulk-draft-rows";
 import { readResponseJson } from "@/lib/safe-json";
+import { sortNotesWithAi } from "@/lib/structure-concept-client";
 
 type ContentType = "concept" | "formula" | "practice" | "document" | "file" | "image" | "folder";
 
@@ -62,6 +63,7 @@ export default function UnifiedAddContent({
   const [fileNote, setFileNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [structuringKey, setStructuringKey] = useState("");
 
   const bulkMode = BULK_TYPES.includes(type);
 
@@ -140,7 +142,13 @@ export default function UnifiedAddContent({
         if (cleaned.length === 0) throw new Error("Add at least one row.");
         for (const row of cleaned) {
           if (!row.title) throw new Error("Each row needs a title.");
-          if (type !== "folder" && !row.content) throw new Error("Each row needs content.");
+          if (type === "practice") {
+            if (!row.content && !row.note) {
+              throw new Error("Each practice set needs a description or first question.");
+            }
+          } else if (type !== "folder" && !row.content) {
+            throw new Error("Each row needs content.");
+          }
         }
 
         if (type === "practice") {
@@ -149,9 +157,12 @@ export default function UnifiedAddContent({
             title: row.title,
             subject: subjectLabel,
             description: row.content.slice(0, 4_000),
-            firstPrompt: row.content,
-            estimatedMinutes: 25,
-            generationNote: `Added from Manage · ${new Date().toISOString().slice(0, 10)}`,
+            firstPrompt: row.note.trim() || row.content,
+            estimatedMinutes: Number(row.minutes || "20") || 20,
+            generationNote:
+              row.generationNote?.trim() ||
+              `Added from Manage · ${new Date().toISOString().slice(0, 10)}`,
+            difficultyTier: Number(row.difficultyTier || "2") || 2,
             hint: "Attempt before asking for more hints.",
           }));
         } else if (type === "folder") {
@@ -222,6 +233,28 @@ export default function UnifiedAddContent({
       setMessage(error instanceof Error ? error.message : "Save failed");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function structureEntry(key: string) {
+    const row = entries.find((entry) => entry.key === key);
+    if (!row?.content.trim()) return;
+    setStructuringKey(key);
+    setMessage("");
+    try {
+      const result = await sortNotesWithAi({
+        name: row.title.trim() || "Concept",
+        area: chosenSubject.name || chosenSubject.id,
+        content: row.content,
+      });
+      setEntries((prev) =>
+        prev.map((entry) => (entry.key === key ? { ...entry, content: result.formatted } : entry))
+      );
+      setMessage(result.note);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Structure failed");
+    } finally {
+      setStructuringKey("");
     }
   }
 
@@ -332,20 +365,30 @@ export default function UnifiedAddContent({
                   variant={type === "concept" ? "concept" : type}
                   entries={entries}
                   onChange={setEntries}
+                  onStructureConcept={type === "concept" ? (key) => void structureEntry(key) : undefined}
+                  structuringKey={structuringKey}
                 />
-                {entries.some((row) => row.title.trim() && row.content.trim()) ? (
+                {entries.some((row) => row.title.trim() && (row.content.trim() || row.note.trim())) ? (
                   <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                       Live preview before save
                     </p>
                     {entries
-                      .filter((row) => row.title.trim() && row.content.trim())
+                      .filter((row) => row.title.trim() && (row.content.trim() || row.note.trim()))
                       .map((row) => (
                         <div key={`preview-${row.key}`} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
                           <h3 className="text-base font-semibold text-slate-900">{row.title.trim()}</h3>
+                          {type === "practice" && row.note.trim() ? (
+                            <p className="mt-1 text-xs text-slate-500">First question preview below description</p>
+                          ) : null}
                           <div className="mt-2">
-                            <RichContent className="text-sm">{row.content}</RichContent>
+                            <RichContent className="text-sm">{row.content || row.note}</RichContent>
                           </div>
+                          {type === "practice" && row.note.trim() && row.content.trim() ? (
+                            <div className="mt-3 border-t border-slate-200 pt-3">
+                              <RichContent className="text-sm">{row.note}</RichContent>
+                            </div>
+                          ) : null}
                         </div>
                       ))}
                   </div>

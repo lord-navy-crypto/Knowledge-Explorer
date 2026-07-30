@@ -1,10 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import EthicsBanner from "@/components/EthicsBanner";
 import LocalAIControls from "@/components/LocalAIControls";
+import VoiceInputButton from "@/components/VoiceInputButton";
 import RichContent from "@/components/RichContent";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
+import { toolboxHref } from "@/lib/ai-toolbox-url";
+import { stashToolboxPrefill } from "@/lib/ai-toolbox-prefill";
 import { useLocalAI } from "@/components/LocalAIProvider";
 import { appendAiSiteContext, fetchAiSiteContext } from "@/lib/ai-site-context";
 
@@ -114,6 +118,32 @@ export default function ConceptAskAi({
       </div>
       <EthicsBanner />
       <LocalAIControls />
+      <p className="text-xs text-slate-500">
+        Prefer the full dialogue?{" "}
+        <Link
+          href={toolboxHref({ apTask: "concept", subject: defaultSubject })}
+          className="font-medium text-brand-700 underline"
+          onClick={() =>
+            stashToolboxPrefill(
+              `Concept: ${conceptTitle}\n${conceptSummary}\n\nExplain this concept for AP study.`
+            )
+          }
+        >
+          Open in AI Toolbox
+        </Link>
+        {" · "}
+        <Link
+          href={toolboxHref({ apTask: "generate-questions", subject: defaultSubject })}
+          className="font-medium text-brand-700 underline"
+          onClick={() =>
+            stashToolboxPrefill(
+              `Generate original practice questions for: ${conceptTitle}. Hints only, no final answers.`
+            )
+          }
+        >
+          Generate practice
+        </Link>
+      </p>
       <div className="flex flex-wrap gap-2">
         <button type="button" className="btn-primary" disabled={loading} onClick={() => run("explain")}>
           {loading && mode === "explain" ? "Explaining…" : "Explain"}
@@ -123,6 +153,21 @@ export default function ConceptAskAi({
         </button>
       </div>
       <div className="space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs font-medium text-slate-600">Follow-up question</p>
+          <VoiceInputButton
+            disabled={loading}
+            onTranscript={(text, isFinal) => {
+              setQuestion((prev) => {
+                if (!prev.trim() || isFinal) {
+                  const spacer = prev.trim() && isFinal ? (prev.endsWith(" ") ? "" : " ") : "";
+                  return `${prev}${spacer}${text}`.trimStart();
+                }
+                return `${prev.replace(/\s+$/, "")} ${text}`.trim();
+              });
+            }}
+          />
+        </div>
         <MarkdownLatexField
           label="Or ask a follow-up (must stay on this concept)"
           help="Markdown + LaTeX supported when you paste a math question."

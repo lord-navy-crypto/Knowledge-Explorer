@@ -16,11 +16,22 @@ type DeveloperAction =
   | "tone"
   | "faq"
   | "latex"
-  | "site_advice";
+  | "site_advice"
+  | "practice_hints"
+  | "practice_polish"
+  | "practice_note";
 
 type EditableTarget = {
   key: string;
-  target: "content_item" | "concept" | "formula" | "document" | "folder" | "subject";
+  target:
+    | "content_item"
+    | "concept"
+    | "formula"
+    | "document"
+    | "folder"
+    | "subject"
+    | "questionnaire"
+    | "questionnaire_item";
   id: string;
   field: string;
   label: string;
@@ -70,6 +81,24 @@ const ACTIONS: Array<{ value: DeveloperAction; label: string; instruction: strin
     instruction:
       "Give specific, prioritized website-content or usability recommendations based on the source.",
   },
+  {
+    value: "practice_hints",
+    label: "Generate hints (practice item)",
+    instruction:
+      "Write 2–4 strategy hints as a Markdown bullet list. Never reveal the final answer, numeric result, or letter choice.",
+  },
+  {
+    value: "practice_polish",
+    label: "Polish question prompt",
+    instruction:
+      "Improve clarity and AP-style wording of this practice question. Do not add or reveal the answer.",
+  },
+  {
+    value: "practice_note",
+    label: "Write generation note",
+    instruction:
+      "Write a short generation note explaining how this practice set was produced (prompt, date, review status).",
+  },
 ];
 
 function editableTargets(data: Partial<ManagedContent>): EditableTarget[] {
@@ -116,6 +145,39 @@ function editableTargets(data: Partial<ManagedContent>): EditableTarget[] {
   (data.subjects || []).forEach((item) => {
     add("subject", item.id, "description", `Subject · ${item.name} · description`, item.description || "");
     add("subject", item.id, "name", `Subject · ${item.name} · name`, item.name);
+  });
+  (data.questionnaires || []).forEach((set) => {
+    add("questionnaire", set.id, "title", `Practice · ${set.title} · title`, set.title);
+    add(
+      "questionnaire",
+      set.id,
+      "description",
+      `Practice · ${set.title} · description`,
+      set.description
+    );
+    add(
+      "questionnaire",
+      set.id,
+      "generationNote",
+      `Practice · ${set.title} · generation note`,
+      set.generationNote
+    );
+    (set.items || []).forEach((item, index) => {
+      add(
+        "questionnaire_item",
+        `${set.id}|${item.id}`,
+        "prompt",
+        `Practice · ${set.title} · Q${index + 1} prompt`,
+        item.prompt
+      );
+      add(
+        "questionnaire_item",
+        `${set.id}|${item.id}`,
+        "hints",
+        `Practice · ${set.title} · Q${index + 1} hints`,
+        (item.hints || []).join("\n")
+      );
+    });
   });
   return rows;
 }

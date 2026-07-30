@@ -7,6 +7,7 @@ import type { Questionnaire } from "@/lib/types";
 import { loadManagedContent } from "@/lib/managed-store";
 import RichContent, { FormulaMath } from "@/components/RichContent";
 import ConceptAskAi from "@/components/ConceptAskAi";
+import ConceptAiLinks from "@/components/ConceptAiLinks";
 
 export default async function ConceptDetailPage({
   params,
@@ -33,9 +34,7 @@ export default async function ConceptDetailPage({
         <Link href="/concepts" className="text-sm text-brand-600 hover:underline">
           ← Back to concepts
         </Link>
-        <Link href="/hints" className="text-sm text-brand-600 hover:underline">
-          Open AI Toolbox →
-        </Link>
+        <ConceptAiLinks subject={concept.subject} title={concept.title} />
       </div>
 
       <section className="card space-y-4">
