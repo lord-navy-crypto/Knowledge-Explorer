@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getAnyGuideById } from "@/lib/ai-for-ap-guides";
 import { toolboxLinkForGuide } from "@/lib/ai-for-ap-guides";
 import { toolboxHref } from "@/lib/ai-toolbox-url";
+import GuideToolboxActions from "@/components/GuideToolboxActions";
 import RichContent from "@/components/RichContent";
 
 const categoryLabel = {
@@ -72,6 +73,14 @@ export default async function KeyConceptDetailPage({
           ))}
         </ul>
       </section>
+
+      {guide.category === "ai_for_ap" ? (
+        <GuideToolboxActions
+          subject={guide.subject}
+          guideId={guide.id}
+          prompts={guide.howToUseAI}
+        />
+      ) : null}
 
       <section className="space-y-4">
         <h2 className="text-lg font-semibold">Key concept questions</h2>

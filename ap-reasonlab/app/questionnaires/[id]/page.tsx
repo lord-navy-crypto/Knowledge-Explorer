@@ -116,7 +116,7 @@ export default function QuestionnaireDetailPage() {
   const isManaged = quiz.id.startsWith("m-quiz");
 
   return (
-    <div className="space-y-6">
+    <div className="practice-exam-page space-y-6">
       <Link
         href={`/practice?subject=${encodeURIComponent(quiz.subject)}`}
         className="text-sm font-medium text-brand-600 hover:underline"
@@ -124,11 +124,12 @@ export default function QuestionnaireDetailPage() {
         ← {quiz.subject} practice
       </Link>
 
-      <section className="card space-y-3 border-violet-100 bg-gradient-to-br from-white to-violet-50/30">
+      <section className="card practice-exam-header space-y-3 border-violet-100 bg-gradient-to-br from-white to-violet-50/30">
         <div className="flex flex-wrap gap-2">
           <span className="badge">{quiz.subject}</span>
           <span className="badge-generated">AI GENERATED</span>
           <span className="badge">~{quiz.estimatedMinutes} min</span>
+          {quiz.difficultyTier ? <span className="badge">Tier {quiz.difficultyTier}</span> : null}
           {isManaged && <span className="badge">UI-added</span>}
         </div>
         <h1 className="text-3xl font-bold">{quiz.title}</h1>

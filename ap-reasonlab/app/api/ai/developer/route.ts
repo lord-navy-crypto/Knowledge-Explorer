@@ -21,7 +21,9 @@ type EditableTarget =
   | "formula"
   | "document"
   | "folder"
-  | "subject";
+  | "subject"
+  | "questionnaire"
+  | "questionnaire_item";
 
 const TARGET_FIELDS: Record<EditableTarget, readonly string[]> = {
   content_item: ["title", "content"],
@@ -30,10 +32,21 @@ const TARGET_FIELDS: Record<EditableTarget, readonly string[]> = {
   document: ["title", "content"],
   folder: ["title", "note"],
   subject: ["name", "description"],
+  questionnaire: ["title", "description", "generationNote"],
+  questionnaire_item: ["prompt", "hints"],
 };
 
 function isEditableTarget(value: string): value is EditableTarget {
   return Object.prototype.hasOwnProperty.call(TARGET_FIELDS, value);
+}
+
+function findQuestionnaireItem(content: ManagedContent, compositeId: string) {
+  const [setId, itemId] = compositeId.split("|");
+  const set = content.questionnaires.find((entry) => entry.id === setId);
+  if (!set) return null;
+  const item = set.items.find((entry) => entry.id === itemId);
+  if (!item) return null;
+  return { set, item };
 }
 
 function findTarget(content: ManagedContent, target: EditableTarget, id: string) {
@@ -42,7 +55,37 @@ function findTarget(content: ManagedContent, target: EditableTarget, id: string)
   if (target === "formula") return content.formulas.find((item) => item.id === id);
   if (target === "document") return content.documents.find((item) => item.id === id);
   if (target === "folder") return content.folders.find((item) => item.id === id);
+  if (target === "questionnaire") return content.questionnaires.find((item) => item.id === id);
+  if (target === "questionnaire_item") return findQuestionnaireItem(content, id)?.item;
   return content.subjects.find((item) => item.id === id);
+}
+
+function readFieldValue(
+  target: EditableTarget,
+  item: Record<string, unknown>,
+  field: string
+): string {
+  if (target === "questionnaire_item" && field === "hints") {
+    const hints = item.hints;
+    return Array.isArray(hints) ? hints.map((hint) => String(hint)).join("\n") : "";
+  }
+  return String(item[field] ?? "");
+}
+
+function writeFieldValue(
+  target: EditableTarget,
+  item: Record<string, unknown>,
+  field: string,
+  proposal: string
+) {
+  if (target === "questionnaire_item" && field === "hints") {
+    item.hints = proposal
+      .split(/\n+/)
+      .map((line) => line.replace(/^[-*•]\s*/, "").trim())
+      .filter(Boolean);
+    return;
+  }
+  item[field] = proposal;
 }
 
 export async function POST(req: NextRequest) {
@@ -68,9 +111,15 @@ export async function POST(req: NextRequest) {
         );
       }
 
+      const practiceGuard =
+        action.startsWith("practice_") || action === "practice_hints" || action === "practice_polish"
+          ? " For practice content: hints only — never output final answers, numeric results, or letter choices."
+          : "";
+
       const result = await runChatJson({
         system:
-          "You are Knowledge Explorer AI Developer, a content-only website manager assistant. Preserve facts, valid Markdown, Unicode, and LaTeX. Never propose or output secrets, authentication changes, API keys, payment code, database migrations, deployment configuration, or arbitrary server-file edits. Return JSON with proposal and summary. The proposal must contain only the replacement content, not commentary.",
+          "You are Knowledge Explorer AI Developer, a content-only website manager assistant. Preserve facts, valid Markdown, Unicode, and LaTeX. Never propose or output secrets, authentication changes, API keys, payment code, database migrations, deployment configuration, or arbitrary server-file edits. Return JSON with proposal and summary. The proposal must contain only the replacement content, not commentary." +
+          practiceGuard,
         user: appendAiSiteContext(
           `Operation: ${action}
 Additional instruction: ${instruction || "(none)"}
@@ -123,7 +172,7 @@ Return {"proposal":"...","summary":"one short description of the proposed change
       const item = findTarget(current, target, id) as Record<string, unknown> | undefined;
       if (!item) return NextResponse.json({ error: "Selected website item no longer exists." }, { status: 404 });
 
-      const liveValue = String(item[field] ?? "");
+      const liveValue = readFieldValue(target, item, field);
       if (liveValue !== original) {
         return NextResponse.json(
           {
@@ -134,7 +183,7 @@ Return {"proposal":"...","summary":"one short description of the proposed change
         );
       }
 
-      item[field] = proposal;
+      writeFieldValue(target, item, field, proposal);
       if ("updatedAt" in item) item.updatedAt = Date.now();
       if (target === "concept") {
         const topic = current.topics.find((entry) => entry.id === id);

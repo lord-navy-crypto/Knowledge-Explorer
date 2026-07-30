@@ -158,7 +158,9 @@ function SubjectWorkspaceContent() {
     if (key === "practice") {
       return `/practice?subject=${encodeURIComponent(subjectName)}`;
     }
-    if (key === "hints") return `/hints?subject=${encodeURIComponent(subjectName)}`;
+    if (key === "hints") {
+      return `/hints?subject=${encodeURIComponent(subjectName)}&apTask=advice`;
+    }
     return `#${key}`;
   };
 

@@ -372,6 +372,7 @@ export async function POST(req: NextRequest) {
         if (!found) return NextResponse.json({ error: "Practice set not found" }, { status: 404 });
         if (update.title !== undefined) found.title = text(update.title, 160);
         if (update.description !== undefined) found.description = text(update.description, 20_000);
+        if (update.generationNote !== undefined) found.generationNote = text(update.generationNote, 2_000);
       } else if (target === "subject") {
         const found = current.subjects.find((entry) => entry.id === id);
         if (!found) return NextResponse.json({ error: "Subject not found" }, { status: 404 });
@@ -715,6 +716,10 @@ export async function POST(req: NextRequest) {
           estimatedMinutes: Number(item.estimatedMinutes) || 20,
           tags: Array.isArray(item.tags) ? item.tags.map(String) : ["generated", "managed"],
           items: quizItems,
+          difficultyTier:
+            item.difficultyTier !== undefined
+              ? (Number(item.difficultyTier) as 1 | 2 | 3)
+              : undefined,
         });
       }
     } else if (action === "add_questionnaire_item") {

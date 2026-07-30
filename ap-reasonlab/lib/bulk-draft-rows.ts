@@ -6,6 +6,9 @@ export type BulkDraftEntry = {
   content: string;
   note: string;
   category: string;
+  generationNote?: string;
+  minutes?: string;
+  difficultyTier?: string;
 };
 
 export function blankBulkDraftEntry(): BulkDraftEntry {
@@ -15,6 +18,9 @@ export function blankBulkDraftEntry(): BulkDraftEntry {
     content: "",
     note: "",
     category: "Uploaded",
+    generationNote: "",
+    minutes: "20",
+    difficultyTier: "2",
   };
 }
 

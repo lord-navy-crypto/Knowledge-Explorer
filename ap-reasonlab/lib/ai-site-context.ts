@@ -12,13 +12,18 @@ export { appendAiSiteContext, formatAiSiteSearchContext, searchKnowledgeExplorer
 export async function fetchAiSiteContext(
   query: string,
   enabled = true
-): Promise<{ context: string; note: string; hitCount: number }> {
+): Promise<{
+  context: string;
+  note: string;
+  hitCount: number;
+  hits: Array<{ title: string; href: string; subject?: string }>;
+}> {
   if (!enabled) {
-    return { context: "", note: "Site search off.", hitCount: 0 };
+    return { context: "", note: "Site search off.", hitCount: 0, hits: [] };
   }
   const searchQuery = extractAiSearchQuery(query);
   if (searchQuery.length < 2) {
-    return { context: "", note: "Query too short for site search.", hitCount: 0 };
+    return { context: "", note: "Query too short for site search.", hitCount: 0, hits: [] };
   }
   try {
     const response = await fetch("/api/ai/site-search", {
@@ -32,6 +37,7 @@ export async function fetchAiSiteContext(
         context: "",
         note: String(data.error || "Site search failed."),
         hitCount: 0,
+        hits: [],
       };
     }
     const hits = Array.isArray(data.hits) ? data.hits : [];
@@ -39,8 +45,13 @@ export async function fetchAiSiteContext(
       context: String(data.context || ""),
       note: String(data.note || ""),
       hitCount: hits.length,
+      hits: hits.map((hit: { title?: string; href?: string; subject?: string }) => ({
+        title: String(hit.title || "Site page"),
+        href: String(hit.href || "/"),
+        subject: hit.subject ? String(hit.subject) : undefined,
+      })),
     };
   } catch {
-    return { context: "", note: "Site search unavailable.", hitCount: 0 };
+    return { context: "", note: "Site search unavailable.", hitCount: 0, hits: [] };
   }
 }

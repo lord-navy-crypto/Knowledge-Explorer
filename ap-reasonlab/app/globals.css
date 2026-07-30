@@ -210,6 +210,34 @@ body {
   transform: translateY(-1px);
 }
 
+/* Practice set reading page — exam paper feel */
+.practice-exam-page {
+  position: relative;
+}
+
+.practice-exam-page::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: -1rem -0.5rem auto;
+  height: 12rem;
+  opacity: 0.22;
+  background-image: var(--ke-watermark);
+  background-size: 520px 520px;
+  background-position: center top;
+  z-index: 0;
+}
+
+.practice-exam-header {
+  position: relative;
+  z-index: 1;
+}
+
+.practice-exam-page .card {
+  position: relative;
+  z-index: 1;
+}
+
 .directory-link {
   @apply flex items-start gap-3 rounded-lg px-3 py-3 transition duration-300;
   border: 1px solid transparent;
