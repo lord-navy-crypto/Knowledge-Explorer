@@ -1289,6 +1289,20 @@
         "managed"
       ],
       "items": []
+    },
+    {
+      "id": "m-quiz-ms78t0ll-8p1bb",
+      "title": "FLUID MECHANICS — FREE-RESPONSE QUESTION 3",
+      "subject": "AP Physics 1",
+      "kind": "generated",
+      "description": "# AP PHYSICS 1\n## FLUID MECHANICS — FREE-RESPONSE QUESTION 3\n\n**Suggested Time: 20 Minutes**\n\nWater flows steadily through a pipe. At point 1, the pipe has cross-sectional area $A_1$, the water speed is $v_1$, the pressure is $P_1$, and the vertical position is $y_1$.\n\nAt point 2, the pipe has cross-sectional area $A_2$, the water speed is $v_2$, the pressure is $P_2$, and the vertical position is $y_2$.\n\nAssume that the water is incompressible and nonviscous.\n\n### (a)\n\nStarting with conservation of mass, derive an expression for $v_2$ in terms of $A_1$, $A_2$, and $v_1$.\n\n### (b)\n\nStarting with conservation of mechanical energy for the fluid, derive an expression for $P_2$ in terms of $P_1$, $\\rho$, $v_1$, $v_2$, $g$, $y_1$, and $y_2$.\n\n### (c)\n\nPoint 2 is higher than point 1, and $A_2$ is smaller than $A_1$.\n\n**i.** Explain why the water speed at point 2 is greater than the water speed at point 1.\n\n**ii.** Based only on the fact that point 2 is higher and narrower, can one conclude that $P_2<P_1$ under the stated ideal-fluid assumptions? Explain.\n\n### (d)\n\nThe pipe is horizontal, and the radius at point 2 is half the radius at point 1.\n\n**i.** Determine the ratio $\\frac{v_2}{v_1}$.\n\n**ii.** Derive an expression for $P_1-P_2$ in terms of $\\rho$ and $v_1$.\n\n### (e)\n\nPressure sensors are placed at several locations along a horizontal pipe whose cross-sectional area gradually decreases.\n\nSketch a possible graph of water speed $v$ and static pressure $P$ as functions of position $x$.\n\n### (f)\n\nIn a real pipe, viscosity cannot be neglected. The measured pressure at point 2 is lower than the value predicted by the ideal-fluid model.\n\nExplain why viscosity can cause this difference in terms of energy transfer.\n\n---\n\n# QUICK ANSWER KEY\n\n### (a)\n\nFor a time interval $\\Delta t$, the volume entering point 1 is\n\n$\\Delta V_1=A_1v_1\\Delta t$\n\nThe volume leaving point 2 is\n\n$\\Delta V_2=A_2v_2\\Delta t$\n\nFor steady incompressible flow,\n\n$\\Delta V_1=\\Delta V_2$\n\nTherefore,\n\n$A_1v_1\\Delta t=A_2v_2\\Delta t$\n\nCanceling $\\Delta t$ gives\n\n$A_1v_1=A_2v_2$\n\nTherefore,\n\n$v_2=\\frac{A_1}{A_2}v_1$\n\n### (b)\n\nBernoulli’s equation gives\n\n$P_1+\\frac12\\rho v_1^2+\\rho gy_1\n=\nP_2+\\frac12\\rho v_2^2+\\rho gy_2$\n\nSolving for $P_2$ gives\n\n$P_2\n=\nP_1\n+\\frac12\\rho(v_1^2-v_2^2)\n+\\rho g(y_1-y_2)$\n\n### (c)\n\n**i.**\n\nContinuity requires\n\n$A_1v_1=A_2v_2$\n\nSince\n\n$A_2<A_1$\n\nthe speed must satisfy\n\n$v_2>v_1$\n\nto maintain the same volume flow rate.\n\n**ii.**\n\nUnder the stated assumptions, yes.\n\nFrom Bernoulli’s equation,\n\n$P_2-P_1\n=\n\\frac12\\rho(v_1^2-v_2^2)\n+\\rho g(y_1-y_2)$\n\nSince\n\n$v_2>v_1$\n\nthe first term is negative.\n\nSince\n\n$y_2>y_1$\n\nthe second term is also negative.\n\nTherefore,\n\n$P_2-P_1<0$\n\nand thus\n\n$P_2<P_1$\n\nThis conclusion may fail in a real system containing a pump, turbine, significant viscosity, or other external energy transfer.\n\n### (d)\n\n**i.**\n\nThe circular cross-sectional area is\n\n$A=\\pi r^2$\n\nIf\n\n$r_2=\\frac12r_1$\n\nthen\n\n$A_2=\\pi\\left(\\frac12r_1\\right)^2\n=\n\\frac14A_1$\n\nUsing continuity,\n\n$A_1v_1=A_2v_2$\n\nTherefore,\n\n$A_1v_1=\\frac14A_1v_2$\n\nso\n\n$v_2=4v_1$\n\nThus,\n\n$\\frac{v_2}{v_1}=4$\n\n**ii.**\n\nFor a horizontal pipe,\n\n$y_1=y_2$\n\nBernoulli’s equation becomes\n\n$P_1+\\frac12\\rho v_1^2\n=\nP_2+\\frac12\\rho v_2^2$\n\nTherefore,\n\n$P_1-P_2\n=\n\\frac12\\rho(v_2^2-v_1^2)$\n\nUsing\n\n$v_2=4v_1$\n\ngives\n\n$P_1-P_2\n=\n\\frac12\\rho(16v_1^2-v_1^2)$\n\nTherefore,\n\n$P_1-P_2=\\frac{15}{2}\\rho v_1^2$\n\n### (e)\n\nAs the cross-sectional area decreases, continuity requires the speed to increase:\n\n$v=\\frac{Q}{A}$\n\nTherefore, the speed-versus-position graph should generally rise through the narrowing section.\n\nFor horizontal ideal flow,\n\n$P+\\frac12\\rho v^2=\\text{constant}$\n\nAs $v$ increases, $P$ decreases.\n\nTherefore, the pressure-versus-position graph should generally fall through the narrowing section.\n\nThe exact graph shapes depend on how $A$ varies with $x$.\n\n### (f)\n\nThe ideal Bernoulli equation assumes no mechanical-energy loss.\n\nIn a real fluid, viscosity produces friction:\n\n- between neighboring fluid layers;\n- between the fluid and the pipe wall.\n\nThis converts organized mechanical energy into internal thermal energy.\n\nA more complete energy equation includes a loss term:\n\n$P_1+\\frac12\\rho v_1^2+\\rho gy_1\n=\nP_2+\\frac12\\rho v_2^2+\\rho gy_2\n+\\text{energy loss per unit volume}$\n\nTherefore, the downstream pressure can be lower than the ideal prediction.",
+      "generationNote": "Added via change-code UI · 2026-07-30",
+      "estimatedMinutes": 20,
+      "tags": [
+        "generated",
+        "managed"
+      ],
+      "items": []
     }
   ],
   "topics": [
@@ -1387,5 +1401,5 @@
   "settings": {
     "advancedDefault": true
   },
-  "updatedAt": 1785399293224
+  "updatedAt": 1785399569809
 }
