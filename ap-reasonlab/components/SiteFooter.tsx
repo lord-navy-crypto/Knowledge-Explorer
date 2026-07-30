@@ -4,9 +4,9 @@ import { footerDisclaimerShort } from "@/data/disclaimer";
 
 export default function SiteFooter() {
   return (
-    <footer className="border-t border-slate-200 bg-white">
+    <footer className="relative z-[1] border-t border-[var(--ke-border)] bg-[rgba(255,252,247,0.88)]">
       <div className="mx-auto max-w-6xl space-y-3 px-4 py-8 text-center text-sm text-slate-500">
-        <p className="font-medium text-slate-700">
+        <p className="font-display font-medium text-[var(--ke-ink)]">
           {brand.name} — Academic box & platform. Tutor, not solver.
         </p>
         <p className="mx-auto max-w-3xl text-xs leading-relaxed text-slate-500">

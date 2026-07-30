@@ -48,53 +48,41 @@ const boxes = [
 
 export default function HomePage() {
   return (
-    <div className="space-y-10">
-      <section className="hero-gradient overflow-hidden rounded-2xl px-6 py-10 text-white shadow-xl md:px-10">
-        <span className="inline-block rounded-full bg-white/20 px-3 py-1 text-xs font-semibold tracking-wide">
-          KNOWLEDGE EXPLORER · ACADEMIC BOX & PLATFORM
-        </span>
-        <h1 className="mt-4 max-w-2xl text-4xl font-bold leading-tight">{brand.name}</h1>
-        <p className="mt-4 max-w-xl text-lg text-blue-100">{brand.tagline}</p>
-        <p className="mt-3 max-w-xl text-blue-100/90">{brand.description}</p>
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Link
-            href="/ap"
-            className="rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-brand-700 shadow hover:bg-blue-50"
-          >
-            Open AP box
-          </Link>
-          <Link
-            href="/hints?tool=calculator"
-            className="rounded-xl border border-white/40 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10"
-          >
-            Calculator & Grapher
-          </Link>
-          <Link
-            href="/english"
-            className="rounded-xl border border-white/40 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10"
-          >
-            English Learning
-          </Link>
-          <Link
-            href="/hints"
-            className="rounded-xl border border-white/40 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10"
-          >
-            AI Toolbox
-          </Link>
+    <div className="space-y-12">
+      <section className="hero-gradient relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 min-h-[min(72vh,36rem)] px-6 py-14 text-white md:px-16 md:py-20">
+        <div className="mx-auto max-w-6xl">
+          <p className="font-display text-5xl font-semibold tracking-tight text-[#f7f4ee] md:text-6xl">
+            {brand.name}
+          </p>
+          <h1 className="mt-5 max-w-xl font-display text-2xl font-medium leading-snug text-[#f7f4ee]/90 md:text-3xl">
+            {brand.tagline}
+          </h1>
+          <p className="mt-4 max-w-lg text-base leading-relaxed text-[#f7f4ee]/75">{brand.description}</p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link
+              href="/ap"
+              className="rounded-lg bg-[#f7f4ee] px-5 py-2.5 text-sm font-semibold text-[#152a45] shadow transition hover:bg-white"
+            >
+              Open AP box
+            </Link>
+            <Link
+              href="/hints"
+              className="rounded-lg border border-[#f7f4ee]/35 px-5 py-2.5 text-sm font-semibold text-[#f7f4ee] transition hover:bg-white/10"
+            >
+              AI Toolbox
+            </Link>
+          </div>
         </div>
       </section>
 
       <DisclaimerPanel />
 
-      <section className="rounded-2xl border border-emerald-200 bg-emerald-50/80 px-5 py-4 text-emerald-950 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700">
-          We recommend
-        </p>
-        <p className="mt-1 text-lg font-bold text-emerald-900">{LOCAL_AI_RECOMMENDATION_ZH}</p>
+      <section className="border border-emerald-800/15 bg-emerald-50/70 px-5 py-4 text-emerald-950">
+        <p className="font-display text-lg font-semibold text-emerald-950">{LOCAL_AI_RECOMMENDATION_ZH}</p>
         <p className="mt-2 max-w-2xl text-sm text-emerald-900/85">{LOCAL_AI_RECOMMENDATION_EN}</p>
         <Link
           href="/hints"
-          className="mt-3 inline-flex rounded-xl bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800"
+          className="mt-3 inline-flex rounded-lg bg-emerald-800 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-900"
         >
           Open AI Toolbox · use Local AI
         </Link>
@@ -102,16 +90,21 @@ export default function HomePage() {
 
       <EthicsBanner />
 
-      <section className="space-y-3">
+      <section className="space-y-4">
         <h2 className="section-title">Main boxes</h2>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-1 sm:grid-cols-2">
           {boxes.map((b) => (
-            <Link key={b.href} href={b.href} className="card-hover group flex items-start gap-3">
-              <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-xl">
-                📁
+            <Link key={b.href} href={b.href} className="directory-link relative">
+              <span
+                className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded border border-[var(--ke-border)] bg-[var(--ke-surface)] font-display text-xs font-semibold text-[var(--ke-navy)]"
+                aria-hidden
+              >
+                {b.title.slice(0, 2).toUpperCase()}
               </span>
               <div>
-                <h3 className="text-lg font-semibold group-hover:text-brand-700">{b.title}</h3>
+                <h3 className="font-display text-lg font-semibold text-[var(--ke-ink)] group-hover:text-[var(--ke-navy)]">
+                  {b.title}
+                </h3>
                 <p className="mt-1 text-sm text-slate-600">{b.description}</p>
               </div>
             </Link>
@@ -140,7 +133,7 @@ export default function HomePage() {
               href={c.github}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-3 rounded-xl border border-slate-200 px-3 py-3 hover:border-brand-300"
+              className="directory-link relative !border !border-[var(--ke-border)]"
             >
               {c.avatar ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -161,7 +154,7 @@ export default function HomePage() {
           ))}
           <Link
             href="/partners"
-            className="flex items-center gap-3 rounded-xl border border-dashed border-slate-300 px-3 py-3 hover:border-brand-300"
+            className="directory-link relative border border-dashed !border-[var(--ke-border-strong)]"
           >
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-500">
               +

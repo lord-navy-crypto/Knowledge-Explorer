@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <!-- Crystalline / mineral facet hatch  engraved academic frame feel -->
+  <g fill="none" stroke="#1e3a5f" stroke-width="1" opacity="0.9">
+    <path d="M0 16h64M0 32h64M0 48h64"/>
+    <path d="M16 0v64M32 0v64M48 0v64"/>
+    <path d="M0 0l64 64M64 0L0 64"/>
+    <path d="M0 32l32-32 32 32-32 32z"/>
+    <path d="M16 16h32v32H16z"/>
+  </g>
+</svg>
