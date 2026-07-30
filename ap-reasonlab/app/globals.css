@@ -211,7 +211,7 @@ body {
 }
 
 .directory-link {
-  @apply group flex items-start gap-3 rounded-lg px-3 py-3 transition duration-300;
+  @apply flex items-start gap-3 rounded-lg px-3 py-3 transition duration-300;
   border: 1px solid transparent;
   border-bottom-color: var(--ke-border);
   background: transparent;
