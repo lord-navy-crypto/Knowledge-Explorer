@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import LocalAIControls from "@/components/LocalAIControls";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
 import RichContent from "@/components/RichContent";
+import VoiceInputButton from "@/components/VoiceInputButton";
 import { useLocalAI } from "@/components/LocalAIProvider";
 import { appendAiSiteContext, fetchAiSiteContext } from "@/lib/ai-site-context";
 import {
@@ -811,6 +812,21 @@ export default function UnifiedAiPanel({
             onSubmit={(e) => void submit(e)}
             className="space-y-3 border-t border-slate-200 bg-slate-50 p-3"
           >
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs font-medium text-slate-600">Type or paste your question</p>
+              <VoiceInputButton
+                disabled={loading}
+                onTranscript={(text, isFinal) => {
+                  setInput((prev) => {
+                    if (!prev.trim() || isFinal) {
+                      const spacer = prev.trim() && isFinal ? (prev.endsWith(" ") ? "" : " ") : "";
+                      return `${prev}${spacer}${text}`.trimStart();
+                    }
+                    return `${prev.replace(/\s+$/, "")} ${text}`.trim();
+                  });
+                }}
+              />
+            </div>
             <MarkdownLatexField
               label={messages.length ? "Follow-up question" : "Your question / paste"}
               value={input}

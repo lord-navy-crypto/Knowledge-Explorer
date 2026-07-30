@@ -111,6 +111,14 @@ export default function BulkEntryEditor({ variant, entries, onChange }: Props) {
       >
         + Add another
       </button>
+      <button
+        type="button"
+        onClick={addEntry}
+        className="btn-ghost text-sm"
+        disabled={entries.length >= BULK_ROW_LIMIT}
+      >
+        + Add more
+      </button>
     </div>
   );
 }

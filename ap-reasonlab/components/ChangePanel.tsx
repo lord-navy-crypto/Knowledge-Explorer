@@ -40,6 +40,10 @@ type DraftEntry = {
   content: string;
   note: string;
   category: string;
+  /** Practice / generation set: estimated minutes */
+  minutes?: string;
+  /** Practice / generation set: optional generation note */
+  generationNote?: string;
 };
 
 function blankEntry(): DraftEntry {
@@ -49,10 +53,20 @@ function blankEntry(): DraftEntry {
     content: "",
     note: "",
     category: "Uploaded",
+    minutes: "20",
+    generationNote: "",
   };
 }
 
-const MULTI_MODES: ChangeMode[] = ["concept", "topic", "formula", "document", "folder", "file"];
+const MULTI_MODES: ChangeMode[] = [
+  "concept",
+  "topic",
+  "formula",
+  "document",
+  "folder",
+  "file",
+  "questionnaire",
+];
 
 /**
  * Plus-button editor: fill the form, then enter a change code to save.
@@ -78,14 +92,11 @@ export default function ChangePanel({
 
   const [title, setTitle] = useState("");
   const [subject, setSubject] = useState(defaultSubject);
-  const [summary, setSummary] = useState("");
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("Uploaded");
   const [memberNote, setMemberNote] = useState("");
   const [githubUser, setGithubUser] = useState("");
   const [files, setFiles] = useState<File[]>([]);
-  const [firstPrompt, setFirstPrompt] = useState("");
-  const [minutes, setMinutes] = useState("20");
   const [forceCodeField, setForceCodeField] = useState(false);
   const [entries, setEntries] = useState<DraftEntry[]>([blankEntry()]);
 
@@ -104,7 +115,7 @@ export default function ChangePanel({
     member: "Add partner (any name + GitHub)",
     folder: "Add file folders",
     subject: "Add subject folder",
-    questionnaire: "Add generated practice set",
+    questionnaire: "Add generated practice sets",
   };
 
   const scopedSpace = normalizeSpace(spaceKey);
@@ -116,18 +127,16 @@ export default function ChangePanel({
     if (mode === "folder") return "folder";
     if (mode === "topic") return "topic";
     if (mode === "file") return "file";
+    if (mode === "questionnaire") return "practice set";
     return "concept";
   }, [mode]);
 
   function reset() {
     setTitle("");
-    setSummary("");
     setContent("");
     setMemberNote("");
     setGithubUser("");
     setFiles([]);
-    setFirstPrompt("");
-    setMinutes("20");
     setChangeCode("");
     setError("");
     setEntries([blankEntry()]);
@@ -226,7 +235,14 @@ export default function ChangePanel({
         }
         for (const row of cleaned) {
           if (!row.title) throw new Error(`Each ${entryNoun} needs a title/name.`);
-          if ((mode === "concept" || mode === "topic" || mode === "formula" || mode === "document") && !row.content) {
+          if (
+            (mode === "concept" ||
+              mode === "topic" ||
+              mode === "formula" ||
+              mode === "document" ||
+              mode === "questionnaire") &&
+            !row.content
+          ) {
             throw new Error(`Each ${entryNoun} needs content.`);
           }
         }
@@ -274,6 +290,17 @@ export default function ChangePanel({
             note: row.note || row.content || undefined,
             space: scopedSpace,
           }));
+        } else if (mode === "questionnaire") {
+          action = "add_questionnaires";
+          items = cleaned.map((row) => ({
+            title: row.title,
+            subject,
+            description: row.content,
+            firstPrompt: row.note || row.content,
+            estimatedMinutes: Number(row.minutes || "20") || 20,
+            generationNote: row.generationNote?.trim() || undefined,
+            hint: "Attempt before asking for more hints.",
+          }));
         }
 
         const data = await postSave({ action, items });
@@ -289,7 +316,7 @@ export default function ChangePanel({
         return;
       }
 
-      // Single-add modes: member / subject / questionnaire
+      // Single-add modes: member / subject
       let action = "";
       let item: Record<string, unknown> = {};
 
@@ -304,17 +331,6 @@ export default function ChangePanel({
       } else if (mode === "subject") {
         action = "add_subject";
         item = { title, name: title };
-      } else if (mode === "questionnaire") {
-        action = "add_questionnaire";
-        item = {
-          title,
-          subject,
-          description: summary || content,
-          firstPrompt,
-          estimatedMinutes: Number(minutes) || 20,
-          generationNote: memberNote || undefined,
-          hint: "Attempt before asking for more hints.",
-        };
       }
 
       const data = await postSave({ action, item });
@@ -354,9 +370,7 @@ export default function ChangePanel({
               ? `Add one or many ${entryNoun}s in one save (up to ${mode === "file" ? 10 : 20}).`
               : mode === "subject"
                 ? "Creates a new subject folder on Concepts / Formulas / Practice."
-                : mode === "questionnaire"
-                  ? "Creates an AI-generated practice set in this subject (hints only)."
-                  : "Saves only into this area + folder bucket."}
+                : "Saves only into this area + folder bucket."}
           </p>
 
           {(mode === "concept" ||
@@ -404,7 +418,9 @@ export default function ChangePanel({
                             ? "Topic title"
                             : mode === "concept"
                               ? "Concept title"
-                              : "Title"
+                              : mode === "questionnaire"
+                                ? "Practice set title"
+                                : "Title"
                     }
                     value={row.title}
                     onChange={(e) => updateEntry(row.key, { title: e.target.value })}
@@ -438,16 +454,59 @@ export default function ChangePanel({
                       minHeightClass="min-h-[12rem]"
                     />
                   )}
+                  {mode === "questionnaire" ? (
+                    <>
+                      <MarkdownLatexField
+                        label="Set description"
+                        help="Short description shown on Practice. Markdown + LaTeX supported."
+                        value={row.content}
+                        onChange={(value) => updateEntry(row.key, { content: value })}
+                        required
+                        minHeightClass="min-h-[8rem]"
+                        placeholder="What this practice set covers…"
+                      />
+                      <input
+                        className="input"
+                        placeholder="Estimated minutes (e.g. 25)"
+                        value={row.minutes || "20"}
+                        onChange={(e) => updateEntry(row.key, { minutes: e.target.value })}
+                      />
+                      <MarkdownLatexField
+                        label="First question prompt"
+                        help="Optional first FRQ / concept-check prompt."
+                        value={row.note}
+                        onChange={(value) => updateEntry(row.key, { note: value })}
+                        minHeightClass="min-h-[10rem]"
+                        placeholder="Paste the first question (Markdown + $math$)…"
+                      />
+                      <input
+                        className="input"
+                        placeholder="Generation note (optional)"
+                        value={row.generationNote || ""}
+                        onChange={(e) => updateEntry(row.key, { generationNote: e.target.value })}
+                      />
+                    </>
+                  ) : null}
                 </div>
               ))}
-              <button
-                type="button"
-                onClick={addEntry}
-                className="btn-secondary text-sm"
-                disabled={entries.length >= 20}
-              >
-                + Add another {entryNoun}
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={addEntry}
+                  className="btn-secondary text-sm"
+                  disabled={entries.length >= 20}
+                >
+                  + Add another {entryNoun}
+                </button>
+                <button
+                  type="button"
+                  onClick={addEntry}
+                  className="btn-ghost text-sm"
+                  disabled={entries.length >= 20}
+                >
+                  + Add more
+                </button>
+              </div>
             </div>
           ) : null}
 
@@ -512,46 +571,6 @@ export default function ChangePanel({
                 placeholder="GitHub username (e.g. octocat)"
                 value={githubUser}
                 onChange={(e) => setGithubUser(e.target.value)}
-              />
-            </>
-          ) : null}
-
-          {mode === "questionnaire" ? (
-            <>
-              <input
-                className="input"
-                placeholder="Set title (e.g. Stats — Inference Sprint B)"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-              />
-              <MarkdownLatexField
-                label="Set description"
-                help="Short description shown on Practice. Markdown + LaTeX supported."
-                value={summary}
-                onChange={setSummary}
-                minHeightClass="min-h-[8rem]"
-                placeholder="What this practice set covers…"
-              />
-              <input
-                className="input"
-                placeholder="Estimated minutes (e.g. 25)"
-                value={minutes}
-                onChange={(e) => setMinutes(e.target.value)}
-              />
-              <MarkdownLatexField
-                label="First question prompt"
-                help="Optional first FRQ / concept-check prompt. Markdown + LaTeX supported."
-                value={firstPrompt}
-                onChange={setFirstPrompt}
-                minHeightClass="min-h-[10rem]"
-                placeholder="Paste the first question (Markdown + $math$)…"
-              />
-              <input
-                className="input"
-                placeholder="Generation note (optional)"
-                value={memberNote}
-                onChange={(e) => setMemberNote(e.target.value)}
               />
             </>
           ) : null}
