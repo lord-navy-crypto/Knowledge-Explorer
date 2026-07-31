@@ -36,6 +36,9 @@ type Props = {
   deletingId?: string | null;
   onDelete?: (row: MediaRow) => void;
   onContentSaved?: (content: ManagedContent) => void;
+  /** Currently previewed item id (shared across the three columns). */
+  selectedId?: string | null;
+  onSelect?: (row: MediaRow) => void;
 };
 
 function FileGlyph({ variant }: { variant: "image" | "file" | "document" }) {
@@ -90,6 +93,8 @@ export default function MediaFinderBrowser({
   deletingId = null,
   onDelete,
   onContentSaved,
+  selectedId = null,
+  onSelect,
 }: Props) {
   const [search, setSearch] = useState("");
 
@@ -106,6 +111,13 @@ export default function MediaFinderBrowser({
   function renderRowActions(row: MediaRow) {
     return (
       <div className="flex shrink-0 flex-wrap items-center justify-end gap-1">
+        <button
+          type="button"
+          onClick={() => onSelect?.(row)}
+          className="rounded-md border border-slate-300 bg-white px-2 py-1 text-[10px] font-semibold text-slate-700 hover:bg-slate-50"
+        >
+          Preview
+        </button>
         <button
           type="button"
           onClick={() => void onDownload(row)}
@@ -188,29 +200,40 @@ export default function MediaFinderBrowser({
           <p className="px-3 py-8 text-center text-sm text-slate-500">No matches.</p>
         ) : (
           <ul className="divide-y divide-slate-100">
-            {visibleRows.map((row) => (
-              <li
-                key={row.item.id}
-                className="flex flex-col gap-2 px-2.5 py-2.5 hover:bg-slate-50 sm:flex-row sm:items-center"
-              >
-                <div className="flex min-w-0 flex-1 items-center gap-2">
-                  {variant === "image" && row.kind === "file" ? (
-                    <ImageThumb file={row.item} />
-                  ) : (
-                    <FileGlyph variant={variant} />
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-slate-900" title={row.title}>
-                      {row.title}
-                    </p>
-                    {row.subtitle ? (
-                      <p className="truncate text-[11px] text-slate-500">{row.subtitle}</p>
-                    ) : null}
-                  </div>
-                </div>
-                {renderRowActions(row)}
-              </li>
-            ))}
+            {visibleRows.map((row) => {
+              const active = selectedId === row.item.id;
+              return (
+                <li
+                  key={row.item.id}
+                  className={`flex flex-col gap-2 px-2.5 py-2.5 sm:flex-row sm:items-center ${
+                    active
+                      ? "bg-brand-50 ring-1 ring-inset ring-brand-200"
+                      : "hover:bg-slate-50"
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => onSelect?.(row)}
+                    className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                  >
+                    {variant === "image" && row.kind === "file" ? (
+                      <ImageThumb file={row.item} />
+                    ) : (
+                      <FileGlyph variant={variant} />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-slate-900" title={row.title}>
+                        {row.title}
+                      </p>
+                      {row.subtitle ? (
+                        <p className="truncate text-[11px] text-slate-500">{row.subtitle}</p>
+                      ) : null}
+                    </div>
+                  </button>
+                  {renderRowActions(row)}
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>

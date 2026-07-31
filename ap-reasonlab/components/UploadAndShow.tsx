@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import ChangePanel from "@/components/ChangePanel";
 import MediaFinderBrowser, { type MediaRow } from "@/components/MediaFinderBrowser";
+import MediaPreviewPane from "@/components/MediaPreviewPane";
 import ResourceEditor from "@/components/ResourceEditor";
 import { useEditorMode } from "@/components/EditorModeProvider";
 import type {
@@ -88,6 +89,7 @@ export default function UploadAndShow({
   const [githubToken, setGithubToken] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(!collapsedByDefault);
+  const [previewSelection, setPreviewSelection] = useState<MediaRow | null>(null);
 
   const scopedSpace = normalizeSpace(spaceKey);
   const subjectForForms =
@@ -238,6 +240,7 @@ export default function UploadAndShow({
       const parsed = await readResponseJson<{ error?: string; content?: ManagedContent }>(res);
       if (!parsed.ok) throw new Error(parsed.error);
       if (!res.ok) throw new Error(parsed.data.error || "Delete failed");
+      if (previewSelection?.item.id === id) setPreviewSelection(null);
       if (parsed.data.content) applyContent(parsed.data.content);
       await refresh();
     } catch (e) {
@@ -572,6 +575,16 @@ export default function UploadAndShow({
                 onDownload={downloadMediaRow}
                 editMode={editMode}
                 deletingId={deletingId}
+                selectedId={previewSelection?.item.id ?? null}
+                onSelect={(row) => {
+                  setPreviewSelection(row);
+                  window.requestAnimationFrame(() => {
+                    document.getElementById("media-preview")?.scrollIntoView({
+                      behavior: "smooth",
+                      block: "nearest",
+                    });
+                  });
+                }}
                 onDelete={(row) => {
                   if (row.kind === "file") void handleDelete("file", row.item.id);
                 }}
@@ -590,6 +603,16 @@ export default function UploadAndShow({
                 onDownload={downloadMediaRow}
                 editMode={editMode}
                 deletingId={deletingId}
+                selectedId={previewSelection?.item.id ?? null}
+                onSelect={(row) => {
+                  setPreviewSelection(row);
+                  window.requestAnimationFrame(() => {
+                    document.getElementById("media-preview")?.scrollIntoView({
+                      behavior: "smooth",
+                      block: "nearest",
+                    });
+                  });
+                }}
                 onDelete={(row) => {
                   if (row.kind === "file") void handleDelete("file", row.item.id);
                 }}
@@ -608,12 +631,28 @@ export default function UploadAndShow({
                 onDownload={downloadMediaRow}
                 editMode={editMode}
                 deletingId={deletingId}
+                selectedId={previewSelection?.item.id ?? null}
+                onSelect={(row) => {
+                  setPreviewSelection(row);
+                  window.requestAnimationFrame(() => {
+                    document.getElementById("media-preview")?.scrollIntoView({
+                      behavior: "smooth",
+                      block: "nearest",
+                    });
+                  });
+                }}
                 onDelete={(row) => {
                   if (row.kind === "document") void handleDelete("document", row.item.id);
                 }}
                 onContentSaved={(content) => applyContent(content)}
               />
             </div>
+
+            <MediaPreviewPane
+              selection={previewSelection}
+              onClose={() => setPreviewSelection(null)}
+              onDownload={downloadMediaRow}
+            />
           </div>
         )}
       </div>
