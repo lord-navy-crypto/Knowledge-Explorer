@@ -80,7 +80,11 @@ export function FloatingMediaWindow({
 
   const refresh = useCallback(async () => {
     try {
-      const params = new URLSearchParams({ area: folderArea, space: activeSpace });
+      const params = new URLSearchParams({
+        area: folderArea,
+        space: activeSpace,
+        view: "media",
+      });
       const res = await fetch(`/api/edit?${params}`, { cache: "no-store" });
       const parsed = await readResponseJson<{
         files?: ManagedFile[];

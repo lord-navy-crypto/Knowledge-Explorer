@@ -135,6 +135,30 @@ body {
     0 24px 48px rgba(12, 26, 44, 0.22);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .hero-gradient {
+    animation: none;
+    background-size: auto, auto, auto;
+  }
+
+  .academic-print {
+    animation: none;
+  }
+}
+
+@media (max-width: 767px) {
+  /* Lighter chrome on phones — full-viewport facet overlays can stutter / white-flash GPUs */
+  .hero-gradient {
+    animation: none;
+    background-size: auto, auto, auto;
+  }
+
+  .site-shell::before,
+  .site-shell::after {
+    display: none;
+  }
+}
+
 .hero-gradient::before {
   content: "";
   position: absolute;
