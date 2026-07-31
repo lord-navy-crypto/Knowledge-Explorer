@@ -568,7 +568,7 @@ export default function UploadAndShow({
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3 md:items-stretch">
               <MediaFinderBrowser
                 sectionTitle="Images"
-                sectionHint="Pictures · vertical list"
+                sectionHint="Fixed height · scroll inside this column"
                 emptyMessage="No images yet. Use + Upload images."
                 rows={imageRows}
                 variant="image"
@@ -596,7 +596,7 @@ export default function UploadAndShow({
 
               <MediaFinderBrowser
                 sectionTitle="Files"
-                sectionHint="PDFs & other files · vertical list"
+                sectionHint="Fixed height · scroll inside this column"
                 emptyMessage="No files yet. Use + Upload files."
                 rows={fileRows}
                 variant="file"
@@ -624,7 +624,7 @@ export default function UploadAndShow({
 
               <MediaFinderBrowser
                 sectionTitle="Documents"
-                sectionHint="Text docs · vertical list · download .md"
+                sectionHint="Fixed height · scroll inside this column"
                 emptyMessage="No documents yet. Use + Add documents."
                 rows={documentRows}
                 variant="document"
