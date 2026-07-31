@@ -171,7 +171,7 @@ export default function MediaFinderBrowser({
   }
 
   return (
-    <section className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white">
+    <section className="flex h-[min(26rem,50vh)] min-h-[18rem] flex-col overflow-hidden rounded-xl border border-slate-200 bg-white">
       <div className="shrink-0 space-y-2 border-b border-slate-100 bg-slate-50 px-3 py-2.5">
         <div>
           <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -180,7 +180,7 @@ export default function MediaFinderBrowser({
           {sectionHint ? <p className="text-[11px] text-slate-400">{sectionHint}</p> : null}
           <p className="text-[11px] text-slate-500">
             {visibleRows.length} item{visibleRows.length === 1 ? "" : "s"}
-            {search.trim() ? " · filtered" : " · newest first"}
+            {search.trim() ? " · filtered" : " · scroll inside"}
           </p>
         </div>
         <input
@@ -193,7 +193,8 @@ export default function MediaFinderBrowser({
         />
       </div>
 
-      <div className="min-h-[14rem] max-h-[min(28rem,55vh)] flex-1 overflow-y-auto overscroll-contain">
+      {/* Fixed-height list: scroll stays inside this column, panel does not grow with files */}
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         {rows.length === 0 ? (
           <p className="px-3 py-8 text-center text-sm text-slate-500">{emptyMessage}</p>
         ) : visibleRows.length === 0 ? (

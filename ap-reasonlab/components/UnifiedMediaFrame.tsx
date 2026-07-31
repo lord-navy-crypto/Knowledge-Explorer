@@ -72,7 +72,7 @@ export default function UnifiedMediaFrame({
         </span>
       </div>
 
-      <div className="max-h-[min(90vh,52rem)] overflow-y-auto overscroll-contain p-3 md:p-4">
+      <div className="p-3 md:p-4">
         <UploadAndShow
           title="Files"
           folderArea={folderArea}
