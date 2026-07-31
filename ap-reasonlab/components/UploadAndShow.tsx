@@ -105,9 +105,12 @@ export default function UploadAndShow({
       const subjects = managedSubjectNames(data.subjects);
       setAllSubjects(subjects);
       onSubjectsChange?.(subjects);
-      const quizzes = Array.isArray(data.questionnaires) ? data.questionnaires : [];
-      setAllQuizzes(quizzes as typeof allQuizzes);
-      onQuestionnairesChange?.(quizzes);
+      // Only update quizzes when the payload includes them (media view omits this field).
+      if (Array.isArray(data.questionnaires)) {
+        const quizzes = data.questionnaires;
+        setAllQuizzes(quizzes as typeof allQuizzes);
+        onQuestionnairesChange?.(quizzes);
+      }
     },
     [onQuestionnairesChange, onSubjectsChange]
   );
@@ -119,6 +122,10 @@ export default function UploadAndShow({
         area: folderArea,
         space: scopedSpace,
       });
+      // Lightweight payload for file boxes. Practice pages that sync quizzes keep the full scope.
+      if (!onQuestionnairesChange) {
+        params.set("view", "media");
+      }
       const res = await fetch(`/api/edit?${params}`, { cache: "no-store" });
       const parsed = await readResponseJson<ManagedContent & { error?: string }>(res);
       if (!parsed.ok) throw new Error(parsed.error);
@@ -129,7 +136,7 @@ export default function UploadAndShow({
     } finally {
       setLoading(false);
     }
-  }, [applyContent, folderArea, scopedSpace]);
+  }, [applyContent, folderArea, onQuestionnairesChange, scopedSpace]);
 
   useEffect(() => {
     refresh();

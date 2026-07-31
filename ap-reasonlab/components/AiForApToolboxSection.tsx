@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { listAiForApGuides, toolboxLinkForGuide } from "@/lib/ai-for-ap-guides";
 import { toolboxHref } from "@/lib/ai-toolbox-url";

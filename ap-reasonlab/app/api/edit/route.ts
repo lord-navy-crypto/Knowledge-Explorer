@@ -90,6 +90,7 @@ export async function GET(req: NextRequest) {
   const space = req.nextUrl.searchParams.get("space")?.trim() || "";
   const fileId = req.nextUrl.searchParams.get("fileId")?.trim() || "";
   const includeData = req.nextUrl.searchParams.get("includeData") === "1";
+  const view = req.nextUrl.searchParams.get("view")?.trim() || "";
 
   if (fileId) {
     const file = (content.files || []).find((entry) => entry.id === fileId);
@@ -108,6 +109,21 @@ export async function GET(req: NextRequest) {
       if (spaceKey.startsWith("folder:")) return value === spaceKey || value === space;
       return Boolean(value && aliasSet.has(value));
     };
+
+    // Media panels only need files/docs/folders — skip huge concept/questionnaire payloads
+    // that were making phones stutter / white-flash when every page opened a file box.
+    if (view === "media") {
+      return NextResponse.json({
+        files: includeData
+          ? (content.files || []).filter(inBucket)
+          : slimManagedContent(content).files.filter(inBucket),
+        documents: (content.documents || []).filter(inBucket),
+        folders: (content.folders || []).filter((f) => matchesSpace(f, area, spaceKey)),
+        subjects: content.subjects || [],
+        updatedAt: content.updatedAt,
+        scoped: { area, space: spaceKey, view: "media" },
+      });
+    }
 
     return NextResponse.json({
       concepts:
