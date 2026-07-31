@@ -207,8 +207,8 @@ function SubjectWorkspaceContent() {
         <div>
           <h2 className="section-title">Pictures, documents &amp; files</h2>
           <p className="mt-1 text-sm text-slate-600">
-            In-page storage for this AP subject — upload pictures, documents, and files; browse by
-            month folder and download.
+            In-page storage for this AP subject — images, files, and documents in three vertical
+            columns; upload and download anytime.
           </p>
         </div>
         <UnifiedMediaFrame
