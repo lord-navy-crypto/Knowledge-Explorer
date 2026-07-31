@@ -80,6 +80,21 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section
+        className="notranslate border border-amber-700/20 bg-amber-50 px-5 py-4 text-amber-950"
+        translate="no"
+        role="note"
+        aria-label="Do not use page translation"
+      >
+        <p className="font-display text-lg font-semibold text-amber-950">
+          请勿开启网页翻译。开启翻译可能导致网站显示异常。
+        </p>
+        <p className="mt-2 max-w-3xl text-sm text-amber-900/90">
+          Please do not turn on page translation. Translation may cause the website to display
+          abnormalities.
+        </p>
+      </section>
+
       <DisclaimerPanel />
 
       <section className="border border-emerald-800/15 bg-emerald-50/70 px-5 py-4 text-emerald-950">
