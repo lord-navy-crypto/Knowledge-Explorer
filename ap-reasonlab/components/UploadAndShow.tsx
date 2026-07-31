@@ -335,7 +335,7 @@ export default function UploadAndShow({
               : ""}
             {folders.length ? ` · ${folders.length} folder${folders.length === 1 ? "" : "s"}` : ""}
             {documents.length ? ` · ${documents.length} doc${documents.length === 1 ? "" : "s"}` : ""}
-            {" · "}month folders · search · download
+            {" · 3 columns · newest first · download"}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -357,204 +357,209 @@ export default function UploadAndShow({
         <>
       {error ? <p className="mb-2 whitespace-pre-wrap text-sm text-red-600">{error}</p> : null}
 
-      <div className={canAdd ? "grid gap-5 lg:grid-cols-[minmax(0,15rem)_minmax(0,1fr)]" : "grid gap-4"}>
-        {canAdd && <div className="space-y-2">
-          <h2 className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-            Upload
-          </h2>
-          <div className="flex flex-col gap-3">
-            {uploadExtras.includes("subject") && (
+      <div className="space-y-4">
+        {canAdd ? (
+          <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50/80 p-3">
+            <h2 className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+              Upload &amp; add
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {uploadExtras.includes("subject") && (
+                <ChangePanel
+                  mode="subject"
+                  label="+ Add subject folder"
+                  folderArea={folderArea}
+                  spaceKey={scopedSpace}
+                  onSaved={onSaved}
+                />
+              )}
               <ChangePanel
-                mode="subject"
-                label="+ Add subject folder"
-                folderArea={folderArea}
-                spaceKey={scopedSpace}
-                onSaved={onSaved}
-              />
-            )}
-            <ChangePanel
-              mode="file"
-              label="+ Upload files"
-              folderArea={folderArea}
-              spaceKey={scopedSpace}
-              onSaved={onSaved}
-              allowPublicContribution={allowPublicContributions}
-            />
-            <ChangePanel
-              mode="file"
-              label="+ Upload images"
-              fileAccept="image/*"
-              folderArea={folderArea}
-              spaceKey={scopedSpace}
-              onSaved={onSaved}
-              allowPublicContribution={allowPublicContributions}
-            />
-            {uploadExtras.includes("document") && (
-              <ChangePanel
-                mode="document"
-                label="+ Add documents"
+                mode="file"
+                label="+ Upload files"
                 folderArea={folderArea}
                 spaceKey={scopedSpace}
                 onSaved={onSaved}
                 allowPublicContribution={allowPublicContributions}
               />
-            )}
-            {uploadExtras.includes("topic") && (
               <ChangePanel
-                mode="topic"
-                label="+ Add topics"
-                defaultSubject={subjectForForms}
+                mode="file"
+                label="+ Upload images"
+                fileAccept="image/*"
                 folderArea={folderArea}
                 spaceKey={scopedSpace}
                 onSaved={onSaved}
+                allowPublicContribution={allowPublicContributions}
               />
-            )}
-            {uploadExtras.includes("concept") && (
+              {uploadExtras.includes("document") && (
+                <ChangePanel
+                  mode="document"
+                  label="+ Add documents"
+                  folderArea={folderArea}
+                  spaceKey={scopedSpace}
+                  onSaved={onSaved}
+                  allowPublicContribution={allowPublicContributions}
+                />
+              )}
+              {uploadExtras.includes("topic") && (
+                <ChangePanel
+                  mode="topic"
+                  label="+ Add topics"
+                  defaultSubject={subjectForForms}
+                  folderArea={folderArea}
+                  spaceKey={scopedSpace}
+                  onSaved={onSaved}
+                />
+              )}
+              {uploadExtras.includes("concept") && (
+                <ChangePanel
+                  mode="concept"
+                  label="+ Add concepts"
+                  defaultSubject={subjectForForms}
+                  folderArea={folderArea}
+                  spaceKey={scopedSpace}
+                  onSaved={onSaved}
+                />
+              )}
+              {uploadExtras.includes("formula") && (
+                <ChangePanel
+                  mode="formula"
+                  label="+ Add formulas"
+                  defaultSubject={subjectForForms}
+                  folderArea={folderArea}
+                  spaceKey={scopedSpace}
+                  onSaved={onSaved}
+                />
+              )}
+              {uploadExtras.includes("questionnaire") && (
+                <ChangePanel
+                  mode="questionnaire"
+                  label="+ Add generated practice set"
+                  defaultSubject={subjectForForms}
+                  folderArea={folderArea}
+                  spaceKey={scopedSpace}
+                  onSaved={onSaved}
+                />
+              )}
+              {uploadExtras.includes("member") && (
+                <ChangePanel mode="member" label="+ Add member" onSaved={onSaved} />
+              )}
               <ChangePanel
-                mode="concept"
-                label="+ Add concepts"
-                defaultSubject={subjectForForms}
+                mode="folder"
+                label="+ Add file folders"
                 folderArea={folderArea}
                 spaceKey={scopedSpace}
                 onSaved={onSaved}
+                allowPublicContribution={allowPublicContributions}
               />
+            </div>
+            {(editMode || unlocked) && (
+              <div className="flex flex-wrap items-end gap-3 border-t border-slate-200 pt-3">
+                {unlocked ? (
+                  <p className="text-xs text-emerald-800">
+                    Editor unlocked — delete uses your session.
+                  </p>
+                ) : (
+                  <label className="block min-w-[12rem] flex-1 text-xs font-medium text-slate-600">
+                    Change code (needed to delete with −)
+                    <input
+                      type="password"
+                      className="input mt-1"
+                      placeholder="Content or master change code"
+                      value={changeCode}
+                      onChange={(e) => setChangeCode(e.target.value)}
+                    />
+                  </label>
+                )}
+                <details className="text-xs text-slate-500">
+                  <summary className="cursor-pointer">GitHub token (optional)</summary>
+                  <input
+                    type="password"
+                    className="input mt-2"
+                    placeholder="ghp_... if not set on Vercel"
+                    value={githubToken}
+                    onChange={(e) => setGithubToken(e.target.value)}
+                  />
+                </details>
+              </div>
             )}
-            {uploadExtras.includes("formula") && (
-              <ChangePanel
-                mode="formula"
-                label="+ Add formulas"
-                defaultSubject={subjectForForms}
-                folderArea={folderArea}
-                spaceKey={scopedSpace}
-                onSaved={onSaved}
-              />
-            )}
-            {uploadExtras.includes("questionnaire") && (
-              <ChangePanel
-                mode="questionnaire"
-                label="+ Add generated practice set"
-                defaultSubject={subjectForForms}
-                folderArea={folderArea}
-                spaceKey={scopedSpace}
-                onSaved={onSaved}
-              />
-            )}
-            {uploadExtras.includes("member") && (
-              <ChangePanel mode="member" label="+ Add member" onSaved={onSaved} />
-            )}
-            <ChangePanel
-              mode="folder"
-              label="+ Add file folders"
-              folderArea={folderArea}
-              spaceKey={scopedSpace}
-              onSaved={onSaved}
-              allowPublicContribution={allowPublicContributions}
-            />
+            {allSubjects.length > 0 && uploadExtras.includes("subject") ? (
+              <div className="rounded-lg border border-emerald-100 bg-emerald-50/60 px-3 py-2 text-xs text-emerald-900">
+                Custom subjects saved: {allSubjects.join(" · ")}
+              </div>
+            ) : null}
           </div>
-          {(editMode || unlocked) && <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-3">
-            {unlocked ? (
-              <p className="text-xs text-emerald-800">
-                Editor unlocked — delete uses your session. Optional code override below.
-              </p>
-            ) : (
-              <label className="block text-xs font-medium text-slate-600">
-                Change code (needed to delete with −)
-              </label>
-            )}
-            {!unlocked && <input
-              type="password"
-              className="input"
-              placeholder="Content or master change code"
-              value={changeCode}
-              onChange={(e) => setChangeCode(e.target.value)}
-            />}
-            <details className="text-xs text-slate-500">
-              <summary className="cursor-pointer">GitHub token (optional)</summary>
-              <input
-                type="password"
-                className="input mt-2"
-                placeholder="ghp_... if not set on Vercel"
-                value={githubToken}
-                onChange={(e) => setGithubToken(e.target.value)}
-              />
-            </details>
-          </div>}
-          {allSubjects.length > 0 && uploadExtras.includes("subject") && (
-            <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 p-3 text-xs text-emerald-900">
-              Custom subjects saved: {allSubjects.join(" · ")}
-            </div>
-          )}
-        </div>}
+        ) : null}
 
-        <div className="space-y-4">
-          {loading ? (
-            <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 text-sm text-slate-500">
-              Loading files…
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {folders.length > 0 && (
-                <section className="space-y-2">
-                  <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                    Folders
-                  </h3>
-                  <ul className="grid gap-2 sm:grid-cols-2">
-                    {folders.map((f) => (
-                      <li key={f.id}>
-                        <div className="flex items-center gap-3 rounded-xl border border-amber-100 bg-amber-50/70 px-3 py-2.5 transition hover:bg-amber-50">
-                          <span
-                            className="relative flex h-10 w-10 shrink-0 items-end justify-center pb-1"
-                            aria-hidden
-                          >
-                            <span className="absolute left-1.5 top-1.5 h-2 w-4 rounded-t-sm bg-amber-300" />
-                            <span className="h-6 w-8 rounded-md bg-gradient-to-b from-amber-300 to-amber-500 shadow-sm" />
-                          </span>
-                          <div className="min-w-0 flex-1">
-                            {spaceBasePath ? (
-                              <Link
-                                href={spaceHref(spaceBasePath, folderSpaceId(f.id))}
-                                className="block truncate text-sm font-semibold text-slate-900 hover:text-brand-700"
-                              >
-                                {f.title}
-                              </Link>
-                            ) : (
-                              <p className="truncate text-sm font-semibold text-slate-900">{f.title}</p>
-                            )}
-                            {f.note ? (
-                              <p className="truncate text-[11px] text-slate-500">{f.note}</p>
-                            ) : (
-                              <p className="text-[11px] text-slate-400">Open folder</p>
-                            )}
-                          </div>
-                          {editMode && (
-                            <div className="flex shrink-0 items-center gap-1">
-                              <ResourceEditor
-                                target="folder"
-                                item={f}
-                                onSaved={(content) => applyContent(content as ManagedContent)}
-                              />
-                              <button
-                                type="button"
-                                title="Delete folder"
-                                disabled={deletingId === f.id}
-                                onClick={() => handleDelete("folder", f.id)}
-                                className="flex h-7 w-7 items-center justify-center rounded-full text-base font-bold text-red-600 hover:bg-red-50"
-                              >
-                                −
-                              </button>
-                            </div>
+        {loading ? (
+          <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 text-sm text-slate-500">
+            Loading files…
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {folders.length > 0 ? (
+              <section className="space-y-2">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Folders
+                </h3>
+                <ul className="flex flex-col gap-2">
+                  {folders.map((f) => (
+                    <li key={f.id}>
+                      <div className="flex items-center gap-3 rounded-xl border border-amber-100 bg-amber-50/70 px-3 py-2.5 transition hover:bg-amber-50">
+                        <span
+                          className="relative flex h-10 w-10 shrink-0 items-end justify-center pb-1"
+                          aria-hidden
+                        >
+                          <span className="absolute left-1.5 top-1.5 h-2 w-4 rounded-t-sm bg-amber-300" />
+                          <span className="h-6 w-8 rounded-md bg-gradient-to-b from-amber-300 to-amber-500 shadow-sm" />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          {spaceBasePath ? (
+                            <Link
+                              href={spaceHref(spaceBasePath, folderSpaceId(f.id))}
+                              className="block truncate text-sm font-semibold text-slate-900 hover:text-brand-700"
+                            >
+                              {f.title}
+                            </Link>
+                          ) : (
+                            <p className="truncate text-sm font-semibold text-slate-900">{f.title}</p>
+                          )}
+                          {f.note ? (
+                            <p className="truncate text-[11px] text-slate-500">{f.note}</p>
+                          ) : (
+                            <p className="text-[11px] text-slate-400">Open folder</p>
                           )}
                         </div>
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              )}
+                        {editMode ? (
+                          <div className="flex shrink-0 items-center gap-1">
+                            <ResourceEditor
+                              target="folder"
+                              item={f}
+                              onSaved={(content) => applyContent(content as ManagedContent)}
+                            />
+                            <button
+                              type="button"
+                              title="Delete folder"
+                              disabled={deletingId === f.id}
+                              onClick={() => handleDelete("folder", f.id)}
+                              className="flex h-7 w-7 items-center justify-center rounded-full text-base font-bold text-red-600 hover:bg-red-50"
+                            >
+                              −
+                            </button>
+                          </div>
+                        ) : null}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
 
+            {/* Three vertical columns: Images | Files | Documents */}
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-3 md:items-stretch">
               <MediaFinderBrowser
-                sectionTitle="Image browser · 图片浏览"
-                sectionHint="Month folders · compact grid · download only"
-                emptyMessage='No images here yet. Use "Upload images" on the left.'
+                sectionTitle="Images"
+                sectionHint="Pictures · vertical list"
+                emptyMessage="No images yet. Use + Upload images."
                 rows={imageRows}
                 variant="image"
                 onDownload={downloadMediaRow}
@@ -570,9 +575,9 @@ export default function UploadAndShow({
               />
 
               <MediaFinderBrowser
-                sectionTitle="File browser"
-                sectionHint="Non-image files · month folders · download only"
-                emptyMessage="No non-image files here yet. Pictures appear in Image browser above."
+                sectionTitle="Files"
+                sectionHint="PDFs & other files · vertical list"
+                emptyMessage="No files yet. Use + Upload files."
                 rows={fileRows}
                 variant="file"
                 onDownload={downloadMediaRow}
@@ -588,9 +593,9 @@ export default function UploadAndShow({
               />
 
               <MediaFinderBrowser
-                sectionTitle="Document browser"
-                sectionHint="Text documents · month folders · download as .md"
-                emptyMessage="No documents in this folder yet."
+                sectionTitle="Documents"
+                sectionHint="Text docs · vertical list · download .md"
+                emptyMessage="No documents yet. Use + Add documents."
                 rows={documentRows}
                 variant="document"
                 onDownload={downloadMediaRow}
@@ -602,8 +607,8 @@ export default function UploadAndShow({
                 onContentSaved={(content) => applyContent(content)}
               />
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
         </>
       )}
