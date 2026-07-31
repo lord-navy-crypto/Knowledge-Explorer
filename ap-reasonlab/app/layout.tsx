@@ -32,6 +32,11 @@ const fontDisplay = Source_Serif_4({
 export const metadata: Metadata = {
   title: "Knowledge Explorer — Academic Box & Platform",
   description: brand.description,
+  // Discourage Chrome auto-translate — it mutates the DOM and causes React
+  // NotFoundError: Failed to execute 'insertBefore' on 'Node'.
+  other: {
+    google: "notranslate",
+  },
 };
 
 const THEME_BOOT = `(function(){try{var k="ke-site-theme",a=["ap","cyberpunk","luxury","pastel","crimson","verdant","violet","amber","silver"],t=localStorage.getItem(k);if(t&&a.indexOf(t)>=0)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();`;
@@ -42,9 +47,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-theme="ap" suppressHydrationWarning>
+    <html
+      lang="en"
+      data-theme="ap"
+      translate="no"
+      className="notranslate"
+      suppressHydrationWarning
+    >
       <body
-        className={`${fontSans.variable} ${fontDisplay.variable} site-shell min-h-screen bg-slate-50 text-slate-900 antialiased`}
+        className={`${fontSans.variable} ${fontDisplay.variable} notranslate site-shell min-h-screen bg-slate-50 text-slate-900 antialiased`}
+        translate="no"
       >
         <Script
           id="ke-theme-boot"

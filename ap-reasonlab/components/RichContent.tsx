@@ -1,3 +1,5 @@
+"use client";
+
 import katex from "katex";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -52,13 +54,17 @@ export default function RichContent({
     return (
       <div
         className={`rich-content rich-math overflow-x-auto ${clampClass} ${className}`.trim()}
+        suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: html }}
       />
     );
   }
 
   return (
-    <div className={`rich-content prose-study ${clampClass} ${className}`.trim()}>
+    <div
+      className={`rich-content prose-study ${clampClass} ${className}`.trim()}
+      suppressHydrationWarning
+    >
       <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
         {text}
       </ReactMarkdown>
