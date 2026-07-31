@@ -30,9 +30,9 @@ const boxes = [
     href: "/hints",
   },
   {
-    title: "AI for AP",
-    description: "How to use Local AI for AP study — explain, generate practice, safe workflows.",
-    href: "/ai-for-ap",
+    title: "AI Toolbox · AI for AP",
+    description: "Local AI, hints, generate practice, and safe AI-for-AP workflows in one place.",
+    href: "/hints?section=ai-for-ap",
   },
   {
     title: "Code Resource",

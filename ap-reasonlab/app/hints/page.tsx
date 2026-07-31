@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import AiForApToolboxSection from "@/components/AiForApToolboxSection";
 import EthicsBanner from "@/components/EthicsBanner";
 import LocalAiRecommendation from "@/components/LocalAiRecommendation";
 import RecommendedStudyTools from "@/components/RecommendedStudyTools";
@@ -96,6 +97,11 @@ function ToolboxContent() {
   const codingTask = resolveCodingTask(searchParams);
 
   useEffect(() => {
+    if (searchParams.get("section") === "ai-for-ap") {
+      setExtra("ai");
+      saveToolboxExtraTool("ai");
+      return;
+    }
     const fromUrl = searchParams.get("tool");
     if (fromUrl) {
       setExtra(resolveExtraTool(fromUrl));
@@ -103,6 +109,14 @@ function ToolboxContent() {
     }
     const saved = loadToolboxExtraTool();
     if (saved) setExtra(saved);
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (searchParams.get("section") !== "ai-for-ap") return;
+    const timer = window.setTimeout(() => {
+      document.getElementById("ai-for-ap")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 160);
+    return () => window.clearTimeout(timer);
   }, [searchParams]);
 
   function selectExtra(next: ExtraTool) {
@@ -114,14 +128,22 @@ function ToolboxContent() {
     <div className="space-y-8">
       <section className="hero-gradient rounded-3xl px-6 py-9 text-white shadow-lg md:px-9">
         <span className="inline-block rounded-full bg-white/20 px-3 py-1 text-xs font-semibold">
-          AI TOOLBOX
+          AI TOOLBOX · AI FOR AP
         </span>
         <h1 className="mt-3 text-3xl font-bold md:text-4xl">One AI panel for study help</h1>
         <p className="mt-2 max-w-2xl text-blue-100">
-          Choose Local, Website API, or Your own API inside one box — then pick AP, English, or
-          Coding tasks. Extra tools: Calculator (computer) and Grapher (function plotter). Your AI
-          path, model, and last tab are remembered in this browser.
+          Choose Local, Website API, or Your own API — then pick AP, English, or Coding tasks.
+          Includes AI for AP workflows and guides below. Extra tools: Calculator and Grapher. Your
+          path and last tab are remembered in this browser.
         </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <a
+            href="#ai-for-ap"
+            className="rounded-lg border border-white/35 bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20"
+          >
+            AI for AP guides ↓
+          </a>
+        </div>
         <LocalAiRecommendation variant="hero" className="mt-4 max-w-2xl" />
       </section>
 
@@ -161,6 +183,8 @@ function ToolboxContent() {
       ) : null}
       {extra === "calculator" ? <TICalculator /> : null}
       {extra === "grapher" ? <TIGrapher /> : null}
+
+      {extra === "ai" ? <AiForApToolboxSection /> : null}
 
       <UnifiedMediaFrame
         title="AI Toolbox · pictures, documents & files"

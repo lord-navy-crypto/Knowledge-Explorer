@@ -26,10 +26,10 @@ export default async function KeyConceptDetailPage({
   return (
     <div className="space-y-6">
       <Link
-        href={guide.category === "ai_for_ap" ? "/ai-for-ap" : "/key-concepts"}
+        href={guide.category === "ai_for_ap" ? "/hints?section=ai-for-ap" : "/key-concepts"}
         className="text-sm text-brand-600 hover:underline"
       >
-        ← {guide.category === "ai_for_ap" ? "AI for AP" : "Key concepts"}
+        ← {guide.category === "ai_for_ap" ? "AI Toolbox · AI for AP" : "Key concepts"}
       </Link>
 
       <section className="card space-y-3">

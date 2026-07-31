@@ -12,9 +12,8 @@ const primaryLinks = [
   { href: "/academic", label: "Academic" },
   { href: "/tools", label: "Tools" },
   { href: "/code", label: "Code" },
-      { href: "/hints", label: "AI Toolbox" },
-      { href: "/ai-for-ap", label: "AI for AP" },
-      { href: "/forum", label: "Forum" },
+  { href: "/hints", label: "AI Toolbox" },
+  { href: "/forum", label: "Forum" },
 ];
 
 const moreGroups = [
@@ -29,7 +28,7 @@ const moreGroups = [
       { href: "/hints?tool=calculator", label: "Calculator" },
       { href: "/hints?tool=grapher", label: "Grapher" },
       { href: "/hints?tool=english", label: "English AI" },
-      { href: "/ai-for-ap", label: "AI for AP" },
+      { href: "/hints?section=ai-for-ap", label: "AI for AP (in Toolbox)" },
       { href: "/hints", label: "AI Toolbox" },
       { href: "/search", label: "Search" },
     ],
