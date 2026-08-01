@@ -15,7 +15,7 @@ const boxes = [
   },
   {
     title: "English Learning",
-    description: "TOEFL, IELTS, SAT, vocabulary, writing, grammar, and a focused English AI tutor.",
+    description: "Exams (practice questions) · Skills (vocab/grammar/writing) · English AI Tutor.",
     href: "/english",
   },
   {

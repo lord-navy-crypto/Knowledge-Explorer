@@ -1,18 +1,81 @@
+import Link from "next/link";
 import EnglishPageHeader from "@/components/EnglishPageHeader";
-import EnglishPractice from "@/components/EnglishPractice";
 import EnglishResourcePanel from "@/components/EnglishResourcePanel";
-import { satQuestions } from "@/data/english-content";
 
 export default function SatPage() {
-  return <div className="space-y-8">
-    <EnglishPageHeader eyebrow="English · Exam path" title="Digital SAT" description="This English-area page focuses on SAT Reading and Writing: short passages, precise evidence, rhetoric, transitions, and Standard English conventions." />
-    <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {[{ title: "Information and Ideas", text: "Central ideas, details, evidence, and inferences" }, { title: "Craft and Structure", text: "Words in context, text purpose, and connections" }, { title: "Expression of Ideas", text: "Rhetorical synthesis and transitions" }, { title: "Standard English", text: "Sentence structure, usage, and punctuation" }].map((item) => <article key={item.title} className="card"><h2 className="font-semibold text-brand-800">{item.title}</h2><p className="mt-2 text-sm leading-6 text-slate-600">{item.text}</p></article>)}
-    </section>
-    <section className="card"><h2 className="section-title">Format snapshot</h2><p className="mt-2 text-sm leading-6 text-slate-600">The full SAT has Reading and Writing plus Math. Reading and Writing has two 32-minute modules; each question follows a short passage or passage pair. Module 2 adapts based on Module 1 performance.</p></section>
-    <section className="space-y-3"><div><h2 className="section-title">Original mini practice</h2><p className="mt-1 text-sm text-slate-600">Original questions that practise official skill domains without copying College Board items.</p></div><EnglishPractice questions={satQuestions} /></section>
-    <section className="card"><h2 className="font-semibold">Official SAT practice</h2><div className="mt-3 flex flex-wrap gap-3"><a className="btn-secondary" href="https://satsuite.collegeboard.org/practice/student-question-bank" target="_blank" rel="noreferrer">Student Question Bank ↗</a><a className="btn-secondary" href="https://satsuite.collegeboard.org/practice/practice-tests" target="_blank" rel="noreferrer">Bluebook & practice tests ↗</a></div></section>
-    <EnglishResourcePanel space="sat" title="SAT workbooks & notes" />
-  </div>;
-}
+  return (
+    <div className="space-y-8">
+      <EnglishPageHeader
+        eyebrow="English · Exam · Practice questions"
+        title="Digital SAT · Reading & Writing"
+        description="This exam lane is for SAT practice questions: College Board practice banks / Bluebook and practice sets you upload. Core language skills stay under Basic skills."
+      />
 
+      <section className="rounded-xl border border-rose-200 bg-rose-50/70 px-4 py-3 text-sm text-rose-950">
+        <p className="font-semibold">Practice questions</p>
+        <p className="mt-1 text-rose-900/85">
+          Use official College Board practice and upload your own practice sets below. Skill drills
+          live on{" "}
+          <Link href="/english#skills" className="font-semibold underline">
+            Basic skills
+          </Link>
+          .
+        </p>
+      </section>
+
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          { title: "Information and Ideas", text: "Central ideas, details, evidence, and inferences" },
+          { title: "Craft and Structure", text: "Words in context, text purpose, and connections" },
+          { title: "Expression of Ideas", text: "Rhetorical synthesis and transitions" },
+          { title: "Standard English", text: "Sentence structure, usage, and punctuation" },
+        ].map((item) => (
+          <article key={item.title} className="card">
+            <h2 className="font-semibold text-brand-800">{item.title}</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600">{item.text}</p>
+          </article>
+        ))}
+      </section>
+
+      <section className="card">
+        <h2 className="font-semibold">Official SAT practice</h2>
+        <p className="mt-2 text-sm text-slate-600">
+          Reading and Writing has two 32-minute modules; Module 2 adapts based on Module 1.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-3">
+          <a
+            className="btn-secondary"
+            href="https://satsuite.collegeboard.org/practice/student-question-bank"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Student Question Bank ↗
+          </a>
+          <a
+            className="btn-secondary"
+            href="https://satsuite.collegeboard.org/practice/practice-tests"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Bluebook & practice tests ↗
+          </a>
+        </div>
+      </section>
+
+      <EnglishResourcePanel
+        space="sat"
+        title="SAT · upload practice questions, sets & notes"
+      />
+
+      <p className="text-xs text-slate-500">
+        <Link href="/english#skills" className="text-brand-600 hover:underline">
+          Basic skills
+        </Link>
+        {" · "}
+        <Link href="/english/ai" className="text-brand-600 hover:underline">
+          English AI Tutor
+        </Link>
+      </p>
+    </div>
+  );
+}
