@@ -488,8 +488,8 @@ export default function FocusDeskTool() {
   return (
     <StudyToolShell
       title="Tomato focus desk"
-      description="Pixel tomato window: Pomodoro timer, focus-noise sound box, potatoes & circles. Night (B&W) is toggled in the Style window."
-      tip="25 / 5 default. Open Style → Night mode for B&W pixel chrome. Noise types stay local Web Audio."
+      description="Pixel tomato window: Pomodoro timer, focus-noise sound box, potatoes & circles. Site Night mode (Style) also paints this desk black & white."
+      tip="25 / 5 default. Style → Night mode darkens the whole site (desk goes B&W too). Noise stays local Web Audio."
     >
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="block text-sm">

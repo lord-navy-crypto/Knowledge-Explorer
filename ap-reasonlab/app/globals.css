@@ -1362,7 +1362,8 @@ html[data-theme="silver"] .btn-ghost:hover {
 .tomato-cloud-circle {
   position: fixed;
   bottom: 5.5rem;
-  right: 10.75rem;
+  /* Sit clearly left of Style (avoid overlap with Style launcher) */
+  right: 13.25rem;
   z-index: 55;
   width: 3.35rem;
   height: 3.35rem;
@@ -1452,7 +1453,7 @@ html[data-theme="silver"] .btn-ghost:hover {
 @media (min-width: 768px) {
   .tomato-cloud-circle {
     bottom: 1.5rem;
-    right: 11rem;
+    right: 13.5rem;
   }
 }
 
@@ -1498,6 +1499,175 @@ html[data-night="on"] .tomato-cloud-circle-label {
 
 html[data-night="on"] .tomato-cloud-circle-puff {
   background: rgba(255, 255, 255, 0.35);
+}
+
+/* Whole-site night mode (Style window toggle) */
+html[data-night="on"] {
+  color-scheme: dark;
+  --ke-ink: #e8eef7;
+  --ke-navy: #93c5fd;
+  --ke-paper: #0b1220;
+  --ke-paper-deep: #070d18;
+  --ke-surface: rgba(15, 23, 42, 0.94);
+  --ke-border: rgba(148, 163, 184, 0.3);
+  --ke-border-strong: rgba(148, 163, 184, 0.48);
+  --ke-print: rgba(148, 163, 184, 0.05);
+  --ke-print-strong: rgba(148, 163, 184, 0.09);
+  --ke-accent: #93c5fd;
+  --ke-hero-from: #020617;
+  --ke-hero-mid: #0f172a;
+  --ke-hero-to: #1e3a5f;
+}
+
+html[data-night="on"] body {
+  color: #e2e8f0;
+  background-color: #0b1220;
+  background-image:
+    radial-gradient(ellipse at 15% 0%, rgba(59, 130, 246, 0.12), transparent 42%),
+    radial-gradient(ellipse at 85% 12%, rgba(148, 163, 184, 0.08), transparent 38%),
+    linear-gradient(180deg, #0b1220 0%, #0f172a 180px, #070d18 100%);
+  background-size: auto, auto, auto;
+  background-position: 0 0, 0 0, 0 0;
+  background-attachment: scroll, scroll, scroll;
+  background-blend-mode: normal, normal, normal;
+}
+
+html[data-night="on"] .academic-print {
+  opacity: 0.1;
+  mix-blend-mode: soft-light;
+}
+
+html[data-night="on"] .site-shell {
+  box-shadow:
+    inset 0 0 0 1px rgba(148, 163, 184, 0.28),
+    inset 0 0 0 5px rgba(11, 18, 32, 0.85),
+    inset 0 0 0 6px rgba(148, 163, 184, 0.4);
+}
+
+html[data-night="on"] header.sticky {
+  border-color: rgba(148, 163, 184, 0.35) !important;
+  background: rgba(11, 18, 32, 0.92) !important;
+  color: #e2e8f0;
+}
+
+html[data-night="on"] header .text-slate-900,
+html[data-night="on"] .section-title,
+html[data-night="on"] main .font-bold,
+html[data-night="on"] main .font-semibold,
+html[data-night="on"] .text-slate-900,
+html[data-night="on"] .text-slate-800 {
+  color: #f1f5f9 !important;
+}
+
+html[data-night="on"] .text-slate-700,
+html[data-night="on"] .text-slate-600,
+html[data-night="on"] .text-slate-500,
+html[data-night="on"] .text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+html[data-night="on"] .bg-white,
+html[data-night="on"] .bg-white\/90,
+html[data-night="on"] .bg-white\/95,
+html[data-night="on"] .bg-slate-50,
+html[data-night="on"] .bg-slate-100 {
+  background-color: #111827 !important;
+}
+
+html[data-night="on"] .card,
+html[data-night="on"] .card-hover,
+html[data-night="on"] .guide-panel,
+html[data-night="on"] .guide-panel-inner {
+  border-color: rgba(148, 163, 184, 0.35);
+  background: linear-gradient(160deg, #111827 0%, #0f172a 100%);
+  color: #e2e8f0;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+}
+
+html[data-night="on"] .btn-secondary,
+html[data-night="on"] .btn-ghost,
+html[data-night="on"] .filter-pill,
+html[data-night="on"] .input,
+html[data-night="on"] .textarea {
+  border-color: rgba(148, 163, 184, 0.4);
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+html[data-night="on"] .filter-pill-active {
+  border-color: #93c5fd;
+  background: #1e3a5f;
+  color: #f8fafc;
+}
+
+html[data-night="on"] .badge {
+  background: rgba(147, 197, 253, 0.15);
+  color: #93c5fd;
+}
+
+html[data-night="on"] .hero-gradient {
+  background: linear-gradient(135deg, #020617 0%, #0f172a 45%, #1e3a5f 100%);
+}
+
+html[data-night="on"] footer {
+  border-color: rgba(148, 163, 184, 0.3) !important;
+  background: #070d18 !important;
+  color: #94a3b8 !important;
+}
+
+html[data-night="on"] a.text-brand-700,
+html[data-night="on"] .text-brand-700 {
+  color: #93c5fd !important;
+}
+
+html[data-night="on"] .border-slate-200,
+html[data-night="on"] .border-slate-200\/80,
+html[data-night="on"] .border-slate-300 {
+  border-color: rgba(148, 163, 184, 0.35) !important;
+}
+
+html[data-night="on"] .style-window {
+  border-color: #64748b;
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+html[data-night="on"] .style-window-titlebar {
+  background: #111827;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+
+html[data-night="on"] .style-window-lead,
+html[data-night="on"] .style-night-blurb {
+  color: #94a3b8;
+}
+
+html[data-night="on"] .style-night-row {
+  border-color: #334155;
+  background: #111827;
+}
+
+html[data-night="on"] .style-night-title,
+html[data-night="on"] .style-window-heading {
+  color: #f1f5f9;
+}
+
+html[data-night="on"] .style-window-launcher {
+  border-color: #475569;
+  background: rgba(15, 23, 42, 0.96);
+  color: #e2e8f0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+
+/* Cyberpunk stays neon; night just deepens the deck slightly */
+html[data-night="on"][data-theme="cyberpunk"] body {
+  background:
+    linear-gradient(rgba(255, 42, 42, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 42, 42, 0.02) 1px, transparent 1px),
+    radial-gradient(ellipse at 12% 0%, rgba(255, 42, 42, 0.16), transparent 42%),
+    linear-gradient(180deg, #050508 0%, #0a0608 180px, #050507 100%);
+  background-size: 28px 28px, 28px 28px, auto, auto;
 }
 
 /* Style window launcher + frame */
@@ -2381,6 +2551,7 @@ html[data-theme="silver"] .style-window-launcher {
   nav,
   .no-print,
   .style-window-launcher,
+  .tomato-cloud-circle,
   [class*="MobileAction"] {
     display: none !important;
   }
