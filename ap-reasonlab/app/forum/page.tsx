@@ -46,6 +46,14 @@ function ForumHub() {
   const router = useRouter();
   const tab = useMemo(() => parseTab(searchParams.get("tab")), [searchParams]);
   const boxView = useMemo(() => parseBoxView(searchParams.get("view")), [searchParams]);
+  const sharedSpaceKey = useMemo(
+    () =>
+      spaceFromSearchParams({
+        subject: searchParams.get("subject"),
+        folder: searchParams.get("folder"),
+      }),
+    [searchParams]
+  );
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -131,7 +139,7 @@ function ForumHub() {
           <UnifiedMediaFrame
             alsoShow={["document", "folder"]}
             folderArea="materials"
-            spaceKey="_root"
+            spaceKey={sharedSpaceKey}
             spaceBasePath="/forum?tab=shared"
             title="Shared library · pictures, documents & files"
             allowPublicContributions
