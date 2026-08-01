@@ -6,15 +6,16 @@ export default function IeltsPage() {
   return (
     <div className="space-y-8">
       <EnglishPageHeader
-        eyebrow="English · Exam · Real questions"
+        eyebrow="English · Exam · Practice questions"
         title="IELTS Academic"
-        description="This exam lane is for authentic IELTS practice: official samples and real papers you upload. Grammar, vocab, and writing craft stay under Basic skills."
+        description="This exam lane is for IELTS practice questions: official samples and practice sets you upload. Grammar, vocab, and writing craft stay under Basic skills."
       />
 
       <section className="rounded-xl border border-rose-200 bg-rose-50/70 px-4 py-3 text-sm text-rose-950">
-        <p className="font-semibold">Real questions only</p>
+        <p className="font-semibold">Practice questions</p>
         <p className="mt-1 text-rose-900/85">
-          Prefer official IELTS samples and your own past papers below. Skill tools are on{" "}
+          Prefer official IELTS practice samples and your own practice sets below. Skill tools are
+          on{" "}
           <Link href="/english#skills" className="font-semibold underline">
             Basic skills
           </Link>
@@ -37,7 +38,7 @@ export default function IeltsPage() {
       </section>
 
       <section className="card">
-        <h2 className="font-semibold">Official IELTS (real / authentic sources)</h2>
+        <h2 className="font-semibold">Official IELTS practice</h2>
         <div className="mt-3 flex flex-wrap gap-3">
           <a
             className="btn-secondary"
@@ -60,7 +61,7 @@ export default function IeltsPage() {
 
       <EnglishResourcePanel
         space="ielts"
-        title="IELTS · upload real papers, past questions & notes"
+        title="IELTS · upload practice questions, sets & notes"
       />
 
       <p className="text-xs text-slate-500">

@@ -6,16 +6,16 @@ export default function ToeflPage() {
   return (
     <div className="space-y-8">
       <EnglishPageHeader
-        eyebrow="English · Exam · Real questions"
+        eyebrow="English · Exam · Practice questions"
         title="TOEFL iBT"
-        description="This exam lane is for authentic TOEFL practice only: official ETS materials and real papers you upload. Build vocabulary, grammar, and writing under Basic skills."
+        description="This exam lane is for TOEFL practice questions: official ETS practice materials and practice sets you upload. Build vocabulary, grammar, and writing under Basic skills."
       />
 
       <section className="rounded-xl border border-rose-200 bg-rose-50/70 px-4 py-3 text-sm text-rose-950">
-        <p className="font-semibold">Real questions only</p>
+        <p className="font-semibold">Practice questions</p>
         <p className="mt-1 text-rose-900/85">
-          Upload past papers and notes below, or use ETS official links. Skill drills and local
-          practice tools are on{" "}
+          Upload practice sets and notes below, or use ETS official practice links. Skill drills and
+          local tools are on{" "}
           <Link href="/english#skills" className="font-semibold underline">
             Basic skills
           </Link>
@@ -38,7 +38,7 @@ export default function ToeflPage() {
       </section>
 
       <section className="card">
-        <h2 className="font-semibold">Official TOEFL (real / authentic sources)</h2>
+        <h2 className="font-semibold">Official TOEFL practice</h2>
         <p className="mt-2 text-sm text-slate-600">
           Use ETS for current format and official preparation. Knowledge Explorer is not affiliated
           with ETS.
@@ -65,7 +65,7 @@ export default function ToeflPage() {
 
       <EnglishResourcePanel
         space="toefl"
-        title="TOEFL · upload real papers, past questions & notes"
+        title="TOEFL · upload practice questions, sets & notes"
       />
 
       <p className="text-xs text-slate-500">

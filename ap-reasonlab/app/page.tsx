@@ -15,7 +15,7 @@ const boxes = [
   },
   {
     title: "English Learning",
-    description: "Exams (real questions) · Skills (vocab/grammar/writing) · English AI Tutor.",
+    description: "Exams (practice questions) · Skills (vocab/grammar/writing) · English AI Tutor.",
     href: "/english",
   },
   {

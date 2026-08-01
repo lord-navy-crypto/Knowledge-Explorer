@@ -6,15 +6,16 @@ export default function SatPage() {
   return (
     <div className="space-y-8">
       <EnglishPageHeader
-        eyebrow="English · Exam · Real questions"
+        eyebrow="English · Exam · Practice questions"
         title="Digital SAT · Reading & Writing"
-        description="This exam lane is for authentic SAT practice: College Board question banks / Bluebook and real papers you upload. Core language skills stay under Basic skills."
+        description="This exam lane is for SAT practice questions: College Board practice banks / Bluebook and practice sets you upload. Core language skills stay under Basic skills."
       />
 
       <section className="rounded-xl border border-rose-200 bg-rose-50/70 px-4 py-3 text-sm text-rose-950">
-        <p className="font-semibold">Real questions only</p>
+        <p className="font-semibold">Practice questions</p>
         <p className="mt-1 text-rose-900/85">
-          Use official College Board practice and upload your own sets below. Skill drills live on{" "}
+          Use official College Board practice and upload your own practice sets below. Skill drills
+          live on{" "}
           <Link href="/english#skills" className="font-semibold underline">
             Basic skills
           </Link>
@@ -37,7 +38,7 @@ export default function SatPage() {
       </section>
 
       <section className="card">
-        <h2 className="font-semibold">Official SAT practice (real questions)</h2>
+        <h2 className="font-semibold">Official SAT practice</h2>
         <p className="mt-2 text-sm text-slate-600">
           Reading and Writing has two 32-minute modules; Module 2 adapts based on Module 1.
         </p>
@@ -61,7 +62,10 @@ export default function SatPage() {
         </div>
       </section>
 
-      <EnglishResourcePanel space="sat" title="SAT · upload real papers, past questions & notes" />
+      <EnglishResourcePanel
+        space="sat"
+        title="SAT · upload practice questions, sets & notes"
+      />
 
       <p className="text-xs text-slate-500">
         <Link href="/english#skills" className="text-brand-600 hover:underline">

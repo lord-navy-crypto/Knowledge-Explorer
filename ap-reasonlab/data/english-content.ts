@@ -7,29 +7,29 @@ export type EnglishPracticeQuestion = {
   explanation: string;
 };
 
-/** Exam tracks — real questions, official banks, and uploaded past papers. */
+/** Exam tracks — exam-style practice questions and uploaded practice sets. */
 export const englishExamAreas = [
   {
     href: "/english/toefl",
     title: "TOEFL",
     icon: "T",
-    description: "Real TOEFL practice: official ETS sources and your uploaded past papers.",
+    description: "TOEFL practice questions: official ETS practice sources and sets you upload.",
   },
   {
     href: "/english/ielts",
     title: "IELTS",
     icon: "I",
-    description: "Real IELTS Academic papers and official sample questions.",
+    description: "IELTS Academic practice questions and official sample practice.",
   },
   {
     href: "/english/sat",
     title: "SAT",
     icon: "S",
-    description: "Real Digital SAT Reading & Writing via College Board practice and your files.",
+    description: "Digital SAT Reading & Writing practice via College Board and your files.",
   },
 ] as const;
 
-/** Core English skills — language ability, not exam past papers. */
+/** Core English skills — language ability, separate from exam practice sets. */
 export const englishSkillAreas = [
   {
     href: "/english/vocabulary",
@@ -51,7 +51,7 @@ export const englishSkillAreas = [
   },
 ] as const;
 
-/** Local practice tools that support skills (not exam past papers). */
+/** Local practice tools that support skills (not exam practice sets). */
 export const englishPracticeTools = [
   {
     href: "/tools/vocab-book",

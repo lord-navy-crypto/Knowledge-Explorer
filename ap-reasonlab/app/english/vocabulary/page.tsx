@@ -9,7 +9,7 @@ export default function VocabularyPage() {
       <EnglishPageHeader
         eyebrow="English · Skills · Real English"
         title="Academic Vocabulary"
-        description="Build usable word knowledge: meaning, word family, collocation, and context. This is a skills lane — not TOEFL/IELTS/SAT past papers."
+        description="Build usable word knowledge: meaning, word family, collocation, and context. This is a skills lane — separate from TOEFL/IELTS/SAT practice sets."
       />
 
       <section className="flex flex-wrap gap-2 text-sm">

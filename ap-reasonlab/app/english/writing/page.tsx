@@ -8,7 +8,7 @@ export default function WritingPage() {
       <EnglishPageHeader
         eyebrow="English · Skills · Real English"
         title="Writing Workshop"
-        description="Plan, draft, diagnose, and revise. Skills lane for writing craft — exam past papers stay under TOEFL / IELTS / SAT."
+        description="Plan, draft, diagnose, and revise. Skills lane for writing craft — exam practice questions stay under TOEFL / IELTS / SAT."
       />
 
       <section className="flex flex-wrap gap-2 text-sm">
