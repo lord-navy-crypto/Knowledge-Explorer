@@ -16,6 +16,7 @@ const STATIC_STUDY_PATHS = [
   "/tools/pdf-tools",
   "/tools/word-count",
   "/tools/focus-desk",
+  "/tools/speech-to-text",
   "/tools/formula-board",
   "/code",
   "/forum",

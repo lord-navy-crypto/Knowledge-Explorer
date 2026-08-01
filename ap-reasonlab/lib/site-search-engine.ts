@@ -332,6 +332,7 @@ export function searchSiteEngine(
     { id: "sci-notation", title: "Scientific notation", subject: "Tools", detail: "Sig figs and scientific form", href: "/tools/sci-notation" },
     { id: "vector-resolve", title: "Vector components", subject: "Tools", detail: "Resolve 2D vectors", href: "/tools/vector-resolve" },
     { id: "vocab-book", title: "Vocab book", subject: "Tools", detail: "English vocabulary flash cards", href: "/tools/vocab-book" },
+    { id: "speech-to-text", title: "Speech to text", subject: "Tools", detail: "Mic, record, or upload audio to English text", href: "/tools/speech-to-text" },
     { id: "dictation", title: "Dictation", subject: "Tools", detail: "Listen and type practice", href: "/tools/dictation" },
     { id: "paraphrase", title: "Paraphrase compare", subject: "Tools", detail: "Compare rewrite overlap", href: "/tools/paraphrase" },
     { id: "reading-highlight", title: "Reading highlights", subject: "Tools", detail: "Highlight passages with notes", href: "/tools/reading-highlight" },
