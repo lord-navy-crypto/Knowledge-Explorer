@@ -10,6 +10,7 @@ import {
   resolveCatalogSubject,
 } from "@/lib/storage-space";
 import { AP_CATALOG, getSubjectBySlug } from "@/data/ap-catalog";
+import { allEnglishExamSectionSpaces } from "@/data/english-exam-sections";
 
 export type MediaAlsoShow = Array<
   "concept" | "topic" | "formula" | "document" | "member" | "folder" | "subject" | "questionnaire"
@@ -60,9 +61,10 @@ export const SITE_SECTION_FOLDERS: SiteSectionFolder[] = [
     pages: [
       { area: "english", space: ROOT_SPACE, label: "English hub", href: "/english" },
       { area: "english", space: "ai", label: "English AI", href: "/english/ai" },
-      { area: "english", space: "toefl", label: "TOEFL", href: "/english/toefl" },
-      { area: "english", space: "ielts", label: "IELTS", href: "/english/ielts" },
-      { area: "english", space: "sat", label: "SAT", href: "/english/sat" },
+      { area: "english", space: "toefl", label: "TOEFL hub", href: "/english/toefl" },
+      { area: "english", space: "ielts", label: "IELTS hub", href: "/english/ielts" },
+      { area: "english", space: "sat", label: "SAT hub", href: "/english/sat" },
+      ...allEnglishExamSectionSpaces(),
       { area: "english", space: "vocabulary", label: "Vocabulary", href: "/english/vocabulary" },
       { area: "english", space: "grammar", label: "Grammar", href: "/english/grammar" },
       { area: "english", space: "writing", label: "Writing", href: "/english/writing" },
