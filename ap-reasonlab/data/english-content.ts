@@ -7,14 +7,84 @@ export type EnglishPracticeQuestion = {
   explanation: string;
 };
 
+/** Exam tracks — real questions, official banks, and uploaded past papers. */
+export const englishExamAreas = [
+  {
+    href: "/english/toefl",
+    title: "TOEFL",
+    icon: "T",
+    description: "Real TOEFL practice: official ETS sources and your uploaded past papers.",
+  },
+  {
+    href: "/english/ielts",
+    title: "IELTS",
+    icon: "I",
+    description: "Real IELTS Academic papers and official sample questions.",
+  },
+  {
+    href: "/english/sat",
+    title: "SAT",
+    icon: "S",
+    description: "Real Digital SAT Reading & Writing via College Board practice and your files.",
+  },
+] as const;
+
+/** Core English skills — language ability, not exam past papers. */
+export const englishSkillAreas = [
+  {
+    href: "/english/vocabulary",
+    title: "Vocabulary",
+    icon: "V",
+    description: "Word meaning, families, collocations, and active recall.",
+  },
+  {
+    href: "/english/grammar",
+    title: "Grammar & Sentences",
+    icon: "G",
+    description: "Sentence control, clauses, transitions, and revision.",
+  },
+  {
+    href: "/english/writing",
+    title: "Writing",
+    icon: "W",
+    description: "Paragraph logic, evidence, clarity, and draft revision.",
+  },
+] as const;
+
+/** Local practice tools that support skills (not exam past papers). */
+export const englishPracticeTools = [
+  {
+    href: "/tools/vocab-book",
+    title: "My vocab book",
+    description: "Personal flashcards saved in this browser.",
+  },
+  {
+    href: "/tools/dictation",
+    title: "Dictation",
+    description: "Listen and type to train listening + spelling.",
+  },
+  {
+    href: "/tools/paraphrase",
+    title: "Paraphrase compare",
+    description: "Check rewrite overlap for safer paraphrasing.",
+  },
+  {
+    href: "/tools/reading-highlight",
+    title: "Reading highlights",
+    description: "Mark passages and keep margin notes locally.",
+  },
+] as const;
+
+/** Flat list for search / legacy consumers. */
 export const englishAreas = [
-  { href: "/english/toefl", title: "TOEFL", icon: "T", description: "2026 iBT skills, academic English, original mini practice, and official ETS resources." },
-  { href: "/english/ielts", title: "IELTS", icon: "I", description: "Academic Listening, Reading, Writing, and Speaking with task planning." },
-  { href: "/english/sat", title: "SAT", icon: "S", description: "Digital SAT Reading & Writing domains, grammar, rhetoric, and short passages." },
-  { href: "/english/vocabulary", title: "Vocabulary", icon: "V", description: "Academic word families, collocations, context, and active-recall study." },
-  { href: "/english/grammar", title: "Grammar & Sentences", icon: "G", description: "Sentence boundaries, clauses, transitions, punctuation, and revision." },
-  { href: "/english/writing", title: "Writing", icon: "W", description: "Paragraph logic, evidence, academic discussion, email, and essay revision." },
-  { href: "/english/ai", title: "English AI Tutor", icon: "AI", description: "A focused AI for English learning, writing feedback, vocabulary, and test strategy." },
+  ...englishExamAreas,
+  ...englishSkillAreas,
+  {
+    href: "/english/ai",
+    title: "English AI Tutor",
+    icon: "AI",
+    description: "Focused English tutor in AI Toolbox — writing, vocab, and strategy feedback.",
+  },
 ] as const;
 
 export const academicVocabulary = [
