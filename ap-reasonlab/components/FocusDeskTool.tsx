@@ -269,15 +269,11 @@ export default function FocusDeskTool() {
       {desk}
 
       <p className="text-xs text-slate-500">
-        Also see{" "}
-        <Link href="/tools/timer" className="text-brand-600 hover:underline">
-          Study timer
-        </Link>{" "}
-        for exam-style countdowns, and{" "}
+        For test dates (not Pomodoro), use{" "}
         <Link href="/tools/exam-countdown" className="text-brand-600 hover:underline">
           Exam countdown
-        </Link>{" "}
-        for test dates.
+        </Link>
+        . The old separate Study timer page now redirects here.
       </p>
     </StudyToolShell>
   );

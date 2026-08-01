@@ -10,6 +10,14 @@ export type StudyToolCategory =
   | "utilities"
   | "draw";
 
+/** Risk / permission hint shown in the toolbox catalog. */
+export type ToolSecurity =
+  | "safe"
+  | "local-data"
+  | "upload"
+  | "keys"
+  | "shared";
+
 export type StudyTool = {
   id: string;
   href: string;
@@ -17,6 +25,44 @@ export type StudyTool = {
   blurb: string;
   category: StudyToolCategory;
   badge?: string;
+  /**
+   * When false, keep the route for bookmarks/redirects but hide from /tools grid.
+   * Default true.
+   */
+  listed?: boolean;
+  /** Security / permission class for the toolbox catalog. */
+  security?: ToolSecurity;
+};
+
+export const TOOL_SECURITY_LABELS: Record<
+  ToolSecurity,
+  { label: string; detail: string; className: string }
+> = {
+  safe: {
+    label: "Safe",
+    detail: "Runs locally; no file upload or API keys.",
+    className: "bg-emerald-100 text-emerald-800",
+  },
+  "local-data": {
+    label: "Local data",
+    detail: "Saves in this browser only (localStorage / memory).",
+    className: "bg-sky-100 text-sky-800",
+  },
+  upload: {
+    label: "File permission",
+    detail: "Needs you to choose a file. Processing stays in this browser unless noted.",
+    className: "bg-amber-100 text-amber-900",
+  },
+  keys: {
+    label: "API key",
+    detail: "May ask for your own API key / token. Never paste a change code here.",
+    className: "bg-rose-100 text-rose-800",
+  },
+  shared: {
+    label: "Shared / change code",
+    detail: "Can publish or delete with a change code / shared storage.",
+    className: "bg-violet-100 text-violet-900",
+  },
 };
 
 export const STUDY_TOOL_CATEGORIES: Array<{ id: StudyToolCategory; label: string }> = [
@@ -33,27 +79,30 @@ export const STUDY_TOOL_CATEGORIES: Array<{ id: StudyToolCategory; label: string
 ];
 
 export const STUDY_TOOLS: StudyTool[] = [
-  // —— AI ——
+  // —— AI (one hub; calculator/grapher are deep-links, not separate recommended cards) ——
   {
     id: "ai",
     href: "/hints",
     title: "Unified AI panel",
-    blurb: "本地 AI 优先；云端备用。AP / English / Coding 一体对话。",
+    blurb: "Local AI first; cloud backup. AP / English / Coding in one place — plus Calculator & Grapher tabs.",
     category: "ai",
+    security: "keys",
   },
   {
     id: "calculator",
     href: "/hints?tool=calculator",
     title: "KE-84 Calculator",
-    blurb: "TI-inspired scientific keypad inside AI Toolbox.",
+    blurb: "Open Calculator tab inside AI Toolbox (not a separate app).",
     category: "ai",
+    security: "safe",
   },
   {
     id: "grapher",
     href: "/hints?tool=grapher",
     title: "KE Graph",
-    blurb: "Function plotter — plot y = f(x) with zoom and trace.",
+    blurb: "Open Grapher tab inside AI Toolbox — plot y = f(x).",
     category: "ai",
+    security: "safe",
   },
 
   // —— Study desk ——
@@ -61,30 +110,35 @@ export const STUDY_TOOLS: StudyTool[] = [
     id: "focus-desk",
     href: "/tools/focus-desk",
     title: "Tomato focus desk",
-    blurb: "Pomodoro focus/break cycles with optional white noise and full-desk mode.",
+    blurb: "Pomodoro focus/break + optional white noise. Replaces the old separate Study timer page.",
     category: "study",
-    badge: "New",
+    security: "safe",
   },
   {
+    // Hidden: merged into focus-desk; route redirects.
     id: "timer",
-    href: "/tools/timer",
+    href: "/tools/focus-desk",
     title: "Study timer",
-    blurb: "Pomodoro and custom exam timers — stays on this device.",
+    blurb: "Merged into Tomato focus desk.",
     category: "study",
+    listed: false,
+    security: "safe",
   },
   {
     id: "flashcards",
     href: "/tools/flashcards",
-    title: "Flashcards",
-    blurb: "Turn concept lines into flip cards and practice locally.",
+    title: "Flashcards (paste)",
+    blurb: "Ephemeral STEM flip cards from pasted lines — not saved like Vocab book.",
     category: "study",
+    security: "safe",
   },
   {
     id: "mistake-notebook",
     href: "/tools/mistake-notebook",
     title: "Mistake notebook",
-    blurb: "Log wrong answers, what you missed, and the fix — private to this browser.",
+    blurb: "Log wrong answers and fixes — private to this browser.",
     category: "study",
+    security: "local-data",
   },
   {
     id: "exam-countdown",
@@ -92,6 +146,15 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "Exam countdown",
     blurb: "Track exam dates and days remaining on this device.",
     category: "study",
+    security: "local-data",
+  },
+  {
+    id: "code-board",
+    href: "/tools/code-board",
+    title: "Long code block adder",
+    blurb: "Scrollable code library with comments — also linked from Code hub.",
+    category: "study",
+    security: "local-data",
   },
   {
     id: "word-count",
@@ -99,6 +162,7 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "Word count & reading time",
     blurb: "Count words, characters, sentences, and estimate reading time.",
     category: "study",
+    security: "safe",
   },
 
   // —— English ——
@@ -106,9 +170,9 @@ export const STUDY_TOOLS: StudyTool[] = [
     id: "vocab-book",
     href: "/tools/vocab-book",
     title: "Vocab book",
-    blurb: "Save words, meanings, and examples; flip cards to self-test.",
+    blurb: "Saved English words with flip self-test (persists in this browser).",
     category: "english",
-    badge: "New",
+    security: "local-data",
   },
   {
     id: "dictation",
@@ -116,15 +180,15 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "Dictation",
     blurb: "Listen with browser speech, type what you hear, check accuracy.",
     category: "english",
-    badge: "New",
+    security: "safe",
   },
   {
     id: "paraphrase",
     href: "/tools/paraphrase",
     title: "Paraphrase compare",
-    blurb: "Compare original vs rewrite wording overlap for safer paraphrasing.",
+    blurb: "Compare original vs rewrite wording overlap (English rewrite check).",
     category: "english",
-    badge: "New",
+    security: "safe",
   },
   {
     id: "reading-highlight",
@@ -132,7 +196,7 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "Reading highlights",
     blurb: "Highlight passage phrases with colors and margin notes locally.",
     category: "english",
-    badge: "New",
+    security: "local-data",
   },
 
   // —— Math ——
@@ -142,15 +206,7 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "Formula board",
     blurb: "Common AP / STEM formulas — one-click copy as LaTeX or plain text.",
     category: "math",
-    badge: "New",
-  },
-  {
-    id: "code-board",
-    href: "/tools/code-board",
-    title: "Long code block adder",
-    blurb: "Save common / long code with comments — scrollable library, paste instead of upload.",
-    category: "study",
-    badge: "New",
+    security: "safe",
   },
   {
     id: "latex",
@@ -158,6 +214,7 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "LaTeX checker",
     blurb: "Paste $math$ / $$display$$ and preview with KaTeX instantly.",
     category: "math",
+    security: "safe",
   },
   {
     id: "units",
@@ -165,6 +222,7 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "Units & constants",
     blurb: "AP Physics / Chemistry unit converter plus common constants.",
     category: "math",
+    security: "safe",
   },
   {
     id: "sci-notation",
@@ -172,6 +230,7 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "Scientific notation & sig figs",
     blurb: "Convert numbers and estimate significant figures for lab work.",
     category: "math",
+    security: "safe",
   },
   {
     id: "vector-resolve",
@@ -179,6 +238,7 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "Vector components",
     blurb: "Resolve a 2D vector into x/y components with a simple diagram.",
     category: "math",
+    security: "safe",
   },
 
   // —— Write ——
@@ -188,6 +248,7 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "Dual-column editor",
     blurb: "Markdown on the left, live render on the right — FRQ writing desk.",
     category: "write",
+    security: "safe",
   },
   {
     id: "typewriter",
@@ -195,6 +256,7 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "Typewriter mode",
     blurb: "Reveal concepts one line at a time for memorization.",
     category: "write",
+    security: "safe",
   },
 
   // —— Draw ——
@@ -204,6 +266,7 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "Black draft paper",
     blurb: "Dual-blended black board: typed notes + stylus/drawing canvas.",
     category: "draw",
+    security: "local-data",
   },
 
   // —— File lab ——
@@ -213,6 +276,7 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "Word → PDF",
     blurb: "Upload .docx, preview, then Print → Save as PDF in one flow.",
     category: "files",
+    security: "upload",
   },
   {
     id: "word-import",
@@ -220,6 +284,7 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "Word → Markdown",
     blurb: "Extract editable Markdown from .docx for concepts and editors.",
     category: "files",
+    security: "upload",
   },
   {
     id: "markdown-pdf",
@@ -227,6 +292,7 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "Markdown → PDF",
     blurb: "Write Markdown + LaTeX, preview, then print / save as PDF.",
     category: "files",
+    security: "safe",
   },
   {
     id: "pdf-tools",
@@ -234,6 +300,7 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "PDF merge & split",
     blurb: "Combine PDFs or extract page ranges — all in this browser.",
     category: "files",
+    security: "upload",
   },
   {
     id: "pdf-compress",
@@ -241,7 +308,7 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "PDF compress (light)",
     blurb: "Rebuild a PDF to trim unused objects; modest browser-side shrink.",
     category: "files",
-    badge: "New",
+    security: "upload",
   },
   {
     id: "csv-markdown",
@@ -249,6 +316,7 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "CSV → Markdown table",
     blurb: "Paste or upload CSV and copy a clean Markdown table.",
     category: "files",
+    security: "upload",
   },
   {
     id: "markdown-plain",
@@ -256,7 +324,7 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "Markdown ↔ plain text",
     blurb: "Strip Markdown to plain text or wrap plain paragraphs as Markdown.",
     category: "files",
-    badge: "New",
+    security: "safe",
   },
   {
     id: "batch-rename",
@@ -264,7 +332,7 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "Batch rename export",
     blurb: "Preview numbered names and download renamed file copies locally.",
     category: "files",
-    badge: "New",
+    security: "upload",
   },
 
   // —— Images ——
@@ -274,6 +342,7 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "Image compress & convert",
     blurb: "Shrink photos, set max width, export JPEG / WebP / PNG locally.",
     category: "media",
+    security: "upload",
   },
   {
     id: "image-crop",
@@ -281,7 +350,7 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "Image crop & annotate",
     blurb: "Crop a region or draw simple marks, then download PNG.",
     category: "media",
-    badge: "New",
+    security: "upload",
   },
 
   // —— Classroom light ——
@@ -289,17 +358,17 @@ export const STUDY_TOOLS: StudyTool[] = [
     id: "text-diff",
     href: "/tools/text-diff",
     title: "Text diff",
-    blurb: "Compare two drafts line by line for peer review or rewriting.",
+    blurb: "Compare two drafts line by line (general text — not the English paraphrase tool).",
     category: "collab",
-    badge: "New",
+    security: "safe",
   },
   {
     id: "random-groups",
     href: "/tools/random-groups",
     title: "Random pick & groups",
-    blurb: "Shuffle a class list into groups or pick one name at random.",
+    blurb: "Shuffle a class list into groups or pick one name — names stay in this browser.",
     category: "collab",
-    badge: "New",
+    security: "local-data",
   },
   {
     id: "short-code",
@@ -307,7 +376,7 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "Short codes (local)",
     blurb: "Map short codes to URLs/notes in this browser for class sharing.",
     category: "collab",
-    badge: "New",
+    security: "local-data",
   },
 
   // —— Utilities ——
@@ -317,6 +386,7 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "Color & contrast",
     blurb: "Pick colors and check WCAG contrast for readable materials.",
     category: "utilities",
+    security: "safe",
   },
   {
     id: "qr-code",
@@ -324,5 +394,14 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "QR code",
     blurb: "Turn a link or short text into a downloadable QR code.",
     category: "utilities",
+    security: "safe",
   },
 ];
+
+export function listedStudyTools(): StudyTool[] {
+  return STUDY_TOOLS.filter((tool) => tool.listed !== false);
+}
+
+export function getStudyTool(id: string): StudyTool | undefined {
+  return STUDY_TOOLS.find((tool) => tool.id === id);
+}

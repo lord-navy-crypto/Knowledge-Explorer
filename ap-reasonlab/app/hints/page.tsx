@@ -192,7 +192,7 @@ function ToolboxContent() {
         alsoShow={["document", "folder"]}
       />
 
-      <RecommendedStudyTools />
+      <RecommendedStudyTools context="hints" />
     </div>
   );
 }

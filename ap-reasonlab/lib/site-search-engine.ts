@@ -317,7 +317,7 @@ export function searchSiteEngine(
     { id: "markdown-plain", title: "Markdown plain text", subject: "Tools", detail: "Markdown and plain text convert", href: "/tools/markdown-plain" },
     { id: "batch-rename", title: "Batch rename", subject: "Tools", detail: "Rename file copies locally", href: "/tools/batch-rename" },
     { id: "word-count", title: "Word count", subject: "Tools", detail: "Words characters reading time", href: "/tools/word-count" },
-    { id: "focus-desk", title: "Tomato focus desk", subject: "Tools", detail: "Pomodoro with optional white noise", href: "/tools/focus-desk" },
+    { id: "focus-desk", title: "Tomato focus desk", subject: "Tools", detail: "Pomodoro with optional white noise (merged study timer)", href: "/tools/focus-desk" },
     { id: "mistake-notebook", title: "Mistake notebook", subject: "Tools", detail: "Log wrong answers locally", href: "/tools/mistake-notebook" },
     { id: "exam-countdown", title: "Exam countdown", subject: "Tools", detail: "Days until exams", href: "/tools/exam-countdown" },
     { id: "formula-board", title: "Formula board", subject: "Tools", detail: "Copy common STEM formulas", href: "/tools/formula-board" },
