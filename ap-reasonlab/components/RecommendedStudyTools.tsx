@@ -7,80 +7,66 @@ type ExternalTool = {
   tags: string[];
 };
 
-/** Curated external tools — complements built-in Calculator, Grapher, and Unified AI. */
+/**
+ * External complements only — built-in tools already appear in the /tools catalog
+ * (and AI Toolbox tabs). Do not re-list built-ins here.
+ */
 const EXTERNAL_TOOLS: ExternalTool[] = [
   {
     name: "Desmos Graphing Calculator",
     href: "https://www.desmos.com/calculator",
-    blurb: "Official-style graphing for AP Calc, Physics, and Statistics. Same family as Bluebook’s embedded calculator.",
-    tags: ["graphing", "math", "AP Calc", "AP Stats"],
+    blurb: "Full graphing calculator for AP Calc / Physics / Stats. Prefer KE Graph in AI Toolbox for quick plots on this site.",
+    tags: ["graphing", "external"],
   },
   {
     name: "Khan Academy",
     href: "https://www.khanacademy.org/",
-    blurb: "Free concept videos and exercises across AP math, science, and humanities.",
-    tags: ["lessons", "videos", "all subjects"],
+    blurb: "Free concept videos and exercises across AP subjects.",
+    tags: ["lessons", "videos"],
   },
   {
     name: "GeoGebra",
     href: "https://www.geogebra.org/graphing",
-    blurb: "Interactive geometry, 3D graphs, and CAS for visualizing relationships.",
-    tags: ["graphing", "geometry", "STEM"],
+    blurb: "Interactive geometry and 3D graphs when you need more than KE Graph.",
+    tags: ["geometry", "STEM"],
   },
   {
     name: "Wolfram Alpha",
     href: "https://www.wolframalpha.com/",
-    blurb: "Step-style math checks, unit conversions, and science lookups (verify against class rules).",
-    tags: ["math", "science", "check work"],
-  },
-  {
-    name: "Quizlet",
-    href: "https://quizlet.com/",
-    blurb: "Community flashcard decks — strong for vocab, formulas, and history timelines.",
-    tags: ["flashcards", "memorization"],
-  },
-  {
-    name: "Knowt",
-    href: "https://knowt.com/",
-    blurb: "Spaced-repetition flashcards and AI summaries from notes or PDFs.",
-    tags: ["flashcards", "spaced repetition"],
-  },
-  {
-    name: "Pomofocus",
-    href: "https://pomofocus.io/",
-    blurb: "Pomodoro timer for focused study blocks without installing an app.",
-    tags: ["focus", "timer", "productivity"],
+    blurb: "Step-style math checks and science lookups (follow class rules on graded work).",
+    tags: ["check work", "external"],
   },
 ];
 
-const BUILT_IN = [
-  { name: "Unified AI", href: "/hints", blurb: "Local / API tutoring for AP, English, and coding." },
-  { name: "Tomato focus desk", href: "/tools/focus-desk", blurb: "Pomodoro + optional white noise." },
-  { name: "Formula board", href: "/tools/formula-board", blurb: "One-click copy common STEM formulas." },
-  { name: "Mistake notebook", href: "/tools/mistake-notebook", blurb: "Log misses and fixes before exams." },
-  { name: "Exam countdown", href: "/tools/exam-countdown", blurb: "Days left until each exam date." },
-  { name: "Vocab book", href: "/tools/vocab-book", blurb: "English words with flip self-test." },
-];
+type Props = {
+  /** Where this block is shown — changes the intro copy. */
+  context?: "tools" | "hints";
+};
 
-export default function RecommendedStudyTools() {
+export default function RecommendedStudyTools({ context = "tools" }: Props) {
   return (
     <section className="space-y-4">
       <div>
-        <h2 className="section-title">Recommended study tools</h2>
+        <h2 className="section-title">
+          {context === "hints" ? "External study links" : "External complements"}
+        </h2>
         <p className="mt-1 max-w-2xl text-sm text-slate-600">
-          Built-in tools stay on this site (AI Toolbox + /tools suite). External links below are
-          optional complements — follow your teacher’s rules on calculators and AI during graded work.
+          {context === "hints" ? (
+            <>
+              Built-in study utilities live on the{" "}
+              <Link href="/tools" className="font-medium text-brand-700 underline">
+                Tools
+              </Link>{" "}
+              page (focus desk, formula board, vocab, file lab…). Links below are optional
+              outside sites — follow your teacher’s calculator / AI rules on graded work.
+            </>
+          ) : (
+            <>
+              Built-in tools are already listed by category above. These external links are
+              optional complements only — not a second copy of the toolbox.
+            </>
+          )}
         </p>
-      </div>
-
-      <div className="grid gap-3 md:grid-cols-2">
-        {BUILT_IN.map((tool) => (
-          <Link key={tool.href} href={tool.href} className="card-hover block border-brand-100 bg-brand-50/30">
-            <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">Built-in</p>
-            <h3 className="mt-1 font-semibold text-slate-900">{tool.name}</h3>
-            <p className="mt-1 text-sm text-slate-600">{tool.blurb}</p>
-          </Link>
-        ))}
       </div>
 
       <div className="grid gap-3 md:grid-cols-2">
