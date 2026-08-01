@@ -8,6 +8,7 @@ import PrivateLearningBoxPanel, {
   type LearningBoxView,
 } from "@/components/PrivateLearningBoxPanel";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
+import { spaceFromSearchParams } from "@/lib/storage-space";
 
 export type ForumTab = "discussions" | "shared" | "box";
 
