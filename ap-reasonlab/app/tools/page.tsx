@@ -8,7 +8,7 @@ import { STUDY_TOOL_CATEGORIES, STUDY_TOOLS } from "@/data/study-tools";
 export const metadata = {
   title: "Tools — Knowledge Explorer",
   description:
-    "AI Toolbox plus writing, math, study helpers, Word/PDF tools, image compress, and quick utilities — all in one toolbox.",
+    "One toolbox: Study desk, English helpers, STEM pads, File lab, classroom light tools, and AI — mostly local in your browser.",
 };
 
 export default function ToolsPage() {
@@ -32,15 +32,17 @@ export default function ToolsPage() {
           <Link href="/hints" className="font-medium text-brand-700 underline">
             AI Toolbox
           </Link>
-          . Everything below is a practical study utility — draft, convert files, compress images,
-          merge PDFs, and more. Processing stays in this browser unless a tool says otherwise.
+          . Suites below: Study desk, English, STEM, File lab, Images, Classroom light, and more.
+          Processing stays in this browser unless a tool says otherwise.
         </p>
         <LocalAiRecommendation className="relative mt-4 max-w-2xl" />
         <div className="relative mt-5 flex flex-wrap gap-2 text-xs">
           {[
-            { href: "/tools/word-pdf", label: "Word → PDF" },
-            { href: "/tools/image-compress", label: "Image compress" },
-            { href: "/tools/pdf-tools", label: "PDF merge & split" },
+            { href: "/tools/mistake-notebook", label: "Mistake notebook" },
+            { href: "/tools/vocab-book", label: "Vocab book" },
+            { href: "/tools/vector-resolve", label: "Vector components" },
+            { href: "/tools/image-crop", label: "Image crop" },
+            { href: "/tools/random-groups", label: "Random groups" },
             { href: "/hints", label: "AI panel" },
           ].map((item) => (
             <Link
