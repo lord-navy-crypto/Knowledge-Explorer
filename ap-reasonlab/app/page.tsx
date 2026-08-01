@@ -19,11 +19,6 @@ const boxes = [
     href: "/english",
   },
   {
-    title: "Academic Platform",
-    description: "Study tools; shared library and My box live in Forum.",
-    href: "/academic",
-  },
-  {
     title: "AI Toolbox",
     description:
       "本地 AI 优先（作者亲测更聪明）— hints、concepts、Site Guide、calculator、grapher、English AI。",

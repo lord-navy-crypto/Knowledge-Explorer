@@ -87,8 +87,8 @@ function ForumHub() {
           Forum
         </h1>
         <p className="relative mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">
-          Discussions, a shared materials library, and your private learning box — one place to talk,
-          share files, and keep personal notes.
+          Discussions (post with a display name — no change code), a public Shared library, and My
+          box (private to this browser only).
         </p>
       </header>
 
@@ -128,8 +128,8 @@ function ForumHub() {
           <div>
             <h2 className="text-xl font-bold text-slate-900">Shared library</h2>
             <p className="mt-1 text-sm text-slate-600">
-              Public documents, files, and folders. Anyone can contribute without a change code;
-              deletion still needs a change code.
+              Public documents, files, and folders. Upload without a change code. Each row has a
+              Delete button — deleting still asks for a change code.
             </p>
             <p className="mt-2 text-sm text-amber-800">
               Uploads are visible to everyone. Do not share private information or material you do
@@ -149,8 +149,8 @@ function ForumHub() {
             <button type="button" className="text-brand-600 hover:underline" onClick={() => setTab("box")}>
               Open My box
             </button>
-            . Looking for page-specific forum files? Moderators can still attach media under the
-            Discussions page storage when editing with a change code.
+            {" "}
+            (browser-local only). You can also attach files directly on Discussion threads.
           </p>
         </section>
       ) : (

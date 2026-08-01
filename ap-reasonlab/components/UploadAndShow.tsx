@@ -218,9 +218,12 @@ export default function UploadAndShow({
       | "questionnaire",
     id: string
   ) {
-    if (!unlocked && !changeCode.trim()) {
-      setError("Unlock at /login with the content code, or enter it below, then press − to delete.");
-      return;
+    let code = changeCode.trim();
+    if (!unlocked && !code) {
+      const prompted = window.prompt("Enter a content or master change code to delete:");
+      if (!prompted) return;
+      code = prompted.trim();
+      setChangeCode(code);
     }
     if (!confirm("Delete this item from this folder’s storage?")) return;
     setDeletingId(id);
@@ -233,7 +236,7 @@ export default function UploadAndShow({
           action: "delete",
           target,
           id,
-          changeCode: changeCode.trim() || undefined,
+          changeCode: code || undefined,
           githubToken: githubToken.trim() || undefined,
         }),
       });
@@ -470,7 +473,7 @@ export default function UploadAndShow({
                   </p>
                 ) : (
                   <label className="block min-w-[12rem] flex-1 text-xs font-medium text-slate-600">
-                    Change code (needed to delete with −)
+                    Change code (needed to Delete — or enter when prompted)
                     <input
                       type="password"
                       className="input mt-1"
@@ -539,24 +542,24 @@ export default function UploadAndShow({
                             <p className="text-[11px] text-slate-400">Open folder</p>
                           )}
                         </div>
-                        {editMode ? (
-                          <div className="flex shrink-0 items-center gap-1">
+                        <div className="flex shrink-0 items-center gap-1">
+                          {editMode ? (
                             <ResourceEditor
                               target="folder"
                               item={f}
                               onSaved={(content) => applyContent(content as ManagedContent)}
                             />
-                            <button
-                              type="button"
-                              title="Delete folder"
-                              disabled={deletingId === f.id}
-                              onClick={() => handleDelete("folder", f.id)}
-                              className="flex h-7 w-7 items-center justify-center rounded-full text-base font-bold text-red-600 hover:bg-red-50"
-                            >
-                              −
-                            </button>
-                          </div>
-                        ) : null}
+                          ) : null}
+                          <button
+                            type="button"
+                            title="Delete folder"
+                            disabled={deletingId === f.id}
+                            onClick={() => void handleDelete("folder", f.id)}
+                            className="rounded-md border border-red-200 bg-red-50 px-2 py-1 text-[10px] font-semibold text-red-700 hover:bg-red-100"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </div>
                     </li>
                   ))}
@@ -574,6 +577,7 @@ export default function UploadAndShow({
                 variant="image"
                 onDownload={downloadMediaRow}
                 editMode={editMode}
+                showDelete
                 deletingId={deletingId}
                 selectedId={previewSelection?.item.id ?? null}
                 onSelect={(row) => {
@@ -602,6 +606,7 @@ export default function UploadAndShow({
                 variant="file"
                 onDownload={downloadMediaRow}
                 editMode={editMode}
+                showDelete
                 deletingId={deletingId}
                 selectedId={previewSelection?.item.id ?? null}
                 onSelect={(row) => {
@@ -630,6 +635,7 @@ export default function UploadAndShow({
                 variant="document"
                 onDownload={downloadMediaRow}
                 editMode={editMode}
+                showDelete
                 deletingId={deletingId}
                 selectedId={previewSelection?.item.id ?? null}
                 onSelect={(row) => {

@@ -91,11 +91,24 @@ export type ManagedContentItem = {
   deletedAt?: number;
 };
 
+/**
+ * Attachment on a Forum post/reply.
+ * `fileId` points at a ManagedFile (area "forum"); `dataUrl` may be present at write time only.
+ */
+export type ManagedForumAttachment = {
+  id: string;
+  name: string;
+  mime: string;
+  fileId: string;
+  size: number;
+};
+
 export type ManagedForumReply = {
   id: string;
   author: string;
   body: string;
   createdAt: number;
+  attachments?: ManagedForumAttachment[];
 };
 
 export type ManagedForumPost = {
@@ -105,6 +118,7 @@ export type ManagedForumPost = {
   author: string;
   createdAt: number;
   replies: ManagedForumReply[];
+  attachments?: ManagedForumAttachment[];
 };
 
 /** Site-wide knobs controlled from Manage (persisted in managed-content.json). */

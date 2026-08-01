@@ -40,7 +40,7 @@ export default function DisclaimerPanel({ className = "" }: Props) {
 
       <div className="border-t border-slate-200 px-4 pb-5 pt-4 md:px-5">
         <p className="text-sm leading-relaxed text-slate-600">
-          These notices apply to the whole website — AP, English, Academic, tools, AI Toolbox,
+          These notices apply to the whole website — AP, English, Forum, tools, AI Toolbox,
           uploads, and every other section — whether or not you are studying AP. Materials belong
           to their original sources unless clearly created by this site.
         </p>

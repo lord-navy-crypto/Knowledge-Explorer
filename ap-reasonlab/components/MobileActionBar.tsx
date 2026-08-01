@@ -10,7 +10,6 @@ const moreGroups = [
     label: "Explore",
     links: [
       { href: "/", label: "Home" },
-      { href: "/academic", label: "Academic" },
       { href: "/code", label: "Code" },
       { href: "/tools", label: "Tools" },
       { href: "/hints?tool=calculator", label: "Calculator" },

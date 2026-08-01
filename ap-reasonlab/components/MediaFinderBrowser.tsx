@@ -33,6 +33,8 @@ type Props = {
   variant: "image" | "file" | "document";
   onDownload: (row: MediaRow) => void | Promise<void>;
   editMode?: boolean;
+  /** Show Delete (−) even when not in edit mode (still needs change code on the parent handler). */
+  showDelete?: boolean;
   deletingId?: string | null;
   onDelete?: (row: MediaRow) => void;
   onContentSaved?: (content: ManagedContent) => void;
@@ -90,6 +92,7 @@ export default function MediaFinderBrowser({
   variant,
   onDownload,
   editMode = false,
+  showDelete = false,
   deletingId = null,
   onDelete,
   onContentSaved,
@@ -97,6 +100,7 @@ export default function MediaFinderBrowser({
   onSelect,
 }: Props) {
   const [search, setSearch] = useState("");
+  const canDelete = Boolean(onDelete) && (editMode || showDelete);
 
   const sortedRows = useMemo(
     () => [...rows].sort((a, b) => b.timestamp - a.timestamp),
@@ -126,45 +130,34 @@ export default function MediaFinderBrowser({
           Download
         </button>
         {editMode && row.kind === "file" ? (
-          <>
-            <ResourceEditor
-              target="file"
-              item={row.item}
-              label="Edit"
-              onSaved={(content) => {
-                if (content) onContentSaved?.(content as ManagedContent);
-              }}
-            />
-            <button
-              type="button"
-              title="Delete"
-              disabled={deletingId === row.item.id}
-              onClick={() => onDelete?.(row)}
-              className="flex h-6 w-6 items-center justify-center rounded-full text-sm font-bold text-red-600 hover:bg-red-50"
-            >
-              −
-            </button>
-          </>
+          <ResourceEditor
+            target="file"
+            item={row.item}
+            label="Edit"
+            onSaved={(content) => {
+              if (content) onContentSaved?.(content as ManagedContent);
+            }}
+          />
         ) : null}
         {editMode && row.kind === "document" ? (
-          <>
-            <ResourceEditor
-              target="document"
-              item={row.item}
-              onSaved={(content) => {
-                if (content) onContentSaved?.(content as ManagedContent);
-              }}
-            />
-            <button
-              type="button"
-              title="Delete"
-              disabled={deletingId === row.item.id}
-              onClick={() => onDelete?.(row)}
-              className="flex h-6 w-6 items-center justify-center rounded-full text-sm font-bold text-red-600 hover:bg-red-50"
-            >
-              −
-            </button>
-          </>
+          <ResourceEditor
+            target="document"
+            item={row.item}
+            onSaved={(content) => {
+              if (content) onContentSaved?.(content as ManagedContent);
+            }}
+          />
+        ) : null}
+        {canDelete && (row.kind === "file" || row.kind === "document") ? (
+          <button
+            type="button"
+            title="Delete"
+            disabled={deletingId === row.item.id}
+            onClick={() => onDelete?.(row)}
+            className="rounded-md border border-red-200 bg-red-50 px-2 py-1 text-[10px] font-semibold text-red-700 hover:bg-red-100"
+          >
+            Delete
+          </button>
         ) : null}
       </div>
     );

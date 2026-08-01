@@ -9,7 +9,6 @@ import { useEditorMode } from "@/components/EditorModeProvider";
 const primaryLinks = [
   { href: "/ap", label: "AP" },
   { href: "/english", label: "English" },
-  { href: "/academic", label: "Academic" },
   { href: "/tools", label: "Tools" },
   { href: "/code", label: "Code" },
   { href: "/hints", label: "AI Toolbox" },

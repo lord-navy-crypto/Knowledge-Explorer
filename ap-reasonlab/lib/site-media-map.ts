@@ -69,14 +69,6 @@ export const SITE_SECTION_FOLDERS: SiteSectionFolder[] = [
     ],
   },
   {
-    id: "academic",
-    label: "Academic",
-    icon: "📁",
-    pages: [
-      { area: "academic", space: ROOT_SPACE, label: "Academic hub", href: "/academic" },
-    ],
-  },
-  {
     id: "tools",
     label: "Tools",
     icon: "🛠",
