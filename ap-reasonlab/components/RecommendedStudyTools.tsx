@@ -55,11 +55,11 @@ const EXTERNAL_TOOLS: ExternalTool[] = [
 
 const BUILT_IN = [
   { name: "Unified AI", href: "/hints", blurb: "Local / API tutoring for AP, English, and coding." },
-  { name: "Black draft paper", href: "/tools/draft", blurb: "Dual-blended dark desk — notes + stylus drawing." },
+  { name: "Word → PDF", href: "/tools/word-pdf", blurb: "Upload .docx and Print → Save as PDF locally." },
+  { name: "Image compress", href: "/tools/image-compress", blurb: "Shrink and convert images to JPEG / WebP / PNG." },
+  { name: "PDF merge & split", href: "/tools/pdf-tools", blurb: "Combine PDFs or extract page ranges in-browser." },
   { name: "Dual-column editor", href: "/tools/dual", blurb: "Markdown left, live render right." },
-  { name: "KE-84 Calculator", href: "/hints?tool=calculator", blurb: "Scientific keypad in the toolbox." },
   { name: "KE Graph", href: "/hints?tool=grapher", blurb: "Plot y = f(x) with trace and zoom." },
-  { name: "Study timer", href: "/tools/timer", blurb: "Pomodoro and exam countdowns on this device." },
 ];
 
 export default function RecommendedStudyTools() {
