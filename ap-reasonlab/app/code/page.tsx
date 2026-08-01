@@ -51,8 +51,8 @@ const langs = [
     id: "java",
     title: "Java",
     href: "/code/java",
-    run: false,
-    description: "Writing editor ready (copy / download). Remote Run when Piston is configured.",
+    run: true,
+    description: "Java training: Practice Run in browser (JS stand-in). Download for real JDK.",
   },
 ];
 

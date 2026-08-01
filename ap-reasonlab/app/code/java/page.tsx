@@ -14,9 +14,10 @@ export default function CodeJavaPage() {
       <div>
         <h1 className="text-3xl font-bold">Java</h1>
         <p className="mt-2 text-slate-600">
-          Writing editor first (same layout as Python / JS). Copy or download{" "}
-          <code className="rounded bg-slate-100 px-1">.java</code> anytime. Remote Run plugs in
-          later via a Java runner — keep templates in the{" "}
+          Java training without a real JVM: write Java, then{" "}
+          <strong>Practice Run</strong> maps a CSA-style subset to JavaScript in the browser. Copy
+          or download <code className="rounded bg-slate-100 px-1">.java</code> for IntelliJ / JDK.
+          Keep templates in the{" "}
           <Link href="/tools/code-board" className="font-medium text-brand-700 underline">
             code block adder
           </Link>

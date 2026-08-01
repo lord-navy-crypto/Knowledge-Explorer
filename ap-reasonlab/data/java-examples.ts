@@ -1,4 +1,4 @@
-/** Starter examples for the Java writing editor. */
+/** Starter examples for the Java training editor. */
 
 export type JavaExample = { id: string; title: string; code: string };
 
@@ -27,8 +27,23 @@ export const javaExamples: JavaExample[] = [
 `,
   },
   {
-    id: "java-student",
-    title: "Simple Student class",
+    id: "java-scanner",
+    title: "Scanner add two ints",
+    code: `import java.util.Scanner;
+
+public class Main {
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    int a = sc.nextInt();
+    int b = sc.nextInt();
+    System.out.println(a + b);
+  }
+}
+`,
+  },
+  {
+    id: "java-student-write",
+    title: "Student class (write / download)",
     code: `public class Student {
   private String name;
   private int score;
@@ -38,17 +53,14 @@ export const javaExamples: JavaExample[] = [
     this.score = score;
   }
 
-  public String getName() { return name; }
-  public int getScore() { return score; }
-
-  @Override
   public String toString() {
     return name + " (" + score + ")";
   }
 
   public static void main(String[] args) {
-    Student s = new Student("Alex", 92);
-    System.out.println(s);
+    // Practice Run only executes simple main() drills.
+    // For full classes, Download .java and use a real JDK / IntelliJ.
+    System.out.println("Write the class above, then download for real Java.");
   }
 }
 `,

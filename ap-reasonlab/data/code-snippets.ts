@@ -81,6 +81,7 @@ Installed now (browser-only, no server runner):
 5) SQL — /code/sql (sql.js / SQLite in memory)
 6) Markdown — /code/markdown (live Markdown + KaTeX)
 
-Writing editor ready; remote Run when configured:
-7) Java — /code/java writing editor (copy / download .java). Set PISTON_URL to enable Run via /api/code/run-java.
+Java training (no JVM required for Practice Run):
+7) Java — /code/java — write Java; Practice Run maps a CSA subset → JS in the browser.
+   Download .java for real JDK. Optional real runner: set PISTON_URL for /api/code/run-java.
 `;
