@@ -9,7 +9,7 @@ export default function GrammarPage() {
       <EnglishPageHeader
         eyebrow="English · Skills · Real English"
         title="Grammar & Sentences"
-        description="Build reliable sentences for school writing and tests. This skills lane is not an exam past-paper bank."
+        description="Build reliable sentences for school writing and tests. This skills lane is separate from exam practice sets."
       />
 
       <section className="flex flex-wrap gap-2 text-sm">
