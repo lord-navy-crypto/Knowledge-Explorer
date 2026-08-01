@@ -55,11 +55,11 @@ const EXTERNAL_TOOLS: ExternalTool[] = [
 
 const BUILT_IN = [
   { name: "Unified AI", href: "/hints", blurb: "Local / API tutoring for AP, English, and coding." },
+  { name: "Tomato focus desk", href: "/tools/focus-desk", blurb: "Pomodoro + optional white noise." },
+  { name: "Formula board", href: "/tools/formula-board", blurb: "One-click copy common STEM formulas." },
   { name: "Mistake notebook", href: "/tools/mistake-notebook", blurb: "Log misses and fixes before exams." },
+  { name: "Exam countdown", href: "/tools/exam-countdown", blurb: "Days left until each exam date." },
   { name: "Vocab book", href: "/tools/vocab-book", blurb: "English words with flip self-test." },
-  { name: "Vector components", href: "/tools/vector-resolve", blurb: "Resolve 2D vectors for Physics." },
-  { name: "Image crop & annotate", href: "/tools/image-crop", blurb: "Crop or mark images locally." },
-  { name: "Random pick & groups", href: "/tools/random-groups", blurb: "Classroom grouping without an app." },
 ];
 
 export default function RecommendedStudyTools() {
