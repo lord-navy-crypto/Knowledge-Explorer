@@ -73,10 +73,14 @@ System.out.println(sum);`,
 ];
 
 export const howToEmbedEditors = `
-Installed now:
-1) Web/HTML — HtmlPlayground on /code/web (textarea + iframe srcDoc preview).
-2) Python — PythonPlayground on /code/python (Pyodide CDN runtime in the browser).
+Installed now (browser-only, no server runner):
+1) Python — /code/python (Pyodide)
+2) JavaScript — /code/javascript (sandboxed console)
+3) TypeScript — /code/typescript (TS compiler CDN → run JS)
+4) Web/HTML — /code/web (live preview)
+5) SQL — /code/sql (sql.js / SQLite in memory)
+6) Markdown — /code/markdown (live Markdown + KaTeX)
 
-Still later:
-3) Java — needs a remote runner (Judge0 / OneCompiler / Piston) or edit-only + download for now.
+Still later (needs remote runner):
+7) Java — Judge0 / OneCompiler / Piston, or edit-only + download for now.
 `;

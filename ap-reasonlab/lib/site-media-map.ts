@@ -86,8 +86,12 @@ export const SITE_SECTION_FOLDERS: SiteSectionFolder[] = [
     pages: [
       { area: "code", space: ROOT_SPACE, label: "Code hub", href: "/code" },
       { area: "code-python", space: ROOT_SPACE, label: "Python", href: "/code/python" },
-      { area: "code-java", space: ROOT_SPACE, label: "Java", href: "/code/java" },
+      { area: "code-javascript", space: ROOT_SPACE, label: "JavaScript", href: "/code/javascript" },
+      { area: "code-typescript", space: ROOT_SPACE, label: "TypeScript", href: "/code/typescript" },
       { area: "code-web", space: ROOT_SPACE, label: "Web", href: "/code/web" },
+      { area: "code-sql", space: ROOT_SPACE, label: "SQL", href: "/code/sql" },
+      { area: "code-markdown", space: ROOT_SPACE, label: "Markdown", href: "/code/markdown" },
+      { area: "code-java", space: ROOT_SPACE, label: "Java", href: "/code/java" },
     ],
   },
   {
