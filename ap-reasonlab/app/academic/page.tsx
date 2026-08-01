@@ -5,16 +5,21 @@ import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 
 const academicTools = [
   {
-    href: "/learning-box",
-    title: "Private Learning Box",
+    href: "/forum?tab=box",
+    title: "My box (in Forum)",
     description:
-      "Private notes, documents, and pictures in this browser — plus Random Draw. No change code needed.",
+      "Private notes, documents, and pictures in this browser — plus Random Draw. Opens inside the Forum hub.",
   },
   {
-    href: "/academic/materials",
-    title: "Shared materials",
+    href: "/forum?tab=shared",
+    title: "Shared library (in Forum)",
     description:
-      "Public materials everyone can upload and view without a change code.",
+      "Public materials everyone can upload and view — now part of the Forum hub alongside discussions.",
+  },
+  {
+    href: "/forum",
+    title: "Forum discussions",
+    description: "Ask questions, share tips, and reply in public threads.",
   },
   {
     href: "/hints?tool=grapher",
@@ -32,7 +37,11 @@ export default function AcademicPlatformPage() {
         </span>
         <h1 className="mt-3 text-3xl font-bold">Academic Platform</h1>
         <p className="mt-2 max-w-2xl text-slate-300">
-          Cross-curriculum tools. Click + to add documents or upload files — save with a change code.
+          Cross-curriculum tools. Shared materials and your private learning box now live in{" "}
+          <Link href="/forum" className="font-semibold text-white underline decoration-white/40 underline-offset-2 hover:decoration-white">
+            Forum
+          </Link>
+          . Page storage below still uses a change code for + add.
         </p>
       </section>
 
@@ -48,7 +57,7 @@ export default function AcademicPlatformPage() {
         {academicTools.map((tool) => (
           <Link key={tool.href} href={tool.href} className="card-hover group flex items-start gap-3">
             <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-xl">
-              📁
+              →
             </span>
             <div>
               <h2 className="font-semibold group-hover:text-brand-700">{tool.title}</h2>

@@ -74,8 +74,6 @@ export const SITE_SECTION_FOLDERS: SiteSectionFolder[] = [
     icon: "📁",
     pages: [
       { area: "academic", space: ROOT_SPACE, label: "Academic hub", href: "/academic" },
-      { area: "materials", space: ROOT_SPACE, label: "Shared materials", href: "/academic/materials" },
-      { area: "learning", space: ROOT_SPACE, label: "Private Learning Box", href: "/learning-box" },
     ],
   },
   {
@@ -102,7 +100,11 @@ export const SITE_SECTION_FOLDERS: SiteSectionFolder[] = [
     id: "forum",
     label: "Forum",
     icon: "💬",
-    pages: [{ area: "forum", space: ROOT_SPACE, label: "Forum", href: "/forum" }],
+    pages: [
+      { area: "forum", space: ROOT_SPACE, label: "Forum · Discussions", href: "/forum" },
+      { area: "materials", space: ROOT_SPACE, label: "Forum · Shared library", href: "/forum?tab=shared" },
+      { area: "learning", space: ROOT_SPACE, label: "Forum · My box", href: "/forum?tab=box" },
+    ],
   },
   {
     id: "partners",
