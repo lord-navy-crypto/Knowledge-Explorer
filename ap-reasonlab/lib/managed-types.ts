@@ -4,6 +4,7 @@
  */
 import type { Concept, Formula, Questionnaire } from "@/lib/types";
 import { AP_CATALOG, subjectSlug } from "@/data/ap-catalog";
+import { migrateLegacyEnglishExamSpaces } from "@/lib/english-exam-migrate";
 
 export type ManagedDocument = {
   id: string;
@@ -366,10 +367,12 @@ export function normalizeManagedContent(
   return applyDeletionTombstones({
     concepts: Array.isArray(raw.concepts) ? raw.concepts : [],
     formulas: Array.isArray(raw.formulas) ? raw.formulas : [],
-    documents: Array.isArray(raw.documents) ? raw.documents : [],
-    files: Array.isArray(raw.files) ? raw.files : [],
+    documents: migrateLegacyEnglishExamSpaces(
+      Array.isArray(raw.documents) ? [...raw.documents] : []
+    ),
+    files: migrateLegacyEnglishExamSpaces(Array.isArray(raw.files) ? [...raw.files] : []),
     members: Array.isArray(raw.members) ? raw.members : [],
-    folders: Array.isArray(raw.folders) ? raw.folders : [],
+    folders: migrateLegacyEnglishExamSpaces(Array.isArray(raw.folders) ? [...raw.folders] : []),
     subjects: mergeBuiltinSubjects(normalizeSubjects(raw.subjects)),
     units: Array.isArray(raw.units) ? raw.units : [],
     contentItems: Array.isArray(raw.contentItems) ? raw.contentItems : [],
