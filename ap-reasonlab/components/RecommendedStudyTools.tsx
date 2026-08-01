@@ -55,11 +55,11 @@ const EXTERNAL_TOOLS: ExternalTool[] = [
 
 const BUILT_IN = [
   { name: "Unified AI", href: "/hints", blurb: "Local / API tutoring for AP, English, and coding." },
-  { name: "Word → PDF", href: "/tools/word-pdf", blurb: "Upload .docx and Print → Save as PDF locally." },
-  { name: "Image compress", href: "/tools/image-compress", blurb: "Shrink and convert images to JPEG / WebP / PNG." },
-  { name: "PDF merge & split", href: "/tools/pdf-tools", blurb: "Combine PDFs or extract page ranges in-browser." },
-  { name: "Dual-column editor", href: "/tools/dual", blurb: "Markdown left, live render right." },
-  { name: "KE Graph", href: "/hints?tool=grapher", blurb: "Plot y = f(x) with trace and zoom." },
+  { name: "Mistake notebook", href: "/tools/mistake-notebook", blurb: "Log misses and fixes before exams." },
+  { name: "Vocab book", href: "/tools/vocab-book", blurb: "English words with flip self-test." },
+  { name: "Vector components", href: "/tools/vector-resolve", blurb: "Resolve 2D vectors for Physics." },
+  { name: "Image crop & annotate", href: "/tools/image-crop", blurb: "Crop or mark images locally." },
+  { name: "Random pick & groups", href: "/tools/random-groups", blurb: "Classroom grouping without an app." },
 ];
 
 export default function RecommendedStudyTools() {
