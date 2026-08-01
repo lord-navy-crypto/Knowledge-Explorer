@@ -6,7 +6,7 @@ Purpose: Learn by reasoning with concrete formulas, data, and half-process guida
 Main areas:
 - AP (/ap): subject-first workspace → concepts, formulas, practice, AI Toolbox. Documents/files live in the page storage panel.
 - English (/english): Hub split into three lanes — (1) Exams for practice questions: TOEFL / IELTS / SAT (official practice sources + uploaded practice sets); (2) Skills for real English: Vocabulary, Grammar & Sentences, Writing, plus local practice tools (vocab book, dictation, paraphrase, reading highlights); (3) English AI Tutor kept at /english/ai → AI Toolbox English.
-- Code (/code): Python (Pyodide playground on /code/python), Web/HTML (live preview on /code/web), Java snippets/uploads (no in-browser runner yet).
+- Code (/code): browser playgrounds for Python (Pyodide), JavaScript, TypeScript, Web/HTML, SQL (sql.js), Markdown; Java is snippets/uploads only (no in-browser runner yet). Long code block adder at /tools/code-board.
 - Forum (/forum): community hub with three tabs — Discussions (public threads; choose a display name only — no change code; can attach images/files/documents), Shared library (/forum?tab=shared — public uploads, no change code to add; delete needs a change code), My box (/forum?tab=box — private to this browser only; IndexedDB notes/pictures/Random Draw). Academic Platform was removed; /academic redirects to Forum. Legacy /academic/materials and /learning-box also redirect into Forum.
 - Partners (/partners): Knowledge Explorer roster with GitHub links; add any person by display name + GitHub username (content change code / edit circle).
 - Manage (/manage): no-code content manager (editors; needs change code or content-login session).

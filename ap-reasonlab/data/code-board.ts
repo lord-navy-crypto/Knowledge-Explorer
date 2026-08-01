@@ -1,6 +1,14 @@
 /** Seeded common / long code blocks for the Code board adder. */
 
-export type CodeBoardLanguage = "python" | "java" | "html" | "javascript" | "other";
+export type CodeBoardLanguage =
+  | "python"
+  | "java"
+  | "html"
+  | "javascript"
+  | "typescript"
+  | "sql"
+  | "markdown"
+  | "other";
 
 export type CodeBoardBlock = {
   id: string;
@@ -16,9 +24,12 @@ export type CodeBoardBlock = {
 export const CODE_BOARD_LANGUAGES: Array<{ id: CodeBoardLanguage | "all"; label: string }> = [
   { id: "all", label: "All" },
   { id: "python", label: "Python" },
-  { id: "java", label: "Java" },
-  { id: "html", label: "HTML" },
   { id: "javascript", label: "JavaScript" },
+  { id: "typescript", label: "TypeScript" },
+  { id: "html", label: "HTML" },
+  { id: "sql", label: "SQL" },
+  { id: "markdown", label: "Markdown" },
+  { id: "java", label: "Java" },
   { id: "other", label: "Other" },
 ];
 
@@ -154,5 +165,39 @@ System.out.println(sum);`,
 const onSearch = debounce((q) => {
   console.log("search:", q);
 }, 300);`,
+  },
+  {
+    id: "ts-greet",
+    language: "typescript",
+    title: "Typed greet",
+    comment: "Small TypeScript function with a default argument.",
+    builtin: true,
+    code: `function greet(name: string, times: number = 1): string {
+  return Array.from({ length: times }, () => \`Hi, \${name}!\`).join(" ");
+}
+console.log(greet("CSA", 2));`,
+  },
+  {
+    id: "sql-select",
+    language: "sql",
+    title: "Create + filter select",
+    comment: "Starter SQLite pattern for the SQL playground.",
+    builtin: true,
+    code: `CREATE TABLE students (id INTEGER PRIMARY KEY, name TEXT, score INTEGER);
+INSERT INTO students (name, score) VALUES ('Alex', 92), ('Blake', 78), ('Casey', 88);
+SELECT name, score FROM students WHERE score >= 85 ORDER BY score DESC;`,
+  },
+  {
+    id: "md-notes",
+    language: "markdown",
+    title: "Study notes skeleton",
+    comment: "Markdown + math for lab / revision notes.",
+    builtin: true,
+    code: `# Notes
+
+- Goal
+- Evidence
+- Formula: $E = mc^2$
+`,
   },
 ];

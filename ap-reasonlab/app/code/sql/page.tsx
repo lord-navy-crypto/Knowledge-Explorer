@@ -1,0 +1,37 @@
+"use client";
+
+import Link from "next/link";
+import SqlPlayground from "@/components/SqlPlayground";
+import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
+import { sqlExamples } from "@/data/easy-code-langs";
+
+export default function CodeSqlPage() {
+  return (
+    <div className="space-y-6">
+      <Link href="/code" className="text-sm text-brand-600 hover:underline">
+        ← Back to Code Resource
+      </Link>
+      <div>
+        <h1 className="text-3xl font-bold">SQL</h1>
+        <p className="mt-2 text-slate-600">
+          In-browser SQLite (sql.js). Each run uses a fresh memory database. Keep query templates in
+          the{" "}
+          <Link href="/tools/code-board" className="font-medium text-brand-700 underline">
+            code block adder
+          </Link>
+          .
+        </p>
+      </div>
+
+      <SqlPlayground examples={sqlExamples} />
+
+      <UnifiedMediaFrame
+        alsoShow={["document", "folder"]}
+        folderArea="code-sql"
+        spaceKey="_root"
+        spaceBasePath="/code/sql"
+        title="SQL · pictures, documents & files"
+      />
+    </div>
+  );
+}

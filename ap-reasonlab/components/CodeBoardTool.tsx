@@ -14,7 +14,11 @@ const KEY = "ke-code-board-v1";
 
 function playgroundHref(language: CodeBoardLanguage): string | null {
   if (language === "python") return "/code/python";
+  if (language === "javascript") return "/code/javascript";
+  if (language === "typescript") return "/code/typescript";
   if (language === "html") return "/code/web";
+  if (language === "sql") return "/code/sql";
+  if (language === "markdown") return "/code/markdown";
   if (language === "java") return "/code/java";
   return "/code";
 }
