@@ -152,10 +152,11 @@ function useFocusNoise() {
   return { start, stop, setVolume };
 }
 
-/** Tiny CSS/SVG potato sprite (pixel-ish). */
-function PixelPotato({ className = "", night = false }: { className?: string; night?: boolean }) {
-  const skin = night ? "#e5e5e5" : "#d4a574";
-  const shade = night ? "#9a9a9a" : "#b07d4a";
+/** Tiny CSS/SVG tomato sprite — 酵素番茄 (pixel-ish). */
+function PixelTomato({ className = "", night = false }: { className?: string; night?: boolean }) {
+  const skin = night ? "#e5e5e5" : "#f43f5e";
+  const shade = night ? "#9a9a9a" : "#be123c";
+  const leaf = night ? "#d4d4d4" : "#4ade80";
   const eye = night ? "#111" : "#2a1a10";
   return (
     <svg
@@ -166,11 +167,13 @@ function PixelPotato({ className = "", night = false }: { className?: string; ni
       shapeRendering="crispEdges"
       aria-hidden
     >
-      <rect x="3" y="2" width="8" height="12" fill={skin} />
-      <rect x="2" y="4" width="1" height="8" fill={skin} />
-      <rect x="11" y="4" width="1" height="8" fill={skin} />
-      <rect x="4" y="1" width="6" height="1" fill={skin} />
-      <rect x="4" y="14" width="6" height="1" fill={skin} />
+      <rect x="6" y="1" width="2" height="1" fill={leaf} />
+      <rect x="5" y="2" width="1" height="1" fill={leaf} />
+      <rect x="8" y="2" width="1" height="1" fill={leaf} />
+      <rect x="3" y="3" width="8" height="10" fill={skin} />
+      <rect x="2" y="5" width="1" height="6" fill={skin} />
+      <rect x="11" y="5" width="1" height="6" fill={skin} />
+      <rect x="4" y="13" width="6" height="1" fill={skin} />
       <rect x="5" y="6" width="1" height="1" fill={eye} />
       <rect x="8" y="6" width="1" height="1" fill={eye} />
       <rect x="6" y="9" width="2" height="1" fill={shade} />
@@ -342,11 +345,11 @@ export default function FocusDeskTool() {
       {/* Title bar — pixel window */}
       <div className={`relative z-10 flex items-center justify-between gap-2 px-3 py-2 ${titleBar}`}>
         <span className="flex items-center gap-2 text-[10px] leading-none">
-          <PixelPotato night={night} />
+          <PixelTomato night={night} />
           TOMATO DESK
         </span>
         <span className="flex items-center gap-2 text-[8px] opacity-80">
-          <PixelPotato night={night} className="opacity-80" />
+          <PixelTomato night={night} className="opacity-80" />
           {night ? "NIGHT · STYLE" : "DAY"}
         </span>
       </div>
@@ -457,17 +460,17 @@ export default function FocusDeskTool() {
         </div>
 
         <div className="flex items-end justify-center gap-3 pt-1">
-          <PixelPotato night={night} />
+          <PixelTomato night={night} />
           <span
             className={`inline-block h-2 w-2 ${night ? "bg-white" : "bg-[#fb7185]"}`}
             aria-hidden
           />
-          <PixelPotato night={night} />
+          <PixelTomato night={night} />
           <span
             className={`inline-block h-3 w-3 ${night ? "bg-neutral-400" : "bg-[#fda4af]"}`}
             aria-hidden
           />
-          <PixelPotato night={night} />
+          <PixelTomato night={night} />
         </div>
       </div>
     </div>
@@ -488,7 +491,7 @@ export default function FocusDeskTool() {
   return (
     <StudyToolShell
       title="Tomato focus desk"
-      description="Pixel tomato window: Pomodoro timer, focus-noise sound box, potatoes & circles. Site Night mode (Style) also paints this desk black & white."
+      description="Pixel tomato window: Pomodoro timer, focus-noise sound box, enzyme tomatoes & circles. Site Night mode (Style) also paints this desk black & white."
       tip="25 / 5 default. Style → Night mode darkens the whole site (desk goes B&W too). Noise stays local Web Audio."
     >
       <div className="grid gap-3 sm:grid-cols-2">
