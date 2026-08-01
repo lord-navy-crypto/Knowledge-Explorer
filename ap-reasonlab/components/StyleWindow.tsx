@@ -59,7 +59,7 @@ const styles: Array<{
  * Floating window frame: click a style tile to restyle the whole site.
  */
 export default function StyleWindow() {
-  const { theme, setTheme } = useSiteTheme();
+  const { theme, setTheme, nightMode, setNightMode } = useSiteTheme();
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
 
@@ -136,6 +136,25 @@ export default function StyleWindow() {
                   Nine looks across the color spectrum — Classic, Cyberpunk, Luxury, Pastel, plus
                   Crimson / Emerald / Violet / Amber / Silver. Choice is saved in this browser.
                 </p>
+
+                <div className="style-night-row">
+                  <div>
+                    <p className="style-night-title">Night mode</p>
+                    <p className="style-night-blurb">
+                      Turns the little tomato desk into a black &amp; white pixel window. Saved here
+                      in Style — not on the desk itself.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className={`style-night-toggle ${nightMode ? "is-on" : ""}`}
+                    onClick={() => setNightMode(!nightMode)}
+                    aria-pressed={nightMode}
+                  >
+                    {nightMode ? "Night on" : "Night off"}
+                  </button>
+                </div>
+
                 <div className="style-window-grid style-window-grid--spectrum">
                   {styles.map((item) => {
                     const active = theme === item.id;

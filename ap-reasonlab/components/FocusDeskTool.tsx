@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Press_Start_2P } from "next/font/google";
 import StudyToolShell from "@/components/StudyToolShell";
+import { useSiteTheme } from "@/components/ThemeProvider";
 
 const pixelFont = Press_Start_2P({
   weight: "400",
@@ -244,7 +245,7 @@ export default function FocusDeskTool() {
   const [noiseType, setNoiseType] = useState<NoiseType>("pink");
   const [noiseVol, setNoiseVol] = useState(0.45);
   const [deskMode, setDeskMode] = useState(false);
-  const [nightMode, setNightMode] = useState(false);
+  const { nightMode } = useSiteTheme();
   const noise = useFocusNoise();
   const phaseRef = useRef<Phase>("focus");
   const focusRef = useRef(focusMins);
@@ -344,20 +345,9 @@ export default function FocusDeskTool() {
           <PixelPotato night={night} />
           TOMATO DESK
         </span>
-        <span className="flex items-center gap-2">
+        <span className="flex items-center gap-2 text-[8px] opacity-80">
           <PixelPotato night={night} className="opacity-80" />
-          <button
-            type="button"
-            className={
-              night
-                ? "border-2 border-black bg-black px-2 py-1 text-[9px] text-white"
-                : "border-2 border-black bg-white px-2 py-1 text-[9px] text-black"
-            }
-            onClick={() => setNightMode((n) => !n)}
-            title="Black & white night window"
-          >
-            {night ? "DAY" : "NIGHT"}
-          </button>
+          {night ? "NIGHT · STYLE" : "DAY"}
         </span>
       </div>
 
@@ -498,8 +488,8 @@ export default function FocusDeskTool() {
   return (
     <StudyToolShell
       title="Tomato focus desk"
-      description="Pixel tomato window: Pomodoro timer, focus-noise sound box, potatoes & circles. Night mode = black & white window style."
-      tip="25 / 5 default. Toggle NIGHT for B&W pixel chrome. Noise types stay local Web Audio."
+      description="Pixel tomato window: Pomodoro timer, focus-noise sound box, potatoes & circles. Night (B&W) is toggled in the Style window."
+      tip="25 / 5 default. Open Style → Night mode for B&W pixel chrome. Noise types stay local Web Audio."
     >
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="block text-sm">
