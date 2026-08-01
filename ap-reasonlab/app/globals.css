@@ -1358,6 +1358,148 @@ html[data-theme="silver"] .btn-ghost:hover {
   color: #334155;
 }
 
+/* Little tomato cloud circle — floating desk shortcut */
+.tomato-cloud-circle {
+  position: fixed;
+  bottom: 5.5rem;
+  right: 10.75rem;
+  z-index: 55;
+  width: 3.35rem;
+  height: 3.35rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 2px solid #fb7185;
+  background:
+    radial-gradient(circle at 30% 28%, #fff 0 18%, transparent 19%),
+    radial-gradient(circle at 70% 35%, #ffe4e6 0 22%, transparent 23%),
+    linear-gradient(160deg, #fff1f2 0%, #fecdd3 55%, #fda4af 100%);
+  box-shadow: 0 10px 28px rgba(251, 113, 133, 0.28);
+  text-decoration: none;
+  color: #9f1239;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  overflow: visible;
+}
+
+.tomato-cloud-circle:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 14px 32px rgba(251, 113, 133, 0.38);
+}
+
+.tomato-cloud-circle.is-active {
+  border-color: #e11d48;
+  box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.35), 0 12px 28px rgba(225, 29, 72, 0.25);
+}
+
+.tomato-cloud-circle-puff {
+  position: absolute;
+  width: 1.35rem;
+  height: 0.85rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  top: -0.2rem;
+  left: 0.35rem;
+  pointer-events: none;
+  animation: tomato-cloud-drift 3.6s ease-in-out infinite;
+}
+
+.tomato-cloud-circle-puff--2 {
+  width: 1.1rem;
+  height: 0.7rem;
+  top: 0.15rem;
+  left: auto;
+  right: -0.15rem;
+  opacity: 0.9;
+  animation-delay: -1.4s;
+}
+
+.tomato-cloud-circle-fruit {
+  position: relative;
+  z-index: 1;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 50% 50% 48% 48%;
+  background: radial-gradient(circle at 35% 30%, #fda4af, #f43f5e 55%, #be123c);
+  box-shadow: inset -2px -2px 0 rgba(0, 0, 0, 0.12);
+  animation: tomato-cloud-bob 2.4s ease-in-out infinite;
+}
+
+.tomato-cloud-circle-leaf {
+  position: absolute;
+  top: -0.22rem;
+  left: 50%;
+  width: 0.35rem;
+  height: 0.35rem;
+  margin-left: -0.1rem;
+  background: #4ade80;
+  border-radius: 0 70% 0 70%;
+  transform: rotate(-25deg);
+}
+
+.tomato-cloud-circle-label {
+  position: absolute;
+  bottom: -1.15rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: #9f1239;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+@media (min-width: 768px) {
+  .tomato-cloud-circle {
+    bottom: 1.5rem;
+    right: 11rem;
+  }
+}
+
+@keyframes tomato-cloud-drift {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(3px);
+  }
+}
+
+@keyframes tomato-cloud-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+html[data-night="on"] .tomato-cloud-circle {
+  border-color: #fff;
+  background: linear-gradient(160deg, #111 0%, #333 100%);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  color: #fff;
+}
+
+html[data-night="on"] .tomato-cloud-circle-fruit {
+  background: radial-gradient(circle at 35% 30%, #e5e5e5, #a3a3a3 55%, #525252);
+}
+
+html[data-night="on"] .tomato-cloud-circle-leaf {
+  background: #d4d4d4;
+}
+
+html[data-night="on"] .tomato-cloud-circle-label {
+  color: #f5f5f5;
+  text-shadow: none;
+}
+
+html[data-night="on"] .tomato-cloud-circle-puff {
+  background: rgba(255, 255, 255, 0.35);
+}
+
 /* Style window launcher + frame */
 .style-window-launcher {
   position: fixed;
@@ -1383,6 +1525,73 @@ html[data-theme="silver"] .btn-ghost:hover {
     bottom: 1.5rem;
     right: 5.75rem;
   }
+}
+
+.style-night-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  margin: 0 0 1rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #fff;
+}
+
+.style-night-title {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.style-night-blurb {
+  margin: 0.2rem 0 0;
+  font-size: 0.7rem;
+  line-height: 1.35;
+  color: #64748b;
+}
+
+.style-night-toggle {
+  flex-shrink: 0;
+  border: 1px solid #94a3b8;
+  border-radius: 999px;
+  background: #f1f5f9;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.style-night-toggle.is-on {
+  border-color: #0f172a;
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+html[data-theme="cyberpunk"] .style-night-row {
+  border-color: #ff2a2a;
+  background: #140a0e;
+}
+
+html[data-theme="cyberpunk"] .style-night-title {
+  color: #ffd6d6;
+}
+
+html[data-theme="cyberpunk"] .style-night-blurb {
+  color: #c4a0a8;
+}
+
+html[data-theme="cyberpunk"] .style-night-toggle {
+  border-color: #ff2a2a;
+  background: #1a0c10;
+  color: #ffd6d6;
+}
+
+html[data-theme="cyberpunk"] .style-night-toggle.is-on {
+  background: #ff2a2a;
+  color: #140a0e;
 }
 
 html[data-theme="cyberpunk"] .style-window-launcher {

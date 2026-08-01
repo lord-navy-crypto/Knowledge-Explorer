@@ -9,6 +9,7 @@ import RandomPageButton from "@/components/RandomPageButton";
 import EditModeButton from "@/components/EditModeButton";
 import EditorToolsChrome from "@/components/EditorToolsChrome";
 import StyleWindow from "@/components/StyleWindow";
+import TomatoCloudCircle from "@/components/TomatoCloudCircle";
 import SiteFooter from "@/components/SiteFooter";
 import { EditorModeProvider } from "@/components/EditorModeProvider";
 import { LocalAIProvider } from "@/components/LocalAIProvider";
@@ -39,7 +40,7 @@ export const metadata: Metadata = {
   },
 };
 
-const THEME_BOOT = `(function(){try{var k="ke-site-theme",a=["ap","cyberpunk","luxury","pastel","crimson","verdant","violet","amber","silver"],t=localStorage.getItem(k);if(t&&a.indexOf(t)>=0)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();`;
+const THEME_BOOT = `(function(){try{var k="ke-site-theme",a=["ap","cyberpunk","luxury","pastel","crimson","verdant","violet","amber","silver"],t=localStorage.getItem(k);if(t&&a.indexOf(t)>=0)document.documentElement.setAttribute("data-theme",t);if(localStorage.getItem("ke-night-mode")==="on")document.documentElement.setAttribute("data-night","on");}catch(e){}})();`;
 
 export default function RootLayout({
   children,
@@ -73,6 +74,7 @@ export default function RootLayout({
                 {children}
               </main>
               <RandomPageButton />
+              <TomatoCloudCircle />
               <StyleWindow />
               <EditModeButton />
               <MobileActionBar />
