@@ -2,7 +2,14 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { Press_Start_2P } from "next/font/google";
 import StudyToolShell from "@/components/StudyToolShell";
+
+const pixelFont = Press_Start_2P({
+  weight: "400",
+  subsets: ["latin"],
+  display: "swap",
+});
 
 type Phase = "focus" | "break";
 
@@ -33,7 +40,6 @@ function fillNoiseBuffer(data: Float32Array, type: NoiseType) {
     if (type === "white") {
       data[i] = white * 0.55;
     } else if (type === "pink") {
-      // Paul Kellet-style pink approximation
       b0 = 0.99765 * b0 + white * 0.099046;
       b1 = 0.963 * b1 + white * 0.2965164;
       b2 = 0.57 * b2 + white * 1.0526913;
@@ -45,7 +51,6 @@ function fillNoiseBuffer(data: Float32Array, type: NoiseType) {
       last = (last + 0.01 * white) / 1.01;
       data[i] = last * 2.2;
     } else {
-      // rain-like: brown bed + sparse brighter ticks
       last = (last + 0.015 * white) / 1.015;
       const drip = Math.random() > 0.995 ? white * 0.35 : 0;
       data[i] = last * 2.8 + drip;
@@ -53,7 +58,6 @@ function fillNoiseBuffer(data: Float32Array, type: NoiseType) {
   }
 }
 
-/** Procedural noise beds via Web Audio — no audio files. */
 function useFocusNoise() {
   const ctxRef = useRef<AudioContext | null>(null);
   const nodeRef = useRef<AudioBufferSourceNode | null>(null);
@@ -147,6 +151,88 @@ function useFocusNoise() {
   return { start, stop, setVolume };
 }
 
+/** Tiny CSS/SVG potato sprite (pixel-ish). */
+function PixelPotato({ className = "", night = false }: { className?: string; night?: boolean }) {
+  const skin = night ? "#e5e5e5" : "#d4a574";
+  const shade = night ? "#9a9a9a" : "#b07d4a";
+  const eye = night ? "#111" : "#2a1a10";
+  return (
+    <svg
+      className={className}
+      width="28"
+      height="34"
+      viewBox="0 0 14 17"
+      shapeRendering="crispEdges"
+      aria-hidden
+    >
+      <rect x="3" y="2" width="8" height="12" fill={skin} />
+      <rect x="2" y="4" width="1" height="8" fill={skin} />
+      <rect x="11" y="4" width="1" height="8" fill={skin} />
+      <rect x="4" y="1" width="6" height="1" fill={skin} />
+      <rect x="4" y="14" width="6" height="1" fill={skin} />
+      <rect x="5" y="6" width="1" height="1" fill={eye} />
+      <rect x="8" y="6" width="1" height="1" fill={eye} />
+      <rect x="6" y="9" width="2" height="1" fill={shade} />
+      <rect x="4" y="11" width="1" height="1" fill={shade} />
+      <rect x="9" y="5" width="1" height="1" fill={shade} />
+    </svg>
+  );
+}
+
+function PixelCircles({ night = false }: { night?: boolean }) {
+  const fill = night ? "#fff" : "#fb7185";
+  const dim = night ? "#737373" : "#fda4af";
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+      {[
+        { t: "12%", l: "8%", s: 6, c: fill },
+        { t: "22%", l: "88%", s: 8, c: dim },
+        { t: "70%", l: "10%", s: 5, c: dim },
+        { t: "78%", l: "86%", s: 7, c: fill },
+        { t: "40%", l: "4%", s: 4, c: fill },
+        { t: "55%", l: "93%", s: 5, c: dim },
+      ].map((dot, i) => (
+        <span
+          key={i}
+          className="absolute block"
+          style={{
+            top: dot.t,
+            left: dot.l,
+            width: dot.s,
+            height: dot.s,
+            background: dot.c,
+            imageRendering: "pixelated",
+            boxShadow: night ? "1px 1px 0 #000" : "1px 1px 0 rgba(0,0,0,0.25)",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function playPhaseBeep() {
+  try {
+    const AudioCtx =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "square";
+    osc.frequency.value = 660;
+    gain.gain.value = 0.04;
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.12);
+    osc.stop(ctx.currentTime + 0.13);
+    window.setTimeout(() => void ctx.close(), 200);
+  } catch {
+    // ignore
+  }
+}
+
 export default function FocusDeskTool() {
   const [focusMins, setFocusMins] = useState(25);
   const [breakMins, setBreakMins] = useState(5);
@@ -158,10 +244,12 @@ export default function FocusDeskTool() {
   const [noiseType, setNoiseType] = useState<NoiseType>("pink");
   const [noiseVol, setNoiseVol] = useState(0.45);
   const [deskMode, setDeskMode] = useState(false);
+  const [nightMode, setNightMode] = useState(false);
   const noise = useFocusNoise();
   const phaseRef = useRef<Phase>("focus");
   const focusRef = useRef(focusMins);
   const breakRef = useRef(breakMins);
+  const skipBeepRef = useRef(true);
 
   useEffect(() => {
     phaseRef.current = phase;
@@ -172,6 +260,14 @@ export default function FocusDeskTool() {
   useEffect(() => {
     breakRef.current = breakMins;
   }, [breakMins]);
+
+  useEffect(() => {
+    if (skipBeepRef.current) {
+      skipBeepRef.current = false;
+      return;
+    }
+    playPhaseBeep();
+  }, [phase]);
 
   useEffect(() => {
     if (!running) return;
@@ -197,7 +293,6 @@ export default function FocusDeskTool() {
     } else {
       noise.stop();
     }
-    // intentionally omit noise object identity
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [noiseOn, running, phase, noiseType]);
 
@@ -218,116 +313,193 @@ export default function FocusDeskTool() {
       : 1 - secondsLeft / Math.max(1, breakMins * 60);
 
   const activeNoise = NOISE_OPTIONS.find((n) => n.id === noiseType);
+  const night = nightMode;
 
-  const desk = (
+  const btnBase = night
+    ? "rounded-none border-2 border-white bg-black px-3 py-2 text-[10px] font-normal text-white hover:bg-neutral-900"
+    : "rounded-none border-2 border-black bg-[#ffe4e6] px-3 py-2 text-[10px] font-normal text-black hover:bg-[#fecdd3]";
+  const btnPrimary = night
+    ? "rounded-none border-2 border-white bg-white px-3 py-2 text-[10px] font-normal text-black hover:bg-neutral-200"
+    : "rounded-none border-2 border-black bg-[#fb7185] px-3 py-2 text-[10px] font-normal text-black hover:bg-[#f43f5e]";
+
+  const windowShell = night
+    ? "border-4 border-white bg-black text-white shadow-[6px_6px_0_#fff]"
+    : "border-4 border-black bg-[#fff1f2] text-black shadow-[6px_6px_0_#000]";
+
+  const titleBar = night
+    ? "border-b-4 border-white bg-white text-black"
+    : "border-b-4 border-black bg-[#fb7185] text-black";
+
+  const deskInner = (
     <div
-      className={
-        deskMode
-          ? "fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950 px-6 text-slate-50"
-          : "card space-y-5 bg-gradient-to-br from-slate-900 via-slate-800 to-rose-950 text-slate-50"
-      }
+      className={`${pixelFont.className} relative overflow-hidden ${windowShell} ${
+        deskMode ? "max-w-xl w-full" : ""
+      }`}
     >
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose-300">
-        {phase === "focus" ? "Focus · tomato" : "Break"}
-      </p>
-      <p className="font-display text-6xl font-bold tabular-nums tracking-tight sm:text-7xl">
-        {formatTime(Math.max(0, secondsLeft))}
-      </p>
-      <div className="h-2 w-full max-w-md overflow-hidden rounded-full bg-white/10">
-        <div
-          className="h-full rounded-full bg-rose-400 transition-[width] duration-1000"
-          style={{ width: `${Math.round(Math.min(1, Math.max(0, progress)) * 100)}%` }}
-        />
-      </div>
-      <p className="text-sm text-slate-300">
-        Completed focus cycles: <span className="font-semibold text-white">{cycles}</span>
-      </p>
+      <PixelCircles night={night} />
 
-      <div className="flex flex-wrap justify-center gap-2">
-        <button
-          type="button"
-          className="rounded-lg bg-rose-500 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-400"
-          onClick={() => setRunning((r) => !r)}
-        >
-          {running ? "Pause" : "Start"}
-        </button>
-        <button
-          type="button"
-          className="rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/15"
-          onClick={() => resetPhase("focus")}
-        >
-          Reset focus
-        </button>
-        <button
-          type="button"
-          className="rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/15"
-          onClick={() => resetPhase("break")}
-        >
-          Skip to break
-        </button>
-        <button
-          type="button"
-          className="rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/15"
-          onClick={() => setDeskMode((d) => !d)}
-        >
-          {deskMode ? "Exit full desk" : "Full desk"}
-        </button>
+      {/* Title bar — pixel window */}
+      <div className={`relative z-10 flex items-center justify-between gap-2 px-3 py-2 ${titleBar}`}>
+        <span className="flex items-center gap-2 text-[10px] leading-none">
+          <PixelPotato night={night} />
+          TOMATO DESK
+        </span>
+        <span className="flex items-center gap-2">
+          <PixelPotato night={night} className="opacity-80" />
+          <button
+            type="button"
+            className={
+              night
+                ? "border-2 border-black bg-black px-2 py-1 text-[9px] text-white"
+                : "border-2 border-black bg-white px-2 py-1 text-[9px] text-black"
+            }
+            onClick={() => setNightMode((n) => !n)}
+            title="Black & white night window"
+          >
+            {night ? "DAY" : "NIGHT"}
+          </button>
+        </span>
       </div>
 
-      <div className="flex w-full max-w-lg flex-col items-center gap-3 text-sm text-slate-200">
-        <label className="inline-flex items-center gap-2">
-          <input type="checkbox" checked={noiseOn} onChange={(e) => setNoiseOn(e.target.checked)} />
-          Focus noise (focus phase only)
-        </label>
-        <div className="flex flex-wrap justify-center gap-1.5">
-          {NOISE_OPTIONS.map((opt) => (
-            <button
-              key={opt.id}
-              type="button"
-              disabled={!noiseOn}
-              title={opt.blurb}
-              onClick={() => setNoiseType(opt.id)}
-              className={
-                noiseType === opt.id
-                  ? "rounded-lg bg-rose-500 px-2.5 py-1 text-[11px] font-semibold text-white"
-                  : "rounded-lg bg-white/10 px-2.5 py-1 text-[11px] font-semibold text-slate-200 hover:bg-white/15 disabled:opacity-40"
-              }
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-        {noiseOn && activeNoise ? (
-          <p className="text-center text-[11px] text-slate-400">{activeNoise.blurb}</p>
-        ) : null}
-        <label className="flex items-center gap-2 text-xs text-slate-300">
-          Volume
-          <input
-            type="range"
-            min={0.05}
-            max={1}
-            step={0.05}
-            value={noiseVol}
-            disabled={!noiseOn}
-            onChange={(e) => setNoiseVol(Number(e.target.value))}
-            className="w-36"
-          />
-        </label>
-      </div>
-
-      {deskMode ? (
-        <p className="max-w-md text-center text-xs text-slate-400">
-          Stay on this screen. Noise types are generated with Web Audio — no uploads or files.
+      <div
+        className={`relative z-10 space-y-4 px-4 py-5 ${
+          deskMode ? "min-h-[70vh] flex flex-col items-center justify-center" : ""
+        }`}
+      >
+        <p className="text-center text-[10px] uppercase tracking-widest">
+          {phase === "focus" ? "FOCUS" : "BREAK"}
+          {noiseOn && running && phase === "focus" ? " · SOUND ON" : ""}
         </p>
-      ) : null}
+
+        <p
+          className={`text-center tabular-nums leading-none ${
+            deskMode ? "text-4xl sm:text-5xl" : "text-3xl sm:text-4xl"
+          }`}
+        >
+          {formatTime(Math.max(0, secondsLeft))}
+        </p>
+
+        {/* Pixel progress */}
+        <div
+          className={`mx-auto h-3 w-full max-w-sm border-2 ${
+            night ? "border-white bg-black" : "border-black bg-white"
+          }`}
+        >
+          <div
+            className={`h-full ${night ? "bg-white" : "bg-[#fb7185]"}`}
+            style={{
+              width: `${Math.round(Math.min(1, Math.max(0, progress)) * 100)}%`,
+              imageRendering: "pixelated",
+            }}
+          />
+        </div>
+
+        <p className="text-center text-[9px]">
+          CYCLES <span className="underline">{cycles}</span>
+        </p>
+
+        <div className="flex flex-wrap justify-center gap-2">
+          <button type="button" className={btnPrimary} onClick={() => setRunning((r) => !r)}>
+            {running ? "PAUSE" : "START"}
+          </button>
+          <button type="button" className={btnBase} onClick={() => resetPhase("focus")}>
+            RESET
+          </button>
+          <button type="button" className={btnBase} onClick={() => resetPhase("break")}>
+            BREAK
+          </button>
+          <button type="button" className={btnBase} onClick={() => setDeskMode((d) => !d)}>
+            {deskMode ? "EXIT" : "FULL"}
+          </button>
+        </div>
+
+        <div
+          className={`mx-auto w-full max-w-md space-y-3 border-2 p-3 ${
+            night ? "border-white" : "border-black"
+          }`}
+        >
+          <p className="text-center text-[9px]">SOUND BOX</p>
+          <label className="flex items-center justify-center gap-2 text-[9px]">
+            <input
+              type="checkbox"
+              checked={noiseOn}
+              onChange={(e) => setNoiseOn(e.target.checked)}
+              className="h-3 w-3 accent-current"
+            />
+            FOCUS NOISE
+          </label>
+          <div className="flex flex-wrap justify-center gap-1">
+            {NOISE_OPTIONS.map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                disabled={!noiseOn}
+                title={opt.blurb}
+                onClick={() => setNoiseType(opt.id)}
+                className={
+                  noiseType === opt.id
+                    ? btnPrimary
+                    : `${btnBase} disabled:opacity-40`
+                }
+              >
+                {opt.label.toUpperCase()}
+              </button>
+            ))}
+          </div>
+          {noiseOn && activeNoise ? (
+            <p className={`text-center text-[8px] leading-relaxed ${night ? "text-neutral-300" : "text-neutral-700"}`}>
+              {activeNoise.blurb}
+            </p>
+          ) : null}
+          <label className="flex items-center justify-center gap-2 text-[9px]">
+            VOL
+            <input
+              type="range"
+              min={0.05}
+              max={1}
+              step={0.05}
+              value={noiseVol}
+              disabled={!noiseOn}
+              onChange={(e) => setNoiseVol(Number(e.target.value))}
+              className="w-28"
+            />
+          </label>
+        </div>
+
+        <div className="flex items-end justify-center gap-3 pt-1">
+          <PixelPotato night={night} />
+          <span
+            className={`inline-block h-2 w-2 ${night ? "bg-white" : "bg-[#fb7185]"}`}
+            aria-hidden
+          />
+          <PixelPotato night={night} />
+          <span
+            className={`inline-block h-3 w-3 ${night ? "bg-neutral-400" : "bg-[#fda4af]"}`}
+            aria-hidden
+          />
+          <PixelPotato night={night} />
+        </div>
+      </div>
     </div>
+  );
+
+  const desk = deskMode ? (
+    <div
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${
+        night ? "bg-black" : "bg-[#fff1f2]"
+      }`}
+    >
+      {deskInner}
+    </div>
+  ) : (
+    deskInner
   );
 
   return (
     <StudyToolShell
       title="Tomato focus desk"
-      description="Pomodoro focus / break cycles with optional focus-noise beds (white, pink, brown, soft, rain-like). Full-desk mode for distraction-free study."
-      tip="Classic default: 25 min focus · 5 min break. Pick a noise type — all generated locally in this browser."
+      description="Pixel tomato window: Pomodoro timer, focus-noise sound box, potatoes & circles. Night mode = black & white window style."
+      tip="25 / 5 default. Toggle NIGHT for B&W pixel chrome. Noise types stay local Web Audio."
     >
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="block text-sm">
