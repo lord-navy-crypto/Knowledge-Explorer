@@ -11,7 +11,7 @@ Main areas:
 - Forum (/forum): community hub with three tabs — Discussions (public threads; display name required), Shared library (/forum?tab=shared — former Academic Shared Materials; public uploads), My box (/forum?tab=box — former Private Learning Box; browser-local notes/pictures/Random Draw). Legacy URLs /academic/materials and /learning-box redirect into Forum.
 - Partners (/partners): Knowledge Explorer roster with GitHub links; add any person by display name + GitHub username (content change code / edit circle).
 - Manage (/manage): no-code content manager (editors; needs change code or content-login session).
-- Tools (/tools): AI Toolbox calculator (computer), grapher (function plotter), and study utilities (draft paper, dual-column, LaTeX, units, timer, flashcards, Word/PDF helpers).
+- Tools (/tools): One toolbox hub — AI Toolbox calculator/grapher plus organized study utilities: write/draft, draw, math, study helpers, Documents & PDF (Word→PDF, Word→Markdown, Markdown→PDF, PDF merge/split, CSV→Markdown), Images (compress & convert), Quick utilities (word count, color contrast, QR code). All file tools process locally in the browser.
 - Search (/search): find concepts, formulas, practice across subjects.
 - About (/about): brand, ethics, how change codes work (codes themselves are not published on the page — ask an admin).
 - AI Toolbox (/hints): One unified AI panel — choose Local, Website API, or Your own API, then pick AP / English / Coding tasks. Optional Always search Knowledge Explorer. Extra tools: Calculator (computer) and Grapher (function plotter).

@@ -6,28 +6,36 @@ import StudyToolShell from "@/components/StudyToolShell";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
 import RichContent from "@/components/RichContent";
 
-export default function WordImportTool() {
+/**
+ * One-shot Word → preview → Print/Save as PDF (browser local).
+ * Uses mammoth for .docx → Markdown, then the same print path as Markdown→PDF.
+ */
+export default function WordPdfTool() {
   const [markdown, setMarkdown] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [fileName, setFileName] = useState("");
+  const [warnings, setWarnings] = useState("");
 
   async function onFile(file: File | null) {
     if (!file) return;
     if (!/\.docx$/i.test(file.name)) {
-      setError("Please choose a .docx Word file.");
+      setError("Please choose a .docx Word file (not legacy .doc).");
       return;
     }
     setBusy(true);
     setError("");
+    setWarnings("");
     setFileName(file.name);
     try {
       const mammoth = await import("mammoth");
       const buffer = await file.arrayBuffer();
       const result = await mammoth.convertToMarkdown({ arrayBuffer: buffer });
-      setMarkdown(String(result.value || "").trim());
+      const text = String(result.value || "").trim();
+      setMarkdown(text);
+      if (!text) setError("No readable text found in this document.");
       if (result.messages?.length) {
-        setError(result.messages.map((m) => m.message).slice(0, 3).join(" · "));
+        setWarnings(result.messages.map((m) => m.message).slice(0, 4).join(" · "));
       }
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Could not read Word file.");
@@ -36,15 +44,11 @@ export default function WordImportTool() {
     }
   }
 
-  function copyMarkdown() {
-    void navigator.clipboard.writeText(markdown);
-  }
-
   return (
     <StudyToolShell
-      title="Word → Markdown"
-      description="Upload a .docx file and extract readable Markdown you can paste into concepts, practice, or dual-column editor."
-      tip="Complex Word layouts (tables, tracked changes) may simplify. Images are skipped — keep them in the file panel instead. Need a PDF? Use Word → PDF for a one-shot Print → Save as PDF flow."
+      title="Word → PDF"
+      description="Upload a .docx, preview the extracted content, then use Print → Save as PDF. Everything stays in this browser."
+      tip="Layout will not match Word pixel-for-pixel (tables/images may simplify). For editable Markdown first, use Word → Markdown."
     >
       <div className="no-print flex flex-wrap items-center gap-3">
         <label className="btn-primary cursor-pointer">
@@ -60,38 +64,35 @@ export default function WordImportTool() {
         {fileName ? <span className="text-sm text-slate-600">{fileName}</span> : null}
         <button
           type="button"
-          className="btn-secondary"
-          disabled={!markdown}
-          onClick={copyMarkdown}
-        >
-          Copy Markdown
-        </button>
-        <button
-          type="button"
           className="btn-primary"
           disabled={!markdown.trim()}
           onClick={() => window.print()}
         >
           Print / Save as PDF
         </button>
-        <Link href="/tools/word-pdf" className="text-sm text-brand-600 hover:underline">
-          Open Word → PDF tool →
+        <Link href="/tools/word-import" className="btn-secondary text-sm">
+          Edit as Markdown →
+        </Link>
+        <Link href="/tools/markdown-pdf" className="text-sm text-brand-600 hover:underline">
+          Markdown → PDF
         </Link>
       </div>
-      {error ? <p className="text-sm text-amber-700">{error}</p> : null}
+
+      {error ? <p className="no-print text-sm text-red-700">{error}</p> : null}
+      {warnings ? <p className="no-print text-sm text-amber-700">{warnings}</p> : null}
 
       <div className="no-print grid gap-4 lg:grid-cols-2">
         <MarkdownLatexField
-          label="Extracted Markdown"
+          label="Extracted content (editable)"
           value={markdown}
           onChange={setMarkdown}
           minHeightClass="min-h-[22rem]"
           showPreview={false}
           placeholder="Upload a .docx to fill this field…"
         />
-        <div className="no-print min-h-[22rem] overflow-auto rounded-2xl border border-slate-200 bg-white p-4">
+        <div className="min-h-[22rem] overflow-auto rounded-2xl border border-slate-200 bg-white p-4">
           <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-            Preview
+            PDF preview
           </p>
           {markdown.trim() ? (
             <RichContent className="text-sm">{markdown}</RichContent>
