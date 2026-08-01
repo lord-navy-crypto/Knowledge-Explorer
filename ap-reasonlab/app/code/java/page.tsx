@@ -14,8 +14,11 @@ export default function CodeJavaPage() {
       <div>
         <h1 className="text-3xl font-bold">Java</h1>
         <p className="mt-2 text-slate-600">
-          CSA-style starters. No in-browser editor yet — use IntelliJ / Replit locally, or upload
-          .java files here.
+          CSA-style starters. Keep long Java templates in the{" "}
+          <Link href="/tools/code-board" className="font-medium text-brand-700 underline">
+            code block adder
+          </Link>
+          . No in-browser runner yet — use IntelliJ / Replit locally, or upload .java files here.
         </p>
       </div>
 

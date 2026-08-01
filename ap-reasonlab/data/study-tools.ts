@@ -145,6 +145,14 @@ export const STUDY_TOOLS: StudyTool[] = [
     badge: "New",
   },
   {
+    id: "code-board",
+    href: "/tools/code-board",
+    title: "Long code block adder",
+    blurb: "Save common / long code with comments — scrollable library, paste instead of upload.",
+    category: "study",
+    badge: "New",
+  },
+  {
     id: "latex",
     href: "/tools/latex",
     title: "LaTeX checker",

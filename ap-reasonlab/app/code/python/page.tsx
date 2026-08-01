@@ -15,8 +15,11 @@ export default function CodePythonPage() {
       <div>
         <h1 className="text-3xl font-bold">Python</h1>
         <p className="mt-2 text-slate-600">
-          In-browser Python (Pyodide). Run examples below, or upload your .py files with a change
-          code.
+          In-browser Python (Pyodide). Run examples below, keep reusable blocks in the{" "}
+          <Link href="/tools/code-board" className="font-medium text-brand-700 underline">
+            long code block adder
+          </Link>
+          , or upload .py files with a change code.
         </p>
       </div>
 

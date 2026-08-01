@@ -321,6 +321,8 @@ export function searchSiteEngine(
     { id: "mistake-notebook", title: "Mistake notebook", subject: "Tools", detail: "Log wrong answers locally", href: "/tools/mistake-notebook" },
     { id: "exam-countdown", title: "Exam countdown", subject: "Tools", detail: "Days until exams", href: "/tools/exam-countdown" },
     { id: "formula-board", title: "Formula board", subject: "Tools", detail: "Copy common STEM formulas", href: "/tools/formula-board" },
+    { id: "code-board", title: "Long code block adder", subject: "Tools", detail: "Common long code blocks with comments", href: "/tools/code-board" },
+    { id: "code-hub", title: "Code Resource", subject: "Code", detail: "Python Java Web playgrounds and code library", href: "/code" },
     { id: "sci-notation", title: "Scientific notation", subject: "Tools", detail: "Sig figs and scientific form", href: "/tools/sci-notation" },
     { id: "vector-resolve", title: "Vector components", subject: "Tools", detail: "Resolve 2D vectors", href: "/tools/vector-resolve" },
     { id: "vocab-book", title: "Vocab book", subject: "Tools", detail: "English vocabulary flash cards", href: "/tools/vocab-book" },

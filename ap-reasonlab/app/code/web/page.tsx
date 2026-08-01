@@ -15,8 +15,11 @@ export default function CodeWebPage() {
       <div>
         <h1 className="text-3xl font-bold">Web / HTML</h1>
         <p className="mt-2 text-slate-600">
-          Online HTML playground with live preview. Also upload files or add Simulation documents
-          with a change code.
+          Online HTML playground with live preview. Save reusable pages in the{" "}
+          <Link href="/tools/code-board" className="font-medium text-brand-700 underline">
+            code block adder
+          </Link>
+          , or upload files with a change code.
         </p>
       </div>
 
