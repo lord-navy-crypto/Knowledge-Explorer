@@ -1,250 +1,173 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { saveLearningItem } from "@/lib/storage";
-import RichContent from "@/components/RichContent";
-import MarkdownLatexField from "@/components/MarkdownLatexField";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ForumDiscussions } from "@/components/ForumDiscussions";
+import PrivateLearningBoxPanel, {
+  type LearningBoxView,
+} from "@/components/PrivateLearningBoxPanel";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
-import type { ManagedForumPost } from "@/lib/managed-types";
+import { spaceFromSearchParams } from "@/lib/storage-space";
 
-const NAME_KEY = "results-forum-display-name";
+export type ForumTab = "discussions" | "shared" | "box";
 
-export default function ForumPage() {
-  const [posts, setPosts] = useState<ManagedForumPost[]>([]);
-  const [displayName, setDisplayName] = useState("");
-  const [nameDraft, setNameDraft] = useState("");
-  const [nameOpen, setNameOpen] = useState(false);
-  const [composerOpen, setComposerOpen] = useState(false);
-  const [pendingAction, setPendingAction] = useState<"post" | string | null>(null);
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
-  const [replyBody, setReplyBody] = useState("");
-  const [replyingTo, setReplyingTo] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
+const TABS: { id: ForumTab; label: string; blurb: string }[] = [
+  {
+    id: "discussions",
+    label: "Discussions",
+    blurb: "Public threads — questions, tips, and replies.",
+  },
+  {
+    id: "shared",
+    label: "Shared library",
+    blurb: "Public materials everyone can upload and download.",
+  },
+  {
+    id: "box",
+    label: "My box",
+    blurb: "Private notes & pictures in this browser only.",
+  },
+];
 
-  const refresh = useCallback(async () => {
-    try {
-      const response = await fetch("/api/edit?area=forum&space=_root", { cache: "no-store" });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Failed to load Forum");
-      setPosts(Array.isArray(data.forumPosts) ? data.forumPosts : []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load Forum");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+function parseTab(raw: string | null): ForumTab {
+  if (raw === "shared" || raw === "materials" || raw === "library") return "shared";
+  if (raw === "box" || raw === "learning" || raw === "my-box") return "box";
+  return "discussions";
+}
+
+function parseBoxView(raw: string | null): LearningBoxView {
+  if (raw === "pictures" || raw === "random" || raw === "library") return raw;
+  return "library";
+}
+
+function ForumHub() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const tab = useMemo(() => parseTab(searchParams.get("tab")), [searchParams]);
+  const boxView = useMemo(() => parseBoxView(searchParams.get("view")), [searchParams]);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setDisplayName(localStorage.getItem(NAME_KEY) || "");
-    void refresh();
-  }, [refresh]);
+    setMounted(true);
+  }, []);
 
-  function requestIdentity(action: "post" | string) {
-    setError("");
-    if (!displayName) {
-      setPendingAction(action);
-      setNameDraft("");
-      setNameOpen(true);
-      return;
-    }
-    continueAction(action);
-  }
-
-  function continueAction(action: "post" | string) {
-    if (action === "post") setComposerOpen(true);
-    else {
-      setReplyingTo(action);
-      setReplyBody("");
-    }
-  }
-
-  function saveName(event: React.FormEvent) {
-    event.preventDefault();
-    const next = nameDraft.trim();
-    if (next.length < 2 || next.length > 40) {
-      setError("Display name must be 2–40 characters.");
-      return;
-    }
-    localStorage.setItem(NAME_KEY, next);
-    setDisplayName(next);
-    setNameOpen(false);
-    if (pendingAction) continueAction(pendingAction);
-    setPendingAction(null);
-  }
-
-  async function publish(action: "add_forum_post" | "add_forum_reply", item: object) {
-    setSaving(true);
-    setError("");
-    try {
-      const response = await fetch("/api/edit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, item }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Publish failed");
-      setPosts(Array.isArray(data.content?.forumPosts) ? data.content.forumPosts : []);
-      return true;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Publish failed");
-      return false;
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function submitPost(event: React.FormEvent) {
-    event.preventDefault();
-    if (!displayName) return requestIdentity("post");
-    const ok = await publish("add_forum_post", { author: displayName, title, body });
-    if (ok) {
-      setTitle("");
-      setBody("");
-      setComposerOpen(false);
-    }
-  }
-
-  async function submitReply(event: React.FormEvent, postId: string) {
-    event.preventDefault();
-    if (!displayName) return requestIdentity(postId);
-    const ok = await publish("add_forum_reply", { postId, author: displayName, body: replyBody });
-    if (ok) {
-      setReplyBody("");
-      setReplyingTo(null);
-    }
-  }
-
-  async function moderate(target: "forum_post" | "forum_reply", id: string, postId?: string) {
-    const changeCode = window.prompt("Enter a content or master change code to delete:");
-    if (!changeCode) return;
-    if (!window.confirm("Delete this shared Forum content?")) return;
-    setError("");
-    const response = await fetch("/api/edit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "delete", target, id, postId, changeCode }),
-    });
-    const data = await response.json();
-    if (!response.ok) return setError(data.error || "Delete failed");
-    setPosts(Array.isArray(data.content?.forumPosts) ? data.content.forumPosts : []);
-  }
-
-  async function saveToLearningBox(post: ManagedForumPost) {
-    await saveLearningItem({
-      title: `[Forum] ${post.title}`,
-      content: `${post.body}\n\n— ${post.author}`,
-      category: "Forum",
-    });
-    window.alert("Saved to Private Learning Box (this browser).");
+  function setTab(next: ForumTab) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (next === "discussions") params.delete("tab");
+    else params.set("tab", next);
+    if (next !== "box") params.delete("view");
+    const qs = params.toString();
+    router.replace(qs ? `/forum?${qs}` : "/forum", { scroll: false });
   }
 
   return (
     <div className="space-y-6">
-      <section className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">Forum</h1>
-          <p className="mt-2 max-w-2xl text-slate-600">
-            A shared discussion space for questions, ideas, and study conversations. Posts and replies are public; Sharing Materials remains the separate file library.
-          </p>
-          <p className="mt-2 text-xs text-slate-500">
-            Your display name is public but is not a verified account. Do not include private information.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {displayName && (
-            <button type="button" className="btn-ghost" onClick={() => { setNameDraft(displayName); setNameOpen(true); }}>
-              Posting as {displayName} · change
+      <header className="relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-sky-50 px-5 py-7 sm:px-8">
+        <div
+          className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-sky-100/70 blur-3xl"
+          aria-hidden
+        />
+        <div
+          className="pointer-events-none absolute -bottom-24 left-1/3 h-48 w-48 rounded-full bg-violet-100/50 blur-3xl"
+          aria-hidden
+        />
+        <p className="relative text-xs font-semibold uppercase tracking-[0.18em] text-brand-600">
+          Community hub
+        </p>
+        <h1 className="relative mt-2 font-display text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+          Forum
+        </h1>
+        <p className="relative mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">
+          Discussions, a shared materials library, and your private learning box — one place to talk,
+          share files, and keep personal notes.
+        </p>
+      </header>
+
+      <nav
+        className="sticky top-0 z-10 -mx-1 flex gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white/95 p-1.5 shadow-sm backdrop-blur"
+        aria-label="Forum sections"
+      >
+        {TABS.map((t) => {
+          const active = tab === t.id;
+          return (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setTab(t.id)}
+              aria-current={active ? "page" : undefined}
+              className={
+                active
+                  ? "min-w-[7.5rem] flex-1 rounded-lg bg-brand-600 px-3 py-2.5 text-left text-white shadow-sm transition"
+                  : "min-w-[7.5rem] flex-1 rounded-lg px-3 py-2.5 text-left text-slate-600 transition hover:bg-slate-50"
+              }
+            >
+              <span className="block text-sm font-semibold">{t.label}</span>
+              <span className={`mt-0.5 block text-[11px] leading-snug ${active ? "text-white/85" : "text-slate-500"}`}>
+                {t.blurb}
+              </span>
             </button>
-          )}
-          <button type="button" className="btn-primary" onClick={() => requestIdentity("post")}>
-            + Start discussion
-          </button>
-        </div>
-      </section>
+          );
+        })}
+      </nav>
 
-      {composerOpen && (
-        <form onSubmit={submitPost} className="card space-y-3 border-brand-200">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold">New discussion</h2>
-            <button type="button" className="btn-ghost" onClick={() => setComposerOpen(false)}>Cancel</button>
+      {!mounted ? (
+        <div className="card text-sm text-slate-500">Loading Forum…</div>
+      ) : tab === "discussions" ? (
+        <ForumDiscussions embedded />
+      ) : tab === "shared" ? (
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">Shared library</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Public documents, files, and folders. Anyone can contribute without a change code;
+              deletion still needs a change code.
+            </p>
+            <p className="mt-2 text-sm text-amber-800">
+              Uploads are visible to everyone. Do not share private information or material you do
+              not have permission to publish.
+            </p>
           </div>
-          <input className="input" maxLength={120} placeholder="Discussion title" value={title} onChange={(event) => setTitle(event.target.value)} required />
-          <MarkdownLatexField
-            label="Discussion body"
-            value={body}
-            onChange={setBody}
-            required
-            minHeightClass="min-h-[10rem]"
-            placeholder="Write your question or idea…"
+          <UnifiedMediaFrame
+            alsoShow={["document", "folder"]}
+            folderArea="materials"
+            spaceKey="_root"
+            spaceBasePath="/forum?tab=shared"
+            title="Shared library · pictures, documents & files"
+            allowPublicContributions
           />
-          <div className="flex items-center justify-between gap-3 text-xs text-slate-500">
-            <span>Posting publicly as {displayName}</span><span>{body.length}/8000</span>
-          </div>
-          <button type="submit" className="btn-primary" disabled={saving}>{saving ? "Publishing…" : "Publish discussion"}</button>
-        </form>
+          <p className="text-xs text-slate-500">
+            Prefer private notes?{" "}
+            <button type="button" className="text-brand-600 hover:underline" onClick={() => setTab("box")}>
+              Open My box
+            </button>
+            . Looking for page-specific forum files? Moderators can still attach media under the
+            Discussions page storage when editing with a change code.
+          </p>
+        </section>
+      ) : (
+        <section className="space-y-4">
+          <PrivateLearningBoxPanel embedded initialView={boxView} />
+          <p className="text-xs text-slate-500">
+            Want to share a file with everyone?{" "}
+            <button type="button" className="text-brand-600 hover:underline" onClick={() => setTab("shared")}>
+              Switch to Shared library
+            </button>
+            {" · "}
+            <Link href="/forum" className="text-brand-600 hover:underline">
+              Back to Discussions
+            </Link>
+          </p>
+        </section>
       )}
-
-      {error && <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}
-
-      <section className="space-y-3">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold">Shared discussions ({posts.length})</h2>
-          <button type="button" className="text-sm text-brand-600 hover:underline" onClick={() => void refresh()}>Refresh</button>
-        </div>
-        {loading ? <div className="card text-sm text-slate-500">Loading discussions…</div> : posts.length === 0 ? (
-          <div className="card text-sm text-slate-500">No shared discussions yet. Start the first one.</div>
-        ) : posts.map((post) => (
-          <article key={post.id} className="card space-y-4">
-            <div className="flex flex-wrap items-start justify-between gap-2">
-              <div><h3 className="text-lg font-semibold">{post.title}</h3><p className="text-xs text-slate-500">{post.author} · {new Date(post.createdAt).toLocaleString()}</p></div>
-              <button type="button" className="text-xs text-slate-400 hover:text-red-600" onClick={() => void moderate("forum_post", post.id)}>Moderate</button>
-            </div>
-            <RichContent className="text-sm text-slate-700">{post.body}</RichContent>
-            <div className="flex flex-wrap gap-3 text-xs">
-              <button type="button" className="text-brand-600 hover:underline" onClick={() => requestIdentity(post.id)}>Reply</button>
-              <button type="button" className="text-brand-600 hover:underline" onClick={() => void saveToLearningBox(post)}>Save to Private Learning Box</button>
-            </div>
-            {(post.replies || []).length > 0 && <div className="space-y-3 border-l-2 border-brand-100 pl-4">
-              {(post.replies || []).map((reply) => <div key={reply.id} className="rounded-xl bg-slate-50 p-3">
-                <div className="flex items-start justify-between gap-2"><p className="text-xs font-medium text-slate-600">{reply.author} · {new Date(reply.createdAt).toLocaleString()}</p><button type="button" className="text-xs text-slate-400 hover:text-red-600" onClick={() => void moderate("forum_reply", reply.id, post.id)}>Moderate</button></div>
-                <RichContent className="mt-2 text-sm text-slate-700">{reply.body}</RichContent>
-              </div>)}
-            </div>}
-            {replyingTo === post.id && <form onSubmit={(event) => submitReply(event, post.id)} className="space-y-2 rounded-xl border border-brand-100 bg-brand-50/40 p-3">
-              <MarkdownLatexField
-                label="Reply"
-                help="Markdown + LaTeX supported."
-                value={replyBody}
-                onChange={setReplyBody}
-                required
-                minHeightClass="min-h-[7rem]"
-                placeholder={`Reply publicly as ${displayName}…`}
-              />
-              <div className="flex gap-2"><button type="submit" className="btn-primary" disabled={saving}>{saving ? "Publishing…" : "Publish reply"}</button><button type="button" className="btn-ghost" onClick={() => setReplyingTo(null)}>Cancel</button></div>
-            </form>}
-          </article>
-        ))}
-      </section>
-
-      <UnifiedMediaFrame
-        title="Forum · pictures, documents & files"
-        folderArea="forum"
-        spaceKey="_root"
-        alsoShow={["document", "folder"]}
-        collapsedByDefault
-      />
-
-      {nameOpen && <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4" role="dialog" aria-modal="true" aria-labelledby="forum-name-title">
-        <form onSubmit={saveName} className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-          <h2 id="forum-name-title" className="text-xl font-semibold">Choose your Forum name</h2>
-          <p className="mt-2 text-sm text-slate-600">A display name is required before posting or replying. It will be visible publicly and saved only in this browser.</p>
-          <input autoFocus className="input mt-4" minLength={2} maxLength={40} placeholder="Public display name" value={nameDraft} onChange={(event) => setNameDraft(event.target.value)} required />
-          <div className="mt-4 flex gap-2"><button type="submit" className="btn-primary">Continue</button><button type="button" className="btn-ghost" onClick={() => { setNameOpen(false); setPendingAction(null); }}>Cancel</button></div>
-        </form>
-      </div>}
     </div>
+  );
+}
+
+export default function ForumPage() {
+  return (
+    <Suspense fallback={<div className="card text-sm text-slate-500">Loading Forum…</div>}>
+      <ForumHub />
+    </Suspense>
   );
 }

@@ -37,9 +37,18 @@ export function spaceHref(
   space: string,
   extra?: Record<string, string>
 ): string {
-  const params = new URLSearchParams(extra);
+  const [pathOnly, existingQuery = ""] = basePath.split("?", 2);
+  const params = new URLSearchParams(existingQuery);
+  if (extra) {
+    for (const [key, value] of Object.entries(extra)) {
+      if (value != null && value !== "") params.set(key, value);
+    }
+  }
+  // Reset space selectors before applying the target space.
+  params.delete("folder");
+  params.delete("subject");
   if (space === ROOT_SPACE) {
-    // clear subject/folder
+    // keep other query keys (e.g. Forum ?tab=shared)
   } else if (isFolderSpace(space)) {
     const id = parseFolderId(space);
     if (id) params.set("folder", id);
@@ -47,7 +56,7 @@ export function spaceHref(
     params.set("subject", space);
   }
   const q = params.toString();
-  return q ? `${basePath}?${q}` : basePath;
+  return q ? `${pathOnly}?${q}` : pathOnly;
 }
 
 export function spaceFromSearchParams(params: {

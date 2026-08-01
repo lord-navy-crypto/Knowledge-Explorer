@@ -302,9 +302,11 @@ export function searchSiteEngine(
       detail: "Safe AI tutor workflows, guides, generate practice",
       href: "/hints?section=ai-for-ap",
     },
-    { id: "forum", title: "Forum", subject: "Community", detail: "Tips and questions", href: "/forum" },
-    { id: "academic", title: "Academic Platform", subject: "Academic", detail: "Learning Box and shared materials", href: "/academic" },
-    { id: "learning-box", title: "Private Learning Box", subject: "Academic", detail: "Private notes and pictures", href: "/learning-box" },
+    { id: "forum", title: "Forum", subject: "Community", detail: "Discussions, shared library, My box", href: "/forum" },
+    { id: "forum-shared", title: "Shared library", subject: "Community", detail: "Public materials in Forum", href: "/forum?tab=shared" },
+    { id: "forum-box", title: "My box", subject: "Community", detail: "Private notes and pictures in Forum", href: "/forum?tab=box" },
+    { id: "academic", title: "Academic Platform", subject: "Academic", detail: "Tools; library and box live in Forum", href: "/academic" },
+    { id: "learning-box", title: "My box (Private Learning Box)", subject: "Community", detail: "Private notes and pictures", href: "/forum?tab=box" },
     { id: "code", title: "Code Resource", subject: "Code", detail: "Python, Java, web folders", href: "/code" },
     { id: "tools", title: "Tools", subject: "Tools", detail: "Study tools hub", href: "/tools" },
     { id: "english", title: "English Learning", subject: "English", detail: "TOEFL IELTS SAT vocabulary writing", href: "/english" },
@@ -568,7 +570,7 @@ export function searchSiteEngine(
       title: item.title,
       subject: item.category,
       detail: clip(item.content),
-      href: "/learning-box",
+      href: "/forum?tab=box",
       score: scoreFields(tokens, item.title, `${item.category} ${item.content}`),
     });
   });

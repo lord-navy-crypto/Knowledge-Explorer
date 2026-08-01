@@ -20,7 +20,7 @@ const boxes = [
   },
   {
     title: "Academic Platform",
-    description: "Private Learning Box (notes + pictures) and shared materials.",
+    description: "Study tools; shared library and My box live in Forum.",
     href: "/academic",
   },
   {
@@ -41,7 +41,7 @@ const boxes = [
   },
   {
     title: "Forum",
-    description: "Post tips and questions.",
+    description: "Discussions, shared materials library, and private My box.",
     href: "/forum",
   },
   {
