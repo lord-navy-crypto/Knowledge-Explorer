@@ -141,8 +141,7 @@ export default function StyleWindow() {
                   <div>
                     <p className="style-night-title">Night mode</p>
                     <p className="style-night-blurb">
-                      Turns the little tomato desk into a black &amp; white pixel window. Saved here
-                      in Style — not on the desk itself.
+                      Darkens the whole site — pages, panels, and chrome. Saved in this browser.
                     </p>
                   </div>
                   <button

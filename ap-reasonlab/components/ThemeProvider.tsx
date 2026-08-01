@@ -40,7 +40,7 @@ type ThemeContextValue = {
   theme: SiteTheme;
   setTheme: (theme: SiteTheme) => void;
   cycleTheme: () => void;
-  /** Style-window night: B&W tomato desk (and soft site dim). */
+  /** Style-window night: whole-site dark mode. */
   nightMode: boolean;
   setNightMode: (on: boolean) => void;
   toggleNightMode: () => void;
