@@ -81,7 +81,8 @@ Installed now (browser-only, no server runner):
 5) SQL — /code/sql (sql.js / SQLite in memory)
 6) Markdown — /code/markdown (live Markdown + KaTeX)
 
-Java training (no JVM required for Practice Run):
-7) Java — /code/java — write Java; Practice Run maps a CSA subset → JS in the browser.
-   Download .java for real JDK. Optional real runner: set PISTON_URL for /api/code/run-java.
+Training editors (browser stand-in, no real JVM / .NET required):
+7) Java — /code/java — Practice Run (CSA subset → JS). Download .java for real JDK.
+8) C# — /code/csharp — Practice Run (intro subset → JS). Download .cs for real .NET.
+   Optional real Java runner later: PISTON_URL → /api/code/run-java.
 `;

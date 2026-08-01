@@ -54,6 +54,13 @@ const langs = [
     run: true,
     description: "Java training: Practice Run in browser (JS stand-in). Download for real JDK.",
   },
+  {
+    id: "csharp",
+    title: "C#",
+    href: "/code/csharp",
+    run: true,
+    description: "C# training: Practice Run like Java (JS stand-in). Download for real .NET.",
+  },
 ];
 
 export default function CodePage() {
@@ -62,11 +69,15 @@ export default function CodePage() {
       <div>
         <h1 className="text-3xl font-bold">Code Resource</h1>
         <p className="mt-2 text-slate-600">
-          Browser playgrounds for Python, JavaScript, TypeScript, Web, SQL, and Markdown. Java has a{" "}
+          Browser playgrounds for Python, JavaScript, TypeScript, Web, SQL, and Markdown.{" "}
           <Link href="/code/java" className="font-medium text-brand-700 underline">
-            writing editor
+            Java
           </Link>{" "}
-          (Run when a remote runner is configured). Plus a{" "}
+          and{" "}
+          <Link href="/code/csharp" className="font-medium text-brand-700 underline">
+            C#
+          </Link>{" "}
+          use Practice Run (training stand-in). Plus a{" "}
           <Link href="/tools/code-board" className="font-medium text-brand-700 underline">
             long code block adder
           </Link>

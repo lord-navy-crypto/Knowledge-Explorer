@@ -20,6 +20,7 @@ function playgroundHref(language: CodeBoardLanguage): string | null {
   if (language === "sql") return "/code/sql";
   if (language === "markdown") return "/code/markdown";
   if (language === "java") return "/code/java";
+  if (language === "csharp") return "/code/csharp";
   return "/code";
 }
 
