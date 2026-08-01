@@ -110,7 +110,7 @@ export const STUDY_TOOLS: StudyTool[] = [
     id: "focus-desk",
     href: "/tools/focus-desk",
     title: "Tomato focus desk",
-    blurb: "Pomodoro focus/break + optional white noise. Replaces the old separate Study timer page.",
+    blurb: "Pomodoro focus/break + optional noise beds (white, pink, brown, soft, rain-like).",
     category: "study",
     security: "safe",
   },
