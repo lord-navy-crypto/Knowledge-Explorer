@@ -38,11 +38,11 @@ export default function ToolsPage() {
         <LocalAiRecommendation className="relative mt-4 max-w-2xl" />
         <div className="relative mt-5 flex flex-wrap gap-2 text-xs">
           {[
+            { href: "/tools/focus-desk", label: "Tomato focus desk" },
+            { href: "/tools/formula-board", label: "Formula board" },
             { href: "/tools/mistake-notebook", label: "Mistake notebook" },
+            { href: "/tools/exam-countdown", label: "Exam countdown" },
             { href: "/tools/vocab-book", label: "Vocab book" },
-            { href: "/tools/vector-resolve", label: "Vector components" },
-            { href: "/tools/image-crop", label: "Image crop" },
-            { href: "/tools/random-groups", label: "Random groups" },
             { href: "/hints", label: "AI panel" },
           ].map((item) => (
             <Link

@@ -58,6 +58,14 @@ export const STUDY_TOOLS: StudyTool[] = [
 
   // —— Study desk ——
   {
+    id: "focus-desk",
+    href: "/tools/focus-desk",
+    title: "Tomato focus desk",
+    blurb: "Pomodoro focus/break cycles with optional white noise and full-desk mode.",
+    category: "study",
+    badge: "New",
+  },
+  {
     id: "timer",
     href: "/tools/timer",
     title: "Study timer",
@@ -77,7 +85,6 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "Mistake notebook",
     blurb: "Log wrong answers, what you missed, and the fix — private to this browser.",
     category: "study",
-    badge: "New",
   },
   {
     id: "exam-countdown",
@@ -85,7 +92,6 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "Exam countdown",
     blurb: "Track exam dates and days remaining on this device.",
     category: "study",
-    badge: "New",
   },
   {
     id: "word-count",
@@ -131,6 +137,14 @@ export const STUDY_TOOLS: StudyTool[] = [
 
   // —— Math ——
   {
+    id: "formula-board",
+    href: "/tools/formula-board",
+    title: "Formula board",
+    blurb: "Common AP / STEM formulas — one-click copy as LaTeX or plain text.",
+    category: "math",
+    badge: "New",
+  },
+  {
     id: "latex",
     href: "/tools/latex",
     title: "LaTeX checker",
@@ -150,7 +164,6 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "Scientific notation & sig figs",
     blurb: "Convert numbers and estimate significant figures for lab work.",
     category: "math",
-    badge: "New",
   },
   {
     id: "vector-resolve",
@@ -158,7 +171,6 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "Vector components",
     blurb: "Resolve a 2D vector into x/y components with a simple diagram.",
     category: "math",
-    badge: "New",
   },
 
   // —— Write ——
