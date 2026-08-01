@@ -1,6 +1,6 @@
 /**
  * Starter non-AP knowledge cards for Learning Box Random Draw demos.
- * Users can also upload their own materials in Academic Platform → Learning Box.
+ * Users can also add their own materials in Forum → My box.
  */
 export const starterLearningMaterials = [
   {

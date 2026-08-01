@@ -305,7 +305,6 @@ export function searchSiteEngine(
     { id: "forum", title: "Forum", subject: "Community", detail: "Discussions, shared library, My box", href: "/forum" },
     { id: "forum-shared", title: "Shared library", subject: "Community", detail: "Public materials in Forum", href: "/forum?tab=shared" },
     { id: "forum-box", title: "My box", subject: "Community", detail: "Private notes and pictures in Forum", href: "/forum?tab=box" },
-    { id: "academic", title: "Academic Platform", subject: "Academic", detail: "Tools; library and box live in Forum", href: "/academic" },
     { id: "learning-box", title: "My box (Private Learning Box)", subject: "Community", detail: "Private notes and pictures", href: "/forum?tab=box" },
     { id: "code", title: "Code Resource", subject: "Code", detail: "Python, Java, web folders", href: "/code" },
     { id: "tools", title: "Tools", subject: "Tools", detail: "One toolbox hub — AI, files, images, utilities", href: "/tools" },
@@ -627,7 +626,13 @@ export function searchSiteEngine(
       title: item.title,
       subject: item.area || item.category || "Document",
       detail: excerpt(item.content),
-      href: item.area ? `/${item.area}` : "/academic",
+      href: item.area === "materials" || item.area === "learning"
+        ? item.area === "materials"
+          ? "/forum?tab=shared"
+          : "/forum?tab=box"
+        : item.area
+          ? `/${item.area}`
+          : "/forum",
       score: scoreFields(
         tokens,
         item.title,

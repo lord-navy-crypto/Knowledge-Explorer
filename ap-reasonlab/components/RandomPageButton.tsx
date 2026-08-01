@@ -17,7 +17,6 @@ const STATIC_STUDY_PATHS = [
   "/tools/word-count",
   "/tools/calculator",
   "/tools/grapher",
-  "/academic",
   "/code",
   "/forum",
   "/forum?tab=shared",

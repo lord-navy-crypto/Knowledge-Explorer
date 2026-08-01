@@ -68,6 +68,80 @@ function forumRateLimited(req: NextRequest): boolean {
   return now - previous < 8_000;
 }
 
+const FORUM_ATTACH_MAX_CHARS = 900_000; // ~data URL length
+
+function sanitizeForumAttachments(
+  raw: unknown,
+  maxCount: number
+): {
+  items: { id: string; name: string; mime: string; fileId: string; size: number; dataUrl: string }[];
+  error?: string;
+} {
+  if (raw == null) return { items: [] };
+  if (!Array.isArray(raw)) return { items: [], error: "Invalid attachments" };
+  if (raw.length > maxCount) {
+    return { items: [], error: `At most ${maxCount} attachments allowed` };
+  }
+  const items: {
+    id: string;
+    name: string;
+    mime: string;
+    fileId: string;
+    size: number;
+    dataUrl: string;
+  }[] = [];
+  for (const entry of raw) {
+    if (!entry || typeof entry !== "object") continue;
+    const row = entry as { name?: string; mime?: string; dataUrl?: string; size?: number };
+    const name = String(row.name || "attachment").slice(0, 200);
+    const mime = String(row.mime || "application/octet-stream").slice(0, 120);
+    const dataUrl = String(row.dataUrl || "");
+    if (!dataUrl.startsWith("data:")) {
+      return { items: [], error: "Attachment data missing" };
+    }
+    if (dataUrl.length > FORUM_ATTACH_MAX_CHARS) {
+      return { items: [], error: `"${name}" is too large (keep each file under ~650KB)` };
+    }
+    const size = Number.isFinite(Number(row.size)) ? Number(row.size) : dataUrl.length;
+    items.push({
+      id: uid("forum-att"),
+      name,
+      mime,
+      fileId: "", // filled when persisted
+      size,
+      dataUrl,
+    });
+  }
+  return { items };
+}
+
+function persistForumAttachments(
+  content: ManagedContent,
+  prepared: { id: string; name: string; mime: string; fileId: string; size: number; dataUrl: string }[]
+) {
+  return prepared.map((att) => {
+    const fileId = uid("m-file");
+    content.files.unshift({
+      id: fileId,
+      name: att.name,
+      mime: att.mime,
+      dataUrl: att.dataUrl,
+      note: "Forum discussion attachment",
+      uploadedAt: Date.now(),
+      uploadedBy: "forum",
+      area: "forum",
+      space: "_root",
+    });
+    return {
+      id: att.id,
+      name: att.name,
+      mime: att.mime,
+      fileId,
+      size: att.size,
+    };
+  });
+}
+
 async function tokenFrom(body: { githubToken?: string }) {
   const t = sanitizeGithubToken(body.githubToken);
   if (t) {
@@ -206,6 +280,10 @@ export async function POST(req: NextRequest) {
       if (!postBody || postBody.length > 8_000) {
         return NextResponse.json({ error: "Post must be 1–8,000 characters" }, { status: 400 });
       }
+      const attachments = sanitizeForumAttachments(item.attachments, 4);
+      if (attachments.error) {
+        return NextResponse.json({ error: attachments.error }, { status: 400 });
+      }
       current.forumPosts.unshift({
         id: uid("forum-post"),
         author,
@@ -213,6 +291,7 @@ export async function POST(req: NextRequest) {
         body: postBody,
         createdAt: Date.now(),
         replies: [],
+        attachments: persistForumAttachments(current, attachments.items),
       });
     } else if (action === "add_forum_reply") {
       const author = String(item.author || "").trim();
@@ -225,8 +304,18 @@ export async function POST(req: NextRequest) {
       if (!replyBody || replyBody.length > 4_000) {
         return NextResponse.json({ error: "Reply must be 1–4,000 characters" }, { status: 400 });
       }
+      const attachments = sanitizeForumAttachments(item.attachments, 2);
+      if (attachments.error) {
+        return NextResponse.json({ error: attachments.error }, { status: 400 });
+      }
       if (!Array.isArray(post.replies)) post.replies = [];
-      post.replies.push({ id: uid("forum-reply"), author, body: replyBody, createdAt: Date.now() });
+      post.replies.push({
+        id: uid("forum-reply"),
+        author,
+        body: replyBody,
+        createdAt: Date.now(),
+        attachments: persistForumAttachments(current, attachments.items),
+      });
     } else if (action === "add_subject") {
       const item = body.item || {};
       const name = String(item.title || item.name || item.subject || "").trim();
@@ -951,11 +1040,43 @@ export async function POST(req: NextRequest) {
           pushRecycle("questionnaire", found.title, found);
           current.questionnaires = current.questionnaires.filter((q) => q.id !== id);
         }
-      } else if (target === "forum_post") current.forumPosts = current.forumPosts.filter((post) => post.id !== id);
-      else if (target === "forum_reply") {
+      } else if (target === "forum_post") {
+        const post = current.forumPosts.find((entry) => entry.id === id);
+        if (post) {
+          const fileIds = [
+            ...(post.attachments || []).map((a) => a.fileId),
+            ...(post.replies || []).flatMap((r) => (r.attachments || []).map((a) => a.fileId)),
+          ].filter(Boolean);
+          for (const fileId of fileIds) {
+            const found = current.files.find((f) => f.id === fileId);
+            if (found) {
+              pushRecycle("file", found.name, found);
+              rememberDeleted(current, found.id);
+            }
+          }
+          if (fileIds.length) {
+            current.files = current.files.filter((f) => !fileIds.includes(f.id));
+          }
+        }
+        current.forumPosts = current.forumPosts.filter((entry) => entry.id !== id);
+      } else if (target === "forum_reply") {
         const post = current.forumPosts.find((entry) => entry.id === String(body.postId || ""));
         if (!post) return NextResponse.json({ error: "Post not found" }, { status: 404 });
-        post.replies = (post.replies || []).filter((reply) => reply.id !== id);
+        const reply = (post.replies || []).find((entry) => entry.id === id);
+        if (reply) {
+          const fileIds = (reply.attachments || []).map((a) => a.fileId).filter(Boolean);
+          for (const fileId of fileIds) {
+            const found = current.files.find((f) => f.id === fileId);
+            if (found) {
+              pushRecycle("file", found.name, found);
+              rememberDeleted(current, found.id);
+            }
+          }
+          if (fileIds.length) {
+            current.files = current.files.filter((f) => !fileIds.includes(f.id));
+          }
+        }
+        post.replies = (post.replies || []).filter((entry) => entry.id !== id);
       }
       else return NextResponse.json({ error: "Unknown delete target" }, { status: 400 });
     } else if (action === "set_advanced_default") {

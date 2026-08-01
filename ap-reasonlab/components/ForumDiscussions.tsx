@@ -5,11 +5,21 @@ import Link from "next/link";
 import { saveLearningItem } from "@/lib/storage";
 import RichContent from "@/components/RichContent";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
-import type { ManagedForumPost } from "@/lib/managed-types";
+import type { ManagedForumAttachment, ManagedForumPost } from "@/lib/managed-types";
 
 const NAME_KEY = "results-forum-display-name";
+const MAX_POST_ATTACH = 4;
+const MAX_REPLY_ATTACH = 2;
+const MAX_ATTACH_BYTES = 650_000;
 
 type Category = "all" | "questions" | "resources" | "announcements";
+type DraftAttachment = {
+  localId: string;
+  name: string;
+  mime: string;
+  dataUrl: string;
+  size: number;
+};
 
 const CATEGORIES: { id: Category; label: string; match: (p: ManagedForumPost) => boolean }[] = [
   { id: "all", label: "All", match: () => true },
@@ -56,6 +66,165 @@ function Avatar({ name }: { name: string }) {
   );
 }
 
+function formatBytes(n: number): string {
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+  return `${(n / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+async function fileToDraft(file: File): Promise<DraftAttachment> {
+  if (file.size > MAX_ATTACH_BYTES) {
+    throw new Error(`"${file.name}" is too large (max ~650KB each).`);
+  }
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("Could not read file"));
+    reader.readAsDataURL(file);
+  });
+  return {
+    localId: `local-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    name: file.name,
+    mime: file.type || "application/octet-stream",
+    dataUrl,
+    size: file.size,
+  };
+}
+
+function AttachmentPicker({
+  drafts,
+  max,
+  onChange,
+  disabled,
+}: {
+  drafts: DraftAttachment[];
+  max: number;
+  onChange: (next: DraftAttachment[]) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <label className="btn-secondary cursor-pointer text-xs">
+          Attach image / file / document
+          <input
+            type="file"
+            multiple
+            accept="image/*,.pdf,.txt,.md,.doc,.docx,.png,.jpg,.jpeg,.gif,.webp,.csv"
+            className="sr-only"
+            disabled={disabled || drafts.length >= max}
+            onChange={(e) => {
+              const files = Array.from(e.target.files || []);
+              e.target.value = "";
+              void (async () => {
+                const next = [...drafts];
+                for (const file of files) {
+                  if (next.length >= max) break;
+                  next.push(await fileToDraft(file));
+                }
+                onChange(next);
+              })().catch((err) => {
+                window.alert(err instanceof Error ? err.message : "Attach failed");
+              });
+            }}
+          />
+        </label>
+        <span className="text-[11px] text-slate-500">
+          Up to {max} files · ~650KB each · no change code needed
+        </span>
+      </div>
+      {drafts.length > 0 ? (
+        <ul className="space-y-1 text-xs text-slate-700">
+          {drafts.map((d) => (
+            <li key={d.localId} className="flex items-center justify-between gap-2 rounded-lg bg-slate-50 px-2 py-1.5">
+              <span className="truncate">
+                {d.mime.startsWith("image/") ? "🖼" : "📎"} {d.name} · {formatBytes(d.size)}
+              </span>
+              <button
+                type="button"
+                className="text-red-600 hover:underline"
+                onClick={() => onChange(drafts.filter((x) => x.localId !== d.localId))}
+              >
+                Remove
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
+
+function AttachmentList({ items }: { items?: ManagedForumAttachment[] }) {
+  const list = items || [];
+  if (!list.length) return null;
+  return (
+    <ul className="mt-3 space-y-2">
+      {list.map((att) => (
+        <li key={att.id}>
+          {att.mime.startsWith("image/") ? (
+            <ForumImage fileId={att.fileId} name={att.name} />
+          ) : (
+            <a
+              href={`/api/edit?fileId=${encodeURIComponent(att.fileId)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-brand-700 hover:bg-slate-50"
+              onClick={async (e) => {
+                e.preventDefault();
+                try {
+                  const res = await fetch(`/api/edit?fileId=${encodeURIComponent(att.fileId)}`);
+                  const data = await res.json();
+                  if (!res.ok || !data.file?.dataUrl) throw new Error(data.error || "Missing file");
+                  const a = document.createElement("a");
+                  a.href = data.file.dataUrl;
+                  a.download = att.name || data.file.name || "download";
+                  a.click();
+                } catch (err) {
+                  window.alert(err instanceof Error ? err.message : "Download failed");
+                }
+              }}
+            >
+              📎 {att.name}
+              <span className="text-slate-400">· {formatBytes(att.size)}</span>
+            </a>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function ForumImage({ fileId, name }: { fileId: string; name: string }) {
+  const [src, setSrc] = useState("");
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch(`/api/edit?fileId=${encodeURIComponent(fileId)}`);
+        const data = await res.json();
+        if (!cancelled && res.ok && data.file?.dataUrl) setSrc(data.file.dataUrl);
+      } catch {
+        // ignore
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [fileId]);
+  if (!src) {
+    return <p className="text-xs text-slate-500">Loading image…</p>;
+  }
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt={name}
+      className="max-h-64 max-w-full rounded-lg border border-slate-200 object-contain"
+    />
+  );
+}
+
 export function ForumDiscussions({ embedded = false }: { embedded?: boolean }) {
   const [posts, setPosts] = useState<ManagedForumPost[]>([]);
   const [displayName, setDisplayName] = useState("");
@@ -65,7 +234,9 @@ export function ForumDiscussions({ embedded = false }: { embedded?: boolean }) {
   const [pendingAction, setPendingAction] = useState<"post" | string | null>(null);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [postAttachments, setPostAttachments] = useState<DraftAttachment[]>([]);
   const [replyBody, setReplyBody] = useState("");
+  const [replyAttachments, setReplyAttachments] = useState<DraftAttachment[]>([]);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -141,6 +312,7 @@ export function ForumDiscussions({ embedded = false }: { embedded?: boolean }) {
     else {
       setReplyingTo(action);
       setReplyBody("");
+      setReplyAttachments([]);
       setExpandedId(action);
     }
   }
@@ -180,13 +352,28 @@ export function ForumDiscussions({ embedded = false }: { embedded?: boolean }) {
     }
   }
 
+  function draftsPayload(drafts: DraftAttachment[]) {
+    return drafts.map((d) => ({
+      name: d.name,
+      mime: d.mime,
+      dataUrl: d.dataUrl,
+      size: d.size,
+    }));
+  }
+
   async function submitPost(event: React.FormEvent) {
     event.preventDefault();
     if (!displayName) return requestIdentity("post");
-    const ok = await publish("add_forum_post", { author: displayName, title, body });
+    const ok = await publish("add_forum_post", {
+      author: displayName,
+      title,
+      body,
+      attachments: draftsPayload(postAttachments),
+    });
     if (ok) {
       setTitle("");
       setBody("");
+      setPostAttachments([]);
       setComposerOpen(false);
     }
   }
@@ -194,17 +381,23 @@ export function ForumDiscussions({ embedded = false }: { embedded?: boolean }) {
   async function submitReply(event: React.FormEvent, postId: string) {
     event.preventDefault();
     if (!displayName) return requestIdentity(postId);
-    const ok = await publish("add_forum_reply", { postId, author: displayName, body: replyBody });
+    const ok = await publish("add_forum_reply", {
+      postId,
+      author: displayName,
+      body: replyBody,
+      attachments: draftsPayload(replyAttachments),
+    });
     if (ok) {
       setReplyBody("");
+      setReplyAttachments([]);
       setReplyingTo(null);
     }
   }
 
-  async function moderate(target: "forum_post" | "forum_reply", id: string, postId?: string) {
+  async function deleteContent(target: "forum_post" | "forum_reply", id: string, postId?: string) {
     const changeCode = window.prompt("Enter a content or master change code to delete:");
     if (!changeCode) return;
-    if (!window.confirm("Delete this shared Forum content?")) return;
+    if (!window.confirm("Delete this Forum content? Attached files will be removed too.")) return;
     setError("");
     const response = await fetch("/api/edit", {
       method: "POST",
@@ -222,7 +415,7 @@ export function ForumDiscussions({ embedded = false }: { embedded?: boolean }) {
       content: `${post.body}\n\n— ${post.author}`,
       category: "Forum",
     });
-    window.alert("Saved to My box (this browser only).");
+    window.alert("Saved to My box (this browser only — private).");
   }
 
   return (
@@ -232,15 +425,28 @@ export function ForumDiscussions({ embedded = false }: { embedded?: boolean }) {
           <div>
             <h2 className="text-2xl font-bold">Discussions</h2>
             <p className="mt-1 max-w-2xl text-sm text-slate-600">
-              Ask questions and share tips. Use Shared library for files and My box for private notes.
+              Ask questions, attach files, and share tips. No change code needed to post — only a
+              display name.
             </p>
           </div>
         </section>
       )}
 
+      <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 px-4 py-3 text-sm text-emerald-950">
+        <p className="font-semibold">Post freely — no content password</p>
+        <p className="mt-1 text-emerald-900/85">
+          Choose a display name to publish threads and replies (with optional images, files, or
+          documents). Deleting shared content still needs a change code.{" "}
+          <Link href="/forum?tab=box" className="font-semibold underline">
+            My box
+          </Link>{" "}
+          stays private in this browser only.
+        </p>
+      </div>
+
       <div className="rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-3 text-sm text-amber-950">
         Be kind and constructive. Do not post personal data, private answer keys, or copyrighted
-        material you do not have rights to share. Display names are public but not verified accounts.
+        material you do not have rights to share.
       </div>
 
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -323,6 +529,12 @@ export function ForumDiscussions({ embedded = false }: { embedded?: boolean }) {
             minHeightClass="min-h-[10rem]"
             placeholder="Write your question or idea…"
           />
+          <AttachmentPicker
+            drafts={postAttachments}
+            max={MAX_POST_ATTACH}
+            onChange={setPostAttachments}
+            disabled={saving}
+          />
           <div className="flex items-center justify-between gap-3 text-xs text-slate-500">
             <span>Posting publicly as {displayName}</span>
             <span>{body.length}/8000</span>
@@ -348,6 +560,7 @@ export function ForumDiscussions({ embedded = false }: { embedded?: boolean }) {
           {filtered.map((post) => {
             const open = expandedId === post.id;
             const replyCount = (post.replies || []).length;
+            const attachCount = (post.attachments || []).length;
             return (
               <li key={post.id} className="card overflow-hidden !p-0">
                 <button
@@ -360,7 +573,10 @@ export function ForumDiscussions({ embedded = false }: { embedded?: boolean }) {
                     <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
                       <h3 className="font-semibold text-slate-900">{post.title}</h3>
                       <span className="text-[11px] text-slate-500">
-                        {replyCount} {replyCount === 1 ? "reply" : "replies"} · {relativeTime(post.createdAt)}
+                        {replyCount} {replyCount === 1 ? "reply" : "replies"}
+                        {attachCount ? ` · ${attachCount} file${attachCount === 1 ? "" : "s"}` : ""}
+                        {" · "}
+                        {relativeTime(post.createdAt)}
                       </span>
                     </div>
                     <p className="mt-0.5 text-xs text-slate-500">
@@ -379,13 +595,14 @@ export function ForumDiscussions({ embedded = false }: { embedded?: boolean }) {
                       <p className="text-xs text-slate-500">{new Date(post.createdAt).toLocaleString()}</p>
                       <button
                         type="button"
-                        className="text-xs text-slate-400 hover:text-red-600"
-                        onClick={() => void moderate("forum_post", post.id)}
+                        className="rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-100"
+                        onClick={() => void deleteContent("forum_post", post.id)}
                       >
-                        Moderate
+                        Delete
                       </button>
                     </div>
                     <RichContent className="text-sm text-slate-700">{post.body}</RichContent>
+                    <AttachmentList items={post.attachments} />
                     <div className="flex flex-wrap gap-3 text-xs">
                       <button
                         type="button"
@@ -418,13 +635,14 @@ export function ForumDiscussions({ embedded = false }: { embedded?: boolean }) {
                                 </p>
                                 <button
                                   type="button"
-                                  className="text-xs text-slate-400 hover:text-red-600"
-                                  onClick={() => void moderate("forum_reply", reply.id, post.id)}
+                                  className="rounded-md border border-red-200 bg-white px-2 py-0.5 text-[11px] font-semibold text-red-700 hover:bg-red-50"
+                                  onClick={() => void deleteContent("forum_reply", reply.id, post.id)}
                                 >
-                                  Moderate
+                                  Delete
                                 </button>
                               </div>
                               <RichContent className="mt-2 text-sm text-slate-700">{reply.body}</RichContent>
+                              <AttachmentList items={reply.attachments} />
                             </div>
                           </div>
                         ))}
@@ -438,12 +656,18 @@ export function ForumDiscussions({ embedded = false }: { embedded?: boolean }) {
                       >
                         <MarkdownLatexField
                           label="Reply"
-                          help="Markdown + LaTeX supported."
+                          help="Markdown + LaTeX supported. Attachments optional."
                           value={replyBody}
                           onChange={setReplyBody}
                           required
                           minHeightClass="min-h-[7rem]"
                           placeholder={`Reply publicly as ${displayName}…`}
+                        />
+                        <AttachmentPicker
+                          drafts={replyAttachments}
+                          max={MAX_REPLY_ATTACH}
+                          onChange={setReplyAttachments}
+                          disabled={saving}
                         />
                         <div className="flex gap-2">
                           <button type="submit" className="btn-primary" disabled={saving}>
@@ -475,8 +699,7 @@ export function ForumDiscussions({ embedded = false }: { embedded?: boolean }) {
               Choose your Forum name
             </h2>
             <p className="mt-2 text-sm text-slate-600">
-              A display name is required before posting or replying. It will be visible publicly and
-              saved only in this browser.
+              No account password or change code — just a public display name saved in this browser.
             </p>
             <input
               autoFocus
