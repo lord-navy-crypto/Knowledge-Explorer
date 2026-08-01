@@ -59,6 +59,11 @@ export const englishPracticeTools = [
     description: "Personal flashcards saved in this browser.",
   },
   {
+    href: "/tools/speech-to-text",
+    title: "Speech to text",
+    description: "Speak, record, or upload audio → English transcript.",
+  },
+  {
     href: "/tools/dictation",
     title: "Dictation",
     description: "Listen and type to train listening + spelling.",

@@ -175,6 +175,16 @@ export const STUDY_TOOLS: StudyTool[] = [
     security: "local-data",
   },
   {
+    id: "speech-to-text",
+    href: "/tools/speech-to-text",
+    title: "Speech to text",
+    blurb:
+      "Pure English speech → text: live mic, record a clip, or upload an audio file (Whisper).",
+    category: "english",
+    badge: "Special",
+    security: "upload",
+  },
+  {
     id: "dictation",
     href: "/tools/dictation",
     title: "Dictation",
