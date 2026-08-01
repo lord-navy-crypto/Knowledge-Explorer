@@ -13,19 +13,19 @@ export const englishExamAreas = [
     href: "/english/toefl",
     title: "TOEFL",
     icon: "T",
-    description: "TOEFL practice questions: official ETS practice sources and sets you upload.",
+    description: "4 subject folders: Reading, Listening, Writing, Speaking — practice questions per folder.",
   },
   {
     href: "/english/ielts",
     title: "IELTS",
     icon: "I",
-    description: "IELTS Academic practice questions and official sample practice.",
+    description: "4 subject folders: Listening, Reading, Writing, Speaking — practice questions per folder.",
   },
   {
     href: "/english/sat",
     title: "SAT",
     icon: "S",
-    description: "Digital SAT Reading & Writing practice via College Board and your files.",
+    description: "4 subject folders: English, Grammar, Reading, Mathematics — practice questions per folder.",
   },
 ] as const;
 
