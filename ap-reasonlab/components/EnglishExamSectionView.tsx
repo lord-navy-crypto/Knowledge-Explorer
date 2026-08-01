@@ -44,17 +44,18 @@ export default function EnglishExamSectionView({
       </nav>
 
       <section className="rounded-xl border border-rose-200 bg-rose-50/70 px-4 py-3 text-sm text-rose-950">
-        <p className="font-semibold">{section.title} file folder</p>
+        <p className="font-semibold">{section.title} · own file folder</p>
         <p className="mt-1 text-rose-900/85">
-          Add practice questions, PDFs, audio, or notes here. Other {exam.title} subjects have their
-          own folders. Skills like vocabulary stay under Basic skills.
+          This page is only for {exam.title} · {section.title}. Upload practice questions, PDFs,
+          images, audio, or notes in the panel below — they stay in this subject folder. Other
+          subjects have separate folders and upload pages.
         </p>
       </section>
 
       <EnglishResourcePanel
         space={section.spaceKey}
         basePath={section.href}
-        title={`${exam.title} · ${section.title} · practice questions`}
+        title={`${exam.title} · ${section.title} · upload files`}
       />
 
       <p className="text-xs text-slate-500">

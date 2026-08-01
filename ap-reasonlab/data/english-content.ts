@@ -25,7 +25,7 @@ export const englishExamAreas = [
     href: "/english/sat",
     title: "SAT",
     icon: "S",
-    description: "3 subject folders: English, Literature, Mathematics — practice questions per folder.",
+    description: "4 subject folders: English, Grammar, Reading, Mathematics — practice questions per folder.",
   },
 ] as const;
 

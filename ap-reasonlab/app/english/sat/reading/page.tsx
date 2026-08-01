@@ -4,7 +4,7 @@ import { getExamConfig, getExamSection } from "@/data/english-exam-sections";
 
 export default function Page() {
   const exam = getExamConfig("sat");
-  const section = getExamSection("sat", "literature");
+  const section = getExamSection("sat", "reading");
   if (!section) notFound();
   return <EnglishExamSectionView exam={exam} section={section} />;
 }

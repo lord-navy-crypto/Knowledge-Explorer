@@ -20,7 +20,9 @@ export default function EnglishExamHub({
   const cols =
     exam.sections.length === 3
       ? "sm:grid-cols-3"
-      : "sm:grid-cols-2 lg:grid-cols-4";
+      : exam.sections.length === 2
+        ? "sm:grid-cols-2"
+        : "sm:grid-cols-2 lg:grid-cols-4";
 
   return (
     <div className="space-y-8">
