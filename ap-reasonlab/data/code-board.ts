@@ -3,6 +3,7 @@
 export type CodeBoardLanguage =
   | "python"
   | "java"
+  | "csharp"
   | "html"
   | "javascript"
   | "typescript"
@@ -30,6 +31,7 @@ export const CODE_BOARD_LANGUAGES: Array<{ id: CodeBoardLanguage | "all"; label:
   { id: "sql", label: "SQL" },
   { id: "markdown", label: "Markdown" },
   { id: "java", label: "Java" },
+  { id: "csharp", label: "C#" },
   { id: "other", label: "Other" },
 ];
 
@@ -198,6 +200,24 @@ SELECT name, score FROM students WHERE score >= 85 ORDER BY score DESC;`,
 - Goal
 - Evidence
 - Formula: $E = mc^2$
+`,
+  },
+  {
+    id: "cs-foreach-sum",
+    language: "csharp",
+    title: "foreach array sum",
+    comment: "C# intro drill for Practice Run on /code/csharp.",
+    builtin: true,
+    code: `using System;
+
+class Program {
+  static void Main() {
+    int[] a = {1, 2, 3, 4};
+    int sum = 0;
+    foreach (int x in a) sum += x;
+    Console.WriteLine(sum);
+  }
+}
 `,
   },
 ];

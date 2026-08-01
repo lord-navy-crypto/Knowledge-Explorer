@@ -92,6 +92,7 @@ export const SITE_SECTION_FOLDERS: SiteSectionFolder[] = [
       { area: "code-sql", space: ROOT_SPACE, label: "SQL", href: "/code/sql" },
       { area: "code-markdown", space: ROOT_SPACE, label: "Markdown", href: "/code/markdown" },
       { area: "code-java", space: ROOT_SPACE, label: "Java", href: "/code/java" },
+      { area: "code-csharp", space: ROOT_SPACE, label: "C#", href: "/code/csharp" },
     ],
   },
   {
