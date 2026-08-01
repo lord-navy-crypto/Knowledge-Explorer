@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import JavaPlayground from "@/components/JavaPlayground";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
-import { standardSnippets } from "@/data/code-snippets";
+import { javaExamples } from "@/data/java-examples";
 
 export default function CodeJavaPage() {
-  const snippets = standardSnippets.filter((s) => s.language === "java");
   return (
     <div className="space-y-6">
       <Link href="/code" className="text-sm text-brand-600 hover:underline">
@@ -14,13 +14,17 @@ export default function CodeJavaPage() {
       <div>
         <h1 className="text-3xl font-bold">Java</h1>
         <p className="mt-2 text-slate-600">
-          CSA-style starters. Keep long Java templates in the{" "}
+          Writing editor first (same layout as Python / JS). Copy or download{" "}
+          <code className="rounded bg-slate-100 px-1">.java</code> anytime. Remote Run plugs in
+          later via a Java runner — keep templates in the{" "}
           <Link href="/tools/code-board" className="font-medium text-brand-700 underline">
             code block adder
           </Link>
-          . No in-browser runner yet — use IntelliJ / Replit locally, or upload .java files here.
+          .
         </p>
       </div>
+
+      <JavaPlayground examples={javaExamples} />
 
       <UnifiedMediaFrame
         alsoShow={["document", "folder"]}
@@ -29,19 +33,6 @@ export default function CodeJavaPage() {
         spaceBasePath="/code/java"
         title="Java · pictures, documents & files"
       />
-
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Standard code</h2>
-        {snippets.map((s) => (
-          <article key={s.id} className="card space-y-2">
-            <h3 className="font-semibold">{s.title}</h3>
-            <p className="text-sm text-slate-600">{s.description}</p>
-            <pre className="overflow-x-auto rounded-lg bg-slate-900 p-3 text-xs text-slate-100">
-              {s.code}
-            </pre>
-          </article>
-        ))}
-      </section>
     </div>
   );
 }

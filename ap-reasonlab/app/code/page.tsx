@@ -52,7 +52,7 @@ const langs = [
     title: "Java",
     href: "/code/java",
     run: false,
-    description: "CSA starters + uploads. Needs a remote runner later.",
+    description: "Writing editor ready (copy / download). Remote Run when Piston is configured.",
   },
 ];
 
@@ -62,11 +62,15 @@ export default function CodePage() {
       <div>
         <h1 className="text-3xl font-bold">Code Resource</h1>
         <p className="mt-2 text-slate-600">
-          Browser playgrounds for Python, JavaScript, TypeScript, Web, SQL, and Markdown — plus a{" "}
+          Browser playgrounds for Python, JavaScript, TypeScript, Web, SQL, and Markdown. Java has a{" "}
+          <Link href="/code/java" className="font-medium text-brand-700 underline">
+            writing editor
+          </Link>{" "}
+          (Run when a remote runner is configured). Plus a{" "}
           <Link href="/tools/code-board" className="font-medium text-brand-700 underline">
             long code block adder
-          </Link>{" "}
-          for common snippets with comments. Java is edit/upload-only for now. Need coaching? Open{" "}
+          </Link>
+          . Need coaching? Open{" "}
           <Link href="/hints?tool=coding" className="font-medium text-brand-700 underline">
             AI Toolbox · Coding AI
           </Link>

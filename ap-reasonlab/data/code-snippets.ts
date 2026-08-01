@@ -81,6 +81,6 @@ Installed now (browser-only, no server runner):
 5) SQL — /code/sql (sql.js / SQLite in memory)
 6) Markdown — /code/markdown (live Markdown + KaTeX)
 
-Still later (needs remote runner):
-7) Java — Judge0 / OneCompiler / Piston, or edit-only + download for now.
+Writing editor ready; remote Run when configured:
+7) Java — /code/java writing editor (copy / download .java). Set PISTON_URL to enable Run via /api/code/run-java.
 `;
