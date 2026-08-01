@@ -81,6 +81,7 @@ Installed now (browser-only, no server runner):
 5) SQL — /code/sql (sql.js / SQLite in memory)
 6) Markdown — /code/markdown (live Markdown + KaTeX)
 
-Still later (needs remote runner):
-7) Java — Judge0 / OneCompiler / Piston, or edit-only + download for now.
+Java training (no JVM required for Practice Run):
+7) Java — /code/java — write Java; Practice Run maps a CSA subset → JS in the browser.
+   Download .java for real JDK. Optional real runner: set PISTON_URL for /api/code/run-java.
 `;
