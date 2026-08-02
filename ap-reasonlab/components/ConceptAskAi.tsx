@@ -10,6 +10,7 @@ import MarkdownLatexField from "@/components/MarkdownLatexField";
 import { toolboxHref } from "@/lib/ai-toolbox-url";
 import { stashToolboxPrefill } from "@/lib/ai-toolbox-prefill";
 import { useLocalAI } from "@/components/LocalAIProvider";
+import { conceptExplainLocal } from "@/lib/ai-prompts";
 import { appendAiSiteContext, fetchAiSiteContext } from "@/lib/ai-site-context";
 
 type Props = {
@@ -64,8 +65,7 @@ export default function ConceptAskAi({
         const text = await localAI.complete([
           {
             role: "system",
-            content:
-              "You are a concise AP concept tutor. Explain clearly, use Markdown, and stay on the named concept. If unsure, say so.",
+            content: conceptExplainLocal(nextMode),
           },
           {
             role: "user",

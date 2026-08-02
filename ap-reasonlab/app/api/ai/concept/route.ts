@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { parseAiProvider, parseSiteModelChoice, runChatJson } from "@/lib/ai-client";
-import { CONCEPT_EXPLAIN_SYSTEM } from "@/lib/ai-prompts";
+import { conceptExplainSystem } from "@/lib/ai-prompts";
 import { appendAiSiteContext, buildServerAiSiteContext } from "@/lib/ai-site-context-server";
 
 export async function POST(req: NextRequest) {
@@ -52,7 +52,7 @@ Return JSON with refused, reply, quizPrompt, aiMayBeWrong.`;
       const userWithSite = appendAiSiteContext(user, siteContext);
 
       const result = await runChatJson({
-        system: CONCEPT_EXPLAIN_SYSTEM,
+        system: conceptExplainSystem(mode),
         user: userWithSite,
         maxTokens: 1100,
         userApiKey: userApiKey || undefined,

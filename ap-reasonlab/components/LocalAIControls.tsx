@@ -18,7 +18,7 @@ const PATHS: Array<{
   {
     value: "local",
     label: "Local",
-    detail: "Runs in this browser. Private on your device — enable a model below.",
+    detail: "Preferred default — runs in this browser when WebGPU is available.",
   },
   {
     value: "site",

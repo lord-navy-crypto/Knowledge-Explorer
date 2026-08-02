@@ -6,6 +6,7 @@ import LocalAIControls from "@/components/LocalAIControls";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
 import RichContent from "@/components/RichContent";
 import { useLocalAI } from "@/components/LocalAIProvider";
+import { englishTutorLocal } from "@/lib/ai-prompts";
 import { appendAiSiteContext, fetchAiSiteContext } from "@/lib/ai-site-context";
 
 type Result = {
@@ -59,8 +60,7 @@ export default function EnglishAiTutor({ embedded = false, hideChannelUi = false
         const text = await localAI.complete([
           {
             role: "system",
-            content:
-              "You are English AI Tutor. Only English learning help (writing, grammar, vocab, TOEFL/IELTS/SAT strategy). Refuse AP science/math solving. Reply with short markdown feedback.",
+            content: englishTutorLocal(mode),
           },
           {
             role: "user",

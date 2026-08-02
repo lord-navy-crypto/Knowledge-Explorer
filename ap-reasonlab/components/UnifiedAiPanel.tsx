@@ -7,6 +7,13 @@ import RichContent from "@/components/RichContent";
 import VoiceInputButton from "@/components/VoiceInputButton";
 import SaveGeneratedPractice from "@/components/SaveGeneratedPractice";
 import { useLocalAI } from "@/components/LocalAIProvider";
+import { codingAiLocal } from "@/lib/ai-coding-prompt";
+import {
+  HINT_PROCESS_LOCAL,
+  SITE_GUIDE_LOCAL,
+  conceptExplainLocal,
+  englishTutorLocal,
+} from "@/lib/ai-prompts";
 import { appendAiSiteContext, fetchAiSiteContext } from "@/lib/ai-site-context";
 import {
   loadToolboxPanelPrefs,
@@ -313,7 +320,7 @@ export default function UnifiedAiPanel({
     const chatMessages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
       {
         role: "system",
-        content: `${system}\n\nWhen Knowledge Explorer site materials are appended below, prefer their formulas/definitions and cite the hit titles. Ignore off-topic hits.`,
+        content: `${system}\n\nWhen Knowledge Explorer site materials are appended below, prefer their formulas/definitions and cite the hit titles. Ignore off-topic hits. Follow the same teaching rules as the cloud teacher for this tool.`,
       },
     ];
     for (const message of history.slice(-8)) {
@@ -345,7 +352,7 @@ export default function UnifiedAiPanel({
     if (category === "ap" && apTask === "advice") {
       if (localAI.usesLocal) {
         const text = await runLocal(
-          "You are an advanced AP tutor. Always include concrete formulas, knowns/unknowns with units, and a partial worked intermediate. Never give the final graded answer. Continue the dialogue. Reply in markdown with clear headings and $LaTeX$.",
+          HINT_PROCESS_LOCAL,
           `Subject: ${subject}\nQuestion:\n${userText}`,
           history,
           onToken
@@ -391,7 +398,7 @@ export default function UnifiedAiPanel({
     if (category === "ap" && apTask === "guide") {
       if (localAI.usesLocal) {
         const text = await runLocal(
-          "You are Site Guide for Knowledge Explorer. Only answer how to use the site. Refuse homework solving. Continue the dialogue.",
+          SITE_GUIDE_LOCAL,
           userText,
           history,
           onToken
@@ -431,7 +438,7 @@ export default function UnifiedAiPanel({
               : "ask";
       if (localAI.usesLocal) {
         const text = await runLocal(
-          "You are an advanced AP concept tutor. Always include key formulas in $LaTeX$ and one mini numeric example when possible. Never finish graded finals. Continue the dialogue. Reply in markdown.",
+          conceptExplainLocal(mode),
           `Subject: ${subject}\nMode: ${mode}\nInput:\n${userText}`,
           history,
           onToken
@@ -479,7 +486,7 @@ export default function UnifiedAiPanel({
       const mode = englishTask === "vocab-extract" ? "vocabulary-coach" : englishTask;
       if (localAI.usesLocal) {
         const text = await runLocal(
-          "You are English AI Tutor. Only English learning help. Refuse AP science solving. Continue the dialogue. Reply in markdown.",
+          englishTutorLocal(mode),
           `Mode: ${mode}\nTarget: ${englishTarget}\n\nStudent input:\n${userText}`,
           history,
           onToken
@@ -528,7 +535,7 @@ export default function UnifiedAiPanel({
           : `Debug / find bugs:\n${userText}`;
     if (localAI.usesLocal) {
       const text = await runLocal(
-        "You are Coding AI. Teach with hints and short examples. Prefer partial solutions for graded work. Continue the dialogue. Reply in markdown.",
+        codingAiLocal(codingTask),
         `Language: ${language}\nFocus: ${codingTask}\nTask: ${taskText}\nCode:\n${codePaste || "(none)"}`,
         history,
         onToken
