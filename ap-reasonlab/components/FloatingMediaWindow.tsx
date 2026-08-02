@@ -229,12 +229,28 @@ export function FloatingMediaWindow({
           baseUpdatedAt: baseUpdatedAt || undefined,
         }),
       });
-      const parsed = await readResponseJson<{ error?: string }>(res);
+      const parsed = await readResponseJson<{
+        error?: string;
+        content?: { updatedAt?: number };
+      }>(res);
       if (!parsed.ok) throw new Error(parsed.error);
-      if (!res.ok) throw new Error(parsed.data.error || "Upload failed");
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          setError("Editor session expired — paste the content code below and retry.");
+        }
+        throw new Error(parsed.data.error || "Upload failed");
+      }
+      if (typeof parsed.data.content?.updatedAt === "number") {
+        setBaseUpdatedAt(parsed.data.content.updatedAt);
+      }
       setNote(`Added ${items.length} file(s) — File 1, File 2… updated.`);
       if (uploadRef.current) uploadRef.current.value = "";
-      setTab("files");
+      const allImages = chosen.every(
+        (file) =>
+          file.type.startsWith("image/") ||
+          /\.(png|jpe?g|gif|webp|bmp|svg|heic|avif)$/i.test(file.name)
+      );
+      setTab(allImages ? "pics" : "all");
       await refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Upload failed");

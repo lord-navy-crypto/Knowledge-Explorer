@@ -570,6 +570,7 @@ export default function UploadAndShow({
                             <ResourceEditor
                               target="folder"
                               item={f}
+                              baseUpdatedAt={baseUpdatedAt}
                               onSaved={(content) => applyContent(content as ManagedContent)}
                             />
                           ) : null}
@@ -619,6 +620,7 @@ export default function UploadAndShow({
                   applyContent(content);
                   void refresh();
                 }}
+                baseUpdatedAt={baseUpdatedAt}
               />
 
               <MediaFinderBrowser
@@ -648,6 +650,7 @@ export default function UploadAndShow({
                   applyContent(content);
                   void refresh();
                 }}
+                baseUpdatedAt={baseUpdatedAt}
               />
 
               <MediaFinderBrowser

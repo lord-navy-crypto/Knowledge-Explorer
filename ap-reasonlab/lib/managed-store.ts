@@ -373,12 +373,19 @@ async function githubWrite(
   };
 }
 
-/** Short in-memory cache — avoids refetching ~23MB managed JSON on every API hit. */
-const MANAGED_LOAD_TTL_MS = 15_000;
+/**
+ * Brief in-memory cache for repeated reads in one request burst.
+ * Keep very short — longer TTLs made deletes look "undone" on multi-instance refresh.
+ */
+const MANAGED_LOAD_TTL_MS = 1_500;
 let managedLoadCache: { at: number; key: string; content: ManagedContent } | null = null;
 
 export function invalidateManagedContentCache(): void {
   managedLoadCache = null;
+}
+
+function rememberCached(key: string, content: ManagedContent) {
+  managedLoadCache = { at: Date.now(), key, content };
 }
 
 export async function loadManagedContent(token?: string): Promise<ManagedContent> {
@@ -397,14 +404,14 @@ export async function loadManagedContent(token?: string): Promise<ManagedContent
   if (fromGh?.text) {
     try {
       content = normalizeManagedContent(JSON.parse(fromGh.text) as ManagedContent);
-      managedLoadCache = { at: now, key, content };
+      rememberCached(key, content);
       return content;
     } catch {
       // fall through
     }
   }
   content = normalizeManagedContent(await readJsonFile(CONTENT_PATH, emptyManagedContent()));
-  managedLoadCache = { at: now, key, content };
+  rememberCached(key, content);
   return content;
 }
 
@@ -493,7 +500,7 @@ export async function saveManagedContent(
   token?: string,
   message = "chore: update managed content via Admin UI",
   options?: { baseUpdatedAt?: number }
-): Promise<{ mode: "github" | "local" }> {
+): Promise<{ mode: "github" | "local"; content: ManagedContent }> {
   const incoming = normalizeManagedContent(data);
   let next = { ...incoming, updatedAt: Date.now() };
 
@@ -506,20 +513,59 @@ export async function saveManagedContent(
       options.baseUpdatedAt > 0 &&
       options.baseUpdatedAt === live.updatedAt;
 
+    const incomingActiveIds = new Set<string>([
+      ...(incoming.files || []).map((row) => row.id),
+      ...(incoming.documents || []).map((row) => row.id),
+      ...(incoming.folders || []).map((row) => row.id),
+      ...(incoming.members || []).map((row) => row.id),
+      ...(incoming.concepts || []).map((row) => row.id),
+      ...(incoming.formulas || []).map((row) => row.id),
+      ...(incoming.topics || []).map((row) => row.id),
+      ...(incoming.questionnaires || []).map((row) => row.id),
+      ...(incoming.subjects || []).map((row) => row.id),
+      ...(incoming.contentItems || []).map((row) => row.id),
+    ]);
+
+    const liveDeleted = new Set(live.deletedIds || []);
+    const incomingDeleted = new Set(incoming.deletedIds || []);
+    const mergedDeletedSet = new Set<string>([...liveDeleted, ...incomingDeleted]);
+    // Allow restores: id was tombstoned live, client removed tombstone and put the row back.
+    for (const id of liveDeleted) {
+      if (!incomingDeleted.has(id) && incomingActiveIds.has(id)) {
+        mergedDeletedSet.delete(id);
+      }
+    }
+
     const byId = new Map<string, (typeof live.recycleBin)[number]>();
     for (const entry of [...(live.recycleBin || []), ...(incoming.recycleBin || [])]) {
       const prev = byId.get(entry.id);
       if (!prev || (entry.deletedAt || 0) >= (prev.deletedAt || 0)) byId.set(entry.id, entry);
     }
-    // Restores drop recycle rows; when the client is fresh, trust that removal.
-    // Restores may drop recycle rows when the client is fresh; deletedIds never shrink.
+    // Drop recycle rows that were restored into active collections.
+    for (const [entryId, entry] of [...byId.entries()]) {
+      const payloadId =
+        entry.payload && typeof entry.payload === "object"
+          ? String((entry.payload as { id?: string }).id || "")
+          : "";
+      if (payloadId && incomingActiveIds.has(payloadId) && !incomingDeleted.has(payloadId)) {
+        byId.delete(entryId);
+      }
+    }
+    // Empty / purge recycle: keep only live bin rows the client never knew about (newer deletes).
+    const incomingBin = incoming.recycleBin || [];
     const mergedRecycle = clientFresh
-      ? [...(incoming.recycleBin || [])]
-      : [...byId.values()].sort((a, b) => (b.deletedAt || 0) - (a.deletedAt || 0));
+      ? [...incomingBin]
+      : incomingBin.length === 0
+        ? (live.recycleBin || []).filter((entry) => {
+            const payloadId =
+              entry.payload && typeof entry.payload === "object"
+                ? String((entry.payload as { id?: string }).id || "")
+                : "";
+            return Boolean(payloadId) && !incomingDeleted.has(payloadId);
+          })
+        : [...byId.values()].sort((a, b) => (b.deletedAt || 0) - (a.deletedAt || 0));
 
-    const mergedDeleted = [
-      ...new Set([...(incoming.deletedIds || []), ...(live.deletedIds || [])]),
-    ];
+    const mergedDeleted = [...mergedDeletedSet];
     const deletedSet = new Set(mergedDeleted);
 
     // Stale clients: union additive collections by id so front/back uploads don't wipe each other.
@@ -634,8 +680,9 @@ export async function saveManagedContent(
     message,
     token
   );
-  if (viaGithub.ok) {
-    invalidateManagedContentCache();
+  async function afterPersist(mode: "github" | "local") {
+    const key = sanitizeGithubToken(token) || "__default__";
+    rememberCached(key, next);
     try {
       const { invalidateAiSiteSearchCache } = await import("@/lib/ai-site-context-server");
       invalidateAiSiteSearchCache();
@@ -648,26 +695,17 @@ export async function saveManagedContent(
     } catch {
       /* optional */
     }
-    return { mode: "github" };
+    return { mode, content: next };
+  }
+
+  if (viaGithub.ok) {
+    return afterPersist("github");
   }
 
   // Local/dev fallback — fails on Vercel read-only FS.
   try {
     await writeJsonFile(CONTENT_PATH, next);
-    invalidateManagedContentCache();
-    try {
-      const { invalidateAiSiteSearchCache } = await import("@/lib/ai-site-context-server");
-      invalidateAiSiteSearchCache();
-    } catch {
-      /* optional */
-    }
-    try {
-      const { invalidateSiteAiTierCache } = await import("@/lib/ai-tiers-managed");
-      invalidateSiteAiTierCache();
-    } catch {
-      /* optional */
-    }
-    return { mode: "local" };
+    return afterPersist("local");
   } catch {
     throw new Error(viaGithub.error);
   }

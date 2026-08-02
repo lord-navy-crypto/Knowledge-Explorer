@@ -199,12 +199,8 @@ export async function GET(req: NextRequest) {
         scoped: { area, space: spaceKey, view: "media" },
       };
       const res = NextResponse.json(payload);
-      // Metadata-only media lists can be briefly cached; full dataUrls stay no-store.
-      if (!includeData) {
-        res.headers.set("Cache-Control", "private, max-age=15, stale-while-revalidate=30");
-      } else {
-        res.headers.set("Cache-Control", "no-store");
-      }
+      // Always no-store so delete/upload refresh never shows ghost rows.
+      res.headers.set("Cache-Control", "no-store");
       return res;
     }
 
@@ -249,13 +245,27 @@ export async function POST(req: NextRequest) {
     const action = String(body.action || "");
     const item = body.item || {};
     const bulkItems = Array.isArray(body.items) ? body.items : [];
-    const publicMaterialsContribution =
-      body.publicContribution === true &&
-      ["add_document", "add_documents", "add_file", "add_files", "add_folder", "add_folders"].includes(
-        action
-      ) &&
-      (String(item.area || "") === "materials" ||
-        bulkItems.some((entry: { area?: string }) => String(entry?.area || "") === "materials"));
+    const publicMaterialsActions = [
+      "add_document",
+      "add_documents",
+      "add_file",
+      "add_files",
+      "add_folder",
+      "add_folders",
+    ];
+    const wantsPublicMaterials =
+      body.publicContribution === true && publicMaterialsActions.includes(action);
+    // Every bulk item must be materials — one materials row must not unlock other areas.
+    const materialsAreasOk =
+      (!item.area || String(item.area) === "materials") &&
+      bulkItems.every((entry: { area?: string }) => String(entry?.area || "materials") === "materials");
+    const publicMaterialsContribution = wantsPublicMaterials && materialsAreasOk;
+    if (wantsPublicMaterials && !materialsAreasOk) {
+      return NextResponse.json(
+        { error: "Public contributions are limited to Sharing Materials only." },
+        { status: 403 }
+      );
+    }
     const publicForumContribution = ["add_forum_post", "add_forum_reply"].includes(action);
     if (
       (publicForumContribution || publicMaterialsContribution) &&
@@ -599,8 +609,9 @@ export async function POST(req: NextRequest) {
         if (!item.name || !item.dataUrl || String(item.dataUrl).length > bulkLimit) {
           return NextResponse.json({ error: "Each file needs a name and must stay under ~1MB" }, { status: 400 });
         }
+        const area = publicMaterialsContribution ? "materials" : item.area ? String(item.area) : undefined;
         const keys = canonicalizeStorageKeys(
-          item.area ? String(item.area) : undefined,
+          area,
           item.space ? String(item.space) : undefined
         );
         // Always create a new row — similar/same display names must not overwrite each other.
@@ -612,8 +623,8 @@ export async function POST(req: NextRequest) {
           note: item.note ? String(item.note) : undefined,
           uploadedAt: Date.now(),
           uploadedBy: publicMaterialsContribution ? "public-contributor" : "change-code",
-          area: item.area ? keys.area : undefined,
-          space: item.area ? keys.space : undefined,
+          area: area ? keys.area : undefined,
+          space: area ? keys.space : undefined,
         });
       }
     } else if (action === "add_concepts" || action === "add_topics") {
@@ -1047,6 +1058,7 @@ export async function POST(req: NextRequest) {
           current.folders = current.folders.filter((f) => f.id !== id);
         }
       } else if (target === "subject") {
+        rememberDeleted(current, id);
         current.subjects = current.subjects.filter(
           (s) => s.id !== id && s.name !== id && s.slug !== id
         );
@@ -1113,14 +1125,12 @@ export async function POST(req: NextRequest) {
     const result = await saveManagedContent(current, token, undefined, {
       baseUpdatedAt: Number(body.baseUpdatedAt || 0) || undefined,
     });
-    // Re-normalize so response matches tombstone-purged saved content.
-    const saved = normalizeManagedContent(current);
     return NextResponse.json({
       ok: true,
       mode: result.mode,
       level,
-      // Omit base64 payloads — full file bytes stay in storage; clients refetch scoped panels.
-      content: slimManagedContent(saved),
+      // Return the persisted document (real updatedAt) — not the pre-merge snapshot.
+      content: slimManagedContent(result.content),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Save failed";

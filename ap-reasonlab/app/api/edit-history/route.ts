@@ -69,12 +69,13 @@ export async function POST(req: NextRequest) {
     const saved = await saveManagedContent(
       merged,
       token,
-      `undo: restore managed content from ${sha.slice(0, 7)}`
+      `undo: restore managed content from ${sha.slice(0, 7)}`,
+      { baseUpdatedAt: live.updatedAt }
     );
     return NextResponse.json({
       ok: true,
       mode: saved.mode,
-      content: merged,
+      content: saved.content,
       restoredFrom: sha,
     });
   } catch (error) {

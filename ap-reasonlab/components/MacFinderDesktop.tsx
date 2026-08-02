@@ -1132,6 +1132,7 @@ export default function MacFinderDesktop({
                   {selected.editTarget ? (
                     <ResourceEditor
                       target={selected.editTarget}
+                      baseUpdatedAt={typeof data.updatedAt === "number" ? data.updatedAt : undefined}
                       item={{
                         id: selected.id,
                         title: selected.label,

@@ -38,6 +38,7 @@ type Props = {
   item: EditableItem;
   onSaved: (content: unknown) => void;
   label?: string;
+  baseUpdatedAt?: number;
 };
 
 function initialBody(target: EditableTarget, item: EditableItem) {
@@ -64,7 +65,13 @@ function readFileAsDataURL(file: File): Promise<string> {
   });
 }
 
-export default function ResourceEditor({ target, item, onSaved, label = "Edit" }: Props) {
+export default function ResourceEditor({
+  target,
+  item,
+  onSaved,
+  label = "Edit",
+  baseUpdatedAt,
+}: Props) {
   const { unlocked, refresh } = useEditorMode();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState(item.title || item.name || "");
@@ -114,11 +121,15 @@ export default function ResourceEditor({ target, item, onSaved, label = "Edit" }
           id: item.id,
           item: update,
           changeCode: changeCode.trim() || undefined,
+          baseUpdatedAt: baseUpdatedAt || undefined,
         }),
       });
       const parsed = await readResponseJson<{ error?: string; content?: unknown }>(response);
       if (!parsed.ok) throw new Error(parsed.error);
-      if (!response.ok) throw new Error(parsed.data.error || "Update failed");
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) void refresh();
+        throw new Error(parsed.data.error || "Update failed");
+      }
       onSaved(parsed.data.content);
       void refresh();
       setOpen(false);
