@@ -595,7 +595,7 @@ export function FloatingMediaWindow({
           </div>
 
           <div className="space-y-2 border-t border-slate-200 bg-slate-50 px-2 py-2">
-            {!unlocked && (
+            {(!unlocked || /session expired|content code/i.test(error)) && (
               <input
                 type="password"
                 className="w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px]"
@@ -604,7 +604,7 @@ export function FloatingMediaWindow({
                 onChange={(e) => setChangeCode(e.target.value)}
               />
             )}
-            {unlocked && (
+            {unlocked && !/session expired|content code/i.test(error) && (
               <p className="px-1 text-[9px] text-emerald-700">
                 Editor unlocked ({editor?.level}) — uploads go into {locationLabel}.
               </p>
