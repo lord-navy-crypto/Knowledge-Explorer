@@ -22,18 +22,22 @@ function displayGithubHandle(url: string): string {
 }
 
 export default function PartnersPage() {
-  const { active: editMode, unlocked, refresh: refreshEditor } = useEditorMode();
+  const { active: editMode, setActive, unlocked, refresh: refreshEditor } = useEditorMode();
   const [members, setMembers] = useState<Member[]>([]);
   const [name, setName] = useState("");
   const [githubUser, setGithubUser] = useState("");
   const [roleNote, setRoleNote] = useState("");
   const [changeCode, setChangeCode] = useState("");
+  const [forceCodeField, setForceCodeField] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
 
   async function refresh() {
     try {
-      const data = await fetch("/api/edit", { cache: "no-store" }).then((r) => r.json());
+      const data = await fetch("/api/edit", {
+        cache: "no-store",
+        credentials: "include",
+      }).then((r) => r.json());
       setMembers(data.members || []);
     } catch {
       setMembers([]);
@@ -41,8 +45,13 @@ export default function PartnersPage() {
   }
 
   useEffect(() => {
-    refresh();
+    void refresh();
   }, []);
+
+  // Same as Manage: unlocked content-code session turns edit chrome on so join stays usable.
+  useEffect(() => {
+    if (unlocked && !editMode) setActive(true);
+  }, [unlocked, editMode, setActive]);
 
   const roster = useMemo(() => {
     const fromManaged = members.map((m) => {
@@ -78,7 +87,8 @@ export default function PartnersPage() {
     setBusy(true);
     setMessage("");
     try {
-      if (!unlocked && !changeCode.trim()) {
+      const needsCode = !unlocked || forceCodeField;
+      if (needsCode && !changeCode.trim()) {
         throw new Error("Unlock at /login with the content code, or enter it below.");
       }
       const handle = githubUser.trim().replace(/^@/, "");
@@ -88,6 +98,7 @@ export default function PartnersPage() {
       ].filter(Boolean);
       const res = await fetch("/api/edit", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "add_member",
@@ -96,12 +107,18 @@ export default function PartnersPage() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Could not add partner");
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) setForceCodeField(true);
+        throw new Error(data.error || "Could not add partner");
+      }
       setName("");
       setGithubUser("");
       setRoleNote("");
+      setForceCodeField(false);
       setMessage("Partner added.");
-      await refresh();
+      if (Array.isArray(data.content?.members)) setMembers(data.content.members);
+      else await refresh();
+      if (unlocked || changeCode.trim()) setActive(true);
       void refreshEditor();
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Failed");
@@ -114,13 +131,24 @@ export default function PartnersPage() {
     if (!window.confirm(`Remove “${name}” from the managed partner list?`)) return;
     const response = await fetch("/api/edit", {
       method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "delete", target: "member", id }),
+      body: JSON.stringify({
+        action: "delete",
+        target: "member",
+        id,
+        changeCode: changeCode.trim() || undefined,
+      }),
     });
     const data = await response.json();
-    if (!response.ok) return setMessage(data.error || "Delete failed");
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) setForceCodeField(true);
+      return setMessage(data.error || "Delete failed");
+    }
     setMembers(data.content?.members || []);
   }
+
+  const showCodeField = !unlocked || forceCodeField;
 
   return (
     <div className="space-y-8">
@@ -183,11 +211,12 @@ export default function PartnersPage() {
         </ul>
       </section>
 
-      {editMode && <section className="card space-y-4">
+      <section className="card space-y-4">
         <div>
           <h2 className="text-lg font-semibold">Join / add a person</h2>
           <p className="mt-1 text-sm text-slate-600">
-            Type any display name and GitHub username. You are not limited to one preset person.
+            Type any display name and GitHub username. Unlock with the content code (same as Manage),
+            or paste it below — you are not limited to one preset person.
           </p>
         </div>
         <form onSubmit={addPartner} className="grid gap-3 md:grid-cols-2">
@@ -219,7 +248,7 @@ export default function PartnersPage() {
               placeholder="e.g. Knowledge Explorer partner · content editor"
             />
           </label>
-          {!unlocked && (
+          {showCodeField ? (
             <label className="text-sm font-medium md:col-span-2">
               Content change code
               <input
@@ -227,15 +256,15 @@ export default function PartnersPage() {
                 className="input mt-1"
                 value={changeCode}
                 onChange={(e) => setChangeCode(e.target.value)}
-                placeholder="Or unlock once via the edit circle / /login"
+                placeholder="Same content code as Manage /login"
+                required={!unlocked}
               />
             </label>
-          )}
-          {unlocked && (
+          ) : (
             <p className="text-sm text-emerald-800 md:col-span-2">
               Editor unlocked — you can add partners without re-entering the code.{" "}
-              <Link href="/login" className="font-medium underline">
-                Manage login
+              <Link href="/manage" className="font-medium underline">
+                Open Manage
               </Link>
             </p>
           )}
@@ -245,14 +274,14 @@ export default function PartnersPage() {
             </button>
             {message && (
               <p
-                className={`mt-2 text-sm ${/unlock|Failed|Could|Wrong|Enter/.test(message) ? "text-red-600" : "text-emerald-700"}`}
+                className={`mt-2 text-sm ${/unlock|Failed|Could|Wrong|Enter|401|403|code/i.test(message) ? "text-red-600" : "text-emerald-700"}`}
               >
                 {message}
               </p>
             )}
           </div>
         </form>
-      </section>}
+      </section>
 
       <UnifiedMediaFrame
         alsoShow={["document", "folder", "member"]}
