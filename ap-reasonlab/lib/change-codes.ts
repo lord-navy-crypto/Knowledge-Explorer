@@ -18,8 +18,8 @@ export const DEFAULT_MASTER_CODE = "M-B67DDB61";
 export function resolveChangeLevel(code: string | undefined | null): ChangeLevel {
   const c = String(code || "").trim();
   if (!c) return null;
-  const content = process.env.CONTENT_CHANGE_CODE || DEFAULT_CONTENT_CODE;
-  const master = process.env.MASTER_CHANGE_CODE || DEFAULT_MASTER_CODE;
+  const content = process.env.CONTENT_CHANGE_CODE?.trim() || DEFAULT_CONTENT_CODE;
+  const master = process.env.MASTER_CHANGE_CODE?.trim() || DEFAULT_MASTER_CODE;
   if (c === master) return "master";
   if (c === content) return "content";
   return null;

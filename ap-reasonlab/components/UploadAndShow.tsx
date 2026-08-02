@@ -90,6 +90,7 @@ export default function UploadAndShow({
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(!collapsedByDefault);
   const [previewSelection, setPreviewSelection] = useState<MediaRow | null>(null);
+  const [baseUpdatedAt, setBaseUpdatedAt] = useState<number | undefined>(undefined);
 
   const scopedSpace = normalizeSpace(spaceKey);
   const subjectForForms =
@@ -104,6 +105,9 @@ export default function UploadAndShow({
       setAllFiles(Array.isArray(data.files) ? data.files : []);
       setAllDocuments(Array.isArray(data.documents) ? data.documents : []);
       setAllFolders(Array.isArray(data.folders) ? data.folders : []);
+      if (typeof data.updatedAt === "number" && data.updatedAt > 0) {
+        setBaseUpdatedAt(data.updatedAt);
+      }
       const subjects = managedSubjectNames(data.subjects);
       setAllSubjects(subjects);
       onSubjectsChange?.(subjects);
@@ -128,7 +132,10 @@ export default function UploadAndShow({
       if (!onQuestionnairesChange) {
         params.set("view", "media");
       }
-      const res = await fetch(`/api/edit?${params}`, { cache: "no-store" });
+      const res = await fetch(`/api/edit?${params}`, {
+        cache: "no-store",
+        credentials: "include",
+      });
       const parsed = await readResponseJson<ManagedContent & { error?: string }>(res);
       if (!parsed.ok) throw new Error(parsed.error);
       if (!res.ok) throw new Error(parsed.data.error || "Failed to load files");
@@ -231,6 +238,7 @@ export default function UploadAndShow({
     try {
       const res = await fetch("/api/edit", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "delete",
@@ -238,6 +246,7 @@ export default function UploadAndShow({
           id,
           changeCode: code || undefined,
           githubToken: githubToken.trim() || undefined,
+          baseUpdatedAt: baseUpdatedAt || undefined,
         }),
       });
       const parsed = await readResponseJson<{ error?: string; content?: ManagedContent }>(res);
@@ -383,6 +392,7 @@ export default function UploadAndShow({
                   label="+ Add subject folder"
                   folderArea={folderArea}
                   spaceKey={scopedSpace}
+                  baseUpdatedAt={baseUpdatedAt}
                   onSaved={onSaved}
                 />
               )}
@@ -391,6 +401,7 @@ export default function UploadAndShow({
                 label="+ Upload files"
                 folderArea={folderArea}
                 spaceKey={scopedSpace}
+                baseUpdatedAt={baseUpdatedAt}
                 onSaved={onSaved}
                 allowPublicContribution={allowPublicContributions}
               />
@@ -400,6 +411,7 @@ export default function UploadAndShow({
                 fileAccept="image/*"
                 folderArea={folderArea}
                 spaceKey={scopedSpace}
+                baseUpdatedAt={baseUpdatedAt}
                 onSaved={onSaved}
                 allowPublicContribution={allowPublicContributions}
               />
@@ -409,6 +421,7 @@ export default function UploadAndShow({
                   label="+ Add documents"
                   folderArea={folderArea}
                   spaceKey={scopedSpace}
+                  baseUpdatedAt={baseUpdatedAt}
                   onSaved={onSaved}
                   allowPublicContribution={allowPublicContributions}
                 />
@@ -420,6 +433,7 @@ export default function UploadAndShow({
                   defaultSubject={subjectForForms}
                   folderArea={folderArea}
                   spaceKey={scopedSpace}
+                  baseUpdatedAt={baseUpdatedAt}
                   onSaved={onSaved}
                 />
               )}
@@ -430,6 +444,7 @@ export default function UploadAndShow({
                   defaultSubject={subjectForForms}
                   folderArea={folderArea}
                   spaceKey={scopedSpace}
+                  baseUpdatedAt={baseUpdatedAt}
                   onSaved={onSaved}
                 />
               )}
@@ -440,6 +455,7 @@ export default function UploadAndShow({
                   defaultSubject={subjectForForms}
                   folderArea={folderArea}
                   spaceKey={scopedSpace}
+                  baseUpdatedAt={baseUpdatedAt}
                   onSaved={onSaved}
                 />
               )}
@@ -450,17 +466,24 @@ export default function UploadAndShow({
                   defaultSubject={subjectForForms}
                   folderArea={folderArea}
                   spaceKey={scopedSpace}
+                  baseUpdatedAt={baseUpdatedAt}
                   onSaved={onSaved}
                 />
               )}
               {uploadExtras.includes("member") && (
-                <ChangePanel mode="member" label="+ Add member" onSaved={onSaved} />
+                <ChangePanel
+                  mode="member"
+                  label="+ Add member"
+                  baseUpdatedAt={baseUpdatedAt}
+                  onSaved={onSaved}
+                />
               )}
               <ChangePanel
                 mode="folder"
                 label="+ Add file folders"
                 folderArea={folderArea}
                 spaceKey={scopedSpace}
+                baseUpdatedAt={baseUpdatedAt}
                 onSaved={onSaved}
                 allowPublicContribution={allowPublicContributions}
               />

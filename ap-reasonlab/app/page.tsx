@@ -5,7 +5,8 @@ import {
   LOCAL_AI_RECOMMENDATION_EN,
   LOCAL_AI_RECOMMENDATION_ZH,
 } from "@/lib/ai-local-recommendation";
-import { brand, trueJetMembers } from "@/data/brand";
+import HomeMembersRoster from "@/components/HomeMembersRoster";
+import { brand } from "@/data/brand";
 
 const boxes = [
   {
@@ -141,45 +142,7 @@ export default function HomePage() {
           People on Knowledge Explorer with GitHub. Add anyone on Partners — free name + GitHub,
           not a fixed single choice.
         </p>
-        <div className="grid gap-3 sm:grid-cols-3">
-          {trueJetMembers.map((c) => (
-            <a
-              key={c.name}
-              href={c.github}
-              target="_blank"
-              rel="noreferrer"
-              className="directory-link relative !border !border-[var(--ke-border)]"
-            >
-              {c.avatar ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={c.avatar} alt="" className="h-10 w-10 rounded-full" />
-              ) : (
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-500">
-                  {c.name.slice(0, 1).toUpperCase()}
-                </span>
-              )}
-              <div>
-                <p className="font-medium text-slate-900">{c.name}</p>
-                <p className="text-xs text-slate-500">{c.role}</p>
-                <p className="text-xs text-brand-700">
-                  @{c.github.replace(/^https?:\/\/github\.com\//i, "")}
-                </p>
-              </div>
-            </a>
-          ))}
-          <Link
-            href="/partners"
-            className="directory-link relative border border-dashed !border-[var(--ke-border-strong)]"
-          >
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-500">
-              +
-            </span>
-            <div>
-              <p className="font-medium text-slate-900">Add a person</p>
-              <p className="text-xs text-slate-500">Name + GitHub on Partners</p>
-            </div>
-          </Link>
-        </div>
+        <HomeMembersRoster />
       </section>
     </div>
   );

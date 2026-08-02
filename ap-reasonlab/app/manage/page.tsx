@@ -20,7 +20,7 @@ type Tab = "content" | "subjects" | "units" | "files" | "trash" | "ai" | "settin
 const TAB_IDS: Tab[] = ["content", "subjects", "units", "files", "trash", "ai", "settings", "history"];
 
 export default function ManagePage() {
-  const { active: editMode, setActive, unlocked, editor, refresh: refreshEditor } = useEditorMode();
+  const { unlocked, editor, refresh: refreshEditor } = useEditorMode();
   const [data, setData] = useState<Partial<ManagedContent>>({});
   const [tab, setTab] = useState<Tab>("content");
 
@@ -31,10 +31,7 @@ export default function ManagePage() {
     if (next && TAB_IDS.includes(next as Tab)) setTab(next as Tab);
   }, []);
 
-  // Visiting Manage with an unlocked content-code session turns the backend editor back on.
-  useEffect(() => {
-    if (unlocked && !editMode) setActive(true);
-  }, [unlocked, editMode, setActive]);
+  // Edit chrome auto-activates sitewide via EditorModeProvider when unlocked.
   const [query, setQuery] = useState("");
   const [subjectId, setSubjectId] = useState(AP_CATALOG[0].id);
   const [status, setStatus] = useState("all");

@@ -11,6 +11,7 @@ import {
   type BulkDraftEntry,
 } from "@/lib/bulk-draft-rows";
 import { readResponseJson } from "@/lib/safe-json";
+import { assertUploadableDataUrl, assertUploadableFile } from "@/lib/upload-limits";
 import { sortNotesWithAi } from "@/lib/structure-concept-client";
 
 type ContentType = "concept" | "formula" | "practice" | "document" | "file" | "image" | "folder";
@@ -119,19 +120,11 @@ export default function UnifiedAddContent({
           throw new Error("Image upload accepts image files only.");
         }
         action = "add_files";
-        for (const file of files) {
-          if (file.size > 750_000) {
-            throw new Error(
-              `“${file.name}” is too large (keep each file under ~750 KB). Compress images first if needed.`
-            );
-          }
-        }
+        for (const file of files) assertUploadableFile(file);
         items = await Promise.all(
           files.map(async (file) => {
             const dataUrl = await fileAsDataUrl(file);
-            if (dataUrl.length > 1_500_000) {
-              throw new Error(`“${file.name}” is too large after encoding (keep under ~1 MB).`);
-            }
+            assertUploadableDataUrl(dataUrl, file.name);
             return {
               name: file.name,
               mime: file.type,

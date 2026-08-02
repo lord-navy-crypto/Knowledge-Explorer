@@ -1,12 +1,14 @@
-import {
-  appendAiSiteContext,
-  formatAiSiteSearchContext,
-  searchKnowledgeExplorerContent,
-  AI_SITE_SEARCH_LIMIT,
-} from "@/lib/ai-site-search";
 import { extractAiSearchQuery } from "@/lib/ai-site-query";
 
-export { appendAiSiteContext, formatAiSiteSearchContext, searchKnowledgeExplorerContent };
+/** Keep in sync with lib/ai-site-search.ts — duplicated so clients never import the search engine. */
+export const AI_SITE_SEARCH_LIMIT = 8;
+
+/** Append server-fetched site context to a Local AI / client prompt. */
+export function appendAiSiteContext(userPrompt: string, context: string): string {
+  const trimmed = context.trim();
+  if (!trimmed) return userPrompt;
+  return `${userPrompt}\n\n${trimmed}`;
+}
 
 /** Client helper: fetch Knowledge Explorer site search context for Local AI prompts. */
 export async function fetchAiSiteContext(

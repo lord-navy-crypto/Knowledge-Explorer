@@ -1,15 +1,24 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import AIDeveloperBlocks from "@/components/AIDeveloperBlocks";
-import EditHistory from "@/components/EditHistory";
 import { useEditorMode } from "@/components/EditorModeProvider";
+
+const AIDeveloperBlocks = dynamic(() => import("@/components/AIDeveloperBlocks"), {
+  ssr: false,
+  loading: () => <p className="text-sm text-slate-500">Loading AI Developer…</p>,
+});
+
+const EditHistory = dynamic(() => import("@/components/EditHistory"), {
+  ssr: false,
+  loading: () => <p className="text-sm text-slate-500">Loading history…</p>,
+});
 
 /**
  * Always-visible editor chrome once unlocked with the content code:
  * - Top bar in edit mode with AI Developer + History + Advanced Default
- * - Full-screen overlay panels
+ * - Full-screen overlay panels (lazy-loaded to keep the main bundle light)
  */
 export default function EditorToolsChrome() {
   const { active, unlocked, editor, toolsPanel, openTools, closeTools } = useEditorMode();
@@ -38,6 +47,7 @@ export default function EditorToolsChrome() {
       const next = !advancedDefault;
       const response = await fetch("/api/edit", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "set_advanced_default",
