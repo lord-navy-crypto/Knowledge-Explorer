@@ -97,10 +97,12 @@ export default function ManagePage() {
     const parsed = await readResponseJson<{ error?: string; content?: ManagedContent }>(response);
     if (!parsed.ok) {
       setMessage(parsed.error);
+      if (parsed.status === 401 || parsed.status === 403) void refreshEditor();
       return false;
     }
     if (!response.ok) {
       setMessage(parsed.data.error || "Save failed");
+      if (response.status === 401 || response.status === 403) void refreshEditor();
       return false;
     }
     setMessage("Saved. GitHub/Vercel may take a moment to refresh.");
@@ -307,6 +309,7 @@ export default function ManagePage() {
               subjects={subjects.map((subject) => ({ id: subject.id, name: subject.name }))}
               onSaved={refresh}
               label="+ Add content (quick form)"
+              baseUpdatedAt={typeof data.updatedAt === "number" ? data.updatedAt : undefined}
             />
           </div>
           <LocalAiRecommendation className="max-w-3xl" />

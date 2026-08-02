@@ -27,6 +27,7 @@ type Props = {
   subjects?: SubjectOption[];
   onSaved?: () => void;
   label?: string;
+  baseUpdatedAt?: number;
 };
 
 const contentTypes: Array<{ value: ContentType; label: string }> = [
@@ -47,6 +48,7 @@ export default function UnifiedAddContent({
   subjects,
   onSaved,
   label = "+ Add content",
+  baseUpdatedAt,
 }: Props) {
   const { active: editMode, unlocked } = useEditorMode();
   const canPickSubject = Boolean(subjects && subjects.length > 0);
@@ -205,6 +207,7 @@ export default function UnifiedAddContent({
           items,
           changeCode: changeCode.trim() || undefined,
           githubToken: githubToken.trim() || undefined,
+          baseUpdatedAt: baseUpdatedAt || undefined,
         }),
       });
       const parsed = await readResponseJson<{

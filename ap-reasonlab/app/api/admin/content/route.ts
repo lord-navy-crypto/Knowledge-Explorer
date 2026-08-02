@@ -103,8 +103,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Only full admin can replace all content" }, { status: 403 });
     }
 
-    const result = await saveManagedContent(next, token);
-    return NextResponse.json({ ok: true, mode: result.mode, content: next, savedBy: session.name });
+    const result = await saveManagedContent(next, token, undefined, {
+      baseUpdatedAt: current.updatedAt,
+    });
+    return NextResponse.json({
+      ok: true,
+      mode: result.mode,
+      content: result.content,
+      savedBy: session.name,
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to save content";
     return NextResponse.json({ error: message }, { status: 500 });
@@ -215,8 +222,10 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "Unknown kind" }, { status: 400 });
     }
 
-    const result = await saveManagedContent(current, token);
-    return NextResponse.json({ ok: true, mode: result.mode, content: current });
+    const result = await saveManagedContent(current, token, undefined, {
+      baseUpdatedAt: current.updatedAt,
+    });
+    return NextResponse.json({ ok: true, mode: result.mode, content: result.content });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Update failed";
     return NextResponse.json({ error: message }, { status: 500 });

@@ -41,6 +41,7 @@ type Props = {
   /** Currently previewed item id (shared across the three columns). */
   selectedId?: string | null;
   onSelect?: (row: MediaRow) => void;
+  baseUpdatedAt?: number;
 };
 
 function FileGlyph({ variant }: { variant: "image" | "file" | "document" }) {
@@ -98,6 +99,7 @@ export default function MediaFinderBrowser({
   onContentSaved,
   selectedId = null,
   onSelect,
+  baseUpdatedAt,
 }: Props) {
   const [search, setSearch] = useState("");
   const canDelete = Boolean(onDelete) && (editMode || showDelete);
@@ -134,6 +136,7 @@ export default function MediaFinderBrowser({
             target="file"
             item={row.item}
             label="Edit"
+            baseUpdatedAt={baseUpdatedAt}
             onSaved={(content) => {
               if (content) onContentSaved?.(content as ManagedContent);
             }}
@@ -143,6 +146,7 @@ export default function MediaFinderBrowser({
           <ResourceEditor
             target="document"
             item={row.item}
+            baseUpdatedAt={baseUpdatedAt}
             onSaved={(content) => {
               if (content) onContentSaved?.(content as ManagedContent);
             }}

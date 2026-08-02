@@ -198,7 +198,7 @@ Return {"proposal":"...","summary":"one short description of the proposed change
         token,
         `AI Developer: ${action || "edit"} ${target} ${id}`.slice(0, 180)
       );
-      return NextResponse.json({ ok: true, mode: saved.mode, content: current });
+      return NextResponse.json({ ok: true, mode: saved.mode, content: saved.content });
     }
 
     return NextResponse.json({ error: "Unknown AI Developer operation." }, { status: 400 });
