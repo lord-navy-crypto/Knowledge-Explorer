@@ -444,6 +444,27 @@ export async function listManagedContentHistory(
   return [];
 }
 
+function mergeRowsById<T extends { id: string }>(
+  live: T[],
+  incoming: T[],
+  deletedIds: Set<string>,
+  stamp: (row: T) => number
+): T[] {
+  const map = new Map<string, T>();
+  for (const row of live) {
+    if (!deletedIds.has(row.id)) map.set(row.id, row);
+  }
+  for (const row of incoming) {
+    if (deletedIds.has(row.id)) {
+      map.delete(row.id);
+      continue;
+    }
+    const prev = map.get(row.id);
+    if (!prev || stamp(row) >= stamp(prev)) map.set(row.id, row);
+  }
+  return [...map.values()];
+}
+
 export async function saveManagedContent(
   data: ManagedContent,
   token?: string,
@@ -453,7 +474,7 @@ export async function saveManagedContent(
   const incoming = normalizeManagedContent(data);
   let next = { ...incoming, updatedAt: Date.now() };
 
-  // Protect deletes against stale overwrites (old Manage tab / agent commit).
+  // Protect deletes / concurrent adds against stale overwrites (old Manage tab / page panel).
   try {
     const live = normalizeManagedContent(await loadManagedContent(token));
     const clientFresh =
@@ -475,9 +496,97 @@ export async function saveManagedContent(
     const mergedDeleted = [
       ...new Set([...(incoming.deletedIds || []), ...(live.deletedIds || [])]),
     ];
+    const deletedSet = new Set(mergedDeleted);
+
+    // Stale clients: union additive collections by id so front/back uploads don't wipe each other.
+    const files = clientFresh
+      ? incoming.files
+      : mergeRowsById(live.files || [], incoming.files || [], deletedSet, (row) => row.uploadedAt || 0);
+    const documents = clientFresh
+      ? incoming.documents
+      : mergeRowsById(
+          live.documents || [],
+          incoming.documents || [],
+          deletedSet,
+          (row) => row.updatedAt || 0
+        );
+    const folders = clientFresh
+      ? incoming.folders
+      : mergeRowsById(
+          live.folders || [],
+          incoming.folders || [],
+          deletedSet,
+          (row) => row.createdAt || 0
+        );
+    const members = clientFresh
+      ? incoming.members
+      : mergeRowsById(
+          live.members || [],
+          incoming.members || [],
+          deletedSet,
+          (row) => row.addedAt || 0
+        );
+    const concepts = clientFresh
+      ? incoming.concepts
+      : mergeRowsById(
+          live.concepts || [],
+          incoming.concepts || [],
+          deletedSet,
+          (row) => Number((row as { updatedAt?: number }).updatedAt || 0)
+        );
+    const formulas = clientFresh
+      ? incoming.formulas
+      : mergeRowsById(
+          live.formulas || [],
+          incoming.formulas || [],
+          deletedSet,
+          (row) => Number((row as { updatedAt?: number }).updatedAt || 0)
+        );
+    const topics = clientFresh
+      ? incoming.topics
+      : mergeRowsById(
+          live.topics || [],
+          incoming.topics || [],
+          deletedSet,
+          (row) => row.createdAt || 0
+        );
+    const questionnaires = clientFresh
+      ? incoming.questionnaires
+      : mergeRowsById(
+          live.questionnaires || [],
+          incoming.questionnaires || [],
+          deletedSet,
+          (row) => Number((row as { updatedAt?: number }).updatedAt || 0)
+        );
+    const subjects = clientFresh
+      ? incoming.subjects
+      : mergeRowsById(
+          live.subjects || [],
+          incoming.subjects || [],
+          deletedSet,
+          (row) => row.createdAt || 0
+        );
+    const contentItems = clientFresh
+      ? incoming.contentItems
+      : mergeRowsById(
+          live.contentItems || [],
+          incoming.contentItems || [],
+          deletedSet,
+          (row) => Number((row as { updatedAt?: number }).updatedAt || 0)
+        );
 
     next = normalizeManagedContent({
       ...incoming,
+      files,
+      documents,
+      folders,
+      members,
+      concepts,
+      formulas,
+      topics,
+      questionnaires,
+      subjects,
+      contentItems,
       recycleBin: mergedRecycle,
       deletedIds: mergedDeleted,
       // Settings: prefer incoming when fresh, else keep live knobs if client omitted them.

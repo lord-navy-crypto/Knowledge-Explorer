@@ -22,6 +22,7 @@ import {
   normalizeSpace,
   spaceAliases,
 } from "@/lib/storage-space";
+import { MAX_UPLOAD_DATA_URL_CHARS } from "@/lib/upload-limits";
 
 const forumWriteTimes = new Map<string, number>();
 
@@ -462,7 +463,7 @@ export async function POST(req: NextRequest) {
         if (update.area !== undefined) found.area = String(update.area).slice(0, 80) || undefined;
         if (update.space !== undefined) found.space = String(update.space).slice(0, 160) || undefined;
         if (update.dataUrl !== undefined) {
-          if (String(update.dataUrl).length > 1_500_000) return NextResponse.json({ error: "Replacement file is too large" }, { status: 400 });
+          if (String(update.dataUrl).length > MAX_UPLOAD_DATA_URL_CHARS) return NextResponse.json({ error: "Replacement file is too large" }, { status: 400 });
           found.dataUrl = String(update.dataUrl);
           found.mime = text(update.mime || "application/octet-stream", 120);
           found.uploadedAt = Date.now();
@@ -580,7 +581,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Choose between 1 and 10 files" }, { status: 400 });
       }
       for (const item of files) {
-        if (!item.name || !item.dataUrl || String(item.dataUrl).length > 1_500_000) {
+        if (!item.name || !item.dataUrl || String(item.dataUrl).length > MAX_UPLOAD_DATA_URL_CHARS) {
           return NextResponse.json({ error: "Each file needs a name and must stay under ~1MB" }, { status: 400 });
         }
         const keys = canonicalizeStorageKeys(
@@ -903,7 +904,7 @@ export async function POST(req: NextRequest) {
       if (!item.name || !item.dataUrl) {
         return NextResponse.json({ error: "file name and data required" }, { status: 400 });
       }
-      const publicFileLimit = publicMaterialsContribution ? 1_000_000 : 1_500_000;
+      const publicFileLimit = publicMaterialsContribution ? 1_000_000 : MAX_UPLOAD_DATA_URL_CHARS;
       if (String(item.dataUrl).length > publicFileLimit) {
         return NextResponse.json({ error: "File too large (keep under ~1MB)" }, { status: 400 });
       }

@@ -7,6 +7,7 @@ import { useEditorMode } from "@/components/EditorModeProvider";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
 import { readResponseJson } from "@/lib/safe-json";
 import { sortNotesWithAi } from "@/lib/structure-concept-client";
+import { assertUploadableDataUrl, assertUploadableFile } from "@/lib/upload-limits";
 
 export type ChangeMode =
   | "concept"
@@ -33,6 +34,8 @@ type Props = {
   allowPublicContribution?: boolean;
   /** For mode=file: restrict picker (e.g. image/* for pictures) */
   fileAccept?: string;
+  /** From last GET /api/edit — reduces concurrent overwrite races with Manage. */
+  baseUpdatedAt?: number;
 };
 
 type DraftEntry = {
@@ -82,6 +85,7 @@ export default function ChangePanel({
   onSaved,
   allowPublicContribution = false,
   fileAccept,
+  baseUpdatedAt,
 }: Props) {
   const { active: editMode, unlocked, editor, refresh } = useEditorMode();
   const [open, setOpen] = useState(false);
@@ -193,6 +197,7 @@ export default function ChangePanel({
         changeCode: changeCode.trim() || undefined,
         githubToken: githubToken.trim() || undefined,
         publicContribution: allowPublicContribution || undefined,
+        baseUpdatedAt: baseUpdatedAt || undefined,
       }),
     });
     const parsed = await readResponseJson<{ error?: string; content?: unknown; note?: string }>(res);
@@ -226,19 +231,12 @@ export default function ChangePanel({
           if (fileAccept?.includes("image") && !file.type.startsWith("image/")) {
             throw new Error(`Image upload only — “${file.name}” is not an image.`);
           }
-          // Raw ~750KB ≈ ~1MB data URL; server rejects dataUrl > 1.5M chars.
-          if (file.size > 750_000) {
-            throw new Error(
-              `“${file.name}” is too large (keep each file under ~750 KB). Compress images first if needed.`
-            );
-          }
+          assertUploadableFile(file);
         }
         const items = [];
         for (const file of files) {
           const dataUrl = await readFileAsDataURL(file);
-          if (dataUrl.length > 1_500_000) {
-            throw new Error(`“${file.name}” is too large after encoding (keep under ~1 MB).`);
-          }
+          assertUploadableDataUrl(dataUrl, file.name);
           items.push({
             name: file.name,
             mime: file.type,

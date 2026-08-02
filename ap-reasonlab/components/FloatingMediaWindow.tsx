@@ -14,6 +14,7 @@ import {
   normalizeSpace,
 } from "@/lib/storage-space";
 import { readResponseJson } from "@/lib/safe-json";
+import { assertUploadableDataUrl, assertUploadableFile } from "@/lib/upload-limits";
 
 type Tab = "all" | "folders" | "pics" | "docs" | "files";
 
@@ -60,6 +61,7 @@ export function FloatingMediaWindow({
   const [folders, setFolders] = useState<ManagedFolder[]>([]);
   const [files, setFiles] = useState<ManagedFile[]>([]);
   const [documents, setDocuments] = useState<ManagedDocument[]>([]);
+  const [baseUpdatedAt, setBaseUpdatedAt] = useState<number | undefined>(undefined);
   const [preview, setPreview] = useState<Preview | null>(null);
   const [changeCode, setChangeCode] = useState("");
   const [busy, setBusy] = useState(false);
@@ -90,6 +92,7 @@ export function FloatingMediaWindow({
         files?: ManagedFile[];
         documents?: ManagedDocument[];
         folders?: ManagedFolder[];
+        updatedAt?: number;
         error?: string;
       }>(res);
       if (!parsed.ok || !res.ok) return;
@@ -97,6 +100,9 @@ export function FloatingMediaWindow({
       const allFiles: ManagedFile[] = Array.isArray(data.files) ? data.files : [];
       const allDocs: ManagedDocument[] = Array.isArray(data.documents) ? data.documents : [];
       const allFolders: ManagedFolder[] = Array.isArray(data.folders) ? data.folders : [];
+      if (typeof data.updatedAt === "number" && data.updatedAt > 0) {
+        setBaseUpdatedAt(data.updatedAt);
+      }
 
       setFolders(
         allFolders
@@ -201,10 +207,9 @@ export function FloatingMediaWindow({
     try {
       const items = [];
       for (const file of chosen) {
-        if (file.size > 1_000_000) {
-          throw new Error(`${file.name} is too large (keep under ~1MB each).`);
-        }
+        assertUploadableFile(file);
         const dataUrl = await readAsDataUrl(file);
+        assertUploadableDataUrl(dataUrl, file.name);
         items.push({
           name: file.name,
           mime: file.type || "application/octet-stream",
@@ -221,6 +226,7 @@ export function FloatingMediaWindow({
           action: "add_files",
           items,
           changeCode: changeCode.trim() || undefined,
+          baseUpdatedAt: baseUpdatedAt || undefined,
         }),
       });
       const parsed = await readResponseJson<{ error?: string }>(res);
@@ -280,6 +286,7 @@ export function FloatingMediaWindow({
             space: activeSpace,
           })),
           changeCode: changeCode.trim() || undefined,
+          baseUpdatedAt: baseUpdatedAt || undefined,
         }),
       });
       const parsed = await readResponseJson<{ error?: string }>(res);
@@ -331,6 +338,7 @@ export function FloatingMediaWindow({
             space: activeSpace,
           })),
           changeCode: changeCode.trim() || undefined,
+          baseUpdatedAt: baseUpdatedAt || undefined,
         }),
       });
       const parsed = await readResponseJson<{ error?: string }>(res);

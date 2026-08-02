@@ -29,6 +29,7 @@ import {
   normalizeSpace,
   spaceAliases,
 } from "@/lib/storage-space";
+import { assertUploadableDataUrl, assertUploadableFile } from "@/lib/upload-limits";
 
 type ContentKind =
   | "file"
@@ -523,18 +524,20 @@ export default function MacFinderDesktop({
     const items: Array<{ name: string; mime: string; dataUrl: string; area: string; space: string }> =
       [];
     for (const file of Array.from(fileList).slice(0, 10)) {
-      if (file.size > 1_000_000) {
-        setMessage(`${file.name} is too large (keep under ~1MB).`);
-        continue;
+      try {
+        assertUploadableFile(file);
+        const dataUrl = await readAsDataUrl(file);
+        assertUploadableDataUrl(dataUrl, file.name);
+        items.push({
+          name: file.name,
+          mime: file.type || "application/octet-stream",
+          dataUrl,
+          area: nav.page.area,
+          space: storageSpace,
+        });
+      } catch (err) {
+        setMessage(err instanceof Error ? err.message : `${file.name} rejected.`);
       }
-      const dataUrl = await readAsDataUrl(file);
-      items.push({
-        name: file.name,
-        mime: file.type || "application/octet-stream",
-        dataUrl,
-        area: nav.page.area,
-        space: storageSpace,
-      });
     }
     if (!items.length) return;
     const ok = await onMutate("add_files", { items });
@@ -1172,6 +1175,7 @@ export default function MacFinderDesktop({
                 label="+ Upload files"
                 folderArea={nav.page.area}
                 spaceKey={storageSpace}
+                baseUpdatedAt={typeof data.updatedAt === "number" ? data.updatedAt : undefined}
                 onSaved={(content) => {
                   if (content) onContent(content as ManagedContent);
                 }}
@@ -1182,6 +1186,7 @@ export default function MacFinderDesktop({
                 fileAccept="image/*"
                 folderArea={nav.page.area}
                 spaceKey={storageSpace}
+                baseUpdatedAt={typeof data.updatedAt === "number" ? data.updatedAt : undefined}
                 onSaved={(content) => {
                   if (content) onContent(content as ManagedContent);
                 }}
@@ -1191,6 +1196,7 @@ export default function MacFinderDesktop({
                 label="+ Add documents"
                 folderArea={nav.page.area}
                 spaceKey={storageSpace}
+                baseUpdatedAt={typeof data.updatedAt === "number" ? data.updatedAt : undefined}
                 onSaved={(content) => {
                   if (content) onContent(content as ManagedContent);
                 }}
@@ -1200,6 +1206,7 @@ export default function MacFinderDesktop({
                 label="+ Add file folders"
                 folderArea={nav.page.area}
                 spaceKey={storageSpace}
+                baseUpdatedAt={typeof data.updatedAt === "number" ? data.updatedAt : undefined}
                 onSaved={(content) => {
                   if (content) onContent(content as ManagedContent);
                 }}
@@ -1212,6 +1219,7 @@ export default function MacFinderDesktop({
                     defaultSubject={pageDefaultSubject(nav.page)}
                     folderArea={nav.page.area === "ap-subject" ? "concepts" : nav.page.area}
                     spaceKey={nav.page.space}
+                    baseUpdatedAt={typeof data.updatedAt === "number" ? data.updatedAt : undefined}
                     onSaved={(content) => {
                       if (content) onContent(content as ManagedContent);
                     }}
@@ -1222,6 +1230,7 @@ export default function MacFinderDesktop({
                     defaultSubject={pageDefaultSubject(nav.page)}
                     folderArea={nav.page.area === "ap-subject" ? "concepts" : nav.page.area}
                     spaceKey={nav.page.space}
+                    baseUpdatedAt={typeof data.updatedAt === "number" ? data.updatedAt : undefined}
                     onSaved={(content) => {
                       if (content) onContent(content as ManagedContent);
                     }}
@@ -1232,6 +1241,7 @@ export default function MacFinderDesktop({
                     defaultSubject={pageDefaultSubject(nav.page)}
                     folderArea={nav.page.area === "ap-subject" ? "formulas" : nav.page.area}
                     spaceKey={nav.page.space}
+                    baseUpdatedAt={typeof data.updatedAt === "number" ? data.updatedAt : undefined}
                     onSaved={(content) => {
                       if (content) onContent(content as ManagedContent);
                     }}
@@ -1242,6 +1252,7 @@ export default function MacFinderDesktop({
                     defaultSubject={pageDefaultSubject(nav.page)}
                     folderArea={nav.page.area === "ap-subject" ? "practice" : nav.page.area}
                     spaceKey={nav.page.space}
+                    baseUpdatedAt={typeof data.updatedAt === "number" ? data.updatedAt : undefined}
                     onSaved={(content) => {
                       if (content) onContent(content as ManagedContent);
                     }}

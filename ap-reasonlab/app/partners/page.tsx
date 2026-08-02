@@ -48,10 +48,7 @@ export default function PartnersPage() {
     void refresh();
   }, []);
 
-  // Same as Manage: unlocked content-code session turns edit chrome on so join stays usable.
-  useEffect(() => {
-    if (unlocked && !editMode) setActive(true);
-  }, [unlocked, editMode, setActive]);
+  // Edit chrome auto-activates sitewide via EditorModeProvider when unlocked.
 
   const roster = useMemo(() => {
     const fromManaged = members.map((m) => {

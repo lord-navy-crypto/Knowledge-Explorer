@@ -36,6 +36,13 @@ export function EditorModeProvider({ children }: { children: React.ReactNode }) 
     }
   }, [active, session.loading, session.unlocked]);
 
+  // Unify front + Manage: unlocked content-code session turns edit chrome on sitewide.
+  useEffect(() => {
+    if (session.loading || !session.unlocked) return;
+    setActiveState(true);
+    sessionStorage.setItem("results-editor-ui", "on");
+  }, [session.loading, session.unlocked]);
+
   // Prefer turning edit UI on without reading a stale unlocked flag from the previous render.
   // The effect above still clears active when the session is truly locked.
   const setActive = useCallback((next: boolean) => {
