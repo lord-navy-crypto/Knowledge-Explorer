@@ -226,10 +226,19 @@ export default function ChangePanel({
           if (fileAccept?.includes("image") && !file.type.startsWith("image/")) {
             throw new Error(`Image upload only — “${file.name}” is not an image.`);
           }
+          // Raw ~750KB ≈ ~1MB data URL; server rejects dataUrl > 1.5M chars.
+          if (file.size > 750_000) {
+            throw new Error(
+              `“${file.name}” is too large (keep each file under ~750 KB). Compress images first if needed.`
+            );
+          }
         }
         const items = [];
         for (const file of files) {
           const dataUrl = await readFileAsDataURL(file);
+          if (dataUrl.length > 1_500_000) {
+            throw new Error(`“${file.name}” is too large after encoding (keep under ~1 MB).`);
+          }
           items.push({
             name: file.name,
             mime: file.type,

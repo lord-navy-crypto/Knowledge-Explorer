@@ -119,15 +119,28 @@ export default function UnifiedAddContent({
           throw new Error("Image upload accepts image files only.");
         }
         action = "add_files";
+        for (const file of files) {
+          if (file.size > 750_000) {
+            throw new Error(
+              `“${file.name}” is too large (keep each file under ~750 KB). Compress images first if needed.`
+            );
+          }
+        }
         items = await Promise.all(
-          files.map(async (file) => ({
-            name: file.name,
-            mime: file.type,
-            dataUrl: await fileAsDataUrl(file),
-            note: fileNote || undefined,
-            area: "ap-subject",
-            space,
-          }))
+          files.map(async (file) => {
+            const dataUrl = await fileAsDataUrl(file);
+            if (dataUrl.length > 1_500_000) {
+              throw new Error(`“${file.name}” is too large after encoding (keep under ~1 MB).`);
+            }
+            return {
+              name: file.name,
+              mime: file.type,
+              dataUrl,
+              note: fileNote || undefined,
+              area: "ap-subject",
+              space,
+            };
+          })
         );
       } else if (bulkMode) {
         const cleaned = entries
