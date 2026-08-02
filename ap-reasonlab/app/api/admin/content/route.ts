@@ -18,9 +18,25 @@ async function publishToken(bodyToken?: string) {
 }
 
 export async function GET() {
+  const session = await getSession();
+  if (!session || !canManageContent(session.role)) {
+    return NextResponse.json({ error: "Manager login required" }, { status: 401 });
+  }
   const token = await getGithubTokenFromCookie();
   const content = await loadManagedContent(token);
-  return NextResponse.json(content);
+  // Never dump every base64 dataUrl to the admin GET caller.
+  const slim = {
+    ...content,
+    files: (content.files || []).map((file) => {
+      if (!file.dataUrl) return file;
+      const { dataUrl: _omit, ...rest } = file;
+      return {
+        ...rest,
+        note: rest.note || "File stored — open Manage → Files to download.",
+      };
+    }),
+  };
+  return NextResponse.json(slim);
 }
 
 export async function POST(req: NextRequest) {

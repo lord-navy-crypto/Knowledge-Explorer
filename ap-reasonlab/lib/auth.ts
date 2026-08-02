@@ -19,12 +19,23 @@ const GH_COOKIE = "results_gh_token";
 const CONTENT_EDITOR_COOKIE = "results_content_editor";
 
 function authSecret(): string {
-  return (
+  const fromEnv = (
     process.env.AUTH_SECRET ||
     process.env.ADMIN_PASSWORD ||
     process.env.PARTNER_PASSWORD ||
-    "results-dev-secret-change-me"
-  );
+    ""
+  ).trim();
+  if (fromEnv) return fromEnv;
+  // Production without AUTH_SECRET: derive from change codes so cookies aren't the public default.
+  const derived = (
+    process.env.CONTENT_CHANGE_CODE ||
+    process.env.MASTER_CHANGE_CODE ||
+    ""
+  ).trim();
+  if (derived && (process.env.NODE_ENV === "production" || process.env.VERCEL === "1")) {
+    return `ke-derived-secret:${derived}`;
+  }
+  return "results-dev-secret-change-me";
 }
 
 export function hashPassword(password: string, salt?: string): string {
@@ -117,7 +128,8 @@ export async function setContentEditorCookie(level: "content" | "master") {
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge: 60 * 60 * 24 * 30,
+    // 7 days — shorter than 30d so stolen cookies / leaked codes age out faster.
+    maxAge: 60 * 60 * 24 * 7,
   });
 }
 

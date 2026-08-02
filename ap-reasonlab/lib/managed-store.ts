@@ -373,16 +373,39 @@ async function githubWrite(
   };
 }
 
+/** Short in-memory cache — avoids refetching ~23MB managed JSON on every API hit. */
+const MANAGED_LOAD_TTL_MS = 15_000;
+let managedLoadCache: { at: number; key: string; content: ManagedContent } | null = null;
+
+export function invalidateManagedContentCache(): void {
+  managedLoadCache = null;
+}
+
 export async function loadManagedContent(token?: string): Promise<ManagedContent> {
+  const key = sanitizeGithubToken(token) || "__default__";
+  const now = Date.now();
+  if (
+    managedLoadCache &&
+    managedLoadCache.key === key &&
+    now - managedLoadCache.at < MANAGED_LOAD_TTL_MS
+  ) {
+    return managedLoadCache.content;
+  }
+
+  let content: ManagedContent;
   const fromGh = await githubGet(MANAGED_CONTENT_REPO_PATH, token);
   if (fromGh?.text) {
     try {
-      return normalizeManagedContent(JSON.parse(fromGh.text) as ManagedContent);
+      content = normalizeManagedContent(JSON.parse(fromGh.text) as ManagedContent);
+      managedLoadCache = { at: now, key, content };
+      return content;
     } catch {
       // fall through
     }
   }
-  return normalizeManagedContent(await readJsonFile(CONTENT_PATH, emptyManagedContent()));
+  content = normalizeManagedContent(await readJsonFile(CONTENT_PATH, emptyManagedContent()));
+  managedLoadCache = { at: now, key, content };
+  return content;
 }
 
 export async function loadManagedContentAtRef(
@@ -476,6 +499,7 @@ export async function saveManagedContent(
 
   // Protect deletes / concurrent adds against stale overwrites (old Manage tab / page panel).
   try {
+    invalidateManagedContentCache();
     const live = normalizeManagedContent(await loadManagedContent(token));
     const clientFresh =
       typeof options?.baseUpdatedAt === "number" &&
@@ -610,11 +634,39 @@ export async function saveManagedContent(
     message,
     token
   );
-  if (viaGithub.ok) return { mode: "github" };
+  if (viaGithub.ok) {
+    invalidateManagedContentCache();
+    try {
+      const { invalidateAiSiteSearchCache } = await import("@/lib/ai-site-context-server");
+      invalidateAiSiteSearchCache();
+    } catch {
+      /* optional */
+    }
+    try {
+      const { invalidateSiteAiTierCache } = await import("@/lib/ai-tiers-managed");
+      invalidateSiteAiTierCache();
+    } catch {
+      /* optional */
+    }
+    return { mode: "github" };
+  }
 
   // Local/dev fallback — fails on Vercel read-only FS.
   try {
     await writeJsonFile(CONTENT_PATH, next);
+    invalidateManagedContentCache();
+    try {
+      const { invalidateAiSiteSearchCache } = await import("@/lib/ai-site-context-server");
+      invalidateAiSiteSearchCache();
+    } catch {
+      /* optional */
+    }
+    try {
+      const { invalidateSiteAiTierCache } = await import("@/lib/ai-tiers-managed");
+      invalidateSiteAiTierCache();
+    } catch {
+      /* optional */
+    }
     return { mode: "local" };
   } catch {
     throw new Error(viaGithub.error);

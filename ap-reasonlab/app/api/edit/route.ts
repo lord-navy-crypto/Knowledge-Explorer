@@ -61,12 +61,12 @@ function slimManagedContent(content: ManagedContent): ManagedContent {
   };
 }
 
-function forumRateLimited(req: NextRequest): boolean {
+function publicWriteRateLimited(req: NextRequest, minGapMs = 8_000): boolean {
   const client = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   const now = Date.now();
   const previous = forumWriteTimes.get(client) || 0;
   forumWriteTimes.set(client, now);
-  return now - previous < 8_000;
+  return now - previous < minGapMs;
 }
 
 const FORUM_ATTACH_MAX_CHARS = 900_000; // ~data URL length
@@ -188,7 +188,7 @@ export async function GET(req: NextRequest) {
     // Media panels only need files/docs/folders — skip huge concept/questionnaire payloads
     // that were making phones stutter / white-flash when every page opened a file box.
     if (view === "media") {
-      return NextResponse.json({
+      const payload = {
         files: includeData
           ? (content.files || []).filter(inBucket)
           : slimManagedContent(content).files.filter(inBucket),
@@ -197,7 +197,15 @@ export async function GET(req: NextRequest) {
         subjects: content.subjects || [],
         updatedAt: content.updatedAt,
         scoped: { area, space: spaceKey, view: "media" },
-      });
+      };
+      const res = NextResponse.json(payload);
+      // Metadata-only media lists can be briefly cached; full dataUrls stay no-store.
+      if (!includeData) {
+        res.headers.set("Cache-Control", "private, max-age=15, stale-while-revalidate=30");
+      } else {
+        res.headers.set("Cache-Control", "no-store");
+      }
+      return res;
     }
 
     return NextResponse.json({
@@ -249,8 +257,14 @@ export async function POST(req: NextRequest) {
       (String(item.area || "") === "materials" ||
         bulkItems.some((entry: { area?: string }) => String(entry?.area || "") === "materials"));
     const publicForumContribution = ["add_forum_post", "add_forum_reply"].includes(action);
-    if (publicForumContribution && forumRateLimited(req)) {
-      return NextResponse.json({ error: "Please wait a few seconds before posting again" }, { status: 429 });
+    if (
+      (publicForumContribution || publicMaterialsContribution) &&
+      publicWriteRateLimited(req)
+    ) {
+      return NextResponse.json(
+        { error: "Please wait a few seconds before contributing again" },
+        { status: 429 }
+      );
     }
     const levelFromCode = resolveChangeLevel(body.changeCode);
     const levelFromSession = await getContentEditorLevel();
@@ -580,8 +594,9 @@ export async function POST(req: NextRequest) {
       if (files.length === 0 || files.length > 10) {
         return NextResponse.json({ error: "Choose between 1 and 10 files" }, { status: 400 });
       }
+      const bulkLimit = publicMaterialsContribution ? 1_000_000 : MAX_UPLOAD_DATA_URL_CHARS;
       for (const item of files) {
-        if (!item.name || !item.dataUrl || String(item.dataUrl).length > MAX_UPLOAD_DATA_URL_CHARS) {
+        if (!item.name || !item.dataUrl || String(item.dataUrl).length > bulkLimit) {
           return NextResponse.json({ error: "Each file needs a name and must stay under ~1MB" }, { status: 400 });
         }
         const keys = canonicalizeStorageKeys(
@@ -1098,10 +1113,6 @@ export async function POST(req: NextRequest) {
     const result = await saveManagedContent(current, token, undefined, {
       baseUpdatedAt: Number(body.baseUpdatedAt || 0) || undefined,
     });
-    if (action === "set_advanced_default") {
-      const { invalidateSiteAiTierCache } = await import("@/lib/ai-tiers-managed");
-      invalidateSiteAiTierCache();
-    }
     // Re-normalize so response matches tombstone-purged saved content.
     const saved = normalizeManagedContent(current);
     return NextResponse.json({
