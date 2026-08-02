@@ -1165,12 +1165,13 @@ export default function MacFinderDesktop({
             <div className="mt-6 space-y-2 border-t border-slate-200 pt-3">
               <p className="mb-2 text-[10px] font-bold uppercase tracking-wide text-slate-500">
                 Add into this webpage
+                {storageSpace !== nav.page.space ? " · current folder" : ""}
               </p>
               <ChangePanel
                 mode="file"
                 label="+ Upload files"
                 folderArea={nav.page.area}
-                spaceKey={nav.page.space}
+                spaceKey={storageSpace}
                 onSaved={(content) => {
                   if (content) onContent(content as ManagedContent);
                 }}
@@ -1180,7 +1181,7 @@ export default function MacFinderDesktop({
                 label="+ Upload images"
                 fileAccept="image/*"
                 folderArea={nav.page.area}
-                spaceKey={nav.page.space}
+                spaceKey={storageSpace}
                 onSaved={(content) => {
                   if (content) onContent(content as ManagedContent);
                 }}
@@ -1189,7 +1190,7 @@ export default function MacFinderDesktop({
                 mode="document"
                 label="+ Add documents"
                 folderArea={nav.page.area}
-                spaceKey={nav.page.space}
+                spaceKey={storageSpace}
                 onSaved={(content) => {
                   if (content) onContent(content as ManagedContent);
                 }}
@@ -1198,7 +1199,7 @@ export default function MacFinderDesktop({
                 mode="folder"
                 label="+ Add file folders"
                 folderArea={nav.page.area}
-                spaceKey={nav.page.space}
+                spaceKey={storageSpace}
                 onSaved={(content) => {
                   if (content) onContent(content as ManagedContent);
                 }}

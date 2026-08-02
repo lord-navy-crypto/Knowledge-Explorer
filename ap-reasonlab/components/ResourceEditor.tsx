@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
 import { useEditorMode } from "@/components/EditorModeProvider";
+import { readResponseJson } from "@/lib/safe-json";
 
 export type EditableTarget =
   | "concept"
@@ -105,6 +106,7 @@ export default function ResourceEditor({ target, item, onSaved, label = "Edit" }
       }
       const response = await fetch("/api/edit", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "update",
@@ -114,9 +116,10 @@ export default function ResourceEditor({ target, item, onSaved, label = "Edit" }
           changeCode: changeCode.trim() || undefined,
         }),
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Update failed");
-      onSaved(data.content);
+      const parsed = await readResponseJson<{ error?: string; content?: unknown }>(response);
+      if (!parsed.ok) throw new Error(parsed.error);
+      if (!response.ok) throw new Error(parsed.data.error || "Update failed");
+      onSaved(parsed.data.content);
       void refresh();
       setOpen(false);
     } catch (caught) {
