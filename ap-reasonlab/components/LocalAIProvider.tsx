@@ -23,6 +23,13 @@ import {
   shouldDisableThinking,
   stripReasoningTrace,
 } from "@/lib/ai-reasoning-strip";
+import {
+  DEFAULT_LOCAL_MODEL_ID,
+  FEATURED_LOCAL_MODELS,
+  buildExtendedLocalModels,
+  mergeLocalModelLists,
+  type LocalModelOption as CatalogModelOption,
+} from "@/lib/local-ai-models";
 
 /**
  * Shared AI path for every tool:
@@ -31,20 +38,18 @@ import {
  * - byok   = user's own API key
  */
 export type AIMode = "local" | "site" | "byok";
-/** Weight tiers for the local model library (WebLLM / WebGPU). */
-export type LocalModelGroup = "superlight" | "light" | "medium" | "heavy";
+export type {
+  LocalModelGroup,
+  LocalModelOption,
+  LocalModelTag,
+} from "@/lib/local-ai-models";
+export {
+  DEFAULT_LOCAL_MODEL_ID,
+  FEATURED_LOCAL_MODELS,
+  formatLocalModelTags,
+} from "@/lib/local-ai-models";
 
-export type LocalModelOption = {
-  id: string;
-  label: string;
-  group: LocalModelGroup;
-  summary: string;
-  bestFor: string;
-  parameterSize: string;
-  vramMB: number;
-  cached: boolean | null;
-  recommended?: boolean;
-};
+type LocalModelOption = CatalogModelOption;
 
 type LocalAIStatus = "idle" | "loading" | "ready" | "generating" | "error";
 
@@ -72,6 +77,9 @@ type LocalAIContextValue = {
     siteSearch?: boolean;
   };
   models: LocalModelOption[];
+  /** When true, picker includes the broader official WebLLM library. */
+  showFullLibrary: boolean;
+  setShowFullLibrary: (enabled: boolean) => void;
   selectedModelId: string;
   setSelectedModelId: (id: string) => void;
   loadedModelId: string;
@@ -110,6 +118,7 @@ const MODEL_KEY = "results-local-ai-model";
 const SITE_MODEL_KEY = "results-ai-site-model";
 const PROVIDER_KEY = "results-ai-provider";
 const SITE_SEARCH_KEY = "results-ai-site-search";
+const FULL_LIBRARY_KEY = "results-local-ai-full-library";
 
 function migrateMode(raw: string | null): AIMode | null {
   if (raw === "local" || raw === "site" || raw === "byok") return raw;
@@ -117,184 +126,6 @@ function migrateMode(raw: string | null): AIMode | null {
   if (raw === "auto" || raw === "cloud") return "site";
   return null;
 }
-/** Safe default for first enable — Super light Chinese/English starter. */
-const DEFAULT_MODEL_ID = "Qwen2.5-0.5B-Instruct-q4f16_1-MLC";
-
-/**
- * Local model library by weight class.
- * IDs must exist in @mlc-ai/web-llm prebuiltAppConfig.model_list.
- */
-const LOCAL_MODELS: LocalModelOption[] = [
-  // —— Super light ——
-  {
-    id: "SmolLM2-135M-Instruct-q0f16-MLC",
-    label: "SmolLM2 Tiny",
-    group: "superlight",
-    summary: "Smallest option — very fast, basic answers only.",
-    bestFor: "Smoke-test Local AI, short labels, tiny rewrites",
-    parameterSize: "135M",
-    vramMB: 360,
-    cached: null,
-  },
-  {
-    id: "SmolLM2-360M-Instruct-q4f16_1-MLC",
-    label: "SmolLM2 Mini",
-    group: "superlight",
-    summary: "Slightly stronger than Tiny; still ultra-light English.",
-    bestFor: "Short English summaries on weak devices",
-    parameterSize: "360M",
-    vramMB: 376,
-    cached: null,
-  },
-  {
-    id: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
-    label: "Qwen2.5 Micro",
-    group: "superlight",
-    summary: "Best starter for Chinese + English on low VRAM.",
-    bestFor: "Everyday bilingual chat on phones/Chromebooks",
-    parameterSize: "0.5B",
-    vramMB: 945,
-    cached: null,
-    recommended: true,
-  },
-  {
-    id: "Qwen3-0.6B-q4f16_1-MLC",
-    label: "Qwen3 Micro",
-    group: "superlight",
-    summary: "Newer Qwen3 micro — light thinking allowed for quality.",
-    bestFor: "Newer bilingual micro replies on modest GPUs",
-    parameterSize: "0.6B",
-    vramMB: 1403,
-    cached: null,
-  },
-  // —— Light ——
-  {
-    id: "Llama-3.2-1B-Instruct-q4f16_1-MLC",
-    label: "Llama 3.2 Light",
-    group: "light",
-    summary: "Compact Meta model — strong English for its size.",
-    bestFor: "English explanations and light study Q&A",
-    parameterSize: "1B",
-    vramMB: 879,
-    cached: null,
-  },
-  {
-    id: "Qwen2.5-1.5B-Instruct-q4f16_1-MLC",
-    label: "Qwen2.5 Light",
-    group: "light",
-    summary: "Balanced bilingual light model.",
-    bestFor: "Chinese/English study help without heavy GPU",
-    parameterSize: "1.5B",
-    vramMB: 1630,
-    cached: null,
-    recommended: true,
-  },
-  {
-    id: "Qwen2.5-Math-1.5B-Instruct-q4f16_1-MLC",
-    label: "Qwen2.5 Math Light",
-    group: "light",
-    summary: "Math-tuned light model for step language.",
-    bestFor: "AP math hints, formula-oriented explanations",
-    parameterSize: "1.5B",
-    vramMB: 1630,
-    cached: null,
-  },
-  {
-    id: "Qwen2.5-Coder-1.5B-Instruct-q4f16_1-MLC",
-    label: "Qwen2.5 Coder Light",
-    group: "light",
-    summary: "Code-focused light assistant.",
-    bestFor: "Small snippets, comments, Markdown edits",
-    parameterSize: "1.5B",
-    vramMB: 1630,
-    cached: null,
-  },
-  // —— Medium ——
-  {
-    id: "Llama-3.2-3B-Instruct-q4f16_1-MLC",
-    label: "Llama 3.2 Medium",
-    group: "medium",
-    summary: "Best English quality/speed balance for most desktops.",
-    bestFor: "General study tutoring in English",
-    parameterSize: "3B",
-    vramMB: 2264,
-    cached: null,
-    recommended: true,
-  },
-  {
-    id: "Qwen2.5-3B-Instruct-q4f16_1-MLC",
-    label: "Qwen2.5 Medium",
-    group: "medium",
-    summary: "Strong bilingual mid-size Qwen.",
-    bestFor: "Longer Chinese/English explanations and drafting",
-    parameterSize: "3B",
-    vramMB: 2505,
-    cached: null,
-  },
-  {
-    id: "Qwen3-4B-q4f16_1-MLC",
-    label: "Qwen3 Medium+",
-    group: "medium",
-    summary: "Newer Qwen3 4B — mid-size with light thinking; formulas still stream live.",
-    bestFor: "Harder bilingual study help when VRAM allows",
-    parameterSize: "4B",
-    vramMB: 3432,
-    cached: null,
-  },
-  {
-    id: "Phi-3.5-mini-instruct-q4f16_1-MLC",
-    label: "Phi-3.5 Mini",
-    group: "medium",
-    summary: "Microsoft mini model — solid reasoning for its class.",
-    bestFor: "Structured reasoning and careful short answers",
-    parameterSize: "3.8B",
-    vramMB: 3672,
-    cached: null,
-  },
-  {
-    id: "Qwen2.5-Coder-3B-Instruct-q4f16_1-MLC",
-    label: "Qwen2.5 Coder Medium",
-    group: "medium",
-    summary: "Stronger local coding without jumping to 7B.",
-    bestFor: "Code explanations and AI Developer drafts",
-    parameterSize: "3B",
-    vramMB: 2505,
-    cached: null,
-  },
-  // —— Heavy ——
-  {
-    id: "Qwen2.5-7B-Instruct-q4f16_1-MLC",
-    label: "Qwen2.5 Heavy",
-    group: "heavy",
-    summary: "Flagship bilingual local general model (~5 GB VRAM).",
-    bestFor: "High-quality study answers when your GPU can load it",
-    parameterSize: "7B",
-    vramMB: 5107,
-    cached: null,
-    recommended: true,
-  },
-  {
-    id: "Llama-3.1-8B-Instruct-q4f16_1-MLC",
-    label: "Llama 3.1 Heavy",
-    group: "heavy",
-    summary: "Strong English 8B instruct model.",
-    bestFor: "Deep English tutoring and long-form writing",
-    parameterSize: "8B",
-    vramMB: 5001,
-    cached: null,
-  },
-  {
-    id: "Qwen2.5-Coder-7B-Instruct-q4f16_1-MLC",
-    label: "Qwen2.5 Coder Heavy",
-    group: "heavy",
-    summary: "Strongest coder in this library.",
-    bestFor: "Complex code help and AI Developer work",
-    parameterSize: "7B",
-    vramMB: 5107,
-    cached: null,
-  },
-];
-
 /** Cap context on heavier WebLLM models so typical laptop GPUs do not OOM. */
 function chatOptsForModel(modelId: string, contextWindow = 4096) {
   const opts: { context_window_size: number; prefill_chunk_size: number } = {
@@ -302,7 +133,7 @@ function chatOptsForModel(modelId: string, contextWindow = 4096) {
     prefill_chunk_size: Math.min(1024, contextWindow),
   };
   // 7B/8B heavies need a capped context on typical laptops.
-  if (/7B|8B/i.test(modelId)) return opts;
+  if (/7B|8B|9B/i.test(modelId)) return opts;
   if (/3B|4B/i.test(modelId)) return { ...opts, context_window_size: Math.min(contextWindow, 4096) };
   return undefined;
 }
@@ -324,7 +155,7 @@ function explainLocalLoadError(message: string, modelId: string): string {
     return `${message}\n\nTip: Local model reload failed (often a half-written cache). Remove the cached model, Enable again, or switch to Website API.`;
   }
   if (/deepseek/i.test(modelId)) {
-    return `${message}\n\nDeepSeek Distill was removed from this site because the thinking-phase path was too laggy in-browser. Pick Qwen2.5 / Llama or Website API.`;
+    return `${message}\n\nDeepSeek Distill was removed from this site because the thinking-phase path was too laggy in-browser. Pick Qwen3.5 / Qwen3 / Llama or Website API.`;
   }
   return message;
 }
@@ -347,8 +178,11 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
   const [provider, setProviderState] = useState<AiProvider>("groq");
   const [userKey, setUserKey] = useState("");
   const [siteSearchEnabled, setSiteSearchEnabledState] = useState(true);
-  const [models, setModels] = useState<LocalModelOption[]>(LOCAL_MODELS);
-  const [selectedModelId, setSelectedModelIdState] = useState(DEFAULT_MODEL_ID);
+  const [models, setModels] = useState<LocalModelOption[]>(FEATURED_LOCAL_MODELS);
+  const [showFullLibrary, setShowFullLibraryState] = useState(false);
+  const [extendedModels, setExtendedModels] = useState<LocalModelOption[]>([]);
+  const modelsRef = useRef<LocalModelOption[]>(FEATURED_LOCAL_MODELS);
+  const [selectedModelId, setSelectedModelIdState] = useState(DEFAULT_LOCAL_MODEL_ID);
   const [loadedModelId, setLoadedModelId] = useState("");
   const [status, setStatus] = useState<LocalAIStatus>("idle");
   const [progress, setProgress] = useState(0);
@@ -370,12 +204,21 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
       setModeState(savedMode);
       localStorage.setItem(MODE_KEY, savedMode);
     }
+    const fullLibraryOn = localStorage.getItem(FULL_LIBRARY_KEY) === "1";
+    if (fullLibraryOn) setShowFullLibraryState(true);
     const savedModel = localStorage.getItem(MODEL_KEY);
     if (savedModel && /deepseek-r1|r1-distill/i.test(savedModel)) {
       // Retired: Distill’s private-thinking path made answers feel stuck on “thinking”.
-      localStorage.setItem(MODEL_KEY, DEFAULT_MODEL_ID);
-      setSelectedModelIdState(DEFAULT_MODEL_ID);
-    } else if (LOCAL_MODELS.some((item) => item.id === savedModel)) {
+      localStorage.setItem(MODEL_KEY, DEFAULT_LOCAL_MODEL_ID);
+      setSelectedModelIdState(DEFAULT_LOCAL_MODEL_ID);
+    } else if (savedModel && FEATURED_LOCAL_MODELS.some((item) => item.id === savedModel)) {
+      setSelectedModelIdState(String(savedModel));
+    } else if (savedModel === "Qwen2.5-0.5B-Instruct-q4f16_1-MLC") {
+      // Previous default → newest light bilingual starter.
+      localStorage.setItem(MODEL_KEY, DEFAULT_LOCAL_MODEL_ID);
+      setSelectedModelIdState(DEFAULT_LOCAL_MODEL_ID);
+    } else if (savedModel && fullLibraryOn && /MLC$/i.test(savedModel)) {
+      // Extended WebLLM id — keep until full library finishes loading.
       setSelectedModelIdState(String(savedModel));
     }
     const savedSiteModel = parseSiteModelChoice(localStorage.getItem(SITE_MODEL_KEY));
@@ -416,8 +259,53 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(SITE_SEARCH_KEY, enabled ? "1" : "0");
   }, []);
 
+  useEffect(() => {
+    modelsRef.current = models;
+  }, [models]);
+
+  useEffect(() => {
+    const next = mergeLocalModelLists(FEATURED_LOCAL_MODELS, extendedModels, showFullLibrary);
+    setModels((current) => {
+      const cacheMap = new Map(current.map((item) => [item.id, item.cached]));
+      return next.map((item) => ({
+        ...item,
+        cached: cacheMap.has(item.id) ? cacheMap.get(item.id)! : item.cached,
+      }));
+    });
+  }, [extendedModels, showFullLibrary]);
+
+  useEffect(() => {
+    if (!showFullLibrary) return;
+    if (extendedModels.length > 0) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const { prebuiltAppConfig } = await import("@mlc-ai/web-llm");
+        if (cancelled) return;
+        setExtendedModels(buildExtendedLocalModels(prebuiltAppConfig.model_list || []));
+      } catch {
+        if (!cancelled) setExtendedModels([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [extendedModels.length, showFullLibrary]);
+
+  const setShowFullLibrary = useCallback((enabled: boolean) => {
+    setShowFullLibraryState(enabled);
+    localStorage.setItem(FULL_LIBRARY_KEY, enabled ? "1" : "0");
+    if (!enabled) {
+      setSelectedModelIdState((current) => {
+        if (FEATURED_LOCAL_MODELS.some((item) => item.id === current)) return current;
+        localStorage.setItem(MODEL_KEY, DEFAULT_LOCAL_MODEL_ID);
+        return DEFAULT_LOCAL_MODEL_ID;
+      });
+    }
+  }, []);
+
   const setSelectedModelId = useCallback((id: string) => {
-    if (!LOCAL_MODELS.some((item) => item.id === id)) return;
+    if (!modelsRef.current.some((item) => item.id === id)) return;
     setSelectedModelIdState(id);
     localStorage.setItem(MODEL_KEY, id);
   }, []);
@@ -440,7 +328,7 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
 
       const run = (async () => {
         const targetModelId = requestedModelId || selectedModelId;
-        if (!LOCAL_MODELS.some((item) => item.id === targetModelId)) {
+        if (!modelsRef.current.some((item) => item.id === targetModelId)) {
           throw new Error("Select a valid local model first.");
         }
 
@@ -580,7 +468,7 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
     try {
       const { hasModelInCache, prebuiltAppConfig } = await import("@mlc-ai/web-llm");
       const cacheResults = await Promise.all(
-        LOCAL_MODELS.map(async (model) => ({
+        modelsRef.current.map(async (model) => ({
           id: model.id,
           cached: await hasModelInCache(model.id, prebuiltAppConfig).catch(() => false),
         }))
@@ -600,7 +488,7 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
 
   const removeCachedModel = useCallback(
     async (modelId: string) => {
-      if (!LOCAL_MODELS.some((item) => item.id === modelId)) return;
+      if (!modelsRef.current.some((item) => item.id === modelId)) return;
       if (loadedModelRef.current === modelId) {
         await releaseEngine();
         setStatus("idle");
@@ -738,6 +626,8 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
         siteSearch: siteSearchEnabled,
       },
       models,
+      showFullLibrary,
+      setShowFullLibrary,
       selectedModelId,
       setSelectedModelId,
       loadedModelId,
@@ -766,6 +656,8 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
       models,
       progress,
       provider,
+      setShowFullLibrary,
+      showFullLibrary,
       refreshCacheStatus,
       removeCachedModel,
       selectedModelId,

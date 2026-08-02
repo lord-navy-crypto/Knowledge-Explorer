@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import AiApiChannel from "@/components/AiApiChannel";
 import LocalAiRecommendation from "@/components/LocalAiRecommendation";
 import {
+  formatLocalModelTags,
   useLocalAI,
   type AIMode,
   type LocalModelGroup,
@@ -64,6 +65,14 @@ export default function LocalAIControls({ embedded = false }: Props) {
   const cacheChecked = localAI.models.every((model) => model.cached !== null);
   const busy = localAI.status === "loading" || localAI.status === "generating";
   const modeNeedsModel = localAI.mode === "local" && !localAI.ready;
+  const featuredCount = useMemo(
+    () => localAI.models.filter((model) => !model.extended).length,
+    [localAI.models]
+  );
+  const extendedCount = useMemo(
+    () => localAI.models.filter((model) => model.extended).length,
+    [localAI.models]
+  );
 
   function requestModel(modelId: string) {
     if (localAI.ready && modelId !== localAI.loadedModelId) {
@@ -210,9 +219,10 @@ export default function LocalAIControls({ embedded = false }: Props) {
           <div className="rounded-xl border border-slate-200 bg-white p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h2 className="font-semibold text-slate-900">Local model</h2>
+                <h2 className="font-semibold text-slate-900">Local model series</h2>
                 <p className="mt-1 max-w-2xl text-sm text-slate-600">
-                  Pick a size, then Enable. Prompts stay on this device.
+                  Curated study picks (Qwen3.5 / Qwen3, Math, Coder, English). Enable stays on this
+                  device. Turn on the full library for every official WebLLM q4f16 model.
                 </p>
               </div>
               <span
@@ -236,6 +246,28 @@ export default function LocalAIControls({ embedded = false }: Props) {
               </span>
             </div>
 
+            <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-700">
+              <input
+                type="checkbox"
+                className="mt-1"
+                checked={localAI.showFullLibrary}
+                onChange={(event) => localAI.setShowFullLibrary(event.target.checked)}
+              />
+              <span>
+                <span className="font-semibold text-slate-900">
+                  Show full WebLLM model library
+                </span>
+                <span className="mt-0.5 block text-xs text-slate-500">
+                  Off = curated study series ({featuredCount} models) with flash points. On = also
+                  list official WebLLM q4f16 instruct models
+                  {localAI.showFullLibrary && extendedCount
+                    ? ` (+${extendedCount} extra)`
+                    : " (large list)"}.
+                  Heavier models need more GPU memory.
+                </span>
+              </span>
+            </label>
+
             <div className="mt-4 grid gap-3 md:grid-cols-[1fr_auto]">
               <div>
                 <label className="mb-1 block text-sm font-medium">Choose local model</label>
@@ -245,20 +277,39 @@ export default function LocalAIControls({ embedded = false }: Props) {
                   onChange={(event) => requestModel(event.target.value)}
                   disabled={busy}
                 >
-                  {MODEL_GROUPS.map((group) => (
-                    <optgroup key={group.value} label={group.label}>
-                      {localAI.models
-                        .filter((model) => model.group === group.value)
-                        .map((model) => (
+                  {MODEL_GROUPS.map((group) => {
+                    const featured = localAI.models.filter(
+                      (model) => model.group === group.value && !model.extended
+                    );
+                    const extended = localAI.models.filter(
+                      (model) => model.group === group.value && model.extended
+                    );
+                    if (!featured.length && !extended.length) return null;
+                    return (
+                      <optgroup key={group.value} label={group.label}>
+                        {featured.map((model) => (
                           <option key={model.id} value={model.id}>
-                            {model.label} · {model.parameterSize} · about {model.vramMB} MB memory
+                            {model.series} · {model.label} · {model.parameterSize} · ~
+                            {model.vramMB} MB
+                            {model.tags.length
+                              ? ` · ${formatLocalModelTags(model.tags)}`
+                              : ""}
                             {model.recommended ? " · recommended" : ""}
                             {model.cached ? " · downloaded" : ""}
                             {model.id === localAI.loadedModelId ? " · active" : ""}
                           </option>
                         ))}
-                    </optgroup>
-                  ))}
+                        {extended.map((model) => (
+                          <option key={model.id} value={model.id}>
+                            Full library · {model.series} · {model.label} · {model.parameterSize} · ~
+                            {model.vramMB} MB
+                            {model.cached ? " · downloaded" : ""}
+                            {model.id === localAI.loadedModelId ? " · active" : ""}
+                          </option>
+                        ))}
+                      </optgroup>
+                    );
+                  })}
                 </select>
               </div>
               <div className="flex flex-wrap items-end gap-2">
@@ -299,11 +350,25 @@ export default function LocalAIControls({ embedded = false }: Props) {
               <div className="mt-4 rounded-xl bg-slate-50 p-3 text-sm">
                 <div className="flex flex-wrap items-center gap-2">
                   <strong className="text-slate-900">{selected.label}</strong>
-                  {selected.recommended && (
-                    <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-semibold text-slate-700">
-                      Recommended
+                  <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-slate-600 ring-1 ring-slate-200">
+                    {selected.series}
+                  </span>
+                  {selected.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className={
+                        tag === "Recommended" || tag === "New"
+                          ? "rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800"
+                          : tag === "Coding"
+                            ? "rounded-full bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-800"
+                            : tag === "Math"
+                              ? "rounded-full bg-violet-100 px-2 py-0.5 text-xs font-semibold text-violet-800"
+                              : "rounded-full bg-slate-200 px-2 py-0.5 text-xs font-semibold text-slate-700"
+                      }
+                    >
+                      {tag}
                     </span>
-                  )}
+                  ))}
                   {selected.cached && (
                     <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">
                       Downloaded
@@ -319,8 +384,15 @@ export default function LocalAIControls({ embedded = false }: Props) {
 
             {localAI.ready && loaded && (
               <div className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-950">
-                <strong>Active: {loaded.label}</strong>
+                <strong>
+                  Active: {loaded.label} · {loaded.series}
+                </strong>
                 <p className="mt-1">{loaded.bestFor}.</p>
+                {loaded.tags.length ? (
+                  <p className="mt-1 text-xs text-emerald-900/80">
+                    Flash points: {formatLocalModelTags(loaded.tags)}
+                  </p>
+                ) : null}
               </div>
             )}
 
