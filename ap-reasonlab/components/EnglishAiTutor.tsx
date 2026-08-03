@@ -176,11 +176,15 @@ export default function EnglishAiTutor({ embedded = false, hideChannelUi = false
         <section className={`card space-y-5 ${result.refused ? "border-amber-200 bg-amber-50/50" : ""}`}>
           <div>
             <h2 className="text-xl font-semibold">
-              {result.refused ? "Outside English Tutor scope" : "Feedback"}
+              {result.refused
+                ? "Outside English Tutor scope"
+                : mode === "translator"
+                  ? "Translation"
+                  : "Feedback"}
             </h2>
             <RichContent className="mt-2 text-sm text-slate-700">{result.feedback}</RichContent>
           </div>
-          {result.strengths?.length > 0 && (
+          {mode !== "translator" && result.strengths?.length > 0 && (
             <div>
               <h3 className="font-semibold text-emerald-800">Strengths</h3>
               <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
@@ -190,7 +194,7 @@ export default function EnglishAiTutor({ embedded = false, hideChannelUi = false
               </ul>
             </div>
           )}
-          {result.priorities?.length > 0 && (
+          {mode !== "translator" && result.priorities?.length > 0 && (
             <div>
               <h3 className="font-semibold text-brand-800">Priorities</h3>
               <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-slate-700">
