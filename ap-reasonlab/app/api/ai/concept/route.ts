@@ -31,7 +31,16 @@ export async function POST(req: NextRequest) {
         ? "Mode focus: derive/explain the pasted formula or relation (assumptions, meaning). Do not finish a graded numeric answer."
         : mode === "generate-questions"
           ? "Mode focus: invent short original practice questions from the pasted topic/problem stem. No copyrighted exam items."
-          : `Mode: ${mode}`;
+          : mode === "concept-extension"
+            ? "Mode focus: treat the pasted text as a BASIC concept or formula. Spread outward into AP exam extension scenes — extension concepts, formulas, moves, and common stretch patterns. Not harder for hardness’ sake — richer / combined / constrained. Do not finish a graded numeric final answer."
+            : `Mode: ${mode}`;
+
+    const defaultQuestion =
+      mode === "quiz" || mode === "generate-questions"
+        ? "Quiz me / generate practice on this concept."
+        : mode === "concept-extension"
+          ? "Extend this basic concept/formula into typical AP exam extension scenes."
+          : "Explain this concept clearly for AP study.";
 
     const user = `Subject: ${subject || "AP"}
 Concept title: ${conceptTitle || "(user will name it in the question)"}
@@ -39,9 +48,9 @@ Concept summary (may be empty): ${conceptSummary || "(none)"}
 ${modeHint}
 Lock to this concept only: ${lockToConcept ? "yes" : "no — still must stay on learning/AP concepts"}
 User message:
-${question || (mode === "quiz" || mode === "generate-questions" ? "Quiz me / generate practice on this concept." : "Explain this concept clearly for AP study.")}
+${question || defaultQuestion}
 
-Return JSON with refused, reply, quizPrompt, aiMayBeWrong.`;
+Return JSON with refused, reply, formulas, quizPrompt, aiMayBeWrong.`;
 
     try {
       const siteSearch = body.siteSearch !== false;
@@ -54,7 +63,7 @@ Return JSON with refused, reply, quizPrompt, aiMayBeWrong.`;
       const result = await runChatJson({
         system: conceptExplainSystem(mode),
         user: userWithSite,
-        maxTokens: 1100,
+        maxTokens: mode === "concept-extension" ? 1500 : 1100,
         userApiKey: userApiKey || undefined,
         provider,
         siteModel,
@@ -85,6 +94,17 @@ Return JSON with refused, reply, quizPrompt, aiMayBeWrong.`;
         return NextResponse.json({ error: message }, { status: 502 });
       }
       console.error(error);
+      const seed = conceptTitle || "your base concept/formula";
+      if (mode === "concept-extension") {
+        return NextResponse.json({
+          refused: false,
+          reply: `## Base\nMock extension map for “${seed}”.\n\n## Extension scenes\n1) Ideal / fixed setup → add a constraint or moving reference.\n2) Single-object use → system / multi-step FRQ scene.\n\n## Extension concepts\nRelated AP ideas that often appear with this base (configure a live API key for real maps).\n\n## Extension formulas\nExtended relations that reuse the base under extra conditions.\n\n## Extension moves\nChoose axes / combine laws / introduce the new constraint.\n\n## Common AP extension patterns\nSteady → transient; 1D → 2D; ideal → non-ideal.\n\n## Self-check\nName one way an FRQ could stretch “${seed}” without changing the core law.`,
+          quizPrompt: `Name one common AP stretch of “${seed}” (scene + extra concept).`,
+          formulas: [`Base: ${seed} — extended forms need a live model`],
+          aiMayBeWrong: "Mock response — not a real model.",
+          note: "Mock mode (no API key yet).",
+        });
+      }
       return NextResponse.json({
         refused: false,
         reply: conceptTitle

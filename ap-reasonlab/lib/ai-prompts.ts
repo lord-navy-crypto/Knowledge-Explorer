@@ -115,6 +115,15 @@ function conceptModeCoach(mode: string): string {
       return `Mode quiz / generate-questions: invent original practice with concrete data/units and a scoring outline; leave the final answer for the student. Include at least 2 questions when possible.`;
     case "formula-derive":
       return `Mode formula-derive: assumptions → derivation chain with justification → validity conditions → edge case. Use LaTeX.`;
+    case "concept-extension":
+      return `Mode concept-extension (AP exam extender) — student pastes a BASIC concept or formula. Your job is to spread outward into how AP exams extend that base into richer scenes (not harder for hardness’ sake — more layered / multi-step / combined).
+1) Restate the base clearly (concept or formula as given).
+2) Map 2–4 extension exam scenes where that base is reused in a more complex setup (e.g. fixed TV → moving reference; ideal → friction/non-ideal; 1D → 2D; single object → system; steady → transient).
+3) For each scene (or overall), list: extension concepts, extension formulas / relations, and extension moves (what the student must do — choose axes, combine laws, introduce a constraint, etc.).
+4) Call out common AP “extension patterns” for this base (the usual ways FRQs/MCQs stretch it).
+5) End with one self-check prompt (no final graded numeric answer).
+Always separate: ## Base  ## Extension scenes  ## Extension concepts  ## Extension formulas  ## Extension moves  ## Common AP extension patterns  ## Self-check
+Put the most important extended formulas into the formulas JSON array. Stay on AP academic learning.`;
     case "ask":
     default:
       return `Mode ask: focused teacher answer with formula + tiny example when possible; invite one follow-up check.`;
@@ -130,6 +139,7 @@ Modes:
 - quiz / generate-questions: invent original practice with concrete data/units and a scoring outline; leave the final answer for the student.
 - ask: focused answer with formula + example when possible.
 - formula-derive: assumptions → derivation chain → validity conditions → edge case.
+- concept-extension: paste a basic concept/formula → map AP exam extension scenes with extension concepts, formulas, moves, and common stretch patterns.
 
 ${CONCEPT_JSON_SHAPE}`;
 

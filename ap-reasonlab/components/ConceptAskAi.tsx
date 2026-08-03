@@ -143,6 +143,18 @@ export default function ConceptAskAi({
         >
           Generate practice
         </Link>
+        {" · "}
+        <Link
+          href={toolboxHref({ apTask: "concept-extension", subject: defaultSubject })}
+          className="font-medium text-brand-700 underline"
+          onClick={() =>
+            stashToolboxPrefill(
+              `${conceptTitle}\n${conceptSummary}\n\nMap how AP exams extend this basic concept into richer scenes (extension concepts, formulas, moves).`
+            )
+          }
+        >
+          Concept extension
+        </Link>
       </p>
       <div className="flex flex-wrap gap-2">
         <button type="button" className="btn-primary" disabled={loading} onClick={() => run("explain")}>
