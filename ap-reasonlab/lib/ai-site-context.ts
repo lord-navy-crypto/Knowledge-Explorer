@@ -2,6 +2,8 @@ import { extractAiSearchQuery } from "@/lib/ai-site-query";
 
 /** Keep in sync with lib/ai-site-search.ts — duplicated so clients never import the search engine. */
 export const AI_SITE_SEARCH_LIMIT = 8;
+/** Tighter limit for Local AI so prefill does not burn the generation timeout. */
+export const AI_SITE_SEARCH_LIMIT_LOCAL = 4;
 
 /** Append server-fetched site context to a Local AI / client prompt. */
 export function appendAiSiteContext(userPrompt: string, context: string): string {
@@ -13,7 +15,8 @@ export function appendAiSiteContext(userPrompt: string, context: string): string
 /** Client helper: fetch Knowledge Explorer site search context for Local AI prompts. */
 export async function fetchAiSiteContext(
   query: string,
-  enabled = true
+  enabled = true,
+  options?: { limit?: number }
 ): Promise<{
   context: string;
   note: string;
@@ -27,11 +30,12 @@ export async function fetchAiSiteContext(
   if (searchQuery.length < 2) {
     return { context: "", note: "Query too short for site search.", hitCount: 0, hits: [] };
   }
+  const limit = Math.max(1, Math.min(12, options?.limit ?? AI_SITE_SEARCH_LIMIT));
   try {
     const response = await fetch("/api/ai/site-search", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query: searchQuery, enabled: true, limit: AI_SITE_SEARCH_LIMIT }),
+      body: JSON.stringify({ query: searchQuery, enabled: true, limit }),
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {

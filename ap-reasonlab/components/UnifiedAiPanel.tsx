@@ -14,7 +14,7 @@ import {
   conceptExplainLocal,
   englishTutorLocal,
 } from "@/lib/ai-prompts";
-import { appendAiSiteContext, fetchAiSiteContext } from "@/lib/ai-site-context";
+import { appendAiSiteContext, fetchAiSiteContext, AI_SITE_SEARCH_LIMIT_LOCAL } from "@/lib/ai-site-context";
 import {
   loadToolboxPanelPrefs,
   saveToolboxPanelPrefs,
@@ -308,7 +308,8 @@ export default function UnifiedAiPanel({
     // Search the latest question only — history pollutes keyword retrieval.
     const { context, note, hitCount, hits } = await fetchAiSiteContext(
       user,
-      localAI.siteSearchEnabled
+      localAI.siteSearchEnabled,
+      { limit: AI_SITE_SEARCH_LIMIT_LOCAL }
     );
     setSiteHits(hits);
     setSiteSearchNote(
@@ -322,15 +323,16 @@ export default function UnifiedAiPanel({
         content: `${system}\n\nWhen Knowledge Explorer site materials are appended below, prefer their formulas/definitions and cite the hit titles. Ignore off-topic hits. Follow the same teaching rules as the cloud teacher for this tool.`,
       },
     ];
-    for (const message of history.slice(-8)) {
+    // Local prefill is slow — keep history short so the timeout budget goes to the answer.
+    for (const message of history.slice(-4)) {
       chatMessages.push({
         role: message.role === "user" ? "user" : "assistant",
-        content: message.text.slice(0, 2000),
+        content: message.text.slice(0, 1200),
       });
     }
     chatMessages.push({
       role: "user",
-      content: appendAiSiteContext(user, context),
+      content: appendAiSiteContext(user, context).slice(0, 6_000),
     });
     return localAI.complete(chatMessages, onToken);
   }

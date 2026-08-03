@@ -7,7 +7,7 @@ import MarkdownLatexField from "@/components/MarkdownLatexField";
 import RichContent from "@/components/RichContent";
 import { useLocalAI } from "@/components/LocalAIProvider";
 import { englishTutorLocal } from "@/lib/ai-prompts";
-import { appendAiSiteContext, fetchAiSiteContext } from "@/lib/ai-site-context";
+import { appendAiSiteContext, fetchAiSiteContext, AI_SITE_SEARCH_LIMIT_LOCAL } from "@/lib/ai-site-context";
 
 type Result = {
   refused: boolean;
@@ -57,7 +57,9 @@ export default function EnglishAiTutor({ embedded = false, hideChannelUi = false
           );
         }
         const localPrompt = `Mode: ${mode}\nTarget: ${target}\n\nStudent input:\n${input}`;
-        const { context } = await fetchAiSiteContext(localPrompt, localAI.siteSearchEnabled);
+        const { context } = await fetchAiSiteContext(localPrompt, localAI.siteSearchEnabled, {
+          limit: AI_SITE_SEARCH_LIMIT_LOCAL,
+        });
         const text = await localAI.complete([
           {
             role: "system",

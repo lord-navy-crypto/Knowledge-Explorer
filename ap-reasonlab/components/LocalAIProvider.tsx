@@ -23,6 +23,7 @@ import {
 } from "@/lib/ai-reasoning-strip";
 import {
   chatOptsForModel,
+  compactLocalMessages,
   getLocalGenPolicy,
 } from "@/lib/local-ai-policy";
 import {
@@ -542,39 +543,106 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
       setError("");
       setStatusText("Writing answer…");
 
-      const prepared = mergeLocalDirectNudge(
-        messages as Array<{ role: string; content: string }>,
-        policy.nudge
+      const prepared = compactLocalMessages(
+        mergeLocalDirectNudge(
+          messages as Array<{ role: string; content: string }>,
+          policy.nudge
+        )
       ) as ChatCompletionMessageParam[];
 
+      const startedAt = Date.now();
       let timedOut = false;
-      const timeoutId = window.setTimeout(() => {
+      let idleTimedOut = false;
+      let deadlineAt = startedAt + policy.timeoutMs;
+      let softTimerId = 0;
+      let idleTimerId = 0;
+
+      const stopTimers = () => {
+        window.clearTimeout(softTimerId);
+        window.clearTimeout(idleTimerId);
+      };
+
+      const fireTimeout = (kind: "soft" | "idle" | "absolute") => {
+        if (timedOut) return;
         timedOut = true;
+        if (kind === "idle") idleTimedOut = true;
         try {
           void engine.interruptGenerate();
         } catch {
           // ignore
         }
-        setStatusText("Stopped — answer took too long. Try a lighter model or Website API.");
-      }, policy.timeoutMs);
+        setStatusText(
+          kind === "idle"
+            ? "Stopped — no visible answer yet. Try a lighter model or Website API."
+            : "Stopped — answer took too long. Showing what we have, or try a lighter model."
+        );
+      };
+
+      const armSoftDeadline = () => {
+        window.clearTimeout(softTimerId);
+        const remaining = Math.max(0, deadlineAt - Date.now());
+        softTimerId = window.setTimeout(() => fireTimeout("soft"), remaining);
+      };
+
+      const armIdleDeadline = () => {
+        window.clearTimeout(idleTimerId);
+        idleTimerId = window.setTimeout(() => fireTimeout("idle"), policy.idleVisibleMs);
+      };
+
+      const absoluteTimerId = window.setTimeout(
+        () => fireTimeout("absolute"),
+        policy.absoluteTimeoutMs
+      );
+      armSoftDeadline();
+      armIdleDeadline();
 
       let lastStatusPhase = "writing";
+      let raw = "";
+      let lastVisibleLen = 0;
+
+      const finishWithPartialOrThrow = () => {
+        const partial = stripReasoningTrace(raw);
+        if (partial) {
+          setStatusText(
+            idleTimedOut
+              ? "Stopped early — showing partial answer. Prefer a lighter model next time."
+              : "Stopped on timeout — showing partial answer."
+          );
+          return partial;
+        }
+        throw new Error(
+          idleTimedOut
+            ? "Local AI produced no visible answer in time (often still thinking). Try Qwen3.5 Starter / Light, or Website API."
+            : "Local AI timed out. Try Website API or a lighter model (Qwen3.5 Starter / Light)."
+        );
+      };
+
       try {
         const stream = await engine.chat.completions.create({
           messages: prepared,
           stream: true,
-          temperature: 0.45,
+          temperature: 0.4,
           max_tokens: policy.maxTokens,
           // All Qwen3 / Qwen3.5: skip hidden thinking (the main big-model lag cause).
           ...(policy.disableThinking ? { extra_body: { enable_thinking: false } } : {}),
         });
-        let raw = "";
         for await (const chunk of stream) {
           if (timedOut) break;
           const token = chunk.choices[0]?.delta?.content ?? "";
           raw += token;
           const visible = stripReasoningTrace(raw, { trim: false });
-          const thinking = isInsideOpenThinkBlock(raw) && !visible.trim();
+          const visibleTrimmed = visible.trim();
+          if (visibleTrimmed.length > lastVisibleLen) {
+            lastVisibleLen = visibleTrimmed.length;
+            // Sliding soft deadline while the answer is visibly progressing.
+            deadlineAt = Math.min(
+              startedAt + policy.absoluteTimeoutMs,
+              Date.now() + policy.timeoutMs
+            );
+            armSoftDeadline();
+            armIdleDeadline();
+          }
+          const thinking = isInsideOpenThinkBlock(raw) && !visibleTrimmed;
           const phase = thinking ? "thinking" : "writing";
           if (phase !== lastStatusPhase) {
             lastStatusPhase = phase;
@@ -587,16 +655,7 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
           // Never fall back to raw — that re-leaks <think> dumps into the UI.
           onToken?.(token, visible);
         }
-        if (timedOut) {
-          const partial = stripReasoningTrace(raw);
-          if (partial) {
-            setStatusText("Stopped on timeout — showing partial answer.");
-            return partial;
-          }
-          throw new Error(
-            "Local AI timed out. Try Website API or a lighter model (Qwen3.5 Starter / Light)."
-          );
-        }
+        if (timedOut) return finishWithPartialOrThrow();
         const cleaned = stripReasoningTrace(raw);
         if (!cleaned) {
           throw new Error(
@@ -606,19 +665,15 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
         setStatusText("Local AI is ready on this device.");
         return cleaned;
       } catch (caught) {
-        if (timedOut) {
-          setStatus("error");
-          const message =
-            "Local AI timed out. Try Website API or a lighter local model.";
-          setError(message);
-          throw new Error(message);
-        }
+        // interruptGenerate often rejects the stream — still return any partial.
+        if (timedOut) return finishWithPartialOrThrow();
         const message = caught instanceof Error ? caught.message : "Local generation failed.";
         setStatus("error");
         setError(message);
         throw caught;
       } finally {
-        window.clearTimeout(timeoutId);
+        stopTimers();
+        window.clearTimeout(absoluteTimerId);
         if (engineRef.current) setStatus("ready");
       }
     },

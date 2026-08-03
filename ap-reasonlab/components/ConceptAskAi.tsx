@@ -11,7 +11,7 @@ import { toolboxHref } from "@/lib/ai-toolbox-url";
 import { stashToolboxPrefill } from "@/lib/ai-toolbox-prefill";
 import { useLocalAI } from "@/components/LocalAIProvider";
 import { conceptExplainLocal } from "@/lib/ai-prompts";
-import { appendAiSiteContext, fetchAiSiteContext } from "@/lib/ai-site-context";
+import { appendAiSiteContext, fetchAiSiteContext, AI_SITE_SEARCH_LIMIT_LOCAL } from "@/lib/ai-site-context";
 
 type Props = {
   defaultSubject?: string;
@@ -61,7 +61,9 @@ export default function ConceptAskAi({
           );
         }
         const localPrompt = `Subject: ${defaultSubject}\nConcept: ${conceptTitle}\nSummary: ${conceptSummary}\nMode: ${nextMode}\nQuestion: ${askText}`;
-        const { context } = await fetchAiSiteContext(localPrompt, localAI.siteSearchEnabled);
+        const { context } = await fetchAiSiteContext(localPrompt, localAI.siteSearchEnabled, {
+          limit: AI_SITE_SEARCH_LIMIT_LOCAL,
+        });
         const text = await localAI.complete([
           {
             role: "system",
