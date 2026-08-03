@@ -210,10 +210,9 @@ export default function LocalAIControls({ embedded = false }: Props) {
                 switch to Website API / Your own API.
               </p>
               <p className="mt-2 text-xs text-amber-900/90">
-                GPU tip: start with <strong>Qwen3.5 Starter</strong> (Super light). Heavy 7B–9B
-                models can take a long time to prepare an answer in the browser. If Local stops
-                early, follow the in-chat guidance — or switch to Website API / turn off site
-                search.
+                GPU tip: use <strong>Qwen3.5 Starter</strong> first. If a model opens a long hidden
+                think block, Local now cuts it short and retries once. Heavy 7B–9B still needs a
+                strong GPU — otherwise use Website API.
               </p>
             </div>
           )}
