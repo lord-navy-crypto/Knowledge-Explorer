@@ -184,6 +184,10 @@ const TEX_CMD_NAMES =
 
 const BARE_LATEX_HINT = new RegExp(String.raw`\\(?:${TEX_CMD_NAMES})(?![a-zA-Z])`);
 
+const TEX_CMD_NAME_SET = new Set(
+  TEX_CMD_NAMES.split("|").map((name) => name.toLowerCase())
+);
+
 /** True when a string looks like TeX / formula source (not prose or program code). */
 export function looksLikeLatexSource(input: string): boolean {
   const s = String(input || "").trim();
@@ -192,7 +196,13 @@ export function looksLikeLatexSource(input: string): boolean {
   if (/\\begin\{[a-zA-Z*]+\}/.test(s)) return true;
   if (/\$\$|\\\(|\\\[/.test(s)) return true;
   // Underscore / caret formulas: F_{net}=ma, x^{2}, a_x
-  if (/[A-Za-z0-9]_\{[^}]+\}|[A-Za-z0-9]\^\{[^}]+\}/.test(s)) return true;
+  if (/[A-Za-z0-9]_\{[^}]+\}|[A-Za-z0-9]\^\{[^}]+\}|[A-Za-z]_[A-Za-z0-9]+/.test(s)) {
+    return true;
+  }
+  // Short ASCII equation: KE = 1/2 mv^2
+  if (/[=^]|\/\d|\d\//.test(s) && s.length <= 80 && countProseWords(s).length <= 1) {
+    return /^[\w\\{}^_+\-*/=().\s]+$/i.test(s);
+  }
   return false;
 }
 
@@ -202,19 +212,30 @@ function isProgrammingFenceLang(lang: string): boolean {
   );
 }
 
+function countCjkChars(text: string): number {
+  return (text.match(/[\u3040-\u30ff\u3400-\u9fff\uf900-\ufaff]/g) || []).length;
+}
+
 function countProseWords(text: string): string[] {
-  return (text.match(/\b[A-Za-z]{3,}\b/g) || []).filter(
-    (w) =>
-      !/^(sin|cos|tan|log|ln|exp|lim|frac|sqrt|left|right|text|mathrm|mathbf|partial|infty|net|max|min|avg)$/i.test(
-        w
-      )
-  );
+  return (text.match(/\b[A-Za-z]{3,}\b/g) || []).filter((w) => {
+    const lower = w.toLowerCase();
+    if (TEX_CMD_NAME_SET.has(lower)) return false;
+    if (/^(net|max|min|avg|rms|rms|hor|ver|mag)$/i.test(w)) return false;
+    return true;
+  });
+}
+
+function hasMeaningfulProse(text: string): boolean {
+  return countProseWords(text).length > 0 || countCjkChars(text) > 0;
 }
 
 function isMostlyLatexBody(body: string): boolean {
   const trimmed = body.trim();
   if (!trimmed || trimmed.length > 1200) return false;
   if (/\b(def|function|const|let|var|class|import|print|return|public|private)\b/.test(trimmed)) {
+    return false;
+  }
+  if (countCjkChars(trimmed) > 0 && countCjkChars(trimmed) >= trimmed.length / 4) {
     return false;
   }
   if (BARE_LATEX_HINT.test(trimmed) || /\\begin\{/.test(trimmed)) {
@@ -226,6 +247,24 @@ function isMostlyLatexBody(body: string): boolean {
     return countProseWords(trimmed).length <= 2 && trimmed.length <= 120;
   }
   return false;
+}
+
+/**
+ * Protect `$5` style currency so remark-math / dollar balancing does not
+ * treat the price as the start of inline math.
+ */
+function protectCurrencyDollars(input: string): { text: string; restore: (s: string) => string } {
+  const slots: string[] = [];
+  const text = input.replace(/\$(\d)/g, (_m, digit: string) => {
+    const idx = slots.length;
+    slots.push(`$${digit}`);
+    return `\uE050${idx}\uE051`;
+  });
+  return {
+    text,
+    restore: (s: string) =>
+      s.replace(/\uE050(\d+)\uE051/g, (_m, idx: string) => slots[Number(idx)] ?? ""),
+  };
 }
 
 /**
@@ -330,31 +369,71 @@ function wrapLatexRunFrom(line: string, start: number): { end: number; span: str
       while (j < line.length && /[a-zA-Z]/.test(line[j])) j += 1;
       continue;
     }
-    if (/[0-9a-zA-Z+\-*/=().,|']/.test(c)) {
+    // Only "\Delta x" / "\partial t" style — not "\frac{1}{2} today"
+    if (c === " ") {
+      const head = line.slice(start, j);
+      if (
+        /\\(Delta|delta|nabla|partial|vec|hat|bar|tilde|dot|ddot)$/.test(head) &&
+        /[A-Za-z]/.test(line[j + 1] || "")
+      ) {
+        j += 1;
+        continue;
+      }
+      break;
+    }
+    if (/[0-9a-zA-Z+\-*/=|']/.test(c)) {
       j += 1;
       continue;
     }
     break;
   }
-  return { end: j, span: line.slice(start, j).trim() };
+
+  // Do not swallow prose punctuation / closing parens after the formula.
+  let span = line.slice(start, j).trimEnd();
+  while (/[.,;:!?)]$/.test(span) && !/\d[.]$/.test(span)) {
+    span = span.slice(0, -1).trimEnd();
+  }
+  if (!span) return null;
+  return { end: start + span.length, span };
 }
 
 function wrapScriptFormulaRun(line: string, start: number): { end: number; span: string } | null {
-  // Start at a letter/number that begins a _{ } / ^{ } formula chunk.
+  // F_{net}, x^{2}, or plain physics a_x / v_0 / F_net
   if (!/[A-Za-z0-9]/.test(line[start] || "")) return null;
-  // Must contain _{…} or ^{…} somewhere in the run we claim.
-  let j = start;
-  while (j < line.length && /[A-Za-z0-9\\_^{}+\-*/=().,|']/.test(line[j])) {
-    if (line[j] === "{" || line[j] === "}") {
-      j += 1;
-      continue;
+
+  const braced = line.slice(start).match(/^([A-Za-z0-9]+(?:_\{[^}]+\}|\^\{[^}]+\})+(?:[+\-*/=()0-9A-Za-z\\_^{}]*)?)/);
+  if (braced) {
+    const span = braced[1].trim();
+    if (span.length >= 3 && span.length <= 80) {
+      return { end: start + span.length, span };
     }
-    j += 1;
   }
-  const span = line.slice(start, j).trim();
-  if (!/[A-Za-z0-9]_\{[^}]+\}|[A-Za-z0-9]\^\{[^}]+\}/.test(span)) return null;
-  if (span.length < 3 || span.length > 80) return null;
-  return { end: start + span.length, span };
+
+  const plain = line.slice(start).match(/^([A-Za-z]_[A-Za-z0-9]{1,8})(?![A-Za-z0-9])/);
+  if (plain) {
+    const raw = plain[1];
+    const [base, sub] = raw.split("_");
+    const span = `${base}_{${sub}}`;
+    return { end: start + raw.length, span };
+  }
+
+  return null;
+}
+
+function looksLikeAsciiEquation(line: string): boolean {
+  const t = line.trim();
+  if (!t.includes("=") || t.length > 100) return false;
+  if (hasMeaningfulProse(t) && countProseWords(t).length > 2) return false;
+  if (countCjkChars(t) > 0) return false;
+  // KE = 1/2 mv^2  |  F_net = ma  |  a = dv/dt
+  return /[=^_/]|\/\d|\d\//.test(t) && /^[A-Za-z0-9\\{}^_+\-*/=().\s]+$/.test(t);
+}
+
+function promoteAsciiMathBits(text: string): string {
+  // 1/2 → \frac{1}{2} in math-ish contexts (equation lines / next to letters)
+  return text.replace(/(?<![A-Za-z0-9])(\d+)\/(\d+)(?![A-Za-z0-9])/g, (_m, a: string, b: string) => {
+    return `\\frac{${a}}{${b}}`;
+  });
 }
 
 function wrapOneLatexishLine(line: string): string {
@@ -364,35 +443,49 @@ function wrapOneLatexishLine(line: string): string {
   const indent = line.match(/^\s*/)?.[0] || "";
   const bullet = trimmed.match(/^([-*+]|\d+\.)\s+(.*)$/);
   const marker = bullet ? `${bullet[1]} ` : "";
-  const content = bullet ? bullet[2] : trimmed;
+  let content = bullet ? bullet[2] : trimmed;
   if (!content) return line;
 
-  const hasCmd = BARE_LATEX_HINT.test(content);
-  const hasScript = /[A-Za-z0-9]_\{[^}]+\}|[A-Za-z0-9]\^\{[^}]+\}/.test(content);
-  if (!hasCmd && !hasScript) return line;
+  // Label + formula: "Kinetic: 1/2 mv^2" / "Force: F_net = ma"
+  const labeled = content.match(/^([^:]{1,40}):\s+(.+)$/);
+  if (labeled && (looksLikeLatexSource(labeled[2]) || looksLikeAsciiEquation(labeled[2]))) {
+    const formula = promoteAsciiMathBits(labeled[2].trim());
+    const wrapped = BARE_LATEX_HINT.test(formula) || /[_^\\]/.test(formula) || formula.includes("=")
+      ? `$${formula}$`
+      : formula;
+    return `${indent}${marker}${labeled[1]}: ${wrapped}`;
+  }
 
-  const proseWords = countProseWords(content);
+  content = promoteAsciiMathBits(content);
+
+  const hasCmd = BARE_LATEX_HINT.test(content);
+  const hasScript =
+    /[A-Za-z0-9]_\{[^}]+\}|[A-Za-z0-9]\^\{[^}]+\}|[A-Za-z]_[A-Za-z0-9]+/.test(content);
+  const asciiEq = looksLikeAsciiEquation(content);
+
+  if (!hasCmd && !hasScript && !asciiEq) return line;
+
   const mostlyTex =
     content.length <= 240 &&
-    proseWords.length === 0 &&
-    (content.startsWith("\\") || hasCmd || hasScript);
+    !hasMeaningfulProse(content) &&
+    (content.startsWith("\\") || hasCmd || hasScript || asciiEq);
 
-  if (mostlyTex) {
-    // List items stay inline so markdown lists + KaTeX both work.
+  if (mostlyTex || asciiEq) {
     if (bullet) return `${indent}${marker}$${content}$`;
     return `${indent}$$\n${content}\n$$`;
   }
 
   // Mixed prose → wrap each TeX / script run inline (keep bullet/indent outside).
   const prefix = bullet ? `${indent}${marker}` : indent;
-  const source = bullet ? content : trimmed;
+  const source = content;
   let out = "";
   let i = 0;
   while (i < source.length) {
-    const run = wrapLatexRunFrom(source, i) || (!hasCmd ? wrapScriptFormulaRun(source, i) : null);
+    const run = wrapLatexRunFrom(source, i) || wrapScriptFormulaRun(source, i);
     if (run) {
       out += `$${run.span}$`;
       i = run.end;
+      // Skip a single space already consumed into TeX runs like "\Delta x"
       continue;
     }
     out += source[i];
@@ -403,7 +496,12 @@ function wrapOneLatexishLine(line: string): string {
 
 function wrapLatexishSpan(plain: string): string {
   if (!plain) return plain;
-  if (!BARE_LATEX_HINT.test(plain) && !/[A-Za-z0-9]_\{[^}]+\}|[A-Za-z0-9]\^\{[^}]+\}/.test(plain)) {
+  if (
+    !BARE_LATEX_HINT.test(plain) &&
+    !/[A-Za-z0-9]_\{[^}]+\}|[A-Za-z0-9]\^\{[^}]+\}|[A-Za-z]_[A-Za-z0-9]+/.test(plain) &&
+    !/(?<![A-Za-z0-9])\d+\/\d+(?![A-Za-z0-9])/.test(plain) &&
+    !/=/.test(plain)
+  ) {
     return plain;
   }
 
@@ -473,6 +571,14 @@ export function promoteBareLatexToMath(input: string): string {
   return text;
 }
 
+/**
+ * Prepare AI / authored markdown so formulas render as KaTeX, not raw TeX code.
+ * Alias kept for call sites that want an explicit “AI reply” name.
+ */
+export function prepareAiReplyMarkdown(input: string): string {
+  return normalizeAuthoredText(input);
+}
+
 /** Normalize pasted content and safely repair common UTF-8-as-Latin-1 mojibake. */
 export function normalizeAuthoredText(input: string): string {
   let value = String(input ?? "")
@@ -493,15 +599,19 @@ export function normalizeAuthoredText(input: string): string {
     }
   }
 
+  // Keep `$5` from being treated as math while we promote TeX dollars.
+  const currency = protectCurrencyDollars(value);
+  value = currency.text;
+
   // AI tools often emit MathJax delimiters; remark-math uses dollar delimiters.
   value = value
     .replace(/\\\[([\s\S]*?)\\\]/g, (_match, math: string) => `\n$$\n${math.trim()}\n$$\n`)
     .replace(/\\\(([^\n]*?)\\\)/g, (_match, math: string) => `$${math.trim()}$`);
 
-  // Bare \frac / ```latex → real math delimiters (AI often forgets $…$).
+  // Bare \frac / ```latex / ASCII physics → real math delimiters.
   value = promoteBareLatexToMath(value);
-
-  return balanceMathDelimiters(value);
+  value = balanceMathDelimiters(value);
+  return currency.restore(value);
 }
 
 /**

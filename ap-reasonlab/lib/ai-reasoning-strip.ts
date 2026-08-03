@@ -85,11 +85,11 @@ export const REASONING_MODEL_DIRECT_ANSWER =
 
 /** Soft nudge when thinking mode does not apply — keep formulas visible. */
 export const LOCAL_MARKDOWN_NUDGE =
-  "Reply in markdown. Wrap EVERY formula in $...$ or $$...$$ so it renders as an equation — never bare \\frac / \\sqrt code. Put key steps in the visible reply.";
+  "Reply in markdown. Wrap EVERY formula in $...$ or $$...$$ so students see equations (never bare \\frac / \\sqrt, never formula code fences). Put key steps in the visible reply.";
 
 /** Nudge paired with thinking-off (sole Local restriction). */
 export const LOCAL_DIRECT_ANSWER_NUDGE =
-  "Reply in markdown with thinking mode off. Wrap EVERY formula in $...$ or $$...$$ (never bare TeX). Do NOT open <think> or <thinking> tags — start with visible answer content.";
+  "Reply in markdown with thinking mode off. Wrap EVERY formula in $...$ or $$...$$ (never bare TeX, never formula code fences). Do NOT open <think> or <thinking> tags — start with visible answer content.";
 
 /** Used on a blank-reply retry. */
 export const LOCAL_RETRY_NO_THINK_NUDGE =

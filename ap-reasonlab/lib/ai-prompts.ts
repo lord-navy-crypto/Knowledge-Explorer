@@ -40,7 +40,11 @@ Shared teaching rules (apply on Local AI and cloud API):
 5) Stay in scope for the chosen tool (AP / English / Coding / Site Guide). Refuse off-topic politely and point to the right tool.
 6) Continue dialogue naturally when the student follows up — build on prior turns instead of restarting from zero.
 7) Prefer substance over praise. Empty lines like “read carefully” alone are not enough.
-8) Math must render: wrap EVERY formula in $...$ (inline) or $$...$$ (display). Never leave bare TeX like \\frac{1}{2} or \\sqrt{x} outside dollars — students need to see the equation, not the code.`;
+8) Math must render as equations for students:
+   - Wrap EVERY formula in $...$ (inline) or $$...$$ (display).
+   - Good: The energy is $\\frac{1}{2}mv^2$.
+   - Bad: bare \\frac{1}{2}mv^2, or formulas inside \`code\` / \`\`\` fences (those stay as code).
+   - Key-formula lines: "Name: $expression$ — when to use".`;
 
 const HINT_TEACHER_RULES = `Role: AP Hints & Process teacher.
 Hard rules:
@@ -55,7 +59,7 @@ Hard rules:
 const HINT_JSON_SHAPE = `Respond in JSON only:
 {
   "hints": ["concrete strategy with a formula or quantity named", "..."],
-  "keyFormulas": ["Name: latex/expression — when to use"],
+  "keyFormulas": ["Name: $latex-or-expression$ — when to use"],
   "knownsUnknowns": ["known: ... (units)", "unknown: ... (units)"],
   "checkpoints": ["verifiable mid-process checks with expected form/units/relationship — NOT the final answer"],
   "processOutline": ["short labeled steps; last step left to the student"],
@@ -73,7 +77,7 @@ const HINT_LOCAL_SHAPE = `Reply in markdown (not JSON) with these headings so th
 ## Process outline
 ## Worked partial
 ## What you finish
-Use $...$ / $$...$$ around every formula (never bare \\frac / \\sqrt). Never reveal the final graded numeric answer. Continue the dialogue.`;
+Use $...$ / $$...$$ around every formula (never bare \\frac / \\sqrt; never put formulas in code fences). Never reveal the final graded numeric answer. Continue the dialogue.`;
 
 export const HINT_PROCESS_SYSTEM = `${TEACHING_CORE}
 
@@ -100,7 +104,7 @@ const CONCEPT_JSON_SHAPE = `Respond in JSON only:
 {
   "refused": false,
   "reply": "markdown-friendly explanation with formulas and a mini-example",
-  "formulas": ["name: expression — meaning"],
+  "formulas": ["Name: $expression$ — meaning"],
   "quizPrompt": "optional follow-up or empty string",
   "aiMayBeWrong": "one sentence warning"
 }
@@ -151,7 +155,7 @@ ${CONCEPT_TEACHER_RULES}
 
 ${conceptModeCoach(mode)}
 
-Reply in markdown (not JSON) with clear headings. Use $...$ / $$...$$ for every formula (never bare \\frac). Include formulas and a mini-example when the mode allows. Never finish graded finals. Continue the dialogue.`;
+Reply in markdown (not JSON) with clear headings. Use $...$ / $$...$$ for every formula (never bare \\frac; never formula code fences). Include formulas and a mini-example when the mode allows. Never finish graded finals. Continue the dialogue.`;
 }
 
 /** Alias for ConceptAskAi and generic concept local calls. */

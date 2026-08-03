@@ -505,8 +505,13 @@ html[data-theme="silver"] .academic-print {
   color: inherit;
 }
 
+.rich-content .katex {
+  font-size: 1.06em;
+}
+
 .rich-content .katex-display {
   @apply my-2 overflow-x-auto overflow-y-hidden;
+  padding: 0.15rem 0;
 }
 
 .rich-content .katex-error {
