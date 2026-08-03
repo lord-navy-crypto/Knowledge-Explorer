@@ -21,11 +21,12 @@ type Result = {
 };
 
 const modes = [
+  { value: "grammar-explanation", label: "Grammar check" },
+  { value: "vocab-extract", label: "Vocab extract" },
   { value: "writing-feedback", label: "Writing feedback" },
-  { value: "grammar-explanation", label: "Grammar & sentence help" },
-  { value: "vocabulary-coach", label: "Vocabulary coach" },
-  { value: "test-strategy", label: "TOEFL / IELTS / SAT strategy" },
-  { value: "original-practice", label: "Create original practice" },
+  { value: "reading-simplify", label: "Reading simplify" },
+  { value: "test-strategy", label: "Exam strategy" },
+  { value: "practice-generator", label: "Practice generator" },
 ] as const;
 
 type Props = {
@@ -36,7 +37,7 @@ type Props = {
 
 export default function EnglishAiTutor({ embedded = false, hideChannelUi = false }: Props) {
   const localAI = useLocalAI();
-  const [mode, setMode] = useState<(typeof modes)[number]["value"]>("writing-feedback");
+  const [mode, setMode] = useState<(typeof modes)[number]["value"]>("grammar-explanation");
   const [target, setTarget] = useState("General academic English");
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);

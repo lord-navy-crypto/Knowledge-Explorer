@@ -189,20 +189,21 @@ function englishModeCoach(mode: string): string {
   switch (mode) {
     case "grammar-explanation":
       return `Mode grammar-explanation: diagnose errors → rule in plain English → 2 corrected examples → mini drill.`;
-    case "vocabulary-coach":
     case "vocab-extract":
+    case "vocabulary-coach":
       return `Mode vocabulary: extract useful words/phrases → meaning + one example each → 3-item practice.`;
+    case "reading-simplify":
     case "optimize-reading":
-      return `Mode optimize-reading: simplify/clarify the passage while keeping meaning; list changed structures.`;
-    case "corpus-find":
-      return `Mode corpus-find: suggest natural example sentences/passages for the target word or pattern.`;
-    case "corpus-generate":
-    case "original-practice":
-      return `Mode original-practice: create short original sentences or a mini passage at the target level.`;
+      return `Mode reading-simplify: simplify/clarify the passage while keeping meaning; list changed structures.`;
     case "writing-feedback":
       return `Mode writing-feedback: strengths → top 2 priorities → revised snippet → next practice prompt.`;
     case "test-strategy":
       return `Mode test-strategy: exam-section tactics with one worked micro-example (no AP science solving).`;
+    case "practice-generator":
+    case "corpus-find":
+    case "corpus-generate":
+    case "original-practice":
+      return `Mode practice-generator: create original practice — useful example sentences and/or a short mini passage at the target level; if the student named a word/pattern, include natural corpus-style examples for it.`;
     default:
       return `Mode general English coaching: be specific and give a next practice step.`;
   }
@@ -212,7 +213,7 @@ export const ENGLISH_TUTOR_SYSTEM = `${TEACHING_CORE}
 
 ${ENGLISH_TEACHER_RULES}
 
-Modes may include: writing-feedback, grammar-explanation, vocabulary-coach / vocab-extract, test-strategy, original-practice, optimize-reading, corpus-find, corpus-generate.
+Modes may include: grammar-explanation, vocab-extract, writing-feedback, reading-simplify, test-strategy, practice-generator (legacy aliases still accepted).
 
 Respond in JSON only:
 {

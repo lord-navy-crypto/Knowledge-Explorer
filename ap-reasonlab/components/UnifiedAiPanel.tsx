@@ -21,6 +21,7 @@ import {
   type ToolboxCategory,
 } from "@/lib/ai-toolbox-prefs";
 import { takeToolboxPrefill } from "@/lib/ai-toolbox-prefill";
+import { migrateEnglishTask } from "@/lib/ai-toolbox-url";
 
 type Category = ToolboxCategory;
 
@@ -34,12 +35,10 @@ type ApTask =
 type EnglishTask =
   | "grammar-explanation"
   | "vocab-extract"
-  | "optimize-reading"
-  | "corpus-find"
-  | "corpus-generate"
   | "writing-feedback"
+  | "reading-simplify"
   | "test-strategy"
-  | "original-practice";
+  | "practice-generator";
 
 type CodingTask = "debug" | "write" | "explain";
 
@@ -99,34 +98,24 @@ const ENGLISH_TASKS: Array<{ value: EnglishTask; label: string; hint: string }> 
     hint: "Pull useful words from a reading passage.",
   },
   {
-    value: "optimize-reading",
-    label: "Optimize reading",
-    hint: "Make a passage clearer or easier to follow.",
-  },
-  {
-    value: "corpus-find",
-    label: "Find useful corpus",
-    hint: "Suggest useful example sentences / passages for a target.",
-  },
-  {
-    value: "corpus-generate",
-    label: "Corpus generator",
-    hint: "Create short original practice sentences or a mini passage.",
-  },
-  {
     value: "writing-feedback",
     label: "Writing feedback",
     hint: "Feedback on a draft you paste.",
   },
   {
-    value: "test-strategy",
-    label: "TOEFL / IELTS / SAT strategy",
-    hint: "Exam strategy and section tips — not AP science.",
+    value: "reading-simplify",
+    label: "Reading simplify",
+    hint: "Make a passage clearer or easier to follow.",
   },
   {
-    value: "original-practice",
-    label: "Original practice",
-    hint: "Short original sentences or mini passages for your target exam.",
+    value: "test-strategy",
+    label: "Exam strategy",
+    hint: "TOEFL / IELTS / SAT section tips — not AP science.",
+  },
+  {
+    value: "practice-generator",
+    label: "Practice generator",
+    hint: "Create original sentences, mini passages, or example corpus for your target.",
   },
 ];
 
@@ -201,10 +190,14 @@ export default function UnifiedAiPanel({
     return (savedPrefs.apTask as ApTask) || "advice";
   });
   const [englishTask, setEnglishTask] = useState<EnglishTask>(() => {
-    if (defaultEnglishTask && ENGLISH_TASKS.some((t) => t.value === defaultEnglishTask)) {
-      return defaultEnglishTask as EnglishTask;
+    if (defaultEnglishTask) {
+      const migrated = migrateEnglishTask(defaultEnglishTask);
+      if (migrated) return migrated;
     }
-    return (savedPrefs.englishTask as EnglishTask) || "grammar-explanation";
+    return (
+      migrateEnglishTask(savedPrefs.englishTask) ||
+      ("grammar-explanation" as EnglishTask)
+    );
   });
   const [codingTask, setCodingTask] = useState<CodingTask>(() => {
     if (defaultCodingTask && CODING_TASKS.some((t) => t.value === defaultCodingTask)) {
@@ -249,9 +242,9 @@ export default function UnifiedAiPanel({
   }, [defaultApTask]);
 
   useEffect(() => {
-    if (defaultEnglishTask && ENGLISH_TASKS.some((t) => t.value === defaultEnglishTask)) {
-      setEnglishTask(defaultEnglishTask as EnglishTask);
-    }
+    if (!defaultEnglishTask) return;
+    const migrated = migrateEnglishTask(defaultEnglishTask);
+    if (migrated) setEnglishTask(migrated);
   }, [defaultEnglishTask]);
 
   useEffect(() => {
@@ -483,7 +476,7 @@ export default function UnifiedAiPanel({
     }
 
     if (category === "english") {
-      const mode = englishTask === "vocab-extract" ? "vocabulary-coach" : englishTask;
+      const mode = englishTask;
       if (localAI.usesLocal) {
         const text = await runLocal(
           englishTutorLocal(mode),

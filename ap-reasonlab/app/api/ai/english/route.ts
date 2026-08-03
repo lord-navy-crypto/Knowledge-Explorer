@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { asStringList, parseAiProvider, parseSiteModelChoice, runChatJson } from "@/lib/ai-client";
 import { englishTutorSystem } from "@/lib/ai-prompts";
 import { appendAiSiteContext, buildServerAiSiteContext } from "@/lib/ai-site-context-server";
+import { migrateEnglishTask } from "@/lib/ai-toolbox-url";
 
 function isClearlyOutsideEnglishScope(input: string, mode: string): boolean {
   if (mode === "writing-feedback" || mode === "grammar-explanation") return false;
@@ -37,7 +38,9 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const input = String(body.input || "").trim();
-    const mode = String(body.mode || "writing-feedback").trim();
+    const mode =
+      migrateEnglishTask(String(body.mode || "writing-feedback").trim()) ||
+      "writing-feedback";
     const target = String(body.target || "General academic English").trim();
     const userApiKey = String(body.userApiKey || "").trim();
     const provider = parseAiProvider(body.provider);

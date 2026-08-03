@@ -1,3 +1,5 @@
+import { migrateEnglishTask } from "@/lib/ai-toolbox-url";
+
 export type ToolboxExtraTool = "ai" | "calculator" | "grapher";
 export type ToolboxCategory = "ap" | "english" | "coding";
 
@@ -57,7 +59,8 @@ export function loadToolboxPanelPrefs(): ToolboxPanelPrefs {
         ? parsed.category
         : DEFAULT_PANEL_PREFS.category,
     apTask: parsed.apTask || DEFAULT_PANEL_PREFS.apTask,
-    englishTask: parsed.englishTask || DEFAULT_PANEL_PREFS.englishTask,
+    englishTask:
+      migrateEnglishTask(parsed.englishTask) || DEFAULT_PANEL_PREFS.englishTask,
     codingTask: parsed.codingTask || DEFAULT_PANEL_PREFS.codingTask,
     subject: parsed.subject || DEFAULT_PANEL_PREFS.subject,
     englishTarget: parsed.englishTarget || DEFAULT_PANEL_PREFS.englishTarget,

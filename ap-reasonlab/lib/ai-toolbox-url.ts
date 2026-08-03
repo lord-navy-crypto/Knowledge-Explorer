@@ -7,15 +7,44 @@ export type ToolboxApTask =
   | "formula-derive"
   | "generate-questions";
 
+/** Canonical English AI tasks (consolidated). */
 export type ToolboxEnglishTask =
   | "grammar-explanation"
   | "vocab-extract"
-  | "optimize-reading"
-  | "corpus-find"
-  | "corpus-generate"
   | "writing-feedback"
+  | "reading-simplify"
   | "test-strategy"
-  | "original-practice";
+  | "practice-generator";
+
+export const TOOLBOX_ENGLISH_TASKS: ToolboxEnglishTask[] = [
+  "grammar-explanation",
+  "vocab-extract",
+  "writing-feedback",
+  "reading-simplify",
+  "test-strategy",
+  "practice-generator",
+];
+
+/** Map legacy English task ids → consolidated ones. */
+export function migrateEnglishTask(raw: string | null | undefined): ToolboxEnglishTask | undefined {
+  if (!raw) return undefined;
+  const value = raw.trim();
+  if ((TOOLBOX_ENGLISH_TASKS as string[]).includes(value)) {
+    return value as ToolboxEnglishTask;
+  }
+  switch (value) {
+    case "optimize-reading":
+      return "reading-simplify";
+    case "vocabulary-coach":
+      return "vocab-extract";
+    case "corpus-find":
+    case "corpus-generate":
+    case "original-practice":
+      return "practice-generator";
+    default:
+      return undefined;
+  }
+}
 
 export function toolboxHref(params: {
   category?: "ap" | "english" | "coding";
