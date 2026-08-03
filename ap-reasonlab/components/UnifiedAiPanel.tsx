@@ -21,6 +21,7 @@ import {
   type ToolboxCategory,
 } from "@/lib/ai-toolbox-prefs";
 import { takeToolboxPrefill } from "@/lib/ai-toolbox-prefill";
+import { migrateEnglishTask } from "@/lib/ai-toolbox-url";
 
 type Category = ToolboxCategory;
 
@@ -34,12 +35,10 @@ type ApTask =
 type EnglishTask =
   | "grammar-explanation"
   | "vocab-extract"
-  | "optimize-reading"
-  | "corpus-find"
-  | "corpus-generate"
   | "writing-feedback"
+  | "context"
   | "test-strategy"
-  | "original-practice";
+  | "practice-generator";
 
 type CodingTask = "debug" | "write" | "explain";
 
@@ -99,34 +98,24 @@ const ENGLISH_TASKS: Array<{ value: EnglishTask; label: string; hint: string }> 
     hint: "Pull useful words from a reading passage.",
   },
   {
-    value: "optimize-reading",
-    label: "Optimize reading",
-    hint: "Make a passage clearer or easier to follow.",
-  },
-  {
-    value: "corpus-find",
-    label: "Find useful corpus",
-    hint: "Suggest useful example sentences / passages for a target.",
-  },
-  {
-    value: "corpus-generate",
-    label: "Corpus generator",
-    hint: "Create short original practice sentences or a mini passage.",
-  },
-  {
     value: "writing-feedback",
     label: "Writing feedback",
     hint: "Feedback on a draft you paste.",
   },
   {
-    value: "test-strategy",
-    label: "TOEFL / IELTS / SAT strategy",
-    hint: "Exam strategy and section tips — not AP science.",
+    value: "context",
+    label: "Context",
+    hint: "Expand a sentence/command into rich context, or fully rewrite pasted HTML.",
   },
   {
-    value: "original-practice",
-    label: "Original practice",
-    hint: "Short original sentences or mini passages for your target exam.",
+    value: "test-strategy",
+    label: "Exam strategy",
+    hint: "TOEFL / IELTS / SAT section tips — not AP science.",
+  },
+  {
+    value: "practice-generator",
+    label: "Practice generator",
+    hint: "New examples, passage, and exercise from target word + level + topic.",
   },
 ];
 
@@ -201,10 +190,14 @@ export default function UnifiedAiPanel({
     return (savedPrefs.apTask as ApTask) || "advice";
   });
   const [englishTask, setEnglishTask] = useState<EnglishTask>(() => {
-    if (defaultEnglishTask && ENGLISH_TASKS.some((t) => t.value === defaultEnglishTask)) {
-      return defaultEnglishTask as EnglishTask;
+    if (defaultEnglishTask) {
+      const migrated = migrateEnglishTask(defaultEnglishTask);
+      if (migrated) return migrated;
     }
-    return (savedPrefs.englishTask as EnglishTask) || "grammar-explanation";
+    return (
+      migrateEnglishTask(savedPrefs.englishTask) ||
+      ("grammar-explanation" as EnglishTask)
+    );
   });
   const [codingTask, setCodingTask] = useState<CodingTask>(() => {
     if (defaultCodingTask && CODING_TASKS.some((t) => t.value === defaultCodingTask)) {
@@ -214,6 +207,9 @@ export default function UnifiedAiPanel({
   });
   const [subject, setSubject] = useState(defaultSubject || savedPrefs.subject || SUBJECT_OPTIONS[0]);
   const [englishTarget, setEnglishTarget] = useState(savedPrefs.englishTarget);
+  const [englishLevel, setEnglishLevel] = useState(savedPrefs.englishLevel || "B1 / intermediate");
+  const [englishTopic, setEnglishTopic] = useState(savedPrefs.englishTopic || "Daily academic life");
+  const [englishFocusWord, setEnglishFocusWord] = useState(savedPrefs.englishFocusWord || "");
   const [language, setLanguage] = useState<(typeof LANGUAGES)[number]>(
     (savedPrefs.language as (typeof LANGUAGES)[number]) || "Python"
   );
@@ -249,9 +245,9 @@ export default function UnifiedAiPanel({
   }, [defaultApTask]);
 
   useEffect(() => {
-    if (defaultEnglishTask && ENGLISH_TASKS.some((t) => t.value === defaultEnglishTask)) {
-      setEnglishTask(defaultEnglishTask as EnglishTask);
-    }
+    if (!defaultEnglishTask) return;
+    const migrated = migrateEnglishTask(defaultEnglishTask);
+    if (migrated) setEnglishTask(migrated);
   }, [defaultEnglishTask]);
 
   useEffect(() => {
@@ -273,9 +269,23 @@ export default function UnifiedAiPanel({
       codingTask,
       subject,
       englishTarget,
+      englishLevel,
+      englishTopic,
+      englishFocusWord,
       language,
     });
-  }, [apTask, category, codingTask, englishTarget, englishTask, language, subject]);
+  }, [
+    apTask,
+    category,
+    codingTask,
+    englishFocusWord,
+    englishLevel,
+    englishTarget,
+    englishTopic,
+    englishTask,
+    language,
+    subject,
+  ]);
 
   useEffect(() => {
     const node = chatRef.current;
@@ -483,11 +493,25 @@ export default function UnifiedAiPanel({
     }
 
     if (category === "english") {
-      const mode = englishTask === "vocab-extract" ? "vocabulary-coach" : englishTask;
+      const mode = englishTask;
+      const englishControls =
+        mode === "practice-generator"
+          ? `Exam/track target: ${englishTarget}
+Level: ${englishLevel}
+Topic: ${englishTopic}
+Target word/phrase: ${englishFocusWord.trim() || "(none — invent useful vocabulary for the topic)"}
+Extra request / notes from student:`
+          : mode === "context"
+            ? `Exam/track target: ${englishTarget}
+Input type hints: HTML → fully rewrite HTML; short command → invent teaching context; short sentence → expand with surrounding context.
+Student input:`
+            : `Exam/track target: ${englishTarget}
+Student input:`;
+      const englishUser = `${englishControls}\n${userText || "(see controls above — generate from level/topic/word)"}`;
       if (localAI.usesLocal) {
         const text = await runLocal(
           englishTutorLocal(mode),
-          `Mode: ${mode}\nTarget: ${englishTarget}\n\nStudent input:\n${userText}`,
+          `Mode: ${mode}\n${englishUser}`,
           history,
           onToken
         );
@@ -504,7 +528,10 @@ export default function UnifiedAiPanel({
         body: JSON.stringify({
           mode,
           target: englishTarget,
-          input: stampedUser,
+          level: englishLevel,
+          topic: englishTopic,
+          focusWord: englishFocusWord,
+          input: `${historyPrefix}${englishUser}`,
           ...localAI.cloudRequestFields,
         }),
       });
@@ -576,21 +603,37 @@ export default function UnifiedAiPanel({
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     const userText = input.trim();
-    if (!userText && !(category === "coding" && code.trim())) {
+    const practiceReady =
+      category === "english" &&
+      englishTask === "practice-generator" &&
+      (englishFocusWord.trim() || englishTopic.trim() || englishLevel.trim());
+    if (!userText && !(category === "coding" && code.trim()) && !practiceReady) {
       setError(
         category === "coding"
           ? "Describe the coding task and/or paste code."
-          : "Type a question or paste content first."
+          : category === "english" && englishTask === "practice-generator"
+            ? "Add a target word, topic, or level — or type an extra request."
+            : "Type a question or paste content first."
       );
       return;
     }
 
-    const displayUser = [
-      userText,
-      category === "coding" && code.trim() ? `\n\n\`\`\`\n${code.trim()}\n\`\`\`` : "",
-    ]
-      .filter(Boolean)
-      .join("");
+    const displayUser =
+      category === "english" && englishTask === "practice-generator"
+        ? [
+            englishFocusWord.trim() ? `Word: ${englishFocusWord.trim()}` : null,
+            `Level: ${englishLevel}`,
+            `Topic: ${englishTopic}`,
+            userText ? `Notes: ${userText}` : null,
+          ]
+            .filter(Boolean)
+            .join(" · ")
+        : [
+            userText,
+            category === "coding" && code.trim() ? `\n\n\`\`\`\n${code.trim()}\n\`\`\`` : "",
+          ]
+            .filter(Boolean)
+            .join("");
 
     const userMessage: ChatMessage = {
       id: `u-${Date.now()}`,
@@ -711,7 +754,7 @@ export default function UnifiedAiPanel({
           {(
             [
               { id: "ap", label: "AP / Learning", detail: "Hints, concepts, formulas, practice" },
-              { id: "english", label: "English", detail: "Grammar, vocab, reading, corpus" },
+              { id: "english", label: "English", detail: "Grammar, vocab, context, practice" },
               { id: "coding", label: "Coding", detail: "Debug, write, explain" },
             ] as const
           ).map((item) => (
@@ -779,7 +822,7 @@ export default function UnifiedAiPanel({
 
           {category === "english" ? (
             <label className="block text-sm font-medium text-slate-700">
-              Target
+              Exam / track
               <select
                 className="input mt-1"
                 value={englishTarget}
@@ -817,6 +860,51 @@ export default function UnifiedAiPanel({
             </label>
           ) : null}
         </div>
+
+        {category === "english" && englishTask === "practice-generator" ? (
+          <div className="grid gap-3 md:grid-cols-3">
+            <label className="block text-sm font-medium text-slate-700">
+              Target word / phrase
+              <input
+                className="input mt-1"
+                value={englishFocusWord}
+                onChange={(e) => setEnglishFocusWord(e.target.value)}
+                placeholder="e.g. nevertheless, photosynthesis"
+              />
+            </label>
+            <label className="block text-sm font-medium text-slate-700">
+              Level
+              <select
+                className="input mt-1"
+                value={englishLevel}
+                onChange={(e) => setEnglishLevel(e.target.value)}
+              >
+                {[
+                  "A2 / elementary",
+                  "B1 / intermediate",
+                  "B2 / upper-intermediate",
+                  "C1 / advanced",
+                  "TOEFL",
+                  "IELTS",
+                  "SAT Reading & Writing",
+                ].map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block text-sm font-medium text-slate-700">
+              Topic
+              <input
+                className="input mt-1"
+                value={englishTopic}
+                onChange={(e) => setEnglishTopic(e.target.value)}
+                placeholder="e.g. campus life, climate, lab reports"
+              />
+            </label>
+          </div>
+        ) : null}
 
         <div className="overflow-hidden rounded-xl border border-slate-200">
           <div className="flex items-center justify-between gap-2 border-b border-slate-200 bg-slate-50 px-3 py-2">
@@ -931,7 +1019,11 @@ export default function UnifiedAiPanel({
                   : category === "coding"
                     ? "Describe the bug, feature, or what to explain…"
                     : category === "english"
-                      ? "Paste a passage, sentence, or writing draft…"
+                      ? englishTask === "context"
+                        ? "Paste HTML to fully rewrite, a short command for context, or one sentence to expand…"
+                        : englishTask === "practice-generator"
+                          ? "Optional notes (style, count of sentences…) — or leave blank and use word/level/topic above"
+                          : "Paste a passage, sentence, or writing draft…"
                       : "Paste a problem, formula, concept, or question…"
               }
               help={

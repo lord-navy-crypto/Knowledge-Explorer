@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { asStringList, parseAiProvider, parseSiteModelChoice, runChatJson } from "@/lib/ai-client";
 import { englishTutorSystem } from "@/lib/ai-prompts";
 import { appendAiSiteContext, buildServerAiSiteContext } from "@/lib/ai-site-context-server";
+import { migrateEnglishTask } from "@/lib/ai-toolbox-url";
 
 function isClearlyOutsideEnglishScope(input: string, mode: string): boolean {
   if (mode === "writing-feedback" || mode === "grammar-explanation") return false;
@@ -37,21 +38,54 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const input = String(body.input || "").trim();
-    const mode = String(body.mode || "writing-feedback").trim();
+    const mode =
+      migrateEnglishTask(String(body.mode || "writing-feedback").trim()) ||
+      "writing-feedback";
     const target = String(body.target || "General academic English").trim();
+    const level = String(body.level || "").trim();
+    const topic = String(body.topic || "").trim();
+    const focusWord = String(body.focusWord || "").trim();
     const userApiKey = String(body.userApiKey || "").trim();
     const provider = parseAiProvider(body.provider);
     const siteModel = parseSiteModelChoice(body.siteModel);
 
-    if (!input) return NextResponse.json({ error: "Enter English text or a learning question." }, { status: 400 });
+    const hasPracticeControls = Boolean(level || topic || focusWord);
+    if (!input && !(mode === "practice-generator" && hasPracticeControls)) {
+      return NextResponse.json(
+        { error: "Enter English text or a learning question." },
+        { status: 400 }
+      );
+    }
     if (input.length > 16_000) return NextResponse.json({ error: "Input is too long (maximum 16,000 characters)." }, { status: 400 });
     if (mode.length > 60 || target.length > 100) return NextResponse.json({ error: "Invalid mode or target." }, { status: 400 });
-    if (isClearlyOutsideEnglishScope(input, mode)) return NextResponse.json(scopeRefusal());
+    if (isClearlyOutsideEnglishScope(input || topic || focusWord, mode)) return NextResponse.json(scopeRefusal());
 
-    const user = `Mode: ${mode}\nTarget: ${target}\n\nStudent input:\n${input}\n\nReturn the required English Tutor JSON.`;
+    const controlBlock =
+      mode === "practice-generator"
+        ? `Exam/track target: ${target}
+Level: ${level || "(unspecified)"}
+Topic: ${topic || "(unspecified)"}
+Target word/phrase: ${focusWord || "(none — invent useful vocabulary for the topic)"}
+`
+        : mode === "context"
+          ? `Exam/track target: ${target}
+Input type hints: HTML → fully rewrite HTML; short command → invent teaching context; short sentence → expand with surrounding context.
+`
+          : `Exam/track target: ${target}
+`;
+
+    const user = `Mode: ${mode}
+${controlBlock}
+Student input:
+${input || "(generate from the controls above)"}
+
+Return the required English Tutor JSON.`;
     try {
       const siteSearch = body.siteSearch !== false;
-      const siteContext = await buildServerAiSiteContext(`${mode}\n${target}\n${input}`, siteSearch);
+      const siteContext = await buildServerAiSiteContext(
+        `${mode}\n${target}\n${level}\n${topic}\n${focusWord}\n${input}`,
+        siteSearch
+      );
       const userWithSite = appendAiSiteContext(user, siteContext);
       const result = await runChatJson({
         system: englishTutorSystem(mode),

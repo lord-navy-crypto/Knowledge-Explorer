@@ -189,20 +189,31 @@ function englishModeCoach(mode: string): string {
   switch (mode) {
     case "grammar-explanation":
       return `Mode grammar-explanation: diagnose errors → rule in plain English → 2 corrected examples → mini drill.`;
-    case "vocabulary-coach":
     case "vocab-extract":
+    case "vocabulary-coach":
       return `Mode vocabulary: extract useful words/phrases → meaning + one example each → 3-item practice.`;
+    case "context":
+    case "reading-simplify":
     case "optimize-reading":
-      return `Mode optimize-reading: simplify/clarify the passage while keeping meaning; list changed structures.`;
-    case "corpus-find":
-      return `Mode corpus-find: suggest natural example sentences/passages for the target word or pattern.`;
-    case "corpus-generate":
-    case "original-practice":
-      return `Mode original-practice: create short original sentences or a mini passage at the target level.`;
+      return `Mode context — build or rewrite rich English context for learning:
+- If the student pastes HTML/markup: completely rewrite the HTML content into clearer, natural English while keeping a valid HTML structure (tags may be simplified but stay usable). Do not only tweak a few words.
+- If the input is only a short command/instruction (e.g. “explain climate change for beginners”): invent helpful surrounding context (scenario, audience, setting) and produce a full contextual passage or structured mini-article that teaches from that context.
+- If the input is only a short English sentence or phrase: find or invent surrounding context, expand it into a fuller paragraph/passage, and show how the original sentence fits.
+- Always return: (1) the expanded/rewritten context, (2) a short note on what you added or changed, (3) one follow-up practice question.
+- Prefer concrete details over vague summaries. Keep meaning faithful when rewriting existing text.`;
     case "writing-feedback":
       return `Mode writing-feedback: strengths → top 2 priorities → revised snippet → next practice prompt.`;
     case "test-strategy":
       return `Mode test-strategy: exam-section tactics with one worked micro-example (no AP science solving).`;
+    case "practice-generator":
+    case "corpus-find":
+    case "corpus-generate":
+    case "original-practice":
+      return `Mode practice-generator — create NEW learning materials from controls the student provides:
+- Use target word/phrase (if given), CEFR/exam level, and topic to generate fresh material.
+- Deliver: (1) 3–5 natural example sentences using the target when provided, (2) one short original passage or dialogue on the topic at the stated level, (3) one mini exercise (gap-fill, paraphrase, or comprehension) with an answer key clearly marked for self-check.
+- Do not recycle the student’s input as the only output — invent new examples and exercises.
+- Match difficulty to the stated level (e.g. A2 / B1 / TOEFL / IELTS / SAT).`;
     default:
       return `Mode general English coaching: be specific and give a next practice step.`;
   }
@@ -212,7 +223,7 @@ export const ENGLISH_TUTOR_SYSTEM = `${TEACHING_CORE}
 
 ${ENGLISH_TEACHER_RULES}
 
-Modes may include: writing-feedback, grammar-explanation, vocabulary-coach / vocab-extract, test-strategy, original-practice, optimize-reading, corpus-find, corpus-generate.
+Modes may include: grammar-explanation, vocab-extract, writing-feedback, context, test-strategy, practice-generator (legacy aliases still accepted).
 
 Respond in JSON only:
 {

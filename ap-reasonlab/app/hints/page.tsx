@@ -15,7 +15,7 @@ import {
   saveToolboxExtraTool,
   type ToolboxExtraTool,
 } from "@/lib/ai-toolbox-prefs";
-import { legacyToolToApTask } from "@/lib/ai-toolbox-url";
+import { legacyToolToApTask, migrateEnglishTask } from "@/lib/ai-toolbox-url";
 
 type ExtraTool = ToolboxExtraTool;
 
@@ -25,16 +25,6 @@ const AP_TASKS = new Set([
   "guide",
   "formula-derive",
   "generate-questions",
-]);
-const ENGLISH_TASKS = new Set([
-  "grammar-explanation",
-  "vocab-extract",
-  "optimize-reading",
-  "corpus-find",
-  "corpus-generate",
-  "writing-feedback",
-  "test-strategy",
-  "original-practice",
 ]);
 const CODING_TASKS = new Set(["debug", "write", "explain"]);
 
@@ -75,9 +65,7 @@ function resolveApTask(
 }
 
 function resolveEnglishTask(searchParams: URLSearchParams): string | undefined {
-  const direct = searchParams.get("englishTask");
-  if (direct && ENGLISH_TASKS.has(direct)) return direct;
-  return undefined;
+  return migrateEnglishTask(searchParams.get("englishTask"));
 }
 
 function resolveCodingTask(searchParams: URLSearchParams): string | undefined {
