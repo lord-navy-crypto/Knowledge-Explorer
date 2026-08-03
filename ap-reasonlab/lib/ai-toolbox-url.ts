@@ -5,7 +5,8 @@ export type ToolboxApTask =
   | "concept"
   | "guide"
   | "formula-derive"
-  | "generate-questions";
+  | "generate-questions"
+  | "concept-extension";
 
 /** Canonical English AI tasks (consolidated). */
 export type ToolboxEnglishTask =
@@ -106,6 +107,14 @@ export const GUIDE_TOOLBOX_LINKS: Record<
     }),
     label: "Generate practice in AI Toolbox",
     blurb: "Create original items, then save as a practice set when you are an editor.",
+  },
+  "guide-ai-concept-extension": {
+    href: toolboxHref({
+      apTask: "concept-extension",
+      subject: "Study Skills / AI for AP",
+    }),
+    label: "Open Concept extension in AI Toolbox",
+    blurb: "Paste a basic concept or formula — map how AP exams stretch it into richer scenes.",
   },
   "guide-stats-ai-generate": {
     href: toolboxHref({

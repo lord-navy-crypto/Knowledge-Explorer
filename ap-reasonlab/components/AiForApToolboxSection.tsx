@@ -54,6 +54,15 @@ export default function AiForApToolboxSection() {
             Generate practice
           </Link>
           <Link
+            href={toolboxHref({
+              apTask: "concept-extension",
+              subject: "Study Skills / AI for AP",
+            })}
+            className="btn-secondary text-sm"
+          >
+            Concept extension
+          </Link>
+          <Link
             href="/practice?subject=Study%20Skills%20%2F%20AI%20for%20AP"
             className="btn-ghost text-sm"
           >

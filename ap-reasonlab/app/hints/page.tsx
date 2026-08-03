@@ -25,6 +25,7 @@ const AP_TASKS = new Set([
   "guide",
   "formula-derive",
   "generate-questions",
+  "concept-extension",
 ]);
 const CODING_TASKS = new Set(["debug", "write", "explain"]);
 

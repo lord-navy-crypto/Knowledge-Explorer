@@ -30,7 +30,8 @@ type ApTask =
   | "concept"
   | "guide"
   | "formula-derive"
-  | "generate-questions";
+  | "generate-questions"
+  | "concept-extension";
 
 type EnglishTask =
   | "grammar-explanation"
@@ -83,6 +84,11 @@ const AP_TASKS: Array<{ value: ApTask; label: string; hint: string }> = [
     value: "generate-questions",
     label: "Generate practice",
     hint: "Paste a topic or stem — get original practice questions.",
+  },
+  {
+    value: "concept-extension",
+    label: "Concept extension",
+    hint: "Paste a basic concept or formula — map how AP exams extend it into richer scenes (concepts, formulas, moves).",
   },
 ];
 
@@ -426,9 +432,11 @@ export default function UnifiedAiPanel({
           ? "formula-derive"
           : apTask === "generate-questions"
             ? "generate-questions"
-            : apTask === "concept"
-              ? "explain"
-              : "ask";
+            : apTask === "concept-extension"
+              ? "concept-extension"
+              : apTask === "concept"
+                ? "explain"
+                : "ask";
       if (localAI.usesLocal) {
         const text = await runLocal(
           conceptExplainLocal(mode),
@@ -449,7 +457,10 @@ export default function UnifiedAiPanel({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           subject,
-          conceptTitle: apTask === "concept" ? userText.slice(0, 120) : "",
+          conceptTitle:
+            apTask === "concept" || apTask === "concept-extension"
+              ? userText.slice(0, 120)
+              : "",
           mode,
           question: stampedUser,
           ...localAI.cloudRequestFields,
@@ -717,7 +728,7 @@ Student input:`;
         <div className="grid gap-2 sm:grid-cols-3">
           {(
             [
-              { id: "ap", label: "AP / Learning", detail: "Hints, concepts, formulas, practice" },
+              { id: "ap", label: "AP / Learning", detail: "Hints, concepts, extensions, formulas, practice" },
               { id: "english", label: "English", detail: "Grammar, vocab, materials, practice" },
               { id: "coding", label: "Coding", detail: "Debug, write, explain" },
             ] as const
@@ -943,7 +954,9 @@ Student input:`;
                         : englishTask === "practice-generator"
                           ? "Paste any topic (or anything). We copy it and generate a NEW practice topic from it."
                           : "Paste a passage, sentence, or writing draft…"
-                      : "Paste a problem, formula, concept, or question…"
+                      : category === "ap" && apTask === "concept-extension"
+                        ? "Paste a basic concept or formula — e.g. Ohm’s law, conservation of energy, ideal gas…"
+                        : "Paste a problem, formula, concept, or question…"
               }
               help={
                 messages.length
