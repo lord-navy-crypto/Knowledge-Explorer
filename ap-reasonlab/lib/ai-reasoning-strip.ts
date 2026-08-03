@@ -60,11 +60,11 @@ export function supportsDisableThinking(modelId: string): boolean {
 }
 
 /**
- * Turn off hidden thinking for Light + Medium Qwen3 / Qwen3.5 (browser lag).
- * Heavy keeps thinking and waits for a full reply instead (see finishOutput).
+ * Sole Local restriction: turn off thinking mode for models that support it
+ * (Qwen3 / Qwen3.5 `enable_thinking: false`). Applies to every size.
  */
 export function shouldDisableThinking(modelId: string): boolean {
-  return supportsDisableThinking(modelId) && !isHeavyLocalModel(modelId);
+  return supportsDisableThinking(modelId);
 }
 
 /** 7B / 8B / 9B only — do not treat 0.8B or 1.7B as heavy. */
@@ -83,14 +83,14 @@ export function localNudgeForModel(modelId: string): string {
 export const REASONING_MODEL_DIRECT_ANSWER =
   "You may reason privately inside <think>...</think> if needed. After </think>, output ONLY the final answer in the requested format — no meta commentary about your thinking.";
 
-/** Soft nudge for non-Qwen3 local models — keep formulas visible. */
+/** Soft nudge when thinking mode does not apply — keep formulas visible. */
 export const LOCAL_MARKDOWN_NUDGE =
   "Reply in markdown. Wrap EVERY formula in $...$ or $$...$$ so it renders as an equation — never bare \\frac / \\sqrt code. Put key steps in the visible reply.";
 
-/** Stronger nudge when thinking is forced off (Light / Medium Qwen3). */
+/** Nudge paired with thinking-off (sole Local restriction). */
 export const LOCAL_DIRECT_ANSWER_NUDGE =
-  "Answer immediately in markdown. Wrap EVERY formula in $...$ or $$...$$ (never bare TeX). Do NOT open <think>, <thinking>, or any private reasoning tags — the first line must be visible answer content.";
+  "Reply in markdown with thinking mode off. Wrap EVERY formula in $...$ or $$...$$ (never bare TeX). Do NOT open <think> or <thinking> tags — start with visible answer content.";
 
-/** Used on Local retry after a blank/thinking stall (no-think path). */
+/** Used on a blank-reply retry. */
 export const LOCAL_RETRY_NO_THINK_NUDGE =
-  "CRITICAL RETRY: Output the student-facing answer NOW. Zero <think> tags. Use $...$ for math. First character = start of the answer. Keep it short.";
+  "Retry: output the student-facing answer now. Zero <think> tags. Use $...$ for math.";
