@@ -60,11 +60,11 @@ export function supportsDisableThinking(modelId: string): boolean {
 }
 
 /**
- * Force-disable hidden thinking only on Heavy (7B–9B) Qwen3 / Qwen3.5.
- * Smaller models think quickly enough — restricting them hurts answer quality.
+ * Thinking-off was a Heavy-only lag hack; it also cut answers short.
+ * Heavy now waits for a full reply instead — never force-disable thinking.
  */
-export function shouldDisableThinking(modelId: string): boolean {
-  return supportsDisableThinking(modelId) && isHeavyLocalModel(modelId);
+export function shouldDisableThinking(_modelId: string): boolean {
+  return false;
 }
 
 /** 7B / 8B / 9B only — do not treat 0.8B or 1.7B as heavy. */
@@ -72,8 +72,8 @@ export function isHeavyLocalModel(modelId: string): boolean {
   return /(?:^|[^0-9.])([789])B(?:-|$)/i.test(modelId);
 }
 
-export function localNudgeForModel(modelId: string): string {
-  return shouldDisableThinking(modelId) ? LOCAL_DIRECT_ANSWER_NUDGE : LOCAL_MARKDOWN_NUDGE;
+export function localNudgeForModel(_modelId: string): string {
+  return LOCAL_MARKDOWN_NUDGE;
 }
 
 /**

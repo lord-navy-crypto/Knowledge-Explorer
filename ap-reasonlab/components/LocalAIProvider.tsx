@@ -554,7 +554,8 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
           mergeLocalDirectNudge(
             messages as Array<{ role: string; content: string }>,
             nudge
-          )
+          ),
+          { preservePrompt: policy.preservePrompt }
         ) as ChatCompletionMessageParam[];
 
         const startedAt = Date.now();
@@ -576,6 +577,10 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
         const fireTimeout = (
           kind: "soft" | "idle" | "absolute" | "prefill" | "thinking"
         ) => {
+          // Heavy finish mode: never soft-kill or think-kill mid-answer — wait it out.
+          if (policy.finishOutput && (kind === "soft" || kind === "thinking")) {
+            return;
+          }
           if (timedOut) return;
           timedOut = true;
           if (kind === "idle") idleTimedOut = true;
@@ -597,6 +602,12 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
         };
 
         const armSoftDeadline = () => {
+          if (policy.finishOutput && streamStarted) {
+            // After the first token, Heavy waits for the natural end of the stream.
+            window.clearTimeout(softTimerId);
+            softTimerId = 0;
+            return;
+          }
           window.clearTimeout(softTimerId);
           const remaining = Math.max(0, deadlineAt - Date.now());
           softTimerId = window.setTimeout(
@@ -616,6 +627,10 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
         };
 
         const armThinkDeadline = () => {
+          if (!policy.thinkingBudgetMs || policy.finishOutput) {
+            clearThinkDeadline();
+            return;
+          }
           window.clearTimeout(thinkTimerId);
           thinkTimerId = window.setTimeout(
             () => fireTimeout("thinking"),
@@ -663,12 +678,15 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
             stream: true,
             temperature: 0.35,
             max_tokens: maxTokens,
-            // Heavy Qwen3 only: force-disable hidden thinking (small/mid models may think).
             ...(policy.disableThinking ? { extra_body: { enable_thinking: false } } : {}),
           });
 
           streamStarted = true;
-          setStatusText("Writing answer…");
+          setStatusText(
+            policy.finishOutput
+              ? "Writing answer… (Heavy model — waiting until it finishes)"
+              : "Writing answer…"
+          );
           deadlineAt = Date.now() + policy.timeoutMs;
           armSoftDeadline();
           armIdleDeadline();
@@ -688,11 +706,13 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
 
             if (visibleTrimmed.length > lastVisibleLen) {
               lastVisibleLen = visibleTrimmed.length;
-              deadlineAt = Math.min(
-                startedAt + policy.absoluteTimeoutMs,
-                Date.now() + policy.timeoutMs
-              );
-              armSoftDeadline();
+              if (!policy.finishOutput) {
+                deadlineAt = Math.min(
+                  startedAt + policy.absoluteTimeoutMs,
+                  Date.now() + policy.timeoutMs
+                );
+                armSoftDeadline();
+              }
               clearThinkDeadline();
             }
 
@@ -700,16 +720,28 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
             if (thinking) {
               if (lastStatusPhase !== "thinking") {
                 lastStatusPhase = "thinking";
-                setStatusText("Model opened a think block — cutting it short if it lasts…");
+                setStatusText(
+                  policy.finishOutput
+                    ? "Heavy model is thinking — waiting for the full answer…"
+                    : "Model opened a think block — cutting it short if it lasts…"
+                );
                 armThinkDeadline();
               }
             } else if (lastStatusPhase === "thinking") {
               lastStatusPhase = "writing";
               clearThinkDeadline();
-              setStatusText("Writing answer…");
+              setStatusText(
+                policy.finishOutput
+                  ? "Writing answer… (Heavy model — waiting until it finishes)"
+                  : "Writing answer…"
+              );
             } else if (lastStatusPhase !== "writing" && visibleTrimmed) {
               lastStatusPhase = "writing";
-              setStatusText("Writing answer…");
+              setStatusText(
+                policy.finishOutput
+                  ? "Writing answer… (Heavy model — waiting until it finishes)"
+                  : "Writing answer…"
+              );
             }
 
             onToken?.(token, visible);
@@ -727,16 +759,24 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
       try {
         let result = await runAttempt(policy.maxTokens, policy.nudge);
         // One recovery retry when the first pass is blank or guidance-only.
+        // Heavy keeps a full token budget so the retry can still finish.
         if (!result.trim() || isLocalGuidanceReply(result)) {
           setStatusText(
-            policy.disableThinking
-              ? "Retrying Local AI without thinking…"
-              : "Retrying Local AI with a shorter prompt…"
+            policy.finishOutput
+              ? "Retrying Heavy Local AI — waiting for a full answer…"
+              : policy.disableThinking
+                ? "Retrying Local AI without thinking…"
+                : "Retrying Local AI with a shorter prompt…"
           );
-          const retryNudge = policy.disableThinking
-            ? `${policy.nudge}\n\n${LOCAL_RETRY_NO_THINK_NUDGE}`
-            : `${policy.nudge}\n\nKeep the reply short. Put the student-facing answer first.`;
-          const retry = await runAttempt(Math.min(256, policy.maxTokens), retryNudge);
+          const retryNudge = policy.finishOutput
+            ? `${policy.nudge}\n\nFinish the full student-facing answer. Do not stop mid-sentence.`
+            : policy.disableThinking
+              ? `${policy.nudge}\n\n${LOCAL_RETRY_NO_THINK_NUDGE}`
+              : `${policy.nudge}\n\nKeep the reply short. Put the student-facing answer first.`;
+          const retryTokens = policy.finishOutput
+            ? policy.maxTokens
+            : Math.min(256, policy.maxTokens);
+          const retry = await runAttempt(retryTokens, retryNudge);
           if (retry.trim() && !isLocalGuidanceReply(retry)) {
             result = retry;
           } else if (!result.trim()) {
