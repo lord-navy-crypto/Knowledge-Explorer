@@ -25,6 +25,7 @@ import {
   chatOptsForModel,
   compactLocalMessages,
   getLocalGenPolicy,
+  localTimeoutGuidance,
 } from "@/lib/local-ai-policy";
 import {
   DEFAULT_LOCAL_MODEL_ID,
@@ -541,7 +542,7 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
       const policy = getLocalGenPolicy(modelId);
       setStatus("generating");
       setError("");
-      setStatusText("Writing answer…");
+      setStatusText("Preparing answer…");
 
       const prepared = compactLocalMessages(
         mergeLocalDirectNudge(
@@ -550,130 +551,160 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
         )
       ) as ChatCompletionMessageParam[];
 
-      const startedAt = Date.now();
-      let timedOut = false;
-      let idleTimedOut = false;
-      let deadlineAt = startedAt + policy.timeoutMs;
-      let softTimerId = 0;
-      let idleTimerId = 0;
+      const runAttempt = async (maxTokens: number): Promise<string> => {
+        const startedAt = Date.now();
+        let timedOut = false;
+        let idleTimedOut = false;
+        let streamStarted = false;
+        let deadlineAt = startedAt + policy.prefillTimeoutMs;
+        let softTimerId = 0;
+        let idleTimerId = 0;
 
-      const stopTimers = () => {
-        window.clearTimeout(softTimerId);
-        window.clearTimeout(idleTimerId);
-      };
+        const stopTimers = () => {
+          window.clearTimeout(softTimerId);
+          window.clearTimeout(idleTimerId);
+        };
 
-      const fireTimeout = (kind: "soft" | "idle" | "absolute") => {
-        if (timedOut) return;
-        timedOut = true;
-        if (kind === "idle") idleTimedOut = true;
-        try {
-          void engine.interruptGenerate();
-        } catch {
-          // ignore
-        }
-        setStatusText(
-          kind === "idle"
-            ? "Stopped — no visible answer yet. Try a lighter model or Website API."
-            : "Stopped — answer took too long. Showing what we have, or try a lighter model."
-        );
-      };
-
-      const armSoftDeadline = () => {
-        window.clearTimeout(softTimerId);
-        const remaining = Math.max(0, deadlineAt - Date.now());
-        softTimerId = window.setTimeout(() => fireTimeout("soft"), remaining);
-      };
-
-      const armIdleDeadline = () => {
-        window.clearTimeout(idleTimerId);
-        idleTimerId = window.setTimeout(() => fireTimeout("idle"), policy.idleVisibleMs);
-      };
-
-      const absoluteTimerId = window.setTimeout(
-        () => fireTimeout("absolute"),
-        policy.absoluteTimeoutMs
-      );
-      armSoftDeadline();
-      armIdleDeadline();
-
-      let lastStatusPhase = "writing";
-      let raw = "";
-      let lastVisibleLen = 0;
-
-      const finishWithPartialOrThrow = () => {
-        const partial = stripReasoningTrace(raw);
-        if (partial) {
+        const fireTimeout = (kind: "soft" | "idle" | "absolute" | "prefill") => {
+          if (timedOut) return;
+          timedOut = true;
+          if (kind === "idle") idleTimedOut = true;
+          try {
+            void engine.interruptGenerate();
+          } catch {
+            // ignore
+          }
           setStatusText(
-            idleTimedOut
-              ? "Stopped early — showing partial answer. Prefer a lighter model next time."
-              : "Stopped on timeout — showing partial answer."
+            kind === "idle"
+              ? "Stopped — no visible answer yet. Prefer a lighter model."
+              : kind === "prefill"
+                ? "Stopped — model was still preparing (prefill). Prefer a lighter model."
+                : "Stopped — answer took too long."
           );
-          return partial;
-        }
-        throw new Error(
-          idleTimedOut
-            ? "Local AI produced no visible answer in time (often still thinking). Try Qwen3.5 Starter / Light, or Website API."
-            : "Local AI timed out. Try Website API or a lighter model (Qwen3.5 Starter / Light)."
+        };
+
+        const armSoftDeadline = () => {
+          window.clearTimeout(softTimerId);
+          const remaining = Math.max(0, deadlineAt - Date.now());
+          softTimerId = window.setTimeout(
+            () => fireTimeout(streamStarted ? "soft" : "prefill"),
+            remaining
+          );
+        };
+
+        const armIdleDeadline = () => {
+          window.clearTimeout(idleTimerId);
+          idleTimerId = window.setTimeout(() => fireTimeout("idle"), policy.idleVisibleMs);
+        };
+
+        const absoluteTimerId = window.setTimeout(
+          () => fireTimeout("absolute"),
+          policy.absoluteTimeoutMs
         );
+        // Prefill phase only — do NOT start idle until the stream has begun.
+        armSoftDeadline();
+
+        let lastStatusPhase = "prefill";
+        let raw = "";
+        let lastVisibleLen = 0;
+
+        const finish = (): string => {
+          const partial = stripReasoningTrace(raw);
+          if (partial) {
+            setStatusText(
+              timedOut
+                ? "Stopped on timeout — showing partial answer."
+                : "Local AI is ready on this device."
+            );
+            return partial;
+          }
+          if (timedOut) {
+            setStatusText(
+              idleTimedOut
+                ? "No visible answer in time — see guidance below."
+                : "Timed out before text appeared — see guidance below."
+            );
+            return localTimeoutGuidance(modelId);
+          }
+          return "";
+        };
+
+        try {
+          const stream = await engine.chat.completions.create({
+            messages: prepared,
+            stream: true,
+            temperature: 0.4,
+            max_tokens: maxTokens,
+            ...(policy.disableThinking ? { extra_body: { enable_thinking: false } } : {}),
+          });
+
+          streamStarted = true;
+          setStatusText("Writing answer…");
+          // Decode phase budgets start now (after prefill/create).
+          deadlineAt = Date.now() + policy.timeoutMs;
+          armSoftDeadline();
+          armIdleDeadline();
+
+          for await (const chunk of stream) {
+            if (timedOut) break;
+            const token = chunk.choices[0]?.delta?.content ?? "";
+            raw += token;
+            const visible = stripReasoningTrace(raw, { trim: false });
+            const visibleTrimmed = visible.trim();
+            if (visibleTrimmed.length > lastVisibleLen) {
+              lastVisibleLen = visibleTrimmed.length;
+              deadlineAt = Math.min(
+                startedAt + policy.absoluteTimeoutMs,
+                Date.now() + policy.timeoutMs
+              );
+              armSoftDeadline();
+              armIdleDeadline();
+            }
+            const thinking = isInsideOpenThinkBlock(raw) && !visibleTrimmed;
+            const phase = thinking ? "thinking" : "writing";
+            if (phase !== lastStatusPhase) {
+              lastStatusPhase = phase;
+              setStatusText(
+                thinking
+                  ? "Skipping hidden thinking — answer will appear next…"
+                  : "Writing answer…"
+              );
+            }
+            onToken?.(token, visible);
+          }
+          return finish();
+        } catch (caught) {
+          if (timedOut) return finish();
+          throw caught;
+        } finally {
+          stopTimers();
+          window.clearTimeout(absoluteTimerId);
+        }
       };
 
       try {
-        const stream = await engine.chat.completions.create({
-          messages: prepared,
-          stream: true,
-          temperature: 0.4,
-          max_tokens: policy.maxTokens,
-          // All Qwen3 / Qwen3.5: skip hidden thinking (the main big-model lag cause).
-          ...(policy.disableThinking ? { extra_body: { enable_thinking: false } } : {}),
-        });
-        for await (const chunk of stream) {
-          if (timedOut) break;
-          const token = chunk.choices[0]?.delta?.content ?? "";
-          raw += token;
-          const visible = stripReasoningTrace(raw, { trim: false });
-          const visibleTrimmed = visible.trim();
-          if (visibleTrimmed.length > lastVisibleLen) {
-            lastVisibleLen = visibleTrimmed.length;
-            // Sliding soft deadline while the answer is visibly progressing.
-            deadlineAt = Math.min(
-              startedAt + policy.absoluteTimeoutMs,
-              Date.now() + policy.timeoutMs
-            );
-            armSoftDeadline();
-            armIdleDeadline();
-          }
-          const thinking = isInsideOpenThinkBlock(raw) && !visibleTrimmed;
-          const phase = thinking ? "thinking" : "writing";
-          if (phase !== lastStatusPhase) {
-            lastStatusPhase = phase;
-            setStatusText(
-              thinking
-                ? "Skipping hidden thinking — answer will appear next…"
-                : "Writing answer…"
-            );
-          }
-          // Never fall back to raw — that re-leaks <think> dumps into the UI.
-          onToken?.(token, visible);
+        let result = await runAttempt(policy.maxTokens);
+        if (!result.trim()) {
+          setStatusText("Retrying with a shorter Local answer…");
+          result = await runAttempt(Math.min(256, policy.maxTokens));
         }
-        if (timedOut) return finishWithPartialOrThrow();
-        const cleaned = stripReasoningTrace(raw);
-        if (!cleaned) {
-          throw new Error(
-            "Local model returned an empty answer. Try again or switch to Website API."
-          );
+        if (!result.trim()) {
+          result = localTimeoutGuidance(modelId);
         }
-        setStatusText("Local AI is ready on this device.");
-        return cleaned;
+        if (!result.startsWith("## Local AI stopped early")) {
+          setStatusText("Local AI is ready on this device.");
+        }
+        return result;
       } catch (caught) {
-        // interruptGenerate often rejects the stream — still return any partial.
-        if (timedOut) return finishWithPartialOrThrow();
         const message = caught instanceof Error ? caught.message : "Local generation failed.";
+        if (/interrupt|abort|timeout|timed out|cancel/i.test(message)) {
+          setStatusText("Local generation stopped — see guidance in the reply.");
+          return localTimeoutGuidance(modelId);
+        }
         setStatus("error");
         setError(message);
         throw caught;
       } finally {
-        stopTimers();
-        window.clearTimeout(absoluteTimerId);
         if (engineRef.current) setStatus("ready");
       }
     },

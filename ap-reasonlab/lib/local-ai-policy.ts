@@ -14,12 +14,14 @@ export type LocalGenPolicy = {
   /** Force WebLLM `extra_body.enable_thinking: false` (Qwen3 family). */
   disableThinking: boolean;
   maxTokens: number;
-  /** Soft wall-clock budget; extends while visible tokens arrive (see idle/absolute). */
+  /** Soft decode budget after the first stream chunk (extends while visible). */
   timeoutMs: number;
-  /** If no visible answer appears within this window, interrupt early. */
+  /** After stream starts: interrupt if still no visible answer. */
   idleVisibleMs: number;
-  /** Hard ceiling even if the soft deadline keeps sliding. */
+  /** Whole-request ceiling including prefill. */
   absoluteTimeoutMs: number;
+  /** Prefill-only budget before first chunk (create + first token). */
+  prefillTimeoutMs: number;
   nudge: string;
   /** Context window sizes to try on load (largest first). */
   contextAttempts: number[];
@@ -41,14 +43,14 @@ export function getLocalGenPolicy(modelId: string): LocalGenPolicy {
   if (heavy) {
     return {
       disableThinking,
-      // Keep answers shorter so decode finishes before wall-clock timeout.
-      maxTokens: 640,
-      timeoutMs: 150_000,
-      idleVisibleMs: 60_000,
-      absoluteTimeoutMs: 210_000,
+      maxTokens: 512,
+      timeoutMs: 180_000,
+      idleVisibleMs: 90_000,
+      absoluteTimeoutMs: 300_000,
+      prefillTimeoutMs: 180_000,
       nudge: localNudgeForModel(modelId),
-      contextAttempts: [4096, 2048],
-      contextWindowCap: 4096,
+      contextAttempts: [2048, 1024],
+      contextWindowCap: 2048,
       isRetiredReasoning: isReasoningLocalModel(modelId),
     };
   }
@@ -56,23 +58,25 @@ export function getLocalGenPolicy(modelId: string): LocalGenPolicy {
   if (medium) {
     return {
       disableThinking,
-      maxTokens: 560,
-      timeoutMs: 120_000,
-      idleVisibleMs: 45_000,
-      absoluteTimeoutMs: 180_000,
+      maxTokens: 480,
+      timeoutMs: 150_000,
+      idleVisibleMs: 75_000,
+      absoluteTimeoutMs: 240_000,
+      prefillTimeoutMs: 120_000,
       nudge: localNudgeForModel(modelId),
-      contextAttempts: [4096],
-      contextWindowCap: 4096,
+      contextAttempts: [2048],
+      contextWindowCap: 2048,
       isRetiredReasoning: isReasoningLocalModel(modelId),
     };
   }
 
   return {
     disableThinking,
-    maxTokens: 480,
-    timeoutMs: 90_000,
-    idleVisibleMs: 35_000,
-    absoluteTimeoutMs: 120_000,
+    maxTokens: 400,
+    timeoutMs: 120_000,
+    idleVisibleMs: 60_000,
+    absoluteTimeoutMs: 180_000,
+    prefillTimeoutMs: 90_000,
     nudge: localNudgeForModel(modelId),
     contextAttempts: [4096],
     contextWindowCap: null,
@@ -89,7 +93,7 @@ export function chatOptsForModel(
   const capped = Math.min(contextWindow, policy.contextWindowCap);
   return {
     context_window_size: capped,
-    prefill_chunk_size: Math.min(1024, capped),
+    prefill_chunk_size: Math.min(512, capped),
   };
 }
 
@@ -97,9 +101,9 @@ export function chatOptsForModel(
 export function compactLocalMessages(
   messages: Array<{ role: string; content: string }>
 ): Array<{ role: string; content: string }> {
-  const MAX_SYSTEM = 4_000;
-  const MAX_TURN = 1_500;
-  const MAX_TURNS = 6; // system + up to 5 later messages
+  const MAX_SYSTEM = 2_400;
+  const MAX_TURN = 1_000;
+  const MAX_TURNS = 4; // system + up to 3 later messages
 
   const system = messages.find((m) => m.role === "system");
   const rest = messages.filter((m) => m.role !== "system").slice(-MAX_TURNS + 1);
@@ -123,6 +127,21 @@ export function compactLocalMessages(
     });
   }
   return out;
+}
+
+/** Soft fallback shown in the dialogue instead of a red hard error. */
+export function localTimeoutGuidance(modelId: string): string {
+  const short = modelId.replace(/-q4f16_1-MLC$/i, "").replace(/-/g, " ");
+  return `## Local AI stopped early
+
+No visible answer arrived in time on **${short}**.
+
+Try one of these:
+1. Switch to **Qwen3.5 Starter** or another **Super light / Light** model, then Enable again
+2. Turn **off site search** in Local settings (smaller prompt = faster)
+3. Use **Website API** for this question
+
+Heavy 7B–9B models often need a strong discrete GPU in the browser.`;
 }
 
 export { shouldDisableThinking, isHeavyLocalModel, localNudgeForModel };
