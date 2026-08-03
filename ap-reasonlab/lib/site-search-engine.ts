@@ -336,6 +336,7 @@ export function searchSiteEngine(
     { id: "dictation", title: "Dictation", subject: "Tools", detail: "Listen and type practice", href: "/tools/dictation" },
     { id: "paraphrase", title: "Paraphrase compare", subject: "Tools", detail: "Compare rewrite overlap", href: "/tools/paraphrase" },
     { id: "reading-highlight", title: "Reading highlights", subject: "Tools", detail: "Highlight passages with notes", href: "/tools/reading-highlight" },
+    { id: "text-comparator", title: "Text-to-text comparator", subject: "Tools", detail: "Left vs right paste — match or highlight differences", href: "/tools/text-comparator" },
     { id: "text-diff", title: "Text diff", subject: "Tools", detail: "Compare two text drafts", href: "/tools/text-diff" },
     { id: "random-groups", title: "Random groups", subject: "Tools", detail: "Pick names or make groups", href: "/tools/random-groups" },
     { id: "short-code", title: "Short codes", subject: "Tools", detail: "Local short codes for links", href: "/tools/short-code" },

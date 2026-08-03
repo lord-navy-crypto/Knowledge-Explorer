@@ -365,12 +365,21 @@ export const STUDY_TOOLS: StudyTool[] = [
 
   // —— Classroom light ——
   {
+    id: "text-comparator",
+    href: "/tools/text-comparator",
+    title: "Text-to-text comparator",
+    blurb: "Paste left + right text. Perfect match or highlighted diffs — see how much changed.",
+    category: "collab",
+    security: "safe",
+  },
+  {
     id: "text-diff",
     href: "/tools/text-diff",
     title: "Text diff",
-    blurb: "Compare two drafts line by line (general text — not the English paraphrase tool).",
+    blurb: "Compare two drafts line by line (same as Text-to-text comparator).",
     category: "collab",
     security: "safe",
+    listed: false,
   },
   {
     id: "random-groups",
