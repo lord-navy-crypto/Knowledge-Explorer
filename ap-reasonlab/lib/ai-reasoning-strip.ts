@@ -88,4 +88,8 @@ export const LOCAL_MARKDOWN_NUDGE =
 
 /** Stronger nudge for Qwen3 family where hidden thinking is too slow. */
 export const LOCAL_DIRECT_ANSWER_NUDGE =
-  "Answer immediately in markdown. Use $...$ / $$...$$ for math. Do not write <think> blocks or private reasoning — put formulas and steps in the visible reply only.";
+  "Answer immediately in markdown. Use $...$ / $$...$$ for math. Do NOT open <think>, <thinking>, or any private reasoning tags — the first line must be visible answer content.";
+
+/** Used on Local retry after a blank/thinking stall. */
+export const LOCAL_RETRY_NO_THINK_NUDGE =
+  "CRITICAL RETRY: Output the student-facing answer NOW. Zero <think> tags. First character = start of the answer (markdown/LaTeX ok). Keep it short.";
