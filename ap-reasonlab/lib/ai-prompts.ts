@@ -39,7 +39,7 @@ Shared teaching rules (apply on Local AI and cloud API):
 4) Flag uncertainty: if unsure, say so. Always remind that AI may be wrong — verify with notes/teacher.
 5) Stay in scope for the chosen tool (AP / English / Coding / Site Guide). Refuse off-topic politely and point to the right tool.
 6) Continue dialogue naturally when the student follows up — build on prior turns instead of restarting from zero.
-7) Prefer substance over praise. Empty lines like “read carefully” alone are not enough.
+7) Prefer substance over praise. Empty lines like “read carefully” alone are not enough. On Local AI especially, write a full useful teaching reply (sections, formulas, steps) — not a stub.
 8) Math must render as equations for students:
    - Wrap EVERY formula in $...$ (inline) or $$...$$ (display).
    - Good: The energy is $\\frac{1}{2}mv^2$.
@@ -77,7 +77,7 @@ const HINT_LOCAL_SHAPE = `Reply in markdown (not JSON) with these headings so th
 ## Process outline
 ## Worked partial
 ## What you finish
-Use $...$ / $$...$$ around every formula (never bare \\frac / \\sqrt; never put formulas in code fences). Never reveal the final graded numeric answer. Continue the dialogue.`;
+Fill each section with concrete, useful teaching content (not empty stubs). Use $...$ / $$...$$ around every formula (never bare \\frac / \\sqrt; never put formulas in code fences). Never reveal the final graded numeric answer. Continue the dialogue.`;
 
 export const HINT_PROCESS_SYSTEM = `${TEACHING_CORE}
 
@@ -155,7 +155,7 @@ ${CONCEPT_TEACHER_RULES}
 
 ${conceptModeCoach(mode)}
 
-Reply in markdown (not JSON) with clear headings. Use $...$ / $$...$$ for every formula (never bare \\frac; never formula code fences). Include formulas and a mini-example when the mode allows. Never finish graded finals. Continue the dialogue.`;
+Reply in markdown (not JSON) with clear headings and FULL useful teaching content (not a stub). Use $...$ / $$...$$ for every formula (never bare \\frac; never formula code fences). Include formulas, steps, and a mini-example when the mode allows. Never finish graded finals. Continue the dialogue.`;
 }
 
 /** Alias for ConceptAskAi and generic concept local calls. */

@@ -1,7 +1,7 @@
 /**
  * Local AI generation policy.
- * Sole restriction: turn thinking mode off (Qwen3 `enable_thinking: false`).
- * No timeouts, token caps, context shrink, or size-tier special cases.
+ * Sole hard restriction: turn thinking mode off (Qwen3 `enable_thinking: false`).
+ * Otherwise prefer full, useful teaching replies (no short-answer throttles).
  */
 
 import {
@@ -14,8 +14,10 @@ import {
 export type LocalGenPolicy = {
   /** Force WebLLM `extra_body.enable_thinking: false` when the model supports it. */
   disableThinking: boolean;
-  /** High ceiling so answers are not cut short — not a size-tier throttle. */
+  /** High ceiling so answers are not cut short. */
   maxTokens: number;
+  /** Sampling temperature — a bit higher helps small models write fuller replies. */
+  temperature: number;
   nudge: string;
   /** True when this id is a retired R1 / Distill reasoning dump model. */
   isRetiredReasoning: boolean;
@@ -25,7 +27,8 @@ export type LocalGenPolicy = {
 export function getLocalGenPolicy(modelId: string): LocalGenPolicy {
   return {
     disableThinking: shouldDisableThinking(modelId),
-    maxTokens: 2048,
+    maxTokens: 3072,
+    temperature: 0.55,
     nudge: localNudgeForModel(modelId),
     isRetiredReasoning: isReasoningLocalModel(modelId),
   };
@@ -47,21 +50,32 @@ export function compactLocalMessages(
   return messages.map((message) => ({ ...message }));
 }
 
-/** Soft fallback if generation fails with no text (rare with restrictions removed). */
+/** Soft fallback if generation fails with no text. */
 export function localTimeoutGuidance(modelId: string): string {
   const short = modelId.replace(/-q4f16_1-MLC$/i, "").replace(/-/g, " ");
   return `## Local AI stopped early
 
-No answer arrived from **${short}**.
+No useful answer arrived from **${short}**.
 
 Try one of these:
-1. Switch to **Qwen3.5 Starter** or another lighter model, then press **Enable** again
-2. Turn **off site search** in Local settings (smaller prompt = faster)
+1. Press **Enable** again on the same model (or switch to **Qwen3.5 Starter** / Light)
+2. Turn **off site search** in Local settings (smaller prompt = less likely to stall)
 3. Use **Website API** for this question`;
 }
 
 export function isLocalGuidanceReply(text: string): boolean {
   return text.trimStart().startsWith("## Local AI stopped early");
+}
+
+/** True when a Local reply is too thin to be useful for students. */
+export function isThinLocalReply(text: string): boolean {
+  const t = String(text || "").trim();
+  if (!t || isLocalGuidanceReply(t)) return true;
+  if (t.length < 280) return true;
+  const structure =
+    (t.match(/^#{1,3}\s+/gm) || []).length + (t.match(/^[-*]\s+/gm) || []).length;
+  if (structure < 2 && t.length < 550) return true;
+  return false;
 }
 
 export function isMediumLocalModel(modelId: string): boolean {

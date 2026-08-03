@@ -210,9 +210,10 @@ export default function LocalAIControls({ embedded = false }: Props) {
                 switch to Website API / Your own API.
               </p>
               <p className="mt-2 text-xs text-amber-900/90">
-                Local restriction: <strong>thinking mode off</strong> for Qwen3 / Qwen3.5. No other
-                Local throttles (timeouts / context caps / short answers). Prefer Starter/Light on
-                weak GPUs; Heavy still needs a strong GPU — or use Website API.
+                Local keeps <strong>thinking mode off</strong> for Qwen3 / Qwen3.5, and now asks for{" "}
+                <strong>fuller teaching replies</strong> (auto-expands stubs). If a small/medium
+                model feels half-stuck, wait for “Still preparing…”, turn off site search, or
+                re-Enable — Heavy needs a strong GPU.
               </p>
             </div>
           )}
