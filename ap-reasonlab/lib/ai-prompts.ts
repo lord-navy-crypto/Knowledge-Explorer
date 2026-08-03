@@ -215,11 +215,13 @@ function englishModeCoach(mode: string): string {
     case "corpus-find":
     case "corpus-generate":
     case "original-practice":
-      return `Mode practice-generator — create NEW learning materials from controls the student provides:
-- Use target word/phrase (if given), CEFR/exam level, and topic to generate fresh material.
-- Deliver: (1) 3–5 natural example sentences using the target when provided, (2) one short original passage or dialogue on the topic at the stated level, (3) one mini exercise (gap-fill, paraphrase, or comprehension) with an answer key clearly marked for self-check.
-- Do not recycle the student’s input as the only output — invent new examples and exercises.
-- Match difficulty to the stated level (e.g. A2 / B1 / TOEFL / IELTS / SAT).`;
+      return `Mode practice-generator — first-order rule: COPY the user’s pasted topic, then GENERATE a NEW topic from it.
+- Whatever they pasted is the topic seed. Do NOT judge whether it is a “real topic.” If it is not a topic, still forget that judgment and use the paste as-is.
+- COPY the pasted text (quote or briefly restate it so the student sees what you based on).
+- GENERATE a NEW practice topic from that copy — new questions, a new short passage + items, or a fresh worksheet-style set. Do not merely polish or reprint the paste.
+- Prefer concrete, answerable practice items. Include a brief answer key / self-check when items have definite answers.
+- Optional exam/track label may be provided for tone (TOEFL/IELTS/SAT/general); ignore missing word/level controls.
+- Always separate: ## Topic (copied)  ## New practice topic  ## Items  ## Answer key (if any)`;
     default:
       return `Mode general English coaching: be specific and give a next practice step.`;
   }

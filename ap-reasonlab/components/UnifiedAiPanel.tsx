@@ -115,7 +115,7 @@ const ENGLISH_TASKS: Array<{ value: EnglishTask; label: string; hint: string }> 
   {
     value: "practice-generator",
     label: "Practice generator",
-    hint: "New examples, passage, and exercise from target word + level + topic.",
+    hint: "Paste any topic — copy it, then generate a new practice topic from it. Not a topic? Still copy and generate.",
   },
 ];
 
@@ -207,9 +207,6 @@ export default function UnifiedAiPanel({
   });
   const [subject, setSubject] = useState(defaultSubject || savedPrefs.subject || SUBJECT_OPTIONS[0]);
   const [englishTarget, setEnglishTarget] = useState(savedPrefs.englishTarget);
-  const [englishLevel, setEnglishLevel] = useState(savedPrefs.englishLevel || "B1 / intermediate");
-  const [englishTopic, setEnglishTopic] = useState(savedPrefs.englishTopic || "Daily academic life");
-  const [englishFocusWord, setEnglishFocusWord] = useState(savedPrefs.englishFocusWord || "");
   const [language, setLanguage] = useState<(typeof LANGUAGES)[number]>(
     (savedPrefs.language as (typeof LANGUAGES)[number]) || "Python"
   );
@@ -269,23 +266,9 @@ export default function UnifiedAiPanel({
       codingTask,
       subject,
       englishTarget,
-      englishLevel,
-      englishTopic,
-      englishFocusWord,
       language,
     });
-  }, [
-    apTask,
-    category,
-    codingTask,
-    englishFocusWord,
-    englishLevel,
-    englishTarget,
-    englishTopic,
-    englishTask,
-    language,
-    subject,
-  ]);
+  }, [apTask, category, codingTask, englishTarget, englishTask, language, subject]);
 
   useEffect(() => {
     const node = chatRef.current;
@@ -496,18 +479,16 @@ export default function UnifiedAiPanel({
       const mode = englishTask;
       const englishControls =
         mode === "practice-generator"
-          ? `Exam/track target: ${englishTarget}
-Level: ${englishLevel}
-Topic: ${englishTopic}
-Target word/phrase: ${englishFocusWord.trim() || "(none — invent useful vocabulary for the topic)"}
-Extra request / notes from student:`
+          ? `Exam/track target (tone only): ${englishTarget}
+Rule: COPY whatever the student pasted as the topic (do not judge if it is a “real topic”). Then GENERATE a NEW practice topic from that copy.
+Student paste (topic):`
           : mode === "language-materials"
             ? `Exam/track target: ${englishTarget}
 Role: language-materials collector on large pastes; language-materials generator on short commands/sentences (语言资料, not generic data).
 Student input:`
             : `Exam/track target: ${englishTarget}
 Student input:`;
-      const englishUser = `${englishControls}\n${userText || "(see controls above — generate from level/topic/word)"}`;
+      const englishUser = `${englishControls}\n${userText}`;
       if (localAI.usesLocal) {
         const text = await runLocal(
           englishTutorLocal(mode),
@@ -528,9 +509,6 @@ Student input:`;
         body: JSON.stringify({
           mode,
           target: englishTarget,
-          level: englishLevel,
-          topic: englishTopic,
-          focusWord: englishFocusWord,
           input: `${historyPrefix}${englishUser}`,
           ...localAI.cloudRequestFields,
         }),
@@ -603,37 +581,23 @@ Student input:`;
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     const userText = input.trim();
-    const practiceReady =
-      category === "english" &&
-      englishTask === "practice-generator" &&
-      (englishFocusWord.trim() || englishTopic.trim() || englishLevel.trim());
-    if (!userText && !(category === "coding" && code.trim()) && !practiceReady) {
+    if (!userText && !(category === "coding" && code.trim())) {
       setError(
         category === "coding"
           ? "Describe the coding task and/or paste code."
           : category === "english" && englishTask === "practice-generator"
-            ? "Add a target word, topic, or level — or type an extra request."
+            ? "Paste a topic first — any text. We copy it and generate a new topic from it."
             : "Type a question or paste content first."
       );
       return;
     }
 
-    const displayUser =
-      category === "english" && englishTask === "practice-generator"
-        ? [
-            englishFocusWord.trim() ? `Word: ${englishFocusWord.trim()}` : null,
-            `Level: ${englishLevel}`,
-            `Topic: ${englishTopic}`,
-            userText ? `Notes: ${userText}` : null,
-          ]
-            .filter(Boolean)
-            .join(" · ")
-        : [
-            userText,
-            category === "coding" && code.trim() ? `\n\n\`\`\`\n${code.trim()}\n\`\`\`` : "",
-          ]
-            .filter(Boolean)
-            .join("");
+    const displayUser = [
+      userText,
+      category === "coding" && code.trim() ? `\n\n\`\`\`\n${code.trim()}\n\`\`\`` : "",
+    ]
+      .filter(Boolean)
+      .join("");
 
     const userMessage: ChatMessage = {
       id: `u-${Date.now()}`,
@@ -861,51 +825,6 @@ Student input:`;
           ) : null}
         </div>
 
-        {category === "english" && englishTask === "practice-generator" ? (
-          <div className="grid gap-3 md:grid-cols-3">
-            <label className="block text-sm font-medium text-slate-700">
-              Target word / phrase
-              <input
-                className="input mt-1"
-                value={englishFocusWord}
-                onChange={(e) => setEnglishFocusWord(e.target.value)}
-                placeholder="e.g. nevertheless, photosynthesis"
-              />
-            </label>
-            <label className="block text-sm font-medium text-slate-700">
-              Level
-              <select
-                className="input mt-1"
-                value={englishLevel}
-                onChange={(e) => setEnglishLevel(e.target.value)}
-              >
-                {[
-                  "A2 / elementary",
-                  "B1 / intermediate",
-                  "B2 / upper-intermediate",
-                  "C1 / advanced",
-                  "TOEFL",
-                  "IELTS",
-                  "SAT Reading & Writing",
-                ].map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="block text-sm font-medium text-slate-700">
-              Topic
-              <input
-                className="input mt-1"
-                value={englishTopic}
-                onChange={(e) => setEnglishTopic(e.target.value)}
-                placeholder="e.g. campus life, climate, lab reports"
-              />
-            </label>
-          </div>
-        ) : null}
-
         <div className="overflow-hidden rounded-xl border border-slate-200">
           <div className="flex items-center justify-between gap-2 border-b border-slate-200 bg-slate-50 px-3 py-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -1022,7 +941,7 @@ Student input:`;
                       ? englishTask === "language-materials"
                         ? "Paste a large text to collect useful + extended 语言资料, or a short command/sentence to generate language materials…"
                         : englishTask === "practice-generator"
-                          ? "Optional notes (style, count of sentences…) — or leave blank and use word/level/topic above"
+                          ? "Paste any topic (or anything). We copy it and generate a NEW practice topic from it."
                           : "Paste a passage, sentence, or writing draft…"
                       : "Paste a problem, formula, concept, or question…"
               }

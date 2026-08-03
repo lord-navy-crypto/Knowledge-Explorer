@@ -42,30 +42,29 @@ export async function POST(req: NextRequest) {
       migrateEnglishTask(String(body.mode || "writing-feedback").trim()) ||
       "writing-feedback";
     const target = String(body.target || "General academic English").trim();
-    const level = String(body.level || "").trim();
-    const topic = String(body.topic || "").trim();
-    const focusWord = String(body.focusWord || "").trim();
     const userApiKey = String(body.userApiKey || "").trim();
     const provider = parseAiProvider(body.provider);
     const siteModel = parseSiteModelChoice(body.siteModel);
 
-    const hasPracticeControls = Boolean(level || topic || focusWord);
-    if (!input && !(mode === "practice-generator" && hasPracticeControls)) {
+    if (!input) {
       return NextResponse.json(
-        { error: "Enter English text or a learning question." },
+        {
+          error:
+            mode === "practice-generator"
+              ? "Paste a topic first — any text. We copy it and generate a new topic from it."
+              : "Enter English text or a learning question.",
+        },
         { status: 400 }
       );
     }
     if (input.length > 16_000) return NextResponse.json({ error: "Input is too long (maximum 16,000 characters)." }, { status: 400 });
     if (mode.length > 60 || target.length > 100) return NextResponse.json({ error: "Invalid mode or target." }, { status: 400 });
-    if (isClearlyOutsideEnglishScope(input || topic || focusWord, mode)) return NextResponse.json(scopeRefusal());
+    if (isClearlyOutsideEnglishScope(input, mode)) return NextResponse.json(scopeRefusal());
 
     const controlBlock =
       mode === "practice-generator"
-        ? `Exam/track target: ${target}
-Level: ${level || "(unspecified)"}
-Topic: ${topic || "(unspecified)"}
-Target word/phrase: ${focusWord || "(none — invent useful vocabulary for the topic)"}
+        ? `Exam/track target (tone only): ${target}
+Rule: COPY whatever the student pasted as the topic (do not judge if it is a “real topic”). Then GENERATE a NEW practice topic from that copy.
 `
         : mode === "language-materials"
           ? `Exam/track target: ${target}
@@ -76,16 +75,13 @@ Role: language-materials collector on large pastes; language-materials generator
 
     const user = `Mode: ${mode}
 ${controlBlock}
-Student input:
-${input || "(generate from the controls above)"}
+Student paste / input:
+${input}
 
 Return the required English Tutor JSON.`;
     try {
       const siteSearch = body.siteSearch !== false;
-      const siteContext = await buildServerAiSiteContext(
-        `${mode}\n${target}\n${level}\n${topic}\n${focusWord}\n${input}`,
-        siteSearch
-      );
+      const siteContext = await buildServerAiSiteContext(`${mode}\n${target}\n${input}`, siteSearch);
       const userWithSite = appendAiSiteContext(user, siteContext);
       const result = await runChatJson({
         system: englishTutorSystem(mode),
