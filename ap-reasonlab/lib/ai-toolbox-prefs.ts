@@ -10,9 +10,6 @@ export type ToolboxPanelPrefs = {
   codingTask: string;
   subject: string;
   englishTarget: string;
-  englishLevel: string;
-  englishTopic: string;
-  englishFocusWord: string;
   language: string;
 };
 
@@ -26,9 +23,6 @@ const DEFAULT_PANEL_PREFS: ToolboxPanelPrefs = {
   codingTask: "debug",
   subject: "AP Physics 1",
   englishTarget: "General academic English",
-  englishLevel: "B1 / intermediate",
-  englishTopic: "Daily academic life",
-  englishFocusWord: "",
   language: "Python",
 };
 
@@ -70,12 +64,6 @@ export function loadToolboxPanelPrefs(): ToolboxPanelPrefs {
     codingTask: parsed.codingTask || DEFAULT_PANEL_PREFS.codingTask,
     subject: parsed.subject || DEFAULT_PANEL_PREFS.subject,
     englishTarget: parsed.englishTarget || DEFAULT_PANEL_PREFS.englishTarget,
-    englishLevel: parsed.englishLevel || DEFAULT_PANEL_PREFS.englishLevel,
-    englishTopic: parsed.englishTopic || DEFAULT_PANEL_PREFS.englishTopic,
-    englishFocusWord:
-      typeof parsed.englishFocusWord === "string"
-        ? parsed.englishFocusWord
-        : DEFAULT_PANEL_PREFS.englishFocusWord,
     language: parsed.language || DEFAULT_PANEL_PREFS.language,
   };
 }
