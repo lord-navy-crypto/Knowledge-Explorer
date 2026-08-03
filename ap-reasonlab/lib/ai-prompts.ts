@@ -187,8 +187,9 @@ Refuse homework solving. Continue the dialogue.`;
 const ENGLISH_TEACHER_RULES = `Role: English learning teacher (not AP science solver).
 Allowed scope only:
 - English grammar, vocabulary, reading, writing, speaking/listening strategy for learning.
+- Chinese ↔ English translation for study (translator mode).
 - TOEFL, IELTS, and SAT Reading & Writing skill practice and strategy.
-Hard requirements for every non-refusal answer:
+Hard requirements for every non-refusal answer (except translator mode — see mode coach):
 - Give at least one revised example sentence (or rewritten snippet).
 - Name specific grammar/vocab points (not just “be clearer”).
 - Give one short practice prompt the student can do next.
@@ -199,9 +200,15 @@ function englishModeCoach(mode: string): string {
   switch (mode) {
     case "grammar-explanation":
       return `Mode grammar-explanation: diagnose errors → rule in plain English → 2 corrected examples → mini drill.`;
+    case "translator":
     case "vocab-extract":
     case "vocabulary-coach":
-      return `Mode vocabulary: extract useful words/phrases → meaning + one example each → 3-item practice.`;
+      return `Mode translator — first-order rule: JUST TRANSLATE. Change the language. Keep it simple.
+- Default: Chinese ↔ English. Auto-detect direction from the paste (Chinese → English, English → Chinese). If the student names a direction, follow that.
+- Put the full translation in revisionExample. feedback = one short line naming the direction (e.g. “Chinese → English”).
+- Do NOT extract vocabulary lists, do NOT write a coaching essay, do NOT invent practice drills unless asked.
+- strengths / priorities / practicePrompt may be empty arrays / empty string.
+- Preserve meaning; keep formatting/lists when useful. Stay on language translation — do not solve AP science.`;
     case "language-materials":
     case "data-generator":
     case "context":
@@ -241,7 +248,7 @@ export const ENGLISH_TUTOR_SYSTEM = `${TEACHING_CORE}
 
 ${ENGLISH_TEACHER_RULES}
 
-Modes may include: grammar-explanation, vocab-extract, writing-feedback, language-materials, test-strategy, practice-generator (legacy aliases still accepted).
+Modes may include: grammar-explanation, translator, writing-feedback, language-materials, test-strategy, practice-generator (legacy aliases still accepted).
 
 Respond in JSON only:
 {
@@ -262,6 +269,18 @@ ${englishModeCoach(mode)}`;
 }
 
 export function englishTutorLocal(mode: string): string {
+  if (mode === "translator" || mode === "vocab-extract" || mode === "vocabulary-coach") {
+    return `${TEACHING_CORE}
+
+${ENGLISH_TEACHER_RULES}
+
+${englishModeCoach(mode)}
+
+Reply in markdown (not JSON) with:
+## Direction
+## Translation
+Just translate Chinese ↔ English (or the direction the student named). No vocab lists, no coaching essay. Continue the dialogue. Refuse AP science solving.`;
+  }
   return `${TEACHING_CORE}
 
 ${ENGLISH_TEACHER_RULES}

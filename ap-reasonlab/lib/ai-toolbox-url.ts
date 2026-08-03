@@ -11,7 +11,7 @@ export type ToolboxApTask =
 /** Canonical English AI tasks (consolidated). */
 export type ToolboxEnglishTask =
   | "grammar-explanation"
-  | "vocab-extract"
+  | "translator"
   | "writing-feedback"
   | "language-materials"
   | "test-strategy"
@@ -19,7 +19,7 @@ export type ToolboxEnglishTask =
 
 export const TOOLBOX_ENGLISH_TASKS: ToolboxEnglishTask[] = [
   "grammar-explanation",
-  "vocab-extract",
+  "translator",
   "writing-feedback",
   "language-materials",
   "test-strategy",
@@ -39,8 +39,9 @@ export function migrateEnglishTask(raw: string | null | undefined): ToolboxEngli
     case "context":
     case "data-generator":
       return "language-materials";
+    case "vocab-extract":
     case "vocabulary-coach":
-      return "vocab-extract";
+      return "translator";
     case "corpus-find":
     case "corpus-generate":
     case "original-practice":

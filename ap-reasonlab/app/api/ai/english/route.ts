@@ -5,7 +5,13 @@ import { appendAiSiteContext, buildServerAiSiteContext } from "@/lib/ai-site-con
 import { migrateEnglishTask } from "@/lib/ai-toolbox-url";
 
 function isClearlyOutsideEnglishScope(input: string, mode: string): boolean {
-  if (mode === "writing-feedback" || mode === "grammar-explanation") return false;
+  if (
+    mode === "writing-feedback" ||
+    mode === "grammar-explanation" ||
+    mode === "translator"
+  ) {
+    return false;
+  }
   const asksEnglish = /english|grammar|sentence|writing|vocab|word|reading|speaking|listening|toefl|ielts|sat|rewrite|revise|proofread|translate/i.test(input);
   const asksAnotherSubject = /\b(AP\s+)?(physics|chemistry|biology|calculus|statistics|macroeconomics|microeconomics|computer science)\b|calculate|solve the equation|find the force/i.test(input);
   return asksAnotherSubject && !asksEnglish;
@@ -14,7 +20,7 @@ function isClearlyOutsideEnglishScope(input: string, mode: string): boolean {
 function scopeRefusal() {
   return {
     refused: true,
-    feedback: "This tutor is limited to English learning, writing, grammar, vocabulary, TOEFL, IELTS, and SAT Reading & Writing. Please use AI Toolbox for AP subject questions.",
+    feedback: "This tutor is limited to English learning, writing, grammar, translation, TOEFL, IELTS, and SAT Reading & Writing. Please use AI Toolbox for AP subject questions.",
     strengths: [], priorities: [], revisionExample: "", practicePrompt: "",
     aiMayBeWrong: "If your goal was to improve the English wording of subject text, choose Writing feedback and paste the passage again.",
     note: "English-only scope check.",
@@ -22,6 +28,19 @@ function scopeRefusal() {
 }
 
 function mockEnglishTutor(input: string, mode: string) {
+  if (mode === "translator") {
+    const snippet = input.slice(0, 120);
+    return {
+      refused: false,
+      feedback: "Chinese ↔ English (demo). Configure a live API key for a real translation.",
+      strengths: [],
+      priorities: [],
+      revisionExample: `[Demo translation of]: ${snippet}${input.length > 120 ? "…" : ""}`,
+      practicePrompt: "",
+      aiMayBeWrong: "Demo translation is not a real model output.",
+      note: "Mock mode (no configured website AI key).",
+    };
+  }
   return {
     refused: false,
     feedback: `The English tutor is in offline demo mode. Your ${mode} request was received. Focus first on a clear main idea, then check whether each sentence supports it.`,
@@ -52,7 +71,9 @@ export async function POST(req: NextRequest) {
           error:
             mode === "practice-generator"
               ? "Paste a topic first — any text. We copy it and generate a new topic from it."
-              : "Enter English text or a learning question.",
+              : mode === "translator"
+                ? "Paste text to translate."
+                : "Enter English text or a learning question.",
         },
         { status: 400 }
       );
@@ -70,7 +91,11 @@ Rule: COPY whatever the student pasted as the topic (do not judge if it is a “
           ? `Exam/track target: ${target}
 Role: language-materials collector on large pastes; language-materials generator on short commands/sentences (语言资料, not generic data).
 `
-          : `Exam/track target: ${target}
+          : mode === "translator"
+            ? `Exam/track target (ignore for translation): ${target}
+Rule: JUST TRANSLATE. Chinese ↔ English by default (auto-detect). If the student names a direction, follow it. Put the full translation in revisionExample.
+`
+            : `Exam/track target: ${target}
 `;
 
     const user = `Mode: ${mode}

@@ -35,7 +35,7 @@ type ApTask =
 
 type EnglishTask =
   | "grammar-explanation"
-  | "vocab-extract"
+  | "translator"
   | "writing-feedback"
   | "language-materials"
   | "test-strategy"
@@ -99,9 +99,9 @@ const ENGLISH_TASKS: Array<{ value: EnglishTask; label: string; hint: string }> 
     hint: "Find and explain grammar issues.",
   },
   {
-    value: "vocab-extract",
-    label: "Vocab extract",
-    hint: "Pull useful words from a reading passage.",
+    value: "translator",
+    label: "Translator",
+    hint: "Paste text — translate Chinese ↔ English (or the direction you name).",
   },
   {
     value: "writing-feedback",
@@ -497,7 +497,11 @@ Student paste (topic):`
             ? `Exam/track target: ${englishTarget}
 Role: language-materials collector on large pastes; language-materials generator on short commands/sentences (语言资料, not generic data).
 Student input:`
-            : `Exam/track target: ${englishTarget}
+            : mode === "translator"
+              ? `Exam/track target (ignore for translation): ${englishTarget}
+Rule: JUST TRANSLATE. Chinese ↔ English by default (auto-detect). If the student names a direction, follow it. Put the full translation in revisionExample.
+Student paste:`
+              : `Exam/track target: ${englishTarget}
 Student input:`;
       const englishUser = `${englishControls}\n${userText}`;
       if (localAI.usesLocal) {
@@ -530,7 +534,10 @@ Student input:`;
         { label: "Strengths", items: data.strengths || [] },
         { label: "Priorities", items: data.priorities || [] },
       ];
-      const snippet = [data.revisionExample, data.practicePrompt].filter(Boolean).join("\n\n");
+      const snippet =
+        mode === "translator"
+          ? data.revisionExample || ""
+          : [data.revisionExample, data.practicePrompt].filter(Boolean).join("\n\n");
       return {
         id: `a-${Date.now()}`,
         role: "assistant",
@@ -729,7 +736,7 @@ Student input:`;
           {(
             [
               { id: "ap", label: "AP / Learning", detail: "Hints, concepts, extensions, formulas, practice" },
-              { id: "english", label: "English", detail: "Grammar, vocab, materials, practice" },
+              { id: "english", label: "English", detail: "Grammar, translate, materials, practice" },
               { id: "coding", label: "Coding", detail: "Debug, write, explain" },
             ] as const
           ).map((item) => (
@@ -953,7 +960,9 @@ Student input:`;
                         ? "Paste a large text to collect useful + extended 语言资料, or a short command/sentence to generate language materials…"
                         : englishTask === "practice-generator"
                           ? "Paste any topic (or anything). We copy it and generate a NEW practice topic from it."
-                          : "Paste a passage, sentence, or writing draft…"
+                          : englishTask === "translator"
+                            ? "Paste Chinese or English text to translate…"
+                            : "Paste a passage, sentence, or writing draft…"
                       : category === "ap" && apTask === "concept-extension"
                         ? "Paste a basic concept or formula — e.g. Ohm’s law, conservation of energy, ideal gas…"
                         : "Paste a problem, formula, concept, or question…"

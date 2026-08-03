@@ -22,7 +22,7 @@ type Result = {
 
 const modes = [
   { value: "grammar-explanation", label: "Grammar check" },
-  { value: "vocab-extract", label: "Vocab extract" },
+  { value: "translator", label: "Translator" },
   { value: "writing-feedback", label: "Writing feedback" },
   { value: "language-materials", label: "Language materials" },
   { value: "test-strategy", label: "Exam strategy" },
@@ -110,7 +110,7 @@ export default function EnglishAiTutor({ embedded = false, hideChannelUi = false
         <div>
           <h2 className="text-xl font-semibold">English AI</h2>
           <p className="mt-1 text-sm text-slate-600">
-            Writing, grammar, vocabulary, and test strategy — Local, Website API, or Your own API.{" "}
+            Writing, grammar, translation, and test strategy — Local, Website API, or Your own API.{" "}
             <Link href="/hints?tool=english" className="font-semibold underline">
               AI Toolbox · English AI
             </Link>
@@ -154,14 +154,14 @@ export default function EnglishAiTutor({ embedded = false, hideChannelUi = false
           onChange={setInput}
           required
           minHeightClass="min-h-52"
-          placeholder="Paste your own paragraph, sentence, vocabulary question, or ask for an original practice exercise…"
+          placeholder="Paste your own paragraph, sentence, or text to translate…"
         />
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-xs text-slate-500">
             Maximum 10,000 characters · AI feedback is not an official test score.
           </p>
           <button type="submit" className="btn-primary" disabled={loading || !input.trim()}>
-            {loading ? "Reviewing…" : "Ask English AI"}
+            {loading ? "Working…" : mode === "translator" ? "Translate" : "Ask English AI"}
           </button>
         </div>
       </form>
@@ -203,12 +203,12 @@ export default function EnglishAiTutor({ embedded = false, hideChannelUi = false
           {result.revisionExample && (
             <div className="rounded-xl bg-slate-950 p-4 text-sm text-slate-100">
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                Short revision example
+                {mode === "translator" ? "Translation" : "Short revision example"}
               </p>
               <RichContent>{result.revisionExample}</RichContent>
             </div>
           )}
-          {result.practicePrompt && (
+          {mode !== "translator" && result.practicePrompt && (
             <div className="rounded-xl bg-indigo-50 p-4 text-sm text-indigo-950">
               <strong>Next practice:</strong> {result.practicePrompt}
             </div>
