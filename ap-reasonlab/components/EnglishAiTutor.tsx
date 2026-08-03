@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { flushSync } from "react-dom";
 import Link from "next/link";
 import LocalAIControls from "@/components/LocalAIControls";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
@@ -60,16 +61,35 @@ export default function EnglishAiTutor({ embedded = false, hideChannelUi = false
         const { context } = await fetchAiSiteContext(localPrompt, localAI.siteSearchEnabled, {
           limit: AI_SITE_SEARCH_LIMIT_LOCAL,
         });
-        const text = await localAI.complete([
-          {
-            role: "system",
-            content: englishTutorLocal(mode),
-          },
-          {
-            role: "user",
-            content: appendAiSiteContext(localPrompt, context),
-          },
-        ]);
+        setResult({
+          refused: false,
+          feedback: "",
+          strengths: [],
+          priorities: [],
+          revisionExample: "",
+          practicePrompt: "",
+          aiMayBeWrong: "Local AI language advice may be wrong — verify important points.",
+          note: context
+            ? "Local AI · speaking… · with Knowledge Explorer site search"
+            : "Local AI · speaking…",
+        });
+        const text = await localAI.complete(
+          [
+            {
+              role: "system",
+              content: englishTutorLocal(mode),
+            },
+            {
+              role: "user",
+              content: appendAiSiteContext(localPrompt, context),
+            },
+          ],
+          (_token, fullText) => {
+            flushSync(() => {
+              setResult((prev) => (prev ? { ...prev, feedback: fullText } : prev));
+            });
+          }
+        );
         setResult({
           refused: false,
           feedback: text,

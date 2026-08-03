@@ -73,7 +73,8 @@ export function isHeavyLocalModel(modelId: string): boolean {
 }
 
 export function localNudgeForModel(modelId: string): string {
-  return shouldDisableThinking(modelId) ? LOCAL_DIRECT_ANSWER_NUDGE : LOCAL_MARKDOWN_NUDGE;
+  const base = shouldDisableThinking(modelId) ? LOCAL_DIRECT_ANSWER_NUDGE : LOCAL_MARKDOWN_NUDGE;
+  return `${base}\n\n${LOCAL_DEPTH_NUDGE}`;
 }
 
 /**
@@ -85,12 +86,35 @@ export const REASONING_MODEL_DIRECT_ANSWER =
 
 /** Soft nudge when thinking mode does not apply — keep formulas visible. */
 export const LOCAL_MARKDOWN_NUDGE =
-  "Reply in markdown. Wrap EVERY formula in $...$ or $$...$$ so students see equations (never bare \\frac / \\sqrt, never formula code fences). Put key steps in the visible reply.";
+  "Reply in markdown. Wrap EVERY formula in $...$ or $$...$$ so students see equations (never bare \\frac / \\sqrt, never formula code fences).";
 
 /** Nudge paired with thinking-off (sole Local restriction). */
 export const LOCAL_DIRECT_ANSWER_NUDGE =
-  "Reply in markdown with thinking mode off. Wrap EVERY formula in $...$ or $$...$$ (never bare TeX, never formula code fences). Do NOT open <think> or <thinking> tags — start with visible answer content.";
+  "Thinking mode is OFF. Write the visible answer immediately — do not open <think> or <thinking> tags. Wrap EVERY formula in $...$ or $$...$$ (never bare TeX, never formula code fences).";
 
-/** Used on a blank-reply retry. */
+/** Push Local models to speak more, use more formulas, and explain in detail. */
+export const LOCAL_DEPTH_NUDGE = `Speak as you go: write useful teaching text sentence by sentence right away. Do not silently plan a short answer first.
+
+Length & detail:
+- Prefer a LONG, detailed teaching reply over a stub. Keep talking until the student has enough to work with.
+- Use multiple sections (idea → key formulas → symbol meanings → steps → partial example → checkpoint → what the student finishes).
+- Explain WHY each step works, not only what to do.
+
+Formulas (required when the topic is math/science/AP):
+- Include SEVERAL formulas, each wrapped in $...$ or $$...$$ (never bare TeX, never formula code fences).
+- After each important formula, explain what every symbol means and when to use it.
+- Show at least one worked PARTIAL example with numbers/units when possible.
+
+Put ALL of this in the visible streamed reply. Do not stop after one short paragraph.`;
+
+/** Used when the first Local pass is blank (thinking leftovers). */
 export const LOCAL_RETRY_NO_THINK_NUDGE =
-  "Retry: output the student-facing answer now. Zero <think> tags. Use $...$ for math.";
+  "Retry: start speaking a LONG teaching answer NOW, sentence by sentence. Zero <think> tags. Include several $...$ formulas with symbol meanings, detailed steps, and a partial example — not a one-liner.";
+
+/** Used when the first Local pass is too thin. */
+export const LOCAL_EXPAND_NUDGE =
+  "Your draft was too short or too light on formulas. Continue with a much longer teaching answer: more headings/bullets, MORE formulas in $...$ (with symbol meanings), detailed step-by-step explanation, a partial worked example, one common mistake, and what the student should do next.";
+
+/** Used when the reply has almost no rendered math. */
+export const LOCAL_MORE_FORMULAS_NUDGE =
+  "Add more formulas. Rewrite/expand with at least several $...$ / $$...$$ equations, explain each symbol, and walk through the reasoning in more detail while streaming the visible answer.";

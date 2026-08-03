@@ -18,6 +18,8 @@ import type { AiProvider, SiteModelChoice } from "@/lib/ai-site-models";
 import { parseSiteModelChoice } from "@/lib/ai-site-models";
 import {
   isInsideOpenThinkBlock,
+  LOCAL_EXPAND_NUDGE,
+  LOCAL_MORE_FORMULAS_NUDGE,
   LOCAL_RETRY_NO_THINK_NUDGE,
   mergeLocalDirectNudge,
   stripReasoningTrace,
@@ -26,6 +28,8 @@ import {
   compactLocalMessages,
   getLocalGenPolicy,
   isLocalGuidanceReply,
+  isLowFormulaReply,
+  isThinLocalReply,
   localTimeoutGuidance,
 } from "@/lib/local-ai-policy";
 import {
@@ -512,13 +516,19 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
         ) as ChatCompletionMessageParam[];
 
         let raw = "";
+        let sawToken = false;
         setStatusText("Writing answer…");
+        const heartbeatId = window.setInterval(() => {
+          if (!sawToken) {
+            setStatusText("Still preparing Local answer… (small/medium models can take a moment)");
+          }
+        }, 10_000);
 
         try {
           const stream = await engine.chat.completions.create({
             messages: prepared,
             stream: true,
-            temperature: 0.35,
+            temperature: policy.temperature,
             max_tokens: maxTokens,
             // Sole Local restriction: thinking mode off when supported.
             ...(policy.disableThinking ? { extra_body: { enable_thinking: false } } : {}),
@@ -526,13 +536,15 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
 
           for await (const chunk of stream) {
             const token = chunk.choices[0]?.delta?.content ?? "";
+            if (token) sawToken = true;
             raw += token;
             const visible = stripReasoningTrace(raw, { trim: false });
             if (isInsideOpenThinkBlock(raw) && !visible.trim()) {
-              setStatusText("Model opened a think block — stripping it from the visible reply…");
+              setStatusText("Model opened a think block — keeping the visible teaching reply…");
             } else if (visible.trim()) {
-              setStatusText("Writing answer…");
+              setStatusText("Speaking answer… (streaming live)");
             }
+            // Stream every visible update immediately so students see each sentence as it arrives.
             onToken?.(token, visible);
           }
 
@@ -549,22 +561,54 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
             return partial || localTimeoutGuidance(modelId);
           }
           throw caught;
+        } finally {
+          window.clearInterval(heartbeatId);
         }
       };
 
       try {
         let result = await runAttempt(policy.maxTokens, policy.nudge);
+
+        // Blank after think-strip → retry with a full-answer nudge.
         if (!result.trim()) {
-          setStatusText(
-            policy.disableThinking
-              ? "Retrying Local AI without thinking…"
-              : "Retrying Local AI…"
-          );
+          setStatusText("Retrying Local AI for a full visible answer…");
           const retryNudge = policy.disableThinking
             ? `${policy.nudge}\n\n${LOCAL_RETRY_NO_THINK_NUDGE}`
-            : policy.nudge;
+            : `${policy.nudge}\n\n${LOCAL_EXPAND_NUDGE}`;
           result =
             (await runAttempt(policy.maxTokens, retryNudge)) || localTimeoutGuidance(modelId);
+        }
+
+        // Too thin → one expand pass so students get useful depth.
+        if (result.trim() && isThinLocalReply(result) && !isLocalGuidanceReply(result)) {
+          setStatusText("Expanding a short Local reply into a fuller teaching answer…");
+          const expanded = await runAttempt(
+            policy.maxTokens,
+            `${policy.nudge}\n\n${LOCAL_EXPAND_NUDGE}`
+          );
+          if (expanded.trim() && expanded.trim().length > result.trim().length) {
+            result = expanded;
+          }
+        }
+
+        // STEM reply with almost no $math$ → one formula-heavy expand.
+        if (result.trim() && isLowFormulaReply(result) && !isLocalGuidanceReply(result)) {
+          setStatusText("Adding more formulas and detail to the Local reply…");
+          const withMath = await runAttempt(
+            policy.maxTokens,
+            `${policy.nudge}\n\n${LOCAL_MORE_FORMULAS_NUDGE}`
+          );
+          if (
+            withMath.trim() &&
+            ((withMath.match(/\$/g) || []).length > (result.match(/\$/g) || []).length ||
+              withMath.trim().length > result.trim().length)
+          ) {
+            result = withMath;
+          }
+        }
+
+        if (!result.trim()) {
+          result = localTimeoutGuidance(modelId);
         }
         if (!isLocalGuidanceReply(result)) {
           setStatusText("Local AI is ready on this device.");

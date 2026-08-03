@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import LocalAIControls from "@/components/LocalAIControls";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
 import RichContent from "@/components/RichContent";
@@ -333,16 +334,16 @@ export default function UnifiedAiPanel({
         content: `${system}\n\nWhen Knowledge Explorer site materials are appended below, prefer their formulas/definitions and cite the hit titles. Ignore off-topic hits. Follow the same teaching rules as the cloud teacher for this tool.`,
       },
     ];
-    // Local prefill is slow — keep history short so the timeout budget goes to the answer.
-    for (const message of history.slice(-4)) {
+    // Give Local models enough dialogue context now that hard timeouts are gone.
+    for (const message of history.slice(-6)) {
       chatMessages.push({
         role: message.role === "user" ? "user" : "assistant",
-        content: message.text.slice(0, 1200),
+        content: message.text.slice(0, 2500),
       });
     }
     chatMessages.push({
       role: "user",
-      content: appendAiSiteContext(user, context).slice(0, 6_000),
+      content: appendAiSiteContext(user, context).slice(0, 12_000),
     });
     return localAI.complete(chatMessages, onToken);
   }
@@ -656,7 +657,7 @@ Student input:`;
           id: draftId,
           role: "assistant",
           text: "",
-          meta: `${taskMeta.label} · Local · writing…`,
+          meta: `${taskMeta.label} · Local · speaking…`,
         },
       ]);
     }
@@ -668,17 +669,20 @@ Student input:`;
         code,
         streamLocal
           ? (_token, fullText) => {
-              setMessages((prev) =>
-                prev.map((message) =>
-                  message.id === draftId
-                    ? {
-                        ...message,
-                        text: fullText,
-                        meta: `${taskMeta.label} · Local · writing…`,
-                      }
-                    : message
-                )
-              );
+              // Paint each streamed chunk immediately (speak-as-you-go), not after the full reply.
+              flushSync(() => {
+                setMessages((prev) =>
+                  prev.map((message) =>
+                    message.id === draftId
+                      ? {
+                          ...message,
+                          text: fullText,
+                          meta: `${taskMeta.label} · Local · speaking…`,
+                        }
+                      : message
+                  )
+                );
+              });
             }
           : undefined
       );

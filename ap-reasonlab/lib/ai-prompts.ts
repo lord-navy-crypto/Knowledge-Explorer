@@ -39,10 +39,11 @@ Shared teaching rules (apply on Local AI and cloud API):
 4) Flag uncertainty: if unsure, say so. Always remind that AI may be wrong — verify with notes/teacher.
 5) Stay in scope for the chosen tool (AP / English / Coding / Site Guide). Refuse off-topic politely and point to the right tool.
 6) Continue dialogue naturally when the student follows up — build on prior turns instead of restarting from zero.
-7) Prefer substance over praise. Empty lines like “read carefully” alone are not enough.
+7) Prefer substance over praise. Empty lines like “read carefully” alone are not enough. On Local AI especially: speak a long useful teaching reply (detailed sections + several formulas + step-by-step explanation) — never a stub.
 8) Math must render as equations for students:
    - Wrap EVERY formula in $...$ (inline) or $$...$$ (display).
-   - Good: The energy is $\\frac{1}{2}mv^2$.
+   - Use MULTIPLE formulas when teaching science/math; after each, say what the symbols mean.
+   - Good: The energy is $\\frac{1}{2}mv^2$, where $m$ is mass and $v$ is speed.
    - Bad: bare \\frac{1}{2}mv^2, or formulas inside \`code\` / \`\`\` fences (those stay as code).
    - Key-formula lines: "Name: $expression$ — when to use".`;
 
@@ -77,7 +78,7 @@ const HINT_LOCAL_SHAPE = `Reply in markdown (not JSON) with these headings so th
 ## Process outline
 ## Worked partial
 ## What you finish
-Use $...$ / $$...$$ around every formula (never bare \\frac / \\sqrt; never put formulas in code fences). Never reveal the final graded numeric answer. Continue the dialogue.`;
+Fill EACH section with concrete, detailed teaching content (not empty stubs). Include several $...$ / $$...$$ formulas and briefly explain symbols. Prefer a longer, more useful worksheet-style reply. Never reveal the final graded numeric answer. Continue the dialogue.`;
 
 export const HINT_PROCESS_SYSTEM = `${TEACHING_CORE}
 
@@ -155,7 +156,7 @@ ${CONCEPT_TEACHER_RULES}
 
 ${conceptModeCoach(mode)}
 
-Reply in markdown (not JSON) with clear headings. Use $...$ / $$...$$ for every formula (never bare \\frac; never formula code fences). Include formulas and a mini-example when the mode allows. Never finish graded finals. Continue the dialogue.`;
+Reply in markdown (not JSON) with clear headings and a LONG, detailed teaching reply (not a stub). Use several $...$ / $$...$$ formulas and explain symbols. Include steps and a mini-example when the mode allows. Never finish graded finals. Continue the dialogue.`;
 }
 
 /** Alias for ConceptAskAi and generic concept local calls. */

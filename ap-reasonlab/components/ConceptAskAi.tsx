@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { flushSync } from "react-dom";
 import Link from "next/link";
 import EthicsBanner from "@/components/EthicsBanner";
 import LocalAIControls from "@/components/LocalAIControls";
@@ -64,16 +65,32 @@ export default function ConceptAskAi({
         const { context } = await fetchAiSiteContext(localPrompt, localAI.siteSearchEnabled, {
           limit: AI_SITE_SEARCH_LIMIT_LOCAL,
         });
-        const text = await localAI.complete([
-          {
-            role: "system",
-            content: conceptExplainLocal(nextMode),
-          },
-          {
-            role: "user",
-            content: appendAiSiteContext(localPrompt, context),
-          },
-        ]);
+        setResult({
+          refused: false,
+          reply: "",
+          quizPrompt: "",
+          aiMayBeWrong: "Local AI may be wrong — verify with your notes.",
+          note: context
+            ? "Local · speaking… · with Knowledge Explorer site search"
+            : "Local · speaking…",
+        });
+        const text = await localAI.complete(
+          [
+            {
+              role: "system",
+              content: conceptExplainLocal(nextMode),
+            },
+            {
+              role: "user",
+              content: appendAiSiteContext(localPrompt, context),
+            },
+          ],
+          (_token, fullText) => {
+            flushSync(() => {
+              setResult((prev) => (prev ? { ...prev, reply: fullText } : prev));
+            });
+          }
+        );
         setResult({
           refused: false,
           reply: text,
