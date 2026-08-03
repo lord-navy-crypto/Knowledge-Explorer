@@ -663,7 +663,7 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
             stream: true,
             temperature: 0.35,
             max_tokens: maxTokens,
-            // Force-disable Qwen3/3.5 hidden thinking (WebLLM empty </think> header).
+            // Heavy Qwen3 only: force-disable hidden thinking (small/mid models may think).
             ...(policy.disableThinking ? { extra_body: { enable_thinking: false } } : {}),
           });
 
@@ -726,13 +726,17 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
 
       try {
         let result = await runAttempt(policy.maxTokens, policy.nudge);
-        // Always one short no-think retry when the first pass is blank or guidance.
+        // One recovery retry when the first pass is blank or guidance-only.
         if (!result.trim() || isLocalGuidanceReply(result)) {
-          setStatusText("Retrying Local AI without thinking…");
-          const retry = await runAttempt(
-            Math.min(256, policy.maxTokens),
-            `${policy.nudge}\n\n${LOCAL_RETRY_NO_THINK_NUDGE}`
+          setStatusText(
+            policy.disableThinking
+              ? "Retrying Local AI without thinking…"
+              : "Retrying Local AI with a shorter prompt…"
           );
+          const retryNudge = policy.disableThinking
+            ? `${policy.nudge}\n\n${LOCAL_RETRY_NO_THINK_NUDGE}`
+            : `${policy.nudge}\n\nKeep the reply short. Put the student-facing answer first.`;
+          const retry = await runAttempt(Math.min(256, policy.maxTokens), retryNudge);
           if (retry.trim() && !isLocalGuidanceReply(retry)) {
             result = retry;
           } else if (!result.trim()) {
