@@ -36,7 +36,7 @@ type EnglishTask =
   | "grammar-explanation"
   | "vocab-extract"
   | "writing-feedback"
-  | "data-generator"
+  | "language-materials"
   | "test-strategy"
   | "practice-generator";
 
@@ -103,9 +103,9 @@ const ENGLISH_TASKS: Array<{ value: EnglishTask; label: string; hint: string }> 
     hint: "Feedback on a draft you paste.",
   },
   {
-    value: "data-generator",
-    label: "Data generator",
-    hint: "Large paste → collect useful + extended data. Short command/sentence → generate data from it.",
+    value: "language-materials",
+    label: "Language materials",
+    hint: "Large paste → collect useful + extended 语言资料. Short command/sentence → generate language materials.",
   },
   {
     value: "test-strategy",
@@ -501,9 +501,9 @@ Level: ${englishLevel}
 Topic: ${englishTopic}
 Target word/phrase: ${englishFocusWord.trim() || "(none — invent useful vocabulary for the topic)"}
 Extra request / notes from student:`
-          : mode === "data-generator"
+          : mode === "language-materials"
             ? `Exam/track target: ${englishTarget}
-Role: data collector on large pastes; data generator on short commands/sentences.
+Role: language-materials collector on large pastes; language-materials generator on short commands/sentences (语言资料, not generic data).
 Student input:`
             : `Exam/track target: ${englishTarget}
 Student input:`;
@@ -754,7 +754,7 @@ Student input:`;
           {(
             [
               { id: "ap", label: "AP / Learning", detail: "Hints, concepts, formulas, practice" },
-              { id: "english", label: "English", detail: "Grammar, vocab, data, practice" },
+              { id: "english", label: "English", detail: "Grammar, vocab, materials, practice" },
               { id: "coding", label: "Coding", detail: "Debug, write, explain" },
             ] as const
           ).map((item) => (
@@ -1019,8 +1019,8 @@ Student input:`;
                   : category === "coding"
                     ? "Describe the bug, feature, or what to explain…"
                     : category === "english"
-                      ? englishTask === "data-generator"
-                        ? "Paste a large text to collect useful + extended data, or a short command/sentence to generate data…"
+                      ? englishTask === "language-materials"
+                        ? "Paste a large text to collect useful + extended 语言资料, or a short command/sentence to generate language materials…"
                         : englishTask === "practice-generator"
                           ? "Optional notes (style, count of sentences…) — or leave blank and use word/level/topic above"
                           : "Paste a passage, sentence, or writing draft…"

@@ -67,9 +67,9 @@ Level: ${level || "(unspecified)"}
 Topic: ${topic || "(unspecified)"}
 Target word/phrase: ${focusWord || "(none — invent useful vocabulary for the topic)"}
 `
-        : mode === "data-generator"
+        : mode === "language-materials"
           ? `Exam/track target: ${target}
-Role: data collector on large pastes; data generator on short commands/sentences.
+Role: language-materials collector on large pastes; language-materials generator on short commands/sentences (语言资料, not generic data).
 `
           : `Exam/track target: ${target}
 `;
