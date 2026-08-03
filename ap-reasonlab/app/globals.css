@@ -500,8 +500,21 @@ html[data-theme="silver"] .academic-print {
   @apply text-slate-900;
 }
 
+.rich-content .katex,
+.rich-content .katex-display {
+  color: inherit;
+}
+
 .rich-content .katex-display {
   @apply my-2 overflow-x-auto overflow-y-hidden;
+}
+
+.rich-content .katex-error {
+  color: #b45309 !important;
+  background: rgba(245, 158, 11, 0.12);
+  border-radius: 0.25rem;
+  padding: 0 0.15rem;
+  white-space: pre-wrap;
 }
 
 .prose-study > :first-child {
@@ -657,6 +670,16 @@ html[data-theme="cyberpunk"] .text-slate-700 {
 html[data-theme="cyberpunk"] a.text-brand-700,
 html[data-theme="cyberpunk"] .text-brand-700 {
   color: #ff6b6b !important;
+}
+
+html[data-theme="cyberpunk"] .rich-content,
+html[data-theme="cyberpunk"] .rich-content.rich-math {
+  color: #f5e9e9 !important;
+}
+
+html[data-theme="cyberpunk"] .rich-content .katex,
+html[data-theme="cyberpunk"] .rich-content .katex-display {
+  color: inherit !important;
 }
 
 /* Enrich Cyberpunk: more neon layers + scanline feel */
@@ -1572,6 +1595,22 @@ html[data-night="on"] .bg-white\/95,
 html[data-night="on"] .bg-slate-50,
 html[data-night="on"] .bg-slate-100 {
   background-color: #111827 !important;
+}
+
+/* AI / markdown math must stay readable on night surfaces (KaTeX inherits). */
+html[data-night="on"] .rich-content,
+html[data-night="on"] .rich-content.rich-math {
+  color: #e2e8f0 !important;
+}
+
+html[data-night="on"] .rich-content .katex,
+html[data-night="on"] .rich-content .katex-display {
+  color: inherit !important;
+}
+
+html[data-night="on"] .rich-content .katex-error {
+  color: #fbbf24 !important;
+  background: rgba(251, 191, 36, 0.12);
 }
 
 html[data-night="on"] .card,

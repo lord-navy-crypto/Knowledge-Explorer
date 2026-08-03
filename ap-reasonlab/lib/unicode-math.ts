@@ -199,7 +199,35 @@ export function normalizeAuthoredText(input: string): string {
   }
 
   // AI tools often emit MathJax delimiters; remark-math uses dollar delimiters.
-  return value
+  value = value
     .replace(/\\\[([\s\S]*?)\\\]/g, (_match, math: string) => `\n$$\n${math.trim()}\n$$\n`)
     .replace(/\\\(([^\n]*?)\\\)/g, (_match, math: string) => `$${math.trim()}$`);
+
+  return balanceMathDelimiters(value);
+}
+
+/**
+ * Close unfinished $ / $$ while AI streams so remark-math does not swallow the
+ * rest of the reply (which looks like “LaTeX disappeared”).
+ */
+export function balanceMathDelimiters(input: string): string {
+  let text = input;
+  // Unclosed display math: odd number of $$ fences.
+  const displayCount = (text.match(/\$\$/g) || []).length;
+  if (displayCount % 2 === 1) {
+    text = `${text}\n$$`;
+  }
+  // Unclosed inline math outside $$ blocks.
+  const segments = text.split("$$");
+  for (let i = 0; i < segments.length; i += 2) {
+    let singles = 0;
+    const chunk = segments[i];
+    for (let j = 0; j < chunk.length; j++) {
+      if (chunk[j] === "$" && chunk[j - 1] !== "\\") singles += 1;
+    }
+    if (singles % 2 === 1) {
+      segments[i] = `${chunk}$`;
+    }
+  }
+  return segments.join("$$");
 }
