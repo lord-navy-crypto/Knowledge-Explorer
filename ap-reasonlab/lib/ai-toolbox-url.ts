@@ -12,7 +12,7 @@ export type ToolboxEnglishTask =
   | "grammar-explanation"
   | "vocab-extract"
   | "writing-feedback"
-  | "context"
+  | "data-generator"
   | "test-strategy"
   | "practice-generator";
 
@@ -20,7 +20,7 @@ export const TOOLBOX_ENGLISH_TASKS: ToolboxEnglishTask[] = [
   "grammar-explanation",
   "vocab-extract",
   "writing-feedback",
-  "context",
+  "data-generator",
   "test-strategy",
   "practice-generator",
 ];
@@ -35,7 +35,8 @@ export function migrateEnglishTask(raw: string | null | undefined): ToolboxEngli
   switch (value) {
     case "optimize-reading":
     case "reading-simplify":
-      return "context";
+    case "context":
+      return "data-generator";
     case "vocabulary-coach":
       return "vocab-extract";
     case "corpus-find":

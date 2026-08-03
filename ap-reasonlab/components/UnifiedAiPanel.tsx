@@ -36,7 +36,7 @@ type EnglishTask =
   | "grammar-explanation"
   | "vocab-extract"
   | "writing-feedback"
-  | "context"
+  | "data-generator"
   | "test-strategy"
   | "practice-generator";
 
@@ -103,9 +103,9 @@ const ENGLISH_TASKS: Array<{ value: EnglishTask; label: string; hint: string }> 
     hint: "Feedback on a draft you paste.",
   },
   {
-    value: "context",
-    label: "Context",
-    hint: "Expand a sentence/command into rich context, or fully rewrite pasted HTML.",
+    value: "data-generator",
+    label: "Data generator",
+    hint: "Large paste → collect useful + extended data. Short command/sentence → generate data from it.",
   },
   {
     value: "test-strategy",
@@ -501,9 +501,9 @@ Level: ${englishLevel}
 Topic: ${englishTopic}
 Target word/phrase: ${englishFocusWord.trim() || "(none — invent useful vocabulary for the topic)"}
 Extra request / notes from student:`
-          : mode === "context"
+          : mode === "data-generator"
             ? `Exam/track target: ${englishTarget}
-Input type hints: HTML → fully rewrite HTML; short command → invent teaching context; short sentence → expand with surrounding context.
+Role: data collector on large pastes; data generator on short commands/sentences.
 Student input:`
             : `Exam/track target: ${englishTarget}
 Student input:`;
@@ -754,7 +754,7 @@ Student input:`;
           {(
             [
               { id: "ap", label: "AP / Learning", detail: "Hints, concepts, formulas, practice" },
-              { id: "english", label: "English", detail: "Grammar, vocab, context, practice" },
+              { id: "english", label: "English", detail: "Grammar, vocab, data, practice" },
               { id: "coding", label: "Coding", detail: "Debug, write, explain" },
             ] as const
           ).map((item) => (
@@ -1019,8 +1019,8 @@ Student input:`;
                   : category === "coding"
                     ? "Describe the bug, feature, or what to explain…"
                     : category === "english"
-                      ? englishTask === "context"
-                        ? "Paste HTML to fully rewrite, a short command for context, or one sentence to expand…"
+                      ? englishTask === "data-generator"
+                        ? "Paste a large text to collect useful + extended data, or a short command/sentence to generate data…"
                         : englishTask === "practice-generator"
                           ? "Optional notes (style, count of sentences…) — or leave blank and use word/level/topic above"
                           : "Paste a passage, sentence, or writing draft…"

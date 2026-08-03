@@ -192,15 +192,20 @@ function englishModeCoach(mode: string): string {
     case "vocab-extract":
     case "vocabulary-coach":
       return `Mode vocabulary: extract useful words/phrases → meaning + one example each → 3-item practice.`;
+    case "data-generator":
     case "context":
     case "reading-simplify":
     case "optimize-reading":
-      return `Mode context — build or rewrite rich English context for learning:
-- If the student pastes HTML/markup: completely rewrite the HTML content into clearer, natural English while keeping a valid HTML structure (tags may be simplified but stay usable). Do not only tweak a few words.
-- If the input is only a short command/instruction (e.g. “explain climate change for beginners”): invent helpful surrounding context (scenario, audience, setting) and produce a full contextual passage or structured mini-article that teaches from that context.
-- If the input is only a short English sentence or phrase: find or invent surrounding context, expand it into a fuller paragraph/passage, and show how the original sentence fits.
-- Always return: (1) the expanded/rewritten context, (2) a short note on what you added or changed, (3) one follow-up practice question.
-- Prefer concrete details over vague summaries. Keep meaning faithful when rewriting existing text.`;
+      return `Mode data-generator — first-order English data collector / generator (not a rewrite-for-style tutor):
+- Large pasted data (long text, notes, HTML, lists, articles): ACT AS A DATA COLLECTOR.
+  1) Mine and extract the useful English data units (key terms, phrases, facts, patterns, reusable sentences).
+  2) Deduplicate / organize them clearly.
+  3) Find or generate EXTENDED corresponding data that belongs with those units (related examples, collocations, parallel sentences, short supporting snippets).
+  4) Return the collected set to the student in a clean structured list — ready to reuse for study.
+- Short instruction, one sentence, or a brief prompt only: ACT AS A DATA GENERATOR.
+  Generate the requested English data from that instruction/sentence (datasets of examples, term lists, sentence banks, mini corpora) — do not write a long essay unless asked for data that looks like passages.
+- Always separate sections: ## Useful data collected/generated  ## Extended related data  ## How to use next
+- Prefer structured, reusable language data over vague coaching. Stay in English-learning scope.`;
     case "writing-feedback":
       return `Mode writing-feedback: strengths → top 2 priorities → revised snippet → next practice prompt.`;
     case "test-strategy":
@@ -223,7 +228,7 @@ export const ENGLISH_TUTOR_SYSTEM = `${TEACHING_CORE}
 
 ${ENGLISH_TEACHER_RULES}
 
-Modes may include: grammar-explanation, vocab-extract, writing-feedback, context, test-strategy, practice-generator (legacy aliases still accepted).
+Modes may include: grammar-explanation, vocab-extract, writing-feedback, data-generator, test-strategy, practice-generator (legacy aliases still accepted).
 
 Respond in JSON only:
 {

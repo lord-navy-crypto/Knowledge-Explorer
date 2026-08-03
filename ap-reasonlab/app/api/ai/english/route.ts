@@ -67,9 +67,9 @@ Level: ${level || "(unspecified)"}
 Topic: ${topic || "(unspecified)"}
 Target word/phrase: ${focusWord || "(none — invent useful vocabulary for the topic)"}
 `
-        : mode === "context"
+        : mode === "data-generator"
           ? `Exam/track target: ${target}
-Input type hints: HTML → fully rewrite HTML; short command → invent teaching context; short sentence → expand with surrounding context.
+Role: data collector on large pastes; data generator on short commands/sentences.
 `
           : `Exam/track target: ${target}
 `;
