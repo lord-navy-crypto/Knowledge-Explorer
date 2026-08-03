@@ -192,15 +192,21 @@ function englishModeCoach(mode: string): string {
     case "vocab-extract":
     case "vocabulary-coach":
       return `Mode vocabulary: extract useful words/phrases → meaning + one example each → 3-item practice.`;
+    case "language-materials":
+    case "data-generator":
     case "context":
     case "reading-simplify":
     case "optimize-reading":
-      return `Mode context — build or rewrite rich English context for learning:
-- If the student pastes HTML/markup: completely rewrite the HTML content into clearer, natural English while keeping a valid HTML structure (tags may be simplified but stay usable). Do not only tweak a few words.
-- If the input is only a short command/instruction (e.g. “explain climate change for beginners”): invent helpful surrounding context (scenario, audience, setting) and produce a full contextual passage or structured mini-article that teaches from that context.
-- If the input is only a short English sentence or phrase: find or invent surrounding context, expand it into a fuller paragraph/passage, and show how the original sentence fits.
-- Always return: (1) the expanded/rewritten context, (2) a short note on what you added or changed, (3) one follow-up practice question.
-- Prefer concrete details over vague summaries. Keep meaning faithful when rewriting existing text.`;
+      return `Mode language-materials (语言资料生成器) — collect or generate reusable English language materials for study:
+- Large pasted material (long text, notes, HTML, lists, articles): ACT AS A LANGUAGE-MATERIALS COLLECTOR.
+  1) Mine useful language units (key words/phrases, collocations, reusable sentences, discourse patterns).
+  2) Deduplicate and organize them clearly as study materials.
+  3) Find or generate EXTENDED matching language materials that belong with those units (related examples, near-synonym frames, parallel sentences, short supporting snippets).
+  4) Return a clean structured set the student can reuse — this is 语言资料, not generic “data” or essay rewriting.
+- Short instruction, one sentence, or a brief prompt only: ACT AS A LANGUAGE-MATERIALS GENERATOR.
+  Generate English language materials from that instruction/sentence (example banks, phrase lists, mini sentence corpora, short reusable passages as material). Do not write a long coaching essay unless the materials themselves are passages.
+- Always separate sections: ## Useful language materials  ## Extended related materials  ## How to use next
+- Prefer structured, reusable language resources for learning English. Stay in English-learning scope.`;
     case "writing-feedback":
       return `Mode writing-feedback: strengths → top 2 priorities → revised snippet → next practice prompt.`;
     case "test-strategy":
@@ -223,7 +229,7 @@ export const ENGLISH_TUTOR_SYSTEM = `${TEACHING_CORE}
 
 ${ENGLISH_TEACHER_RULES}
 
-Modes may include: grammar-explanation, vocab-extract, writing-feedback, context, test-strategy, practice-generator (legacy aliases still accepted).
+Modes may include: grammar-explanation, vocab-extract, writing-feedback, language-materials, test-strategy, practice-generator (legacy aliases still accepted).
 
 Respond in JSON only:
 {

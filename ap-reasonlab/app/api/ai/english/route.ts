@@ -67,9 +67,9 @@ Level: ${level || "(unspecified)"}
 Topic: ${topic || "(unspecified)"}
 Target word/phrase: ${focusWord || "(none — invent useful vocabulary for the topic)"}
 `
-        : mode === "context"
+        : mode === "language-materials"
           ? `Exam/track target: ${target}
-Input type hints: HTML → fully rewrite HTML; short command → invent teaching context; short sentence → expand with surrounding context.
+Role: language-materials collector on large pastes; language-materials generator on short commands/sentences (语言资料, not generic data).
 `
           : `Exam/track target: ${target}
 `;

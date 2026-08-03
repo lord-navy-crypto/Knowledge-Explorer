@@ -24,7 +24,7 @@ const modes = [
   { value: "grammar-explanation", label: "Grammar check" },
   { value: "vocab-extract", label: "Vocab extract" },
   { value: "writing-feedback", label: "Writing feedback" },
-  { value: "context", label: "Context" },
+  { value: "language-materials", label: "Language materials" },
   { value: "test-strategy", label: "Exam strategy" },
   { value: "practice-generator", label: "Practice generator" },
 ] as const;
