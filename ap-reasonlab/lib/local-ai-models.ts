@@ -325,7 +325,7 @@ export const FEATURED_LOCAL_MODELS: LocalModelOption[] = [
     bestFor: "Best all-round Chinese / English study answers on capable devices",
     parameterSize: "8B",
     vramMB: 5696,
-    tags: ["New", "Bilingual"],
+    tags: ["Bilingual"],
     cached: null,
   },
   {
@@ -333,11 +333,11 @@ export const FEATURED_LOCAL_MODELS: LocalModelOption[] = [
     label: "Qwen3.5 Heavy",
     group: "heavy",
     series: "Qwen3.5",
-    summary: "Newest large bilingual Qwen — needs a strong GPU.",
+    summary: "Large bilingual Qwen — needs a strong GPU; Local waits for the full answer.",
     bestFor: "Highest local quality when device memory allows",
     parameterSize: "9B",
     vramMB: 6433,
-    tags: ["New", "Bilingual"],
+    tags: ["Bilingual"],
     cached: null,
   },
   {

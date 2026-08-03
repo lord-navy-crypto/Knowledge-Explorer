@@ -18,12 +18,22 @@ export type LocalGenPolicy = {
   timeoutMs: number;
   /** After stream starts: interrupt if no tokens at all (model stalled). */
   idleVisibleMs: number;
-  /** Interrupt if stuck inside an open <think> with no visible answer. */
+  /**
+   * Interrupt if stuck inside an open <think> with no visible answer.
+   * `0` = never cut thinking — wait for the model to finish.
+   */
   thinkingBudgetMs: number;
   /** Whole-request ceiling including prefill. */
   absoluteTimeoutMs: number;
   /** Prefill-only budget before first chunk (create + first token). */
   prefillTimeoutMs: number;
+  /**
+   * Heavy finish mode: do not soft-kill mid-stream; wait for the full answer.
+   * Only a true stall (idle) or the absolute ceiling may stop generation.
+   */
+  finishOutput: boolean;
+  /** Skip aggressive prompt truncation (Heavy needs the full brief). */
+  preservePrompt: boolean;
   nudge: string;
   /** Context window sizes to try on load (largest first). */
   contextAttempts: number[];
@@ -34,31 +44,33 @@ export type LocalGenPolicy = {
 };
 
 export function isMediumLocalModel(modelId: string): boolean {
-  return /3B|4B/i.test(modelId) && !isHeavyLocalModel(modelId);
+  return /(?:^|[^0-9.])([34])B(?:-|$)/i.test(modelId) && !isHeavyLocalModel(modelId);
 }
 
 export function getLocalGenPolicy(modelId: string): LocalGenPolicy {
   const heavy = isHeavyLocalModel(modelId);
   const medium = isMediumLocalModel(modelId);
-  const disableThinking = shouldDisableThinking(modelId);
 
   if (heavy) {
+    // Heavy stays runnable, but without the truncate/think-kill knobs that
+    // left answers half-finished. Wait for the stream to complete.
     return {
-      disableThinking,
-      maxTokens: 448,
-      timeoutMs: 180_000,
-      idleVisibleMs: 90_000,
-      thinkingBudgetMs: 18_000,
-      absoluteTimeoutMs: 300_000,
-      prefillTimeoutMs: 180_000,
+      disableThinking: false,
+      maxTokens: 1536,
+      timeoutMs: 600_000,
+      idleVisibleMs: 180_000,
+      thinkingBudgetMs: 0,
+      absoluteTimeoutMs: 900_000,
+      prefillTimeoutMs: 300_000,
+      finishOutput: true,
+      preservePrompt: true,
       nudge: localNudgeForModel(modelId),
-      contextAttempts: [2048, 1024],
-      contextWindowCap: 2048,
+      contextAttempts: [4096, 2048],
+      contextWindowCap: null,
       isRetiredReasoning: isReasoningLocalModel(modelId),
     };
   }
 
-  // Medium / light / superlight: no thinking-off, no context shrink — only Heavy is capped.
   if (medium) {
     return {
       disableThinking: false,
@@ -68,6 +80,8 @@ export function getLocalGenPolicy(modelId: string): LocalGenPolicy {
       thinkingBudgetMs: 45_000,
       absoluteTimeoutMs: 240_000,
       prefillTimeoutMs: 120_000,
+      finishOutput: false,
+      preservePrompt: false,
       nudge: localNudgeForModel(modelId),
       contextAttempts: [4096],
       contextWindowCap: null,
@@ -83,6 +97,8 @@ export function getLocalGenPolicy(modelId: string): LocalGenPolicy {
     thinkingBudgetMs: 45_000,
     absoluteTimeoutMs: 180_000,
     prefillTimeoutMs: 90_000,
+    finishOutput: false,
+    preservePrompt: false,
     nudge: localNudgeForModel(modelId),
     contextAttempts: [4096],
     contextWindowCap: null,
@@ -105,11 +121,12 @@ export function chatOptsForModel(
 
 /** Shrink Local prompts so prefill does not burn the whole timeout. */
 export function compactLocalMessages(
-  messages: Array<{ role: string; content: string }>
+  messages: Array<{ role: string; content: string }>,
+  opts?: { preservePrompt?: boolean }
 ): Array<{ role: string; content: string }> {
-  const MAX_SYSTEM = 2_200;
-  const MAX_TURN = 900;
-  const MAX_TURNS = 4; // system + up to 3 later messages
+  const MAX_SYSTEM = opts?.preservePrompt ? 8_000 : 2_200;
+  const MAX_TURN = opts?.preservePrompt ? 4_000 : 900;
+  const MAX_TURNS = opts?.preservePrompt ? 8 : 4;
 
   const system = messages.find((m) => m.role === "system");
   const rest = messages.filter((m) => m.role !== "system").slice(-MAX_TURNS + 1);
@@ -147,7 +164,7 @@ Try one of these:
 2. Turn **off site search** in Local settings (smaller prompt = faster)
 3. Use **Website API** for this question
 
-Heavy 7B–9B browser models need a strong discrete GPU.`;
+Heavy 7B–9B browser models need a strong discrete GPU — leave them running until the answer finishes.`;
 }
 
 export function isLocalGuidanceReply(text: string): boolean {
