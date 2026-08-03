@@ -342,6 +342,7 @@ export function searchSiteEngine(
     { id: "short-code", title: "Short codes", subject: "Tools", detail: "Local short codes for links", href: "/tools/short-code" },
     { id: "color-contrast", title: "Color & contrast", subject: "Tools", detail: "WCAG contrast checker", href: "/tools/color-contrast" },
     { id: "qr-code", title: "QR code", subject: "Tools", detail: "Generate downloadable QR", href: "/tools/qr-code" },
+    { id: "external-tools", title: "External connections & tools", subject: "Tools", detail: "Off-site AP, math, science, English, coding links", href: "/tools/external" },
     { id: "word-import", title: "Word → Markdown", subject: "Tools", detail: "Extract Markdown from docx", href: "/tools/word-import" },
     { id: "markdown-pdf", title: "Markdown → PDF", subject: "Tools", detail: "Print Markdown as PDF", href: "/tools/markdown-pdf" },
     { id: "english", title: "English Learning", subject: "English", detail: "TOEFL IELTS SAT vocabulary writing", href: "/english" },
