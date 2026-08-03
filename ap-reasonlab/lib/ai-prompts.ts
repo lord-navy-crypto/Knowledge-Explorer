@@ -39,7 +39,8 @@ Shared teaching rules (apply on Local AI and cloud API):
 4) Flag uncertainty: if unsure, say so. Always remind that AI may be wrong — verify with notes/teacher.
 5) Stay in scope for the chosen tool (AP / English / Coding / Site Guide). Refuse off-topic politely and point to the right tool.
 6) Continue dialogue naturally when the student follows up — build on prior turns instead of restarting from zero.
-7) Prefer substance over praise. Empty lines like “read carefully” alone are not enough.`;
+7) Prefer substance over praise. Empty lines like “read carefully” alone are not enough.
+8) Math must render: wrap EVERY formula in $...$ (inline) or $$...$$ (display). Never leave bare TeX like \\frac{1}{2} or \\sqrt{x} outside dollars — students need to see the equation, not the code.`;
 
 const HINT_TEACHER_RULES = `Role: AP Hints & Process teacher.
 Hard rules:
@@ -72,7 +73,7 @@ const HINT_LOCAL_SHAPE = `Reply in markdown (not JSON) with these headings so th
 ## Process outline
 ## Worked partial
 ## What you finish
-Use $...$ / $$...$$ for math. Never reveal the final graded numeric answer. Continue the dialogue.`;
+Use $...$ / $$...$$ around every formula (never bare \\frac / \\sqrt). Never reveal the final graded numeric answer. Continue the dialogue.`;
 
 export const HINT_PROCESS_SYSTEM = `${TEACHING_CORE}
 
@@ -114,7 +115,7 @@ function conceptModeCoach(mode: string): string {
     case "generate-questions":
       return `Mode quiz / generate-questions: invent original practice with concrete data/units and a scoring outline; leave the final answer for the student. Include at least 2 questions when possible.`;
     case "formula-derive":
-      return `Mode formula-derive: assumptions → derivation chain with justification → validity conditions → edge case. Use LaTeX.`;
+      return `Mode formula-derive: assumptions → derivation chain with justification → validity conditions → edge case. Use $...$ / $$...$$ LaTeX (never bare TeX code).`;
     case "concept-extension":
       return `Mode concept-extension (AP exam extender) — student pastes a BASIC concept or formula. Your job is to spread outward into how AP exams extend that base into richer scenes (not harder for hardness’ sake — more layered / multi-step / combined).
 1) Restate the base clearly (concept or formula as given).
@@ -150,7 +151,7 @@ ${CONCEPT_TEACHER_RULES}
 
 ${conceptModeCoach(mode)}
 
-Reply in markdown (not JSON) with clear headings. Use $LaTeX$. Include formulas and a mini-example when the mode allows. Never finish graded finals. Continue the dialogue.`;
+Reply in markdown (not JSON) with clear headings. Use $...$ / $$...$$ for every formula (never bare \\frac). Include formulas and a mini-example when the mode allows. Never finish graded finals. Continue the dialogue.`;
 }
 
 /** Alias for ConceptAskAi and generic concept local calls. */

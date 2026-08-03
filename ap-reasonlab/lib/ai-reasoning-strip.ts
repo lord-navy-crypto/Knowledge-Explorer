@@ -84,12 +84,12 @@ export const REASONING_MODEL_DIRECT_ANSWER =
 
 /** Soft nudge for non-Qwen3 local models — keep formulas visible. */
 export const LOCAL_MARKDOWN_NUDGE =
-  "Reply in markdown. Use $...$ / $$...$$ for math formulas. Put key steps and formulas in the visible reply.";
+  "Reply in markdown. Wrap EVERY formula in $...$ or $$...$$ so it renders as an equation — never bare \\frac / \\sqrt code. Put key steps in the visible reply.";
 
 /** Stronger nudge for Qwen3 family where hidden thinking is too slow. */
 export const LOCAL_DIRECT_ANSWER_NUDGE =
-  "Answer immediately in markdown. Use $...$ / $$...$$ for math. Do NOT open <think>, <thinking>, or any private reasoning tags — the first line must be visible answer content.";
+  "Answer immediately in markdown. Wrap EVERY formula in $...$ or $$...$$ (never bare TeX). Do NOT open <think>, <thinking>, or any private reasoning tags — the first line must be visible answer content.";
 
 /** Used on Local retry after a blank/thinking stall. */
 export const LOCAL_RETRY_NO_THINK_NUDGE =
-  "CRITICAL RETRY: Output the student-facing answer NOW. Zero <think> tags. First character = start of the answer (markdown/LaTeX ok). Keep it short.";
+  "CRITICAL RETRY: Output the student-facing answer NOW. Zero <think> tags. Use $...$ for math. First character = start of the answer. Keep it short.";
