@@ -23,7 +23,6 @@ import {
   stripReasoningTrace,
 } from "@/lib/ai-reasoning-strip";
 import {
-  chatOptsForModel,
   compactLocalMessages,
   getLocalGenPolicy,
   isLocalGuidanceReply,
@@ -123,12 +122,6 @@ function migrateMode(raw: string | null): AIMode | null {
   // Older Local / Auto / Cloud UI
   if (raw === "auto" || raw === "cloud") return "site";
   return null;
-}
-
-function isLocalLoadOomError(message: string): boolean {
-  return /oom|out of memory|device lost|resource.intensive|failed to allocate|local update|reload|webgpu device/i.test(
-    message
-  );
 }
 
 function explainLocalLoadError(message: string, modelId: string): string {
@@ -379,65 +372,32 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
         try {
           const webllm = await import("@mlc-ai/web-llm");
           let engine: MLCEngineInterface | null = null;
-          const policy = getLocalGenPolicy(targetModelId);
-          const contextAttempts = policy.contextAttempts;
 
-          const loadWithOpts = async (contextWindow: number) => {
-            const chatOpts = chatOptsForModel(targetModelId, contextWindow);
+          try {
+            setStatusText("Starting local AI worker…");
+            const worker = new Worker(new URL("../workers/local-ai.worker.ts", import.meta.url), {
+              type: "module",
+            });
+            workerRef.current = worker;
+            engine = await webllm.CreateWebWorkerMLCEngine(worker, targetModelId, {
+              initProgressCallback: onProgress,
+            });
+          } catch (workerError) {
+            workerRef.current?.terminate();
+            workerRef.current = null;
+            const workerMessage =
+              workerError instanceof Error ? workerError.message : String(workerError);
             setStatusText(
-              chatOpts
-                ? `Loading local AI (${Math.round(contextWindow / 1024)}k context)…`
-                : "Loading local AI…"
+              /(?:^|[^0-9.])([789])B(?:-|$)/i.test(targetModelId)
+                ? `Worker failed (${workerMessage}). Trying main-thread engine — UI may freeze on Heavy models…`
+                : `Worker failed (${workerMessage}). Trying main-thread engine…`
             );
-            try {
-              setStatusText("Starting local AI worker…");
-              const worker = new Worker(new URL("../workers/local-ai.worker.ts", import.meta.url), {
-                type: "module",
-              });
-              workerRef.current = worker;
-              return await webllm.CreateWebWorkerMLCEngine(
-                worker,
-                targetModelId,
-                { initProgressCallback: onProgress },
-                chatOpts
-              );
-            } catch (workerError) {
-              workerRef.current?.terminate();
-              workerRef.current = null;
-              const workerMessage =
-                workerError instanceof Error ? workerError.message : String(workerError);
-              setStatusText(
-                /7B|8B|9B/i.test(targetModelId)
-                  ? `Worker failed (${workerMessage}). Trying main-thread engine — UI may freeze on Heavy models…`
-                  : `Worker failed (${workerMessage}). Trying main-thread engine…`
-              );
-              return await webllm.CreateMLCEngine(
-                targetModelId,
-                { initProgressCallback: onProgress },
-                chatOpts
-              );
-            }
-          };
-
-          let lastError: unknown;
-          for (const contextWindow of contextAttempts) {
-            try {
-              engine = await loadWithOpts(contextWindow);
-              lastError = undefined;
-              break;
-            } catch (attemptError) {
-              lastError = attemptError;
-              workerRef.current?.terminate();
-              workerRef.current = null;
-              const attemptMessage =
-                attemptError instanceof Error ? attemptError.message : String(attemptError);
-              if (!isLocalLoadOomError(attemptMessage)) throw attemptError;
-              setStatusText(
-                `Load failed at ${Math.round(contextWindow / 1024)}k context — retrying smaller…`
-              );
-            }
+            engine = await webllm.CreateMLCEngine(targetModelId, {
+              initProgressCallback: onProgress,
+            });
           }
-          if (!engine) throw lastError || new Error("Local AI failed to load.");
+
+          if (!engine) throw new Error("Local AI failed to load.");
 
           engineRef.current = engine;
           loadedModelRef.current = targetModelId;
@@ -546,131 +506,13 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
       setError("");
       setStatusText("Preparing answer…");
 
-      const runAttempt = async (
-        maxTokens: number,
-        nudge: string
-      ): Promise<string> => {
+      const runAttempt = async (maxTokens: number, nudge: string): Promise<string> => {
         const prepared = compactLocalMessages(
-          mergeLocalDirectNudge(
-            messages as Array<{ role: string; content: string }>,
-            nudge
-          ),
-          { preservePrompt: policy.preservePrompt }
+          mergeLocalDirectNudge(messages as Array<{ role: string; content: string }>, nudge)
         ) as ChatCompletionMessageParam[];
 
-        const startedAt = Date.now();
-        let timedOut = false;
-        let idleTimedOut = false;
-        let thinkTimedOut = false;
-        let streamStarted = false;
-        let deadlineAt = startedAt + policy.prefillTimeoutMs;
-        let softTimerId = 0;
-        let idleTimerId = 0;
-        let thinkTimerId = 0;
-
-        const stopTimers = () => {
-          window.clearTimeout(softTimerId);
-          window.clearTimeout(idleTimerId);
-          window.clearTimeout(thinkTimerId);
-        };
-
-        const fireTimeout = (
-          kind: "soft" | "idle" | "absolute" | "prefill" | "thinking"
-        ) => {
-          // Heavy finish mode: never soft-kill or think-kill mid-answer — wait it out.
-          if (policy.finishOutput && (kind === "soft" || kind === "thinking")) {
-            return;
-          }
-          if (timedOut) return;
-          timedOut = true;
-          if (kind === "idle") idleTimedOut = true;
-          if (kind === "thinking") thinkTimedOut = true;
-          try {
-            void engine.interruptGenerate();
-          } catch {
-            // ignore
-          }
-          setStatusText(
-            kind === "thinking"
-              ? "Stopped hidden thinking — retrying or showing guidance…"
-              : kind === "idle"
-                ? "Stopped — model stalled with no text."
-                : kind === "prefill"
-                  ? "Stopped — model was still preparing (prefill)."
-                  : "Stopped — answer took too long."
-          );
-        };
-
-        const armSoftDeadline = () => {
-          if (policy.finishOutput && streamStarted) {
-            // After the first token, Heavy waits for the natural end of the stream.
-            window.clearTimeout(softTimerId);
-            softTimerId = 0;
-            return;
-          }
-          window.clearTimeout(softTimerId);
-          const remaining = Math.max(0, deadlineAt - Date.now());
-          softTimerId = window.setTimeout(
-            () => fireTimeout(streamStarted ? "soft" : "prefill"),
-            remaining
-          );
-        };
-
-        const armIdleDeadline = () => {
-          window.clearTimeout(idleTimerId);
-          idleTimerId = window.setTimeout(() => fireTimeout("idle"), policy.idleVisibleMs);
-        };
-
-        const clearThinkDeadline = () => {
-          window.clearTimeout(thinkTimerId);
-          thinkTimerId = 0;
-        };
-
-        const armThinkDeadline = () => {
-          if (!policy.thinkingBudgetMs || policy.finishOutput) {
-            clearThinkDeadline();
-            return;
-          }
-          window.clearTimeout(thinkTimerId);
-          thinkTimerId = window.setTimeout(
-            () => fireTimeout("thinking"),
-            policy.thinkingBudgetMs
-          );
-        };
-
-        const absoluteTimerId = window.setTimeout(
-          () => fireTimeout("absolute"),
-          policy.absoluteTimeoutMs
-        );
-        armSoftDeadline();
-
-        let lastStatusPhase = "prefill";
         let raw = "";
-        let lastVisibleLen = 0;
-        let lastRawLen = 0;
-
-        const finish = (): string => {
-          const partial = stripReasoningTrace(raw);
-          if (partial) {
-            setStatusText(
-              timedOut
-                ? "Stopped on timeout — showing partial answer."
-                : "Local AI is ready on this device."
-            );
-            return partial;
-          }
-          if (timedOut) {
-            setStatusText(
-              thinkTimedOut
-                ? "Hidden thinking ran too long — see guidance or retry result."
-                : idleTimedOut
-                  ? "No visible answer in time — see guidance below."
-                  : "Timed out before text appeared — see guidance below."
-            );
-            return localTimeoutGuidance(modelId);
-          }
-          return "";
-        };
+        setStatusText("Writing answer…");
 
         try {
           const stream = await engine.chat.completions.create({
@@ -678,113 +520,51 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
             stream: true,
             temperature: 0.35,
             max_tokens: maxTokens,
+            // Sole Local restriction: thinking mode off when supported.
             ...(policy.disableThinking ? { extra_body: { enable_thinking: false } } : {}),
           });
 
-          streamStarted = true;
-          setStatusText(
-            policy.finishOutput
-              ? "Writing answer… (Heavy model — waiting until it finishes)"
-              : "Writing answer…"
-          );
-          deadlineAt = Date.now() + policy.timeoutMs;
-          armSoftDeadline();
-          armIdleDeadline();
-
           for await (const chunk of stream) {
-            if (timedOut) break;
             const token = chunk.choices[0]?.delta?.content ?? "";
             raw += token;
             const visible = stripReasoningTrace(raw, { trim: false });
-            const visibleTrimmed = visible.trim();
-
-            // Any raw token means the model is alive — do not idle-kill during think dumps.
-            if (raw.length > lastRawLen) {
-              lastRawLen = raw.length;
-              armIdleDeadline();
+            if (isInsideOpenThinkBlock(raw) && !visible.trim()) {
+              setStatusText("Model opened a think block — stripping it from the visible reply…");
+            } else if (visible.trim()) {
+              setStatusText("Writing answer…");
             }
-
-            if (visibleTrimmed.length > lastVisibleLen) {
-              lastVisibleLen = visibleTrimmed.length;
-              if (!policy.finishOutput) {
-                deadlineAt = Math.min(
-                  startedAt + policy.absoluteTimeoutMs,
-                  Date.now() + policy.timeoutMs
-                );
-                armSoftDeadline();
-              }
-              clearThinkDeadline();
-            }
-
-            const thinking = isInsideOpenThinkBlock(raw) && !visibleTrimmed;
-            if (thinking) {
-              if (lastStatusPhase !== "thinking") {
-                lastStatusPhase = "thinking";
-                setStatusText(
-                  policy.finishOutput
-                    ? "Heavy model is thinking — waiting for the full answer…"
-                    : "Model opened a think block — cutting it short if it lasts…"
-                );
-                armThinkDeadline();
-              }
-            } else if (lastStatusPhase === "thinking") {
-              lastStatusPhase = "writing";
-              clearThinkDeadline();
-              setStatusText(
-                policy.finishOutput
-                  ? "Writing answer… (Heavy model — waiting until it finishes)"
-                  : "Writing answer…"
-              );
-            } else if (lastStatusPhase !== "writing" && visibleTrimmed) {
-              lastStatusPhase = "writing";
-              setStatusText(
-                policy.finishOutput
-                  ? "Writing answer… (Heavy model — waiting until it finishes)"
-                  : "Writing answer…"
-              );
-            }
-
             onToken?.(token, visible);
           }
-          return finish();
+
+          const text = stripReasoningTrace(raw);
+          if (text) {
+            setStatusText("Local AI is ready on this device.");
+            return text;
+          }
+          return "";
         } catch (caught) {
-          if (timedOut) return finish();
+          const message = caught instanceof Error ? caught.message : String(caught);
+          if (/interrupt|abort|cancel/i.test(message)) {
+            const partial = stripReasoningTrace(raw);
+            return partial || localTimeoutGuidance(modelId);
+          }
           throw caught;
-        } finally {
-          stopTimers();
-          window.clearTimeout(absoluteTimerId);
         }
       };
 
       try {
         let result = await runAttempt(policy.maxTokens, policy.nudge);
-        // One recovery retry when the first pass is blank or guidance-only.
-        // Heavy keeps a full token budget so the retry can still finish.
-        if (!result.trim() || isLocalGuidanceReply(result)) {
-          setStatusText(
-            policy.finishOutput
-              ? "Retrying Heavy Local AI — waiting for a full answer…"
-              : policy.disableThinking
-                ? "Retrying Local AI without thinking…"
-                : "Retrying Local AI with a shorter prompt…"
-          );
-          const retryNudge = policy.finishOutput
-            ? `${policy.nudge}\n\nFinish the full student-facing answer. Do not stop mid-sentence.`
-            : policy.disableThinking
-              ? `${policy.nudge}\n\n${LOCAL_RETRY_NO_THINK_NUDGE}`
-              : `${policy.nudge}\n\nKeep the reply short. Put the student-facing answer first.`;
-          const retryTokens = policy.finishOutput
-            ? policy.maxTokens
-            : Math.min(256, policy.maxTokens);
-          const retry = await runAttempt(retryTokens, retryNudge);
-          if (retry.trim() && !isLocalGuidanceReply(retry)) {
-            result = retry;
-          } else if (!result.trim()) {
-            result = retry || localTimeoutGuidance(modelId);
-          }
-        }
         if (!result.trim()) {
-          result = localTimeoutGuidance(modelId);
+          setStatusText(
+            policy.disableThinking
+              ? "Retrying Local AI without thinking…"
+              : "Retrying Local AI…"
+          );
+          const retryNudge = policy.disableThinking
+            ? `${policy.nudge}\n\n${LOCAL_RETRY_NO_THINK_NUDGE}`
+            : policy.nudge;
+          result =
+            (await runAttempt(policy.maxTokens, retryNudge)) || localTimeoutGuidance(modelId);
         }
         if (!isLocalGuidanceReply(result)) {
           setStatusText("Local AI is ready on this device.");
