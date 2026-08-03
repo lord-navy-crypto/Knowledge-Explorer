@@ -35,7 +35,7 @@ Return JSON with refused, reply, aiMayBeWrong.`;
       const result = await runChatJson({
         system: SITE_GUIDE_SYSTEM,
         user: userWithSite,
-        maxTokens: 700,
+        maxTokens: 2048,
         userApiKey: userApiKey || undefined,
         provider,
         siteModel,

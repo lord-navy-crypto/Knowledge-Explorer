@@ -133,7 +133,7 @@ Return {"proposal":"...","summary":"one short description of the proposed change
             body.siteSearch !== false
           )
         ),
-        maxTokens: 1_200,
+        maxTokens: 4096,
         userApiKey: String(body.userApiKey || "").trim() || undefined,
         provider: parseAiProvider(body.provider),
         siteModel: parseSiteModelChoice(body.siteModel),

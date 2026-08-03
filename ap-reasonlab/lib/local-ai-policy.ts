@@ -1,7 +1,7 @@
 /**
  * Local AI generation policy.
  * Sole hard restriction: turn thinking mode off (Qwen3 `enable_thinking: false`).
- * Otherwise prefer full, useful teaching replies (no short-answer throttles).
+ * No generation time limits — wait for the stream to finish. Allow long replies.
  */
 
 import {
@@ -14,9 +14,9 @@ import {
 export type LocalGenPolicy = {
   /** Force WebLLM `extra_body.enable_thinking: false` when the model supports it. */
   disableThinking: boolean;
-  /** High ceiling so answers are not cut short. */
+  /** High ceiling so long teaching answers can finish. */
   maxTokens: number;
-  /** Sampling temperature — a bit higher helps small models write fuller replies. */
+  /** Sampling temperature — helps small models write fuller replies. */
   temperature: number;
   nudge: string;
   /** True when this id is a retired R1 / Distill reasoning dump model. */
@@ -27,7 +27,7 @@ export type LocalGenPolicy = {
 export function getLocalGenPolicy(modelId: string): LocalGenPolicy {
   return {
     disableThinking: shouldDisableThinking(modelId),
-    maxTokens: 4096,
+    maxTokens: 8192,
     temperature: 0.7,
     nudge: localNudgeForModel(modelId),
     isRetiredReasoning: isReasoningLocalModel(modelId),
@@ -50,48 +50,27 @@ export function compactLocalMessages(
   return messages.map((message) => ({ ...message }));
 }
 
-/** Soft fallback if generation fails with no text. */
-export function localTimeoutGuidance(modelId: string): string {
+/** Soft fallback if generation fails with no text (not a time-limit stop). */
+export function localFailGuidance(modelId: string): string {
   const short = modelId.replace(/-q4f16_1-MLC$/i, "").replace(/-/g, " ");
-  return `## Local AI stopped early
+  return `## Local AI could not finish
 
 No useful answer arrived from **${short}**.
 
 Try one of these:
 1. Press **Enable** again on the same model (or switch to **Qwen3.5 Starter** / Light)
-2. Turn **off site search** in Local settings (smaller prompt = less likely to stall)
+2. Turn **off site search** in Local settings (smaller prompt)
 3. Use **Website API** for this question`;
 }
 
+/** @deprecated Use localFailGuidance — kept for older call sites. */
+export const localTimeoutGuidance = localFailGuidance;
+
 export function isLocalGuidanceReply(text: string): boolean {
-  return text.trimStart().startsWith("## Local AI stopped early");
-}
-
-/** True when a Local reply is too thin to be useful for students. */
-export function isThinLocalReply(text: string): boolean {
-  const t = String(text || "").trim();
-  if (!t || isLocalGuidanceReply(t)) return true;
-  if (t.length < 420) return true;
-  const structure =
-    (t.match(/^#{1,3}\s+/gm) || []).length + (t.match(/^[-*]\s+/gm) || []).length;
-  if (structure < 3 && t.length < 700) return true;
-  return false;
-}
-
-/**
- * True when a STEM-ish reply has too little $math$ for students to learn from.
- * Skips obvious non-math topics (English-only coaching without equations).
- */
-export function isLowFormulaReply(text: string): boolean {
-  const t = String(text || "").trim();
-  if (!t || isLocalGuidanceReply(t)) return false;
-  const dollarCount = (t.match(/\$/g) || []).length;
-  if (dollarCount >= 6) return false; // roughly 3+ inline formulas
-  const looksStem =
-    /\\frac|\\sqrt|force|energy|velocity|acceleration|momentum|voltage|current|derivative|integral|equation|formula|newton|kinetic|potential|\bAP\b|physics|calculus|algebra/i.test(
-      t
-    ) || /[=^_]/.test(t);
-  return looksStem && dollarCount < 4;
+  const t = text.trimStart();
+  return (
+    t.startsWith("## Local AI could not finish") || t.startsWith("## Local AI stopped early")
+  );
 }
 
 export function isMediumLocalModel(modelId: string): boolean {

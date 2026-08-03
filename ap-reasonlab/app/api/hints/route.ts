@@ -75,7 +75,7 @@ Return JSON with hints, keyFormulas, knownsUnknowns, checkpoints, processOutline
       const result = await runChatJson({
         system: HINT_PROCESS_SYSTEM,
         user: userWithSite,
-        maxTokens: 1200,
+        maxTokens: 3072,
         userApiKey: userApiKey || undefined,
         provider,
         siteModel,

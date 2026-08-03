@@ -55,7 +55,7 @@ Return Coding AI JSON.`;
       const result = await runChatJson({
         system: codingAiSystem(focus),
         user: userWithSite,
-        maxTokens: 1200,
+        maxTokens: 3072,
         userApiKey: userApiKey || undefined,
         provider,
         siteModel,

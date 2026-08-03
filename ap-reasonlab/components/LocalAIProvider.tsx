@@ -19,7 +19,6 @@ import { parseSiteModelChoice } from "@/lib/ai-site-models";
 import {
   isInsideOpenThinkBlock,
   LOCAL_EXPAND_NUDGE,
-  LOCAL_MORE_FORMULAS_NUDGE,
   LOCAL_RETRY_NO_THINK_NUDGE,
   mergeLocalDirectNudge,
   stripReasoningTrace,
@@ -28,9 +27,7 @@ import {
   compactLocalMessages,
   getLocalGenPolicy,
   isLocalGuidanceReply,
-  isLowFormulaReply,
-  isThinLocalReply,
-  localTimeoutGuidance,
+  localFailGuidance,
 } from "@/lib/local-ai-policy";
 import {
   DEFAULT_LOCAL_MODEL_ID,
@@ -558,7 +555,7 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
           const message = caught instanceof Error ? caught.message : String(caught);
           if (/interrupt|abort|cancel/i.test(message)) {
             const partial = stripReasoningTrace(raw);
-            return partial || localTimeoutGuidance(modelId);
+            return partial || localFailGuidance(modelId);
           }
           throw caught;
         } finally {
@@ -567,48 +564,20 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
       };
 
       try {
+        // One pass with thinking off — no generation time limit; wait for the stream to end.
         let result = await runAttempt(policy.maxTokens, policy.nudge);
 
-        // Blank after think-strip → retry with a full-answer nudge.
+        // Blank after think-strip only → one retry (still no time cut).
         if (!result.trim()) {
           setStatusText("Retrying Local AI for a full visible answer…");
           const retryNudge = policy.disableThinking
             ? `${policy.nudge}\n\n${LOCAL_RETRY_NO_THINK_NUDGE}`
             : `${policy.nudge}\n\n${LOCAL_EXPAND_NUDGE}`;
-          result =
-            (await runAttempt(policy.maxTokens, retryNudge)) || localTimeoutGuidance(modelId);
-        }
-
-        // Too thin → one expand pass so students get useful depth.
-        if (result.trim() && isThinLocalReply(result) && !isLocalGuidanceReply(result)) {
-          setStatusText("Expanding a short Local reply into a fuller teaching answer…");
-          const expanded = await runAttempt(
-            policy.maxTokens,
-            `${policy.nudge}\n\n${LOCAL_EXPAND_NUDGE}`
-          );
-          if (expanded.trim() && expanded.trim().length > result.trim().length) {
-            result = expanded;
-          }
-        }
-
-        // STEM reply with almost no $math$ → one formula-heavy expand.
-        if (result.trim() && isLowFormulaReply(result) && !isLocalGuidanceReply(result)) {
-          setStatusText("Adding more formulas and detail to the Local reply…");
-          const withMath = await runAttempt(
-            policy.maxTokens,
-            `${policy.nudge}\n\n${LOCAL_MORE_FORMULAS_NUDGE}`
-          );
-          if (
-            withMath.trim() &&
-            ((withMath.match(/\$/g) || []).length > (result.match(/\$/g) || []).length ||
-              withMath.trim().length > result.trim().length)
-          ) {
-            result = withMath;
-          }
+          result = (await runAttempt(policy.maxTokens, retryNudge)) || localFailGuidance(modelId);
         }
 
         if (!result.trim()) {
-          result = localTimeoutGuidance(modelId);
+          result = localFailGuidance(modelId);
         }
         if (!isLocalGuidanceReply(result)) {
           setStatusText("Local AI is ready on this device.");
@@ -618,7 +587,7 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
         const message = caught instanceof Error ? caught.message : "Local generation failed.";
         if (/interrupt|abort|timeout|timed out|cancel/i.test(message)) {
           setStatusText("Local generation stopped — see guidance in the reply.");
-          return localTimeoutGuidance(modelId);
+          return localFailGuidance(modelId);
         }
         setStatus("error");
         setError(message);

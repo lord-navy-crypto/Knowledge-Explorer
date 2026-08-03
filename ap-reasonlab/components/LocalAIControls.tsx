@@ -210,10 +210,9 @@ export default function LocalAIControls({ embedded = false }: Props) {
                 switch to Website API / Your own API.
               </p>
               <p className="mt-2 text-xs text-amber-900/90">
-                Local keeps <strong>thinking mode off</strong>, streams{" "}
-                <strong>live sentence by sentence</strong>, and pushes for{" "}
-                <strong>longer replies with more formulas and detail</strong>. If a small/medium
-                model feels stuck on “Still preparing…”, turn off site search or re-Enable.
+                Local keeps only <strong>thinking mode off</strong>. There is{" "}
+                <strong>no generation time limit</strong> — answers stream live and may be long.
+                Prefer Starter/Light on weak GPUs; Heavy needs a strong GPU.
               </p>
             </div>
           )}
