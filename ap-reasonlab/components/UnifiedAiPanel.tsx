@@ -158,6 +158,8 @@ function formatAssistantText(parts: {
   body?: string;
   lists?: Array<{ label: string; items: string[] }>;
   snippet?: string;
+  /** Only coding replies should fence snippets — math in ``` never renders as KaTeX. */
+  snippetAsCode?: boolean;
 }): string {
   const chunks: string[] = [];
   if (parts.body?.trim()) chunks.push(parts.body.trim());
@@ -165,7 +167,15 @@ function formatAssistantText(parts: {
     if (!list.items.length) continue;
     chunks.push(`**${list.label}**\n${list.items.map((item) => `- ${item}`).join("\n")}`);
   }
-  if (parts.snippet?.trim()) chunks.push(`\`\`\`\n${parts.snippet.trim()}\n\`\`\``);
+  if (parts.snippet?.trim()) {
+    const snippet = parts.snippet.trim();
+    if (parts.snippetAsCode) {
+      chunks.push(`\`\`\`\n${snippet}\n\`\`\``);
+    } else {
+      // Formulas / English revisions: plain markdown so RichContent can render $math$.
+      chunks.push(snippet);
+    }
+  }
   return chunks.join("\n\n");
 }
 
@@ -589,7 +599,12 @@ Student input:`;
     return {
       id: `a-${Date.now()}`,
       role: "assistant",
-      text: formatAssistantText({ body: data.reply || "", lists, snippet: data.snippet || "" }),
+      text: formatAssistantText({
+        body: data.reply || "",
+        lists,
+        snippet: data.snippet || "",
+        snippetAsCode: true,
+      }),
       meta: data.note || taskMeta.label,
       lists,
       snippet: data.snippet || "",
