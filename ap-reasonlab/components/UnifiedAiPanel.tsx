@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import LocalAIControls from "@/components/LocalAIControls";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
 import RichContent from "@/components/RichContent";
@@ -656,7 +657,7 @@ Student input:`;
           id: draftId,
           role: "assistant",
           text: "",
-          meta: `${taskMeta.label} · Local · writing…`,
+          meta: `${taskMeta.label} · Local · speaking…`,
         },
       ]);
     }
@@ -668,17 +669,20 @@ Student input:`;
         code,
         streamLocal
           ? (_token, fullText) => {
-              setMessages((prev) =>
-                prev.map((message) =>
-                  message.id === draftId
-                    ? {
-                        ...message,
-                        text: fullText,
-                        meta: `${taskMeta.label} · Local · writing…`,
-                      }
-                    : message
-                )
-              );
+              // Paint each streamed chunk immediately (speak-as-you-go), not after the full reply.
+              flushSync(() => {
+                setMessages((prev) =>
+                  prev.map((message) =>
+                    message.id === draftId
+                      ? {
+                          ...message,
+                          text: fullText,
+                          meta: `${taskMeta.label} · Local · speaking…`,
+                        }
+                      : message
+                  )
+                );
+              });
             }
           : undefined
       );

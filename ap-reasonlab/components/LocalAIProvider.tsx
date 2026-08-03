@@ -540,8 +540,9 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
             if (isInsideOpenThinkBlock(raw) && !visible.trim()) {
               setStatusText("Model opened a think block — keeping the visible teaching reply…");
             } else if (visible.trim()) {
-              setStatusText("Writing full teaching answer…");
+              setStatusText("Speaking answer… (streaming live)");
             }
+            // Stream every visible update immediately so students see each sentence as it arrives.
             onToken?.(token, visible);
           }
 

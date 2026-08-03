@@ -90,19 +90,19 @@ export const LOCAL_MARKDOWN_NUDGE =
 
 /** Nudge paired with thinking-off (sole Local restriction). */
 export const LOCAL_DIRECT_ANSWER_NUDGE =
-  "Reply in markdown with thinking mode off. Wrap EVERY formula in $...$ or $$...$$ (never bare TeX, never formula code fences). Do NOT open <think> or <thinking> tags — start with visible answer content.";
+  "Thinking mode is OFF. Write the visible answer immediately — do not open <think> or <thinking> tags. Wrap EVERY formula in $...$ or $$...$$ (never bare TeX, never formula code fences).";
 
-/** Push Local models to write useful, substantial teaching replies. */
-export const LOCAL_DEPTH_NUDGE = `Write a FULL teaching reply students can actually use — not a stub or one-liner.
-Include multiple short sections when helpful (e.g. idea → formulas → steps → partial example → checkpoint → what the student finishes).
-Be concrete and useful: name quantities, show process, give at least one worked partial step or mini-example when the topic allows.
-Aim for a rich answer (roughly several paragraphs / bullet blocks). Prefer helpful depth over brevity.
-Put all useful content in the visible reply.`;
+/** Push Local models to write useful, substantial teaching replies — speak as they go. */
+export const LOCAL_DEPTH_NUDGE = `Speak as you go: output useful teaching text sentence by sentence right away. Do not silently plan a short answer first.
+Keep writing until the explanation is complete and helpful — prefer a rich reply over a stub.
+Use multiple short sections when helpful (idea → formulas → steps → partial example → checkpoint → what the student finishes).
+Be concrete: name quantities, show process, give at least one worked partial step or mini-example when the topic allows.
+Put ALL useful content in the visible streamed reply.`;
 
 /** Used when the first Local pass is blank (thinking leftovers). */
 export const LOCAL_RETRY_NO_THINK_NUDGE =
-  "Retry: output a FULL student-facing teaching answer now. Zero <think> tags. Use $...$ for math. Include formulas, steps, and a useful example or checkpoint — not a one-liner.";
+  "Retry: start speaking the FULL teaching answer NOW, sentence by sentence. Zero <think> tags. Use $...$ for math. Keep going with formulas, steps, and a useful example — not a one-liner.";
 
 /** Used when the first Local pass is too thin. */
 export const LOCAL_EXPAND_NUDGE =
-  "Your draft was too short. Expand into a complete teaching answer with headings or bullets, formulas in $...$, clear steps, a partial worked example, one common mistake, and what the student should do next. Make it substantially more useful.";
+  "Your draft was too short. Continue speaking a complete teaching answer out loud in the reply: headings or bullets, formulas in $...$, clear steps, a partial worked example, one common mistake, and what the student should do next. Write more useful content now.";

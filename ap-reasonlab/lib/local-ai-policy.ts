@@ -28,7 +28,7 @@ export function getLocalGenPolicy(modelId: string): LocalGenPolicy {
   return {
     disableThinking: shouldDisableThinking(modelId),
     maxTokens: 3072,
-    temperature: 0.55,
+    temperature: 0.65,
     nudge: localNudgeForModel(modelId),
     isRetiredReasoning: isReasoningLocalModel(modelId),
   };
