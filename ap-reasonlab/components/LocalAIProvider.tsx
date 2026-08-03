@@ -18,6 +18,7 @@ import type { AiProvider, SiteModelChoice } from "@/lib/ai-site-models";
 import { parseSiteModelChoice } from "@/lib/ai-site-models";
 import {
   isInsideOpenThinkBlock,
+  LOCAL_RETRY_NO_THINK_NUDGE,
   mergeLocalDirectNudge,
   stripReasoningTrace,
 } from "@/lib/ai-reasoning-strip";
@@ -25,6 +26,7 @@ import {
   chatOptsForModel,
   compactLocalMessages,
   getLocalGenPolicy,
+  isLocalGuidanceReply,
   localTimeoutGuidance,
 } from "@/lib/local-ai-policy";
 import {
@@ -544,42 +546,53 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
       setError("");
       setStatusText("Preparing answer…");
 
-      const prepared = compactLocalMessages(
-        mergeLocalDirectNudge(
-          messages as Array<{ role: string; content: string }>,
-          policy.nudge
-        )
-      ) as ChatCompletionMessageParam[];
+      const runAttempt = async (
+        maxTokens: number,
+        nudge: string
+      ): Promise<string> => {
+        const prepared = compactLocalMessages(
+          mergeLocalDirectNudge(
+            messages as Array<{ role: string; content: string }>,
+            nudge
+          )
+        ) as ChatCompletionMessageParam[];
 
-      const runAttempt = async (maxTokens: number): Promise<string> => {
         const startedAt = Date.now();
         let timedOut = false;
         let idleTimedOut = false;
+        let thinkTimedOut = false;
         let streamStarted = false;
         let deadlineAt = startedAt + policy.prefillTimeoutMs;
         let softTimerId = 0;
         let idleTimerId = 0;
+        let thinkTimerId = 0;
 
         const stopTimers = () => {
           window.clearTimeout(softTimerId);
           window.clearTimeout(idleTimerId);
+          window.clearTimeout(thinkTimerId);
         };
 
-        const fireTimeout = (kind: "soft" | "idle" | "absolute" | "prefill") => {
+        const fireTimeout = (
+          kind: "soft" | "idle" | "absolute" | "prefill" | "thinking"
+        ) => {
           if (timedOut) return;
           timedOut = true;
           if (kind === "idle") idleTimedOut = true;
+          if (kind === "thinking") thinkTimedOut = true;
           try {
             void engine.interruptGenerate();
           } catch {
             // ignore
           }
           setStatusText(
-            kind === "idle"
-              ? "Stopped — no visible answer yet. Prefer a lighter model."
-              : kind === "prefill"
-                ? "Stopped — model was still preparing (prefill). Prefer a lighter model."
-                : "Stopped — answer took too long."
+            kind === "thinking"
+              ? "Stopped hidden thinking — retrying or showing guidance…"
+              : kind === "idle"
+                ? "Stopped — model stalled with no text."
+                : kind === "prefill"
+                  ? "Stopped — model was still preparing (prefill)."
+                  : "Stopped — answer took too long."
           );
         };
 
@@ -597,16 +610,29 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
           idleTimerId = window.setTimeout(() => fireTimeout("idle"), policy.idleVisibleMs);
         };
 
+        const clearThinkDeadline = () => {
+          window.clearTimeout(thinkTimerId);
+          thinkTimerId = 0;
+        };
+
+        const armThinkDeadline = () => {
+          window.clearTimeout(thinkTimerId);
+          thinkTimerId = window.setTimeout(
+            () => fireTimeout("thinking"),
+            policy.thinkingBudgetMs
+          );
+        };
+
         const absoluteTimerId = window.setTimeout(
           () => fireTimeout("absolute"),
           policy.absoluteTimeoutMs
         );
-        // Prefill phase only — do NOT start idle until the stream has begun.
         armSoftDeadline();
 
         let lastStatusPhase = "prefill";
         let raw = "";
         let lastVisibleLen = 0;
+        let lastRawLen = 0;
 
         const finish = (): string => {
           const partial = stripReasoningTrace(raw);
@@ -620,9 +646,11 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
           }
           if (timedOut) {
             setStatusText(
-              idleTimedOut
-                ? "No visible answer in time — see guidance below."
-                : "Timed out before text appeared — see guidance below."
+              thinkTimedOut
+                ? "Hidden thinking ran too long — see guidance or retry result."
+                : idleTimedOut
+                  ? "No visible answer in time — see guidance below."
+                  : "Timed out before text appeared — see guidance below."
             );
             return localTimeoutGuidance(modelId);
           }
@@ -633,14 +661,14 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
           const stream = await engine.chat.completions.create({
             messages: prepared,
             stream: true,
-            temperature: 0.4,
+            temperature: 0.35,
             max_tokens: maxTokens,
+            // Force-disable Qwen3/3.5 hidden thinking (WebLLM empty </think> header).
             ...(policy.disableThinking ? { extra_body: { enable_thinking: false } } : {}),
           });
 
           streamStarted = true;
           setStatusText("Writing answer…");
-          // Decode phase budgets start now (after prefill/create).
           deadlineAt = Date.now() + policy.timeoutMs;
           armSoftDeadline();
           armIdleDeadline();
@@ -651,6 +679,13 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
             raw += token;
             const visible = stripReasoningTrace(raw, { trim: false });
             const visibleTrimmed = visible.trim();
+
+            // Any raw token means the model is alive — do not idle-kill during think dumps.
+            if (raw.length > lastRawLen) {
+              lastRawLen = raw.length;
+              armIdleDeadline();
+            }
+
             if (visibleTrimmed.length > lastVisibleLen) {
               lastVisibleLen = visibleTrimmed.length;
               deadlineAt = Math.min(
@@ -658,18 +693,25 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
                 Date.now() + policy.timeoutMs
               );
               armSoftDeadline();
-              armIdleDeadline();
+              clearThinkDeadline();
             }
+
             const thinking = isInsideOpenThinkBlock(raw) && !visibleTrimmed;
-            const phase = thinking ? "thinking" : "writing";
-            if (phase !== lastStatusPhase) {
-              lastStatusPhase = phase;
-              setStatusText(
-                thinking
-                  ? "Skipping hidden thinking — answer will appear next…"
-                  : "Writing answer…"
-              );
+            if (thinking) {
+              if (lastStatusPhase !== "thinking") {
+                lastStatusPhase = "thinking";
+                setStatusText("Model opened a think block — cutting it short if it lasts…");
+                armThinkDeadline();
+              }
+            } else if (lastStatusPhase === "thinking") {
+              lastStatusPhase = "writing";
+              clearThinkDeadline();
+              setStatusText("Writing answer…");
+            } else if (lastStatusPhase !== "writing" && visibleTrimmed) {
+              lastStatusPhase = "writing";
+              setStatusText("Writing answer…");
             }
+
             onToken?.(token, visible);
           }
           return finish();
@@ -683,15 +725,24 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
       };
 
       try {
-        let result = await runAttempt(policy.maxTokens);
-        if (!result.trim()) {
-          setStatusText("Retrying with a shorter Local answer…");
-          result = await runAttempt(Math.min(256, policy.maxTokens));
+        let result = await runAttempt(policy.maxTokens, policy.nudge);
+        // Always one short no-think retry when the first pass is blank or guidance.
+        if (!result.trim() || isLocalGuidanceReply(result)) {
+          setStatusText("Retrying Local AI without thinking…");
+          const retry = await runAttempt(
+            Math.min(256, policy.maxTokens),
+            `${policy.nudge}\n\n${LOCAL_RETRY_NO_THINK_NUDGE}`
+          );
+          if (retry.trim() && !isLocalGuidanceReply(retry)) {
+            result = retry;
+          } else if (!result.trim()) {
+            result = retry || localTimeoutGuidance(modelId);
+          }
         }
         if (!result.trim()) {
           result = localTimeoutGuidance(modelId);
         }
-        if (!result.startsWith("## Local AI stopped early")) {
+        if (!isLocalGuidanceReply(result)) {
           setStatusText("Local AI is ready on this device.");
         }
         return result;

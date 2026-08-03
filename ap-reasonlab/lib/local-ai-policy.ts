@@ -16,8 +16,10 @@ export type LocalGenPolicy = {
   maxTokens: number;
   /** Soft decode budget after the first stream chunk (extends while visible). */
   timeoutMs: number;
-  /** After stream starts: interrupt if still no visible answer. */
+  /** After stream starts: interrupt if no tokens at all (model stalled). */
   idleVisibleMs: number;
+  /** Interrupt if stuck inside an open <think> with no visible answer. */
+  thinkingBudgetMs: number;
   /** Whole-request ceiling including prefill. */
   absoluteTimeoutMs: number;
   /** Prefill-only budget before first chunk (create + first token). */
@@ -43,9 +45,10 @@ export function getLocalGenPolicy(modelId: string): LocalGenPolicy {
   if (heavy) {
     return {
       disableThinking,
-      maxTokens: 512,
+      maxTokens: 448,
       timeoutMs: 180_000,
       idleVisibleMs: 90_000,
+      thinkingBudgetMs: 18_000,
       absoluteTimeoutMs: 300_000,
       prefillTimeoutMs: 180_000,
       nudge: localNudgeForModel(modelId),
@@ -58,9 +61,10 @@ export function getLocalGenPolicy(modelId: string): LocalGenPolicy {
   if (medium) {
     return {
       disableThinking,
-      maxTokens: 480,
+      maxTokens: 400,
       timeoutMs: 150_000,
       idleVisibleMs: 75_000,
+      thinkingBudgetMs: 14_000,
       absoluteTimeoutMs: 240_000,
       prefillTimeoutMs: 120_000,
       nudge: localNudgeForModel(modelId),
@@ -72,9 +76,10 @@ export function getLocalGenPolicy(modelId: string): LocalGenPolicy {
 
   return {
     disableThinking,
-    maxTokens: 400,
+    maxTokens: 360,
     timeoutMs: 120_000,
     idleVisibleMs: 60_000,
+    thinkingBudgetMs: 12_000,
     absoluteTimeoutMs: 180_000,
     prefillTimeoutMs: 90_000,
     nudge: localNudgeForModel(modelId),
@@ -101,8 +106,8 @@ export function chatOptsForModel(
 export function compactLocalMessages(
   messages: Array<{ role: string; content: string }>
 ): Array<{ role: string; content: string }> {
-  const MAX_SYSTEM = 2_400;
-  const MAX_TURN = 1_000;
+  const MAX_SYSTEM = 2_200;
+  const MAX_TURN = 900;
   const MAX_TURNS = 4; // system + up to 3 later messages
 
   const system = messages.find((m) => m.role === "system");
@@ -134,14 +139,18 @@ export function localTimeoutGuidance(modelId: string): string {
   const short = modelId.replace(/-q4f16_1-MLC$/i, "").replace(/-/g, " ");
   return `## Local AI stopped early
 
-No visible answer arrived in time on **${short}**.
+No visible answer arrived in time on **${short}** (often hidden thinking, or the model is too heavy for this device).
 
 Try one of these:
-1. Switch to **Qwen3.5 Starter** or another **Super light / Light** model, then Enable again
+1. Switch to **Qwen3.5 Starter** or another **Super light / Light** model, then press **Enable** again
 2. Turn **off site search** in Local settings (smaller prompt = faster)
 3. Use **Website API** for this question
 
-Heavy 7B–9B models often need a strong discrete GPU in the browser.`;
+Heavy 7B–9B browser models need a strong discrete GPU.`;
+}
+
+export function isLocalGuidanceReply(text: string): boolean {
+  return text.trimStart().startsWith("## Local AI stopped early");
 }
 
 export { shouldDisableThinking, isHeavyLocalModel, localNudgeForModel };
