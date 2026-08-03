@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
         {
           error:
             mode === "practice-generator"
-              ? "Paste a seed first — any text. We copy it and generate a new practice topic from it."
+              ? "Paste a topic first — any text. We copy it and generate a new topic from it."
               : "Enter English text or a learning question.",
         },
         { status: 400 }
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
     const controlBlock =
       mode === "practice-generator"
         ? `Exam/track target (tone only): ${target}
-Rule: COPY whatever the student pasted as the seed (do not judge if it is a “real topic”). Then GENERATE a NEW practice topic/set from that seed.
+Rule: COPY whatever the student pasted as the topic (do not judge if it is a “real topic”). Then GENERATE a NEW practice topic from that copy.
 `
         : mode === "language-materials"
           ? `Exam/track target: ${target}

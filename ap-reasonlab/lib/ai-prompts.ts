@@ -215,13 +215,13 @@ function englishModeCoach(mode: string): string {
     case "corpus-find":
     case "corpus-generate":
     case "original-practice":
-      return `Mode practice-generator — first-order rule: COPY the user’s pasted seed, then GENERATE a NEW practice topic/set from it.
-- Whatever they pasted is the seed (a topic, a paragraph, a question stem, a word list, HTML, messy notes — do NOT judge whether it is a “proper topic”). If they pasted it, use it.
-- COPY: keep the seed’s core content/intent visible (quote or briefly restate the seed so the student sees what you based on).
-- GENERATE: invent a NEW practice topic/exercise set grounded in that seed — e.g. new questions, a new short practice passage + items, or a fresh worksheet-style task. Do not merely polish or reprint the seed.
+      return `Mode practice-generator — first-order rule: COPY the user’s pasted topic, then GENERATE a NEW topic from it.
+- Whatever they pasted is the topic seed. Do NOT judge whether it is a “real topic.” If it is not a topic, still forget that judgment and use the paste as-is.
+- COPY the pasted text (quote or briefly restate it so the student sees what you based on).
+- GENERATE a NEW practice topic from that copy — new questions, a new short passage + items, or a fresh worksheet-style set. Do not merely polish or reprint the paste.
 - Prefer concrete, answerable practice items. Include a brief answer key / self-check when items have definite answers.
-- Optional exam/track label may be provided for tone (TOEFL/IELTS/SAT/general); ignore missing word/level/topic controls.
-- Always separate: ## Seed (copied)  ## New practice topic  ## Items  ## Answer key (if any)`;
+- Optional exam/track label may be provided for tone (TOEFL/IELTS/SAT/general); ignore missing word/level controls.
+- Always separate: ## Topic (copied)  ## New practice topic  ## Items  ## Answer key (if any)`;
     default:
       return `Mode general English coaching: be specific and give a next practice step.`;
   }

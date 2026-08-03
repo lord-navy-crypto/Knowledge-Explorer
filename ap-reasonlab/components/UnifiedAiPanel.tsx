@@ -115,7 +115,7 @@ const ENGLISH_TASKS: Array<{ value: EnglishTask; label: string; hint: string }> 
   {
     value: "practice-generator",
     label: "Practice generator",
-    hint: "Paste any seed (topic or not) — copy it, then generate a new practice topic/set from it.",
+    hint: "Paste any topic — copy it, then generate a new practice topic from it. Not a topic? Still copy and generate.",
   },
 ];
 
@@ -480,8 +480,8 @@ export default function UnifiedAiPanel({
       const englishControls =
         mode === "practice-generator"
           ? `Exam/track target (tone only): ${englishTarget}
-Rule: COPY whatever the student pasted as the seed (do not judge if it is a “real topic”). Then GENERATE a NEW practice topic/set from that seed.
-Student paste (seed):`
+Rule: COPY whatever the student pasted as the topic (do not judge if it is a “real topic”). Then GENERATE a NEW practice topic from that copy.
+Student paste (topic):`
           : mode === "language-materials"
             ? `Exam/track target: ${englishTarget}
 Role: language-materials collector on large pastes; language-materials generator on short commands/sentences (语言资料, not generic data).
@@ -586,7 +586,7 @@ Student input:`;
         category === "coding"
           ? "Describe the coding task and/or paste code."
           : category === "english" && englishTask === "practice-generator"
-            ? "Paste a seed first — any text. We copy it and generate a new practice topic from it."
+            ? "Paste a topic first — any text. We copy it and generate a new topic from it."
             : "Type a question or paste content first."
       );
       return;
@@ -825,10 +825,6 @@ Student input:`;
           ) : null}
         </div>
 
-        {category === "coding" ? null : null}
-
-        {category === "coding" ? null : null}
-
         <div className="overflow-hidden rounded-xl border border-slate-200">
           <div className="flex items-center justify-between gap-2 border-b border-slate-200 bg-slate-50 px-3 py-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -945,7 +941,7 @@ Student input:`;
                       ? englishTask === "language-materials"
                         ? "Paste a large text to collect useful + extended 语言资料, or a short command/sentence to generate language materials…"
                         : englishTask === "practice-generator"
-                          ? "Paste any seed — a topic, stem, paragraph, list, or mess. We copy it and generate a NEW practice topic from it."
+                          ? "Paste any topic (or anything). We copy it and generate a NEW practice topic from it."
                           : "Paste a passage, sentence, or writing draft…"
                       : "Paste a problem, formula, concept, or question…"
               }
