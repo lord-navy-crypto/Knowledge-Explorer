@@ -13,7 +13,7 @@ import {
 export const metadata = {
   title: "Tools — Knowledge Explorer",
   description:
-    "One toolbox: Study desk, English helpers, STEM pads, File lab, classroom light tools, and AI — mostly local in your browser.",
+    "One toolbox: Study desk, English helpers, STEM pads, File lab, classroom light tools, external connections, and AI — mostly local in your browser.",
 };
 
 function SecurityBadge({ level }: { level?: ToolSecurity }) {

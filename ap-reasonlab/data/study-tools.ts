@@ -8,7 +8,8 @@ export type StudyToolCategory =
   | "media"
   | "collab"
   | "utilities"
-  | "draw";
+  | "draw"
+  | "external";
 
 /** Risk / permission hint shown in the toolbox catalog. */
 export type ToolSecurity =
@@ -76,6 +77,7 @@ export const STUDY_TOOL_CATEGORIES: Array<{ id: StudyToolCategory; label: string
   { id: "media", label: "Images" },
   { id: "collab", label: "Classroom light" },
   { id: "utilities", label: "Quick utilities" },
+  { id: "external", label: "External connections" },
 ];
 
 export const STUDY_TOOLS: StudyTool[] = [
@@ -413,6 +415,16 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "QR code",
     blurb: "Turn a link or short text into a downloadable QR code.",
     category: "utilities",
+    security: "safe",
+  },
+
+  // —— External connections hub ——
+  {
+    id: "external-hub",
+    href: "/tools/external",
+    title: "External connections & tools",
+    blurb: "Curated off-site links: AP/SAT/TOEFL/IELTS hubs, Desmos, PhET, dictionaries, coding docs, and more.",
+    category: "external",
     security: "safe",
   },
 ];
