@@ -50,10 +50,11 @@ export function isMediumLocalModel(modelId: string): boolean {
 export function getLocalGenPolicy(modelId: string): LocalGenPolicy {
   const heavy = isHeavyLocalModel(modelId);
   const medium = isMediumLocalModel(modelId);
+  const disableThinking = shouldDisableThinking(modelId);
 
   if (heavy) {
-    // Heavy stays runnable, but without the truncate/think-kill knobs that
-    // left answers half-finished. Wait for the stream to complete.
+    // Heavy stays runnable and waits for the stream to complete.
+    // No thinking-off / think-kill — those left answers half-finished.
     return {
       disableThinking: false,
       maxTokens: 1536,
@@ -72,12 +73,14 @@ export function getLocalGenPolicy(modelId: string): LocalGenPolicy {
   }
 
   if (medium) {
+    // Medium lag is almost always Qwen3 hidden thinking — force it off.
+    // Do not reintroduce Heavy-style truncate / finishOutput waits.
     return {
-      disableThinking: false,
+      disableThinking,
       maxTokens: 512,
       timeoutMs: 150_000,
       idleVisibleMs: 75_000,
-      thinkingBudgetMs: 45_000,
+      thinkingBudgetMs: 12_000,
       absoluteTimeoutMs: 240_000,
       prefillTimeoutMs: 120_000,
       finishOutput: false,
@@ -90,11 +93,11 @@ export function getLocalGenPolicy(modelId: string): LocalGenPolicy {
   }
 
   return {
-    disableThinking: false,
-    maxTokens: 512,
+    disableThinking,
+    maxTokens: 480,
     timeoutMs: 120_000,
     idleVisibleMs: 60_000,
-    thinkingBudgetMs: 45_000,
+    thinkingBudgetMs: 10_000,
     absoluteTimeoutMs: 180_000,
     prefillTimeoutMs: 90_000,
     finishOutput: false,

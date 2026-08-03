@@ -60,11 +60,11 @@ export function supportsDisableThinking(modelId: string): boolean {
 }
 
 /**
- * Thinking-off was a Heavy-only lag hack; it also cut answers short.
- * Heavy now waits for a full reply instead — never force-disable thinking.
+ * Turn off hidden thinking for Light + Medium Qwen3 / Qwen3.5 (browser lag).
+ * Heavy keeps thinking and waits for a full reply instead (see finishOutput).
  */
-export function shouldDisableThinking(_modelId: string): boolean {
-  return false;
+export function shouldDisableThinking(modelId: string): boolean {
+  return supportsDisableThinking(modelId) && !isHeavyLocalModel(modelId);
 }
 
 /** 7B / 8B / 9B only — do not treat 0.8B or 1.7B as heavy. */
@@ -72,8 +72,8 @@ export function isHeavyLocalModel(modelId: string): boolean {
   return /(?:^|[^0-9.])([789])B(?:-|$)/i.test(modelId);
 }
 
-export function localNudgeForModel(_modelId: string): string {
-  return LOCAL_MARKDOWN_NUDGE;
+export function localNudgeForModel(modelId: string): string {
+  return shouldDisableThinking(modelId) ? LOCAL_DIRECT_ANSWER_NUDGE : LOCAL_MARKDOWN_NUDGE;
 }
 
 /**
@@ -87,10 +87,10 @@ export const REASONING_MODEL_DIRECT_ANSWER =
 export const LOCAL_MARKDOWN_NUDGE =
   "Reply in markdown. Wrap EVERY formula in $...$ or $$...$$ so it renders as an equation — never bare \\frac / \\sqrt code. Put key steps in the visible reply.";
 
-/** Stronger nudge for Heavy Qwen3 only — hidden thinking is too slow on large browser models. */
+/** Stronger nudge when thinking is forced off (Light / Medium Qwen3). */
 export const LOCAL_DIRECT_ANSWER_NUDGE =
   "Answer immediately in markdown. Wrap EVERY formula in $...$ or $$...$$ (never bare TeX). Do NOT open <think>, <thinking>, or any private reasoning tags — the first line must be visible answer content.";
 
-/** Used on Local retry after a blank/thinking stall (Heavy / force no-think path). */
+/** Used on Local retry after a blank/thinking stall (no-think path). */
 export const LOCAL_RETRY_NO_THINK_NUDGE =
   "CRITICAL RETRY: Output the student-facing answer NOW. Zero <think> tags. Use $...$ for math. First character = start of the answer. Keep it short.";
