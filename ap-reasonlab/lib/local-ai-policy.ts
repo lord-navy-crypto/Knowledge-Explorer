@@ -58,28 +58,29 @@ export function getLocalGenPolicy(modelId: string): LocalGenPolicy {
     };
   }
 
+  // Medium / light / superlight: no thinking-off, no context shrink — only Heavy is capped.
   if (medium) {
     return {
-      disableThinking,
-      maxTokens: 400,
+      disableThinking: false,
+      maxTokens: 512,
       timeoutMs: 150_000,
       idleVisibleMs: 75_000,
-      thinkingBudgetMs: 14_000,
+      thinkingBudgetMs: 45_000,
       absoluteTimeoutMs: 240_000,
       prefillTimeoutMs: 120_000,
       nudge: localNudgeForModel(modelId),
-      contextAttempts: [2048],
-      contextWindowCap: 2048,
+      contextAttempts: [4096],
+      contextWindowCap: null,
       isRetiredReasoning: isReasoningLocalModel(modelId),
     };
   }
 
   return {
-    disableThinking,
-    maxTokens: 360,
+    disableThinking: false,
+    maxTokens: 512,
     timeoutMs: 120_000,
     idleVisibleMs: 60_000,
-    thinkingBudgetMs: 12_000,
+    thinkingBudgetMs: 45_000,
     absoluteTimeoutMs: 180_000,
     prefillTimeoutMs: 90_000,
     nudge: localNudgeForModel(modelId),
