@@ -321,13 +321,12 @@ export const FEATURED_LOCAL_MODELS: LocalModelOption[] = [
     label: "Qwen3 Heavy",
     group: "heavy",
     series: "Qwen3",
-    summary: "Flagship bilingual local general model in this library.",
-    bestFor: "Best all-round Chinese / English study answers",
+    summary: "Flagship bilingual local general model — needs a strong GPU; start lighter if it feels laggy.",
+    bestFor: "Best all-round Chinese / English study answers on capable devices",
     parameterSize: "8B",
     vramMB: 5696,
-    tags: ["New", "Bilingual", "Recommended"],
+    tags: ["New", "Bilingual"],
     cached: null,
-    recommended: true,
   },
   {
     id: "Qwen3.5-9B-q4f16_1-MLC",
@@ -457,11 +456,13 @@ function tagsFromId(modelId: string): LocalModelTag[] {
   return tags;
 }
 
-/** Prefer q4f16 instruct variants; skip embeddings / vision / duplicate quant dumps. */
+/** Prefer q4f16 instruct variants; skip embeddings / vision / laggy reasoning dumps. */
 export function shouldIncludeExtendedModel(modelId: string): boolean {
   if (FEATURED_LOCAL_MODEL_IDS.has(modelId)) return false;
   if (/embed|Embedding|bge|e5|jina|Snowflake|Viper|binary/i.test(modelId)) return false;
   if (/vision|VL-/i.test(modelId)) return false;
+  // DeepSeek-R1 Distill reintroduces multi-minute hidden thinking lag in-browser.
+  if (/DeepSeek-R1|R1-Distill/i.test(modelId)) return false;
   // Prefer the common q4f16_1 build; allow q0f16 only for tiny SmolLM already featured.
   if (!/q4f16_1-MLC/.test(modelId)) return false;
   // Skip short-context -1k forks when a normal id exists in featured/extended.

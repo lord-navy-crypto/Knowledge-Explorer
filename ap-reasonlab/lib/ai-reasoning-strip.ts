@@ -2,6 +2,8 @@
  * Soft-strip accidental chain-of-thought dumps (e.g. leftover <think> tags).
  * Local DeepSeek-R1 Distill was removed because waiting on a private thinking
  * phase made the UI feel stuck; this helper is only a safety net now.
+ *
+ * Generation budgets / thinking-disable policy: `lib/local-ai-policy.ts`.
  */
 
 const THINK_OPEN = /<(?:redacted_)?think(?:ing)?\b[^>]*>/i;
@@ -14,7 +16,7 @@ export function isInsideOpenThinkBlock(text: string): boolean {
   return !THINK_CLOSE.test(after);
 }
 
-export function stripReasoningTrace(text: string): string {
+export function stripReasoningTrace(text: string, opts?: { trim?: boolean }): string {
   if (!text) return "";
 
   let out = text
@@ -30,7 +32,8 @@ export function stripReasoningTrace(text: string): string {
     out = out.slice(0, openIdx);
   }
 
-  return out.replace(/\n{3,}/g, "\n\n").trim();
+  out = out.replace(/\n{3,}/g, "\n\n");
+  return opts?.trim === false ? out : out.trim();
 }
 
 /** WebLLM allows only one system message (index 0). Merge the nudge into it. */
@@ -57,11 +60,11 @@ export function supportsDisableThinking(modelId: string): boolean {
 }
 
 /**
- * Only large / heavy Qwen3 should force-disable hidden thinking.
- * Super-light / light / medium stay faster even with light thinking, so leave them alone.
+ * Disable hidden thinking for ALL Qwen3 / Qwen3.5 sizes.
+ * Mid/light models also lag when they emit long private CoT before any visible text.
  */
 export function shouldDisableThinking(modelId: string): boolean {
-  return supportsDisableThinking(modelId) && isHeavyLocalModel(modelId);
+  return supportsDisableThinking(modelId);
 }
 
 export function isHeavyLocalModel(modelId: string): boolean {
@@ -79,10 +82,10 @@ export function localNudgeForModel(modelId: string): string {
 export const REASONING_MODEL_DIRECT_ANSWER =
   "You may reason privately inside <think>...</think> if needed. After </think>, output ONLY the final answer in the requested format — no meta commentary about your thinking.";
 
-/** Soft nudge for mid/small local models — keep formulas visible, allow light reasoning. */
+/** Soft nudge for non-Qwen3 local models — keep formulas visible. */
 export const LOCAL_MARKDOWN_NUDGE =
   "Reply in markdown. Use $...$ / $$...$$ for math formulas. Put key steps and formulas in the visible reply.";
 
-/** Stronger nudge for large / heavy local models where hidden thinking is too slow. */
+/** Stronger nudge for Qwen3 family where hidden thinking is too slow. */
 export const LOCAL_DIRECT_ANSWER_NUDGE =
   "Answer immediately in markdown. Use $...$ / $$...$$ for math. Do not write <think> blocks or private reasoning — put formulas and steps in the visible reply only.";

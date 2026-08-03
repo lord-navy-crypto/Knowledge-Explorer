@@ -18,11 +18,13 @@ import type { AiProvider, SiteModelChoice } from "@/lib/ai-site-models";
 import { parseSiteModelChoice } from "@/lib/ai-site-models";
 import {
   isInsideOpenThinkBlock,
-  localNudgeForModel,
   mergeLocalDirectNudge,
-  shouldDisableThinking,
   stripReasoningTrace,
 } from "@/lib/ai-reasoning-strip";
+import {
+  chatOptsForModel,
+  getLocalGenPolicy,
+} from "@/lib/local-ai-policy";
 import {
   DEFAULT_LOCAL_MODEL_ID,
   FEATURED_LOCAL_MODELS,
@@ -102,15 +104,7 @@ type LocalAIContextValue = {
   interruptGeneration: () => void;
 };
 
-/** Balanced cap — enough for formulas/steps without multi-minute runs. */
-const LOCAL_MAX_TOKENS_DEFAULT = 1200;
-const LOCAL_MAX_TOKENS_HEAVY = 1400;
-/** Safety net only — normal answers should finish well before this. */
-const LOCAL_GENERATE_TIMEOUT_MS = 180_000;
-
-function maxTokensForModel(modelId: string): number {
-  return /7B|8B|9B/i.test(modelId) ? LOCAL_MAX_TOKENS_HEAVY : LOCAL_MAX_TOKENS_DEFAULT;
-}
+/** Generation budgets live in `lib/local-ai-policy.ts` (per-model). */
 
 const LocalAIContext = createContext<LocalAIContextValue | null>(null);
 const MODE_KEY = "results-ai-mode";
@@ -125,17 +119,6 @@ function migrateMode(raw: string | null): AIMode | null {
   // Older Local / Auto / Cloud UI
   if (raw === "auto" || raw === "cloud") return "site";
   return null;
-}
-/** Cap context on heavier WebLLM models so typical laptop GPUs do not OOM. */
-function chatOptsForModel(modelId: string, contextWindow = 4096) {
-  const opts: { context_window_size: number; prefill_chunk_size: number } = {
-    context_window_size: contextWindow,
-    prefill_chunk_size: Math.min(1024, contextWindow),
-  };
-  // 7B/8B heavies need a capped context on typical laptops.
-  if (/7B|8B|9B/i.test(modelId)) return opts;
-  if (/3B|4B/i.test(modelId)) return { ...opts, context_window_size: Math.min(contextWindow, 4096) };
-  return undefined;
 }
 
 function isLocalLoadOomError(message: string): boolean {
@@ -325,6 +308,12 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const setSelectedModelId = useCallback((id: string) => {
+    if (/deepseek-r1|r1-distill/i.test(id)) {
+      setError(
+        "DeepSeek Distill is disabled here — its hidden thinking phase made Local AI feel stuck. Pick Qwen3.5 / Qwen3 / Llama instead."
+      );
+      return;
+    }
     if (!modelsRef.current.some((item) => item.id === id)) return;
     setSelectedModelIdState(id);
     localStorage.setItem(MODEL_KEY, id);
@@ -386,7 +375,8 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
         try {
           const webllm = await import("@mlc-ai/web-llm");
           let engine: MLCEngineInterface | null = null;
-          const contextAttempts = /7B|8B/i.test(targetModelId) ? [4096, 2048] : [4096];
+          const policy = getLocalGenPolicy(targetModelId);
+          const contextAttempts = policy.contextAttempts;
 
           const loadWithOpts = async (contextWindow: number) => {
             const chatOpts = chatOptsForModel(targetModelId, contextWindow);
@@ -412,7 +402,11 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
               workerRef.current = null;
               const workerMessage =
                 workerError instanceof Error ? workerError.message : String(workerError);
-              setStatusText(`Worker failed (${workerMessage}). Trying main-thread engine…`);
+              setStatusText(
+                /7B|8B|9B/i.test(targetModelId)
+                  ? `Worker failed (${workerMessage}). Trying main-thread engine — UI may freeze on Heavy models…`
+                  : `Worker failed (${workerMessage}). Trying main-thread engine…`
+              );
               return await webllm.CreateMLCEngine(
                 targetModelId,
                 { initProgressCallback: onProgress },
@@ -543,13 +537,14 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
       const engine = engineRef.current;
       if (!engine) throw new Error("Enable local AI before sending a local request.");
       const modelId = loadedModelRef.current || selectedModelId;
+      const policy = getLocalGenPolicy(modelId);
       setStatus("generating");
       setError("");
       setStatusText("Writing answer…");
 
       const prepared = mergeLocalDirectNudge(
         messages as Array<{ role: string; content: string }>,
-        localNudgeForModel(modelId)
+        policy.nudge
       ) as ChatCompletionMessageParam[];
 
       let timedOut = false;
@@ -561,43 +556,48 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
           // ignore
         }
         setStatusText("Stopped — answer took too long. Try a lighter model or Website API.");
-      }, LOCAL_GENERATE_TIMEOUT_MS);
+      }, policy.timeoutMs);
 
+      let lastStatusPhase = "writing";
       try {
         const stream = await engine.chat.completions.create({
           messages: prepared,
           stream: true,
           temperature: 0.45,
-          max_tokens: maxTokensForModel(modelId),
-          // Only large Qwen3: skip hidden thinking (mid/small keep default thinking).
-          ...(shouldDisableThinking(modelId)
-            ? { extra_body: { enable_thinking: false } }
-            : {}),
+          max_tokens: policy.maxTokens,
+          // All Qwen3 / Qwen3.5: skip hidden thinking (the main big-model lag cause).
+          ...(policy.disableThinking ? { extra_body: { enable_thinking: false } } : {}),
         });
         let raw = "";
         for await (const chunk of stream) {
           if (timedOut) break;
           const token = chunk.choices[0]?.delta?.content ?? "";
           raw += token;
-          const visible = stripReasoningTrace(raw);
-          if (isInsideOpenThinkBlock(raw) && !visible) {
-            setStatusText("Skipping hidden thinking — answer will appear next…");
-          } else {
-            setStatusText("Writing answer…");
+          const visible = stripReasoningTrace(raw, { trim: false });
+          const thinking = isInsideOpenThinkBlock(raw) && !visible.trim();
+          const phase = thinking ? "thinking" : "writing";
+          if (phase !== lastStatusPhase) {
+            lastStatusPhase = phase;
+            setStatusText(
+              thinking
+                ? "Skipping hidden thinking — answer will appear next…"
+                : "Writing answer…"
+            );
           }
-          onToken?.(token, visible || raw);
+          // Never fall back to raw — that re-leaks <think> dumps into the UI.
+          onToken?.(token, visible);
         }
         if (timedOut) {
-          const partial = stripReasoningTrace(raw) || raw.trim();
+          const partial = stripReasoningTrace(raw);
           if (partial) {
             setStatusText("Stopped on timeout — showing partial answer.");
             return partial;
           }
           throw new Error(
-            "Local AI timed out. Try Website API or a lighter model (Qwen2.5 / Llama)."
+            "Local AI timed out. Try Website API or a lighter model (Qwen3.5 Starter / Light)."
           );
         }
-        const cleaned = stripReasoningTrace(raw) || raw.trim();
+        const cleaned = stripReasoningTrace(raw);
         if (!cleaned) {
           throw new Error(
             "Local model returned an empty answer. Try again or switch to Website API."

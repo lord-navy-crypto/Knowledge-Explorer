@@ -211,7 +211,8 @@ export default function LocalAIControls({ embedded = false }: Props) {
               </p>
               <p className="mt-2 text-xs text-amber-900/90">
                 GPU tip: on laptops or integrated graphics, start with <strong>Super light</strong>{" "}
-                models. Close other heavy browser tabs while a local model is enabled.
+                or <strong>Light</strong> (Qwen3.5 Starter). Heavy 7B–9B models are slower and need
+                more VRAM. Qwen3 hidden thinking is force-disabled so answers show up sooner.
               </p>
             </div>
           )}
@@ -262,8 +263,9 @@ export default function LocalAIControls({ embedded = false }: Props) {
                   list official WebLLM q4f16 instruct models
                   {localAI.showFullLibrary && extendedCount
                     ? ` (+${extendedCount} extra)`
-                    : " (large list)"}.
-                  Heavier models need more GPU memory.
+                    : " (large list)"}
+                  — DeepSeek-R1 Distill stays excluded (thinking lag). Heavier models need more GPU
+                  memory; prefer Light/Medium on laptops.
                 </span>
               </span>
             </label>
