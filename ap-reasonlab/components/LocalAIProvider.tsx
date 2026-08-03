@@ -173,7 +173,7 @@ async function detectWebGPU(): Promise<boolean> {
 }
 
 export function LocalAIProvider({ children }: { children: React.ReactNode }) {
-  const [mode, setModeState] = useState<AIMode>("site");
+  const [mode, setModeState] = useState<AIMode>("local");
   const [siteModel, setSiteModelState] = useState<SiteModelChoice>("auto");
   const [provider, setProviderState] = useState<AiProvider>("groq");
   const [userKey, setUserKey] = useState("");
@@ -198,45 +198,65 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
   const enableLockRef = useRef<Promise<void> | null>(null);
 
   useEffect(() => {
-    void detectWebGPU().then(setWebGPUSupported);
-    const savedMode = migrateMode(localStorage.getItem(MODE_KEY));
-    if (savedMode) {
-      setModeState(savedMode);
-      localStorage.setItem(MODE_KEY, savedMode);
-    }
-    const fullLibraryOn = localStorage.getItem(FULL_LIBRARY_KEY) === "1";
-    if (fullLibraryOn) setShowFullLibraryState(true);
-    const savedModel = localStorage.getItem(MODEL_KEY);
-    if (savedModel && /deepseek-r1|r1-distill/i.test(savedModel)) {
-      // Retired: Distill’s private-thinking path made answers feel stuck on “thinking”.
-      localStorage.setItem(MODEL_KEY, DEFAULT_LOCAL_MODEL_ID);
-      setSelectedModelIdState(DEFAULT_LOCAL_MODEL_ID);
-    } else if (savedModel && FEATURED_LOCAL_MODELS.some((item) => item.id === savedModel)) {
-      setSelectedModelIdState(String(savedModel));
-    } else if (savedModel === "Qwen2.5-0.5B-Instruct-q4f16_1-MLC") {
-      // Previous default → newest light bilingual starter.
-      localStorage.setItem(MODEL_KEY, DEFAULT_LOCAL_MODEL_ID);
-      setSelectedModelIdState(DEFAULT_LOCAL_MODEL_ID);
-    } else if (savedModel && fullLibraryOn && /MLC$/i.test(savedModel)) {
-      // Extended WebLLM id — keep until full library finishes loading.
-      setSelectedModelIdState(String(savedModel));
-    }
-    const savedSiteModel = parseSiteModelChoice(localStorage.getItem(SITE_MODEL_KEY));
-    if (savedSiteModel) setSiteModelState(savedSiteModel);
-    const savedProvider = localStorage.getItem(PROVIDER_KEY);
-    if (
-      savedProvider === "groq" ||
-      savedProvider === "gemini" ||
-      savedProvider === "githubmodels" ||
-      savedProvider === "kimi" ||
-      savedProvider === "openrouter" ||
-      savedProvider === "deepseek"
-    ) {
-      setProviderState(savedProvider);
-    }
-    const savedSiteSearch = localStorage.getItem(SITE_SEARCH_KEY);
-    if (savedSiteSearch === "0") setSiteSearchEnabledState(false);
-    if (savedSiteSearch === "1") setSiteSearchEnabledState(true);
+    let cancelled = false;
+    void (async () => {
+      const gpuOk = await detectWebGPU();
+      if (cancelled) return;
+      setWebGPUSupported(gpuOk);
+
+      const savedMode = migrateMode(localStorage.getItem(MODE_KEY));
+      if (savedMode) {
+        setModeState(savedMode);
+        localStorage.setItem(MODE_KEY, savedMode);
+      } else {
+        // First visit: Local-first when WebGPU works; otherwise Website API.
+        const initial: AIMode = gpuOk ? "local" : "site";
+        setModeState(initial);
+        localStorage.setItem(MODE_KEY, initial);
+        if (!gpuOk) {
+          setStatusText(
+            "WebGPU unavailable on this browser — using Website API. Local needs Chrome/Edge with WebGPU."
+          );
+        }
+      }
+
+      const fullLibraryOn = localStorage.getItem(FULL_LIBRARY_KEY) === "1";
+      if (fullLibraryOn) setShowFullLibraryState(true);
+      const savedModel = localStorage.getItem(MODEL_KEY);
+      if (savedModel && /deepseek-r1|r1-distill/i.test(savedModel)) {
+        // Retired: Distill’s private-thinking path made answers feel stuck on “thinking”.
+        localStorage.setItem(MODEL_KEY, DEFAULT_LOCAL_MODEL_ID);
+        setSelectedModelIdState(DEFAULT_LOCAL_MODEL_ID);
+      } else if (savedModel && FEATURED_LOCAL_MODELS.some((item) => item.id === savedModel)) {
+        setSelectedModelIdState(String(savedModel));
+      } else if (savedModel === "Qwen2.5-0.5B-Instruct-q4f16_1-MLC") {
+        // Previous default → newest light bilingual starter.
+        localStorage.setItem(MODEL_KEY, DEFAULT_LOCAL_MODEL_ID);
+        setSelectedModelIdState(DEFAULT_LOCAL_MODEL_ID);
+      } else if (savedModel && fullLibraryOn && /MLC$/i.test(savedModel)) {
+        // Extended WebLLM id — keep until full library finishes loading.
+        setSelectedModelIdState(String(savedModel));
+      }
+      const savedSiteModel = parseSiteModelChoice(localStorage.getItem(SITE_MODEL_KEY));
+      if (savedSiteModel) setSiteModelState(savedSiteModel);
+      const savedProvider = localStorage.getItem(PROVIDER_KEY);
+      if (
+        savedProvider === "groq" ||
+        savedProvider === "gemini" ||
+        savedProvider === "githubmodels" ||
+        savedProvider === "kimi" ||
+        savedProvider === "openrouter" ||
+        savedProvider === "deepseek"
+      ) {
+        setProviderState(savedProvider);
+      }
+      const savedSiteSearch = localStorage.getItem(SITE_SEARCH_KEY);
+      if (savedSiteSearch === "0") setSiteSearchEnabledState(false);
+      if (savedSiteSearch === "1") setSiteSearchEnabledState(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const setMode = useCallback((nextMode: AIMode) => {

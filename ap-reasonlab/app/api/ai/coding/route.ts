@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { asStringList, parseAiProvider, parseSiteModelChoice, runChatJson } from "@/lib/ai-client";
-import { CODING_AI_SYSTEM } from "@/lib/ai-coding-prompt";
+import { codingAiSystem } from "@/lib/ai-coding-prompt";
 import { appendAiSiteContext, buildServerAiSiteContext } from "@/lib/ai-site-context-server";
 
 function mockCoding(language: string, task: string) {
@@ -53,7 +53,7 @@ Return Coding AI JSON.`;
       const siteContext = await buildServerAiSiteContext(`${language}\n${task}\n${code}`, siteSearch);
       const userWithSite = appendAiSiteContext(user, siteContext);
       const result = await runChatJson({
-        system: CODING_AI_SYSTEM,
+        system: codingAiSystem(focus),
         user: userWithSite,
         maxTokens: 1200,
         userApiKey: userApiKey || undefined,

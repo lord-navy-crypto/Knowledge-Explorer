@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { asStringList, parseAiProvider, parseSiteModelChoice, runChatJson } from "@/lib/ai-client";
-import { ENGLISH_TUTOR_SYSTEM } from "@/lib/ai-prompts";
+import { englishTutorSystem } from "@/lib/ai-prompts";
 import { appendAiSiteContext, buildServerAiSiteContext } from "@/lib/ai-site-context-server";
 
 function isClearlyOutsideEnglishScope(input: string, mode: string): boolean {
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
       const siteContext = await buildServerAiSiteContext(`${mode}\n${target}\n${input}`, siteSearch);
       const userWithSite = appendAiSiteContext(user, siteContext);
       const result = await runChatJson({
-        system: ENGLISH_TUTOR_SYSTEM,
+        system: englishTutorSystem(mode),
         user: userWithSite,
         maxTokens: 1200,
         userApiKey: userApiKey || undefined,
