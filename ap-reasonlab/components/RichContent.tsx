@@ -18,12 +18,20 @@ type Props = {
   clampLines?: 2 | 3 | 4;
 };
 
+const KATEX_REHYPE_OPTIONS = {
+  throwOnError: false,
+  strict: "ignore" as const,
+  errorColor: "#b45309",
+  trust: false,
+};
+
 function renderKatex(source: string, displayMode: boolean): string {
   return katex.renderToString(toLatexSource(source), {
     throwOnError: false,
     displayMode,
     strict: "ignore",
     trust: false,
+    errorColor: "#b45309",
   });
 }
 
@@ -65,7 +73,10 @@ export default function RichContent({
       className={`rich-content prose-study ${clampClass} ${className}`.trim()}
       suppressHydrationWarning
     >
-      <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm, remarkMath]}
+        rehypePlugins={[[rehypeKatex, KATEX_REHYPE_OPTIONS]]}
+      >
         {text}
       </ReactMarkdown>
     </div>
