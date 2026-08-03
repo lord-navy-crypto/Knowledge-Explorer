@@ -63,7 +63,7 @@ Return JSON with refused, reply, formulas, quizPrompt, aiMayBeWrong.`;
       const result = await runChatJson({
         system: conceptExplainSystem(mode),
         user: userWithSite,
-        maxTokens: mode === "concept-extension" ? 1500 : 1100,
+        maxTokens: mode === "concept-extension" ? 4096 : 3072,
         userApiKey: userApiKey || undefined,
         provider,
         siteModel,

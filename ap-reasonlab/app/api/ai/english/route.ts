@@ -111,7 +111,7 @@ Return the required English Tutor JSON.`;
       const result = await runChatJson({
         system: englishTutorSystem(mode),
         user: userWithSite,
-        maxTokens: 1200,
+        maxTokens: 3072,
         userApiKey: userApiKey || undefined,
         provider,
         siteModel,

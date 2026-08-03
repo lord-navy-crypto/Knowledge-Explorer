@@ -93,7 +93,7 @@ ${rawContent || summary}`;
       const result = await runChatJson({
         system: SYSTEM_PROMPT,
         user: userPrompt,
-        maxTokens: 900,
+        maxTokens: 2048,
       });
       return NextResponse.json(normalizeResult(result.data, result.note));
     } catch (e) {

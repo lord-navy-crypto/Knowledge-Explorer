@@ -2,8 +2,8 @@ import { extractAiSearchQuery } from "@/lib/ai-site-query";
 
 /** Keep in sync with lib/ai-site-search.ts — duplicated so clients never import the search engine. */
 export const AI_SITE_SEARCH_LIMIT = 8;
-/** Tighter limit for Local AI so prefill does not burn the generation timeout. */
-export const AI_SITE_SEARCH_LIMIT_LOCAL = 4;
+/** Local can use the same site-search depth — no generation time budget to protect. */
+export const AI_SITE_SEARCH_LIMIT_LOCAL = 8;
 
 /** Append server-fetched site context to a Local AI / client prompt. */
 export function appendAiSiteContext(userPrompt: string, context: string): string {
