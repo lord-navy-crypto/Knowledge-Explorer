@@ -165,6 +165,7 @@ function formatAssistantText(parts: {
   if (parts.body?.trim()) chunks.push(parts.body.trim());
   for (const list of parts.lists || []) {
     if (!list.items.length) continue;
+    // Formula / hint lists stay as markdown bullets (never code fences) so KaTeX can render.
     chunks.push(`**${list.label}**\n${list.items.map((item) => `- ${item}`).join("\n")}`);
   }
   if (parts.snippet?.trim()) {
@@ -172,7 +173,6 @@ function formatAssistantText(parts: {
     if (parts.snippetAsCode) {
       chunks.push(`\`\`\`\n${snippet}\n\`\`\``);
     } else {
-      // Formulas / English revisions: plain markdown so RichContent can render $math$.
       chunks.push(snippet);
     }
   }
