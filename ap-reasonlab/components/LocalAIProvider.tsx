@@ -19,6 +19,7 @@ import { parseSiteModelChoice } from "@/lib/ai-site-models";
 import {
   isInsideOpenThinkBlock,
   LOCAL_EXPAND_NUDGE,
+  LOCAL_MORE_FORMULAS_NUDGE,
   LOCAL_RETRY_NO_THINK_NUDGE,
   mergeLocalDirectNudge,
   stripReasoningTrace,
@@ -27,6 +28,7 @@ import {
   compactLocalMessages,
   getLocalGenPolicy,
   isLocalGuidanceReply,
+  isLowFormulaReply,
   isThinLocalReply,
   localTimeoutGuidance,
 } from "@/lib/local-ai-policy";
@@ -586,6 +588,22 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
           );
           if (expanded.trim() && expanded.trim().length > result.trim().length) {
             result = expanded;
+          }
+        }
+
+        // STEM reply with almost no $math$ → one formula-heavy expand.
+        if (result.trim() && isLowFormulaReply(result) && !isLocalGuidanceReply(result)) {
+          setStatusText("Adding more formulas and detail to the Local reply…");
+          const withMath = await runAttempt(
+            policy.maxTokens,
+            `${policy.nudge}\n\n${LOCAL_MORE_FORMULAS_NUDGE}`
+          );
+          if (
+            withMath.trim() &&
+            ((withMath.match(/\$/g) || []).length > (result.match(/\$/g) || []).length ||
+              withMath.trim().length > result.trim().length)
+          ) {
+            result = withMath;
           }
         }
 

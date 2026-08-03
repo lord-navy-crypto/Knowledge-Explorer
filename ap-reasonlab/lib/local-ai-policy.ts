@@ -27,8 +27,8 @@ export type LocalGenPolicy = {
 export function getLocalGenPolicy(modelId: string): LocalGenPolicy {
   return {
     disableThinking: shouldDisableThinking(modelId),
-    maxTokens: 3072,
-    temperature: 0.65,
+    maxTokens: 4096,
+    temperature: 0.7,
     nudge: localNudgeForModel(modelId),
     isRetiredReasoning: isReasoningLocalModel(modelId),
   };
@@ -71,11 +71,27 @@ export function isLocalGuidanceReply(text: string): boolean {
 export function isThinLocalReply(text: string): boolean {
   const t = String(text || "").trim();
   if (!t || isLocalGuidanceReply(t)) return true;
-  if (t.length < 280) return true;
+  if (t.length < 420) return true;
   const structure =
     (t.match(/^#{1,3}\s+/gm) || []).length + (t.match(/^[-*]\s+/gm) || []).length;
-  if (structure < 2 && t.length < 550) return true;
+  if (structure < 3 && t.length < 700) return true;
   return false;
+}
+
+/**
+ * True when a STEM-ish reply has too little $math$ for students to learn from.
+ * Skips obvious non-math topics (English-only coaching without equations).
+ */
+export function isLowFormulaReply(text: string): boolean {
+  const t = String(text || "").trim();
+  if (!t || isLocalGuidanceReply(t)) return false;
+  const dollarCount = (t.match(/\$/g) || []).length;
+  if (dollarCount >= 6) return false; // roughly 3+ inline formulas
+  const looksStem =
+    /\\frac|\\sqrt|force|energy|velocity|acceleration|momentum|voltage|current|derivative|integral|equation|formula|newton|kinetic|potential|\bAP\b|physics|calculus|algebra/i.test(
+      t
+    ) || /[=^_]/.test(t);
+  return looksStem && dollarCount < 4;
 }
 
 export function isMediumLocalModel(modelId: string): boolean {
