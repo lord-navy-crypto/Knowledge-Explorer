@@ -210,10 +210,10 @@ export default function LocalAIControls({ embedded = false }: Props) {
                 switch to Website API / Your own API.
               </p>
               <p className="mt-2 text-xs text-amber-900/90">
-                GPU tip: on laptops or integrated graphics, start with <strong>Super light</strong>{" "}
-                or <strong>Light</strong> (Qwen3.5 Starter). Heavy 7B–9B models are slower and need
-                more VRAM. If you see “timed out”, switch to a lighter model or Website API — Local
-                now returns any partial answer it already wrote.
+                GPU tip: start with <strong>Qwen3.5 Starter</strong> (Super light). Heavy 7B–9B
+                models can take a long time to prepare an answer in the browser. If Local stops
+                early, follow the in-chat guidance — or switch to Website API / turn off site
+                search.
               </p>
             </div>
           )}
