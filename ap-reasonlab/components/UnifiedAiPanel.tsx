@@ -15,7 +15,7 @@ import {
   conceptExplainLocal,
   englishTutorLocal,
 } from "@/lib/ai-prompts";
-import { appendAiSiteContext, fetchAiSiteContext, AI_SITE_SEARCH_LIMIT_LOCAL } from "@/lib/ai-site-context";
+import { appendAiSiteContext, fetchAiSiteContext, prefetchAiSiteContext, AI_SITE_SEARCH_LIMIT_LOCAL, AI_SITE_SEARCH_LOCAL_DEADLINE_MS } from "@/lib/ai-site-context";
 import {
   loadToolboxPanelPrefs,
   saveToolboxPanelPrefs,
@@ -287,6 +287,17 @@ export default function UnifiedAiPanel({
     if (prefill) setInput(prefill);
   }, []);
 
+  // Warm site-search cache while typing so Local does not wait on submit.
+  useEffect(() => {
+    if (!localAI.usesLocal || !localAI.ready) return;
+    const q = input.trim();
+    if (q.length < 8) return;
+    const timer = window.setTimeout(() => {
+      prefetchAiSiteContext(q, { limit: AI_SITE_SEARCH_LIMIT_LOCAL });
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [input, localAI.ready, localAI.usesLocal]);
+
   useEffect(() => {
     saveToolboxPanelPrefs({
       category,
@@ -334,10 +345,12 @@ export default function UnifiedAiPanel({
   ) {
     await ensureLocalReady();
     // Search the latest question only — history pollutes keyword retrieval.
+    // Soft deadline: never hold Local first-token on a slow site-search round-trip.
+    // Prefetch + client cache usually make this instant.
     const { context, note, hitCount, hits } = await fetchAiSiteContext(
       user,
       true,
-      { limit: AI_SITE_SEARCH_LIMIT_LOCAL }
+      { limit: AI_SITE_SEARCH_LIMIT_LOCAL, deadlineMs: AI_SITE_SEARCH_LOCAL_DEADLINE_MS }
     );
     setSiteHits(hits);
     setSiteSearchNote(
@@ -764,7 +777,7 @@ export default function UnifiedAiPanel({
           id: draftId,
           role: "assistant",
           text: "",
-          meta: `${taskMeta.label} · Local · speaking…`,
+          meta: `${taskMeta.label} · Local · starting…`,
         },
       ]);
     }

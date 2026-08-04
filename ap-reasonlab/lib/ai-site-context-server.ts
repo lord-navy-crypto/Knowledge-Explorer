@@ -42,17 +42,51 @@ async function loadSlimManagedCached(): Promise<ManagedContent> {
   return managed;
 }
 
+export type ServerAiSiteSearchResult = {
+  hits: ReturnType<typeof searchKnowledgeExplorerContent>;
+  context: string;
+  hitCount: number;
+  searchQuery: string;
+  note: string;
+};
+
+/** Shared cached search used by cloud AI routes and `/api/ai/site-search`. */
+export async function runServerAiSiteSearch(
+  query: string,
+  limit = AI_SITE_SEARCH_LIMIT
+): Promise<ServerAiSiteSearchResult> {
+  const searchQuery = extractAiSearchQuery(query);
+  if (searchQuery.length < 2) {
+    return {
+      hits: [],
+      context: "",
+      hitCount: 0,
+      searchQuery,
+      note: "Query too short.",
+    };
+  }
+  const managed = await loadSlimManagedCached();
+  const capped = Math.max(1, Math.min(limit, AI_SITE_SEARCH_LIMIT));
+  const hits = searchKnowledgeExplorerContent(searchQuery, managed, capped);
+  return {
+    hits,
+    context: formatAiSiteSearchContext(hits),
+    hitCount: hits.length,
+    searchQuery,
+    note:
+      hits.length > 0
+        ? `Found ${hits.length} Knowledge Explorer match(es) — AI will use these site materials.`
+        : "No matching site content for this question.",
+  };
+}
+
 /** Server-side Knowledge Explorer search for AI prompts. No LLM API cost.
  * Always searches when a usable query exists — site materials stay primary.
  */
 export async function buildServerAiSiteContext(query: string, _enabled = true): Promise<string> {
-  const searchQuery = extractAiSearchQuery(query);
-  if (searchQuery.length < 2) return "";
+  void _enabled;
   try {
-    const managed = await loadSlimManagedCached();
-    return formatAiSiteSearchContext(
-      searchKnowledgeExplorerContent(searchQuery, managed, AI_SITE_SEARCH_LIMIT)
-    );
+    return (await runServerAiSiteSearch(query, AI_SITE_SEARCH_LIMIT)).context;
   } catch {
     return "";
   }

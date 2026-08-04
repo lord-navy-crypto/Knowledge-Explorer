@@ -1,29 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getGithubTokenFromCookie } from "@/lib/auth";
 import { extractAiSearchQuery } from "@/lib/ai-site-query";
-import {
-  AI_SITE_SEARCH_LIMIT,
-  formatAiSiteSearchContext,
-  searchKnowledgeExplorerContent,
-} from "@/lib/ai-site-search";
-import { loadManagedContent, normalizeManagedContent, type ManagedContent } from "@/lib/managed-store";
+import { AI_SITE_SEARCH_LIMIT } from "@/lib/ai-site-search";
+import { runServerAiSiteSearch } from "@/lib/ai-site-context-server";
 
 /**
  * Search Knowledge Explorer study content for AI context.
- * Free of LLM token cost — only reads site data.
+ * Free of LLM token cost — only reads site data (45s managed-content cache).
  */
-function slimManagedForSearch(content: ManagedContent): ManagedContent {
-  return {
-    ...content,
-    files: (content.files || []).map((file) => {
-      if (!file.dataUrl) return file;
-      const { dataUrl: _omit, ...rest } = file;
-      return rest;
-    }),
-    recycleBin: [],
-  };
-}
-
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
@@ -47,20 +30,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Query too long." }, { status: 400 });
     }
 
-    const token = await getGithubTokenFromCookie();
-    const managed = slimManagedForSearch(normalizeManagedContent(await loadManagedContent(token)));
-    const hits = searchKnowledgeExplorerContent(query, managed, limit);
-    const context = formatAiSiteSearchContext(hits);
-    return NextResponse.json({
-      hits,
-      context,
-      hitCount: hits.length,
-      searchQuery: query,
-      note:
-        hits.length > 0
-          ? `Found ${hits.length} Knowledge Explorer match(es) — AI will use these site materials.`
-          : "No matching site content for this question.",
-    });
+    const result = await runServerAiSiteSearch(query, limit);
+    return NextResponse.json(result);
   } catch (error) {
     console.error(error);
     return NextResponse.json(

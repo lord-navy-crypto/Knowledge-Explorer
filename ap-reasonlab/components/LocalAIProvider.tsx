@@ -517,7 +517,7 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
       const baseNudge = options?.nudge?.trim() || policy.nudge;
       setStatus("generating");
       setError("");
-      setStatusText("Preparing answer…");
+      setStatusText("Starting Local stream…");
 
       const runAttempt = async (
         maxTokens: number,
