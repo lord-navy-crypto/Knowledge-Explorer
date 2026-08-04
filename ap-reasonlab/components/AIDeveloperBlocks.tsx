@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import LocalAIControls from "@/components/LocalAIControls";
 import { useLocalAI } from "@/components/LocalAIProvider";
-import { appendAiSiteContext, fetchAiSiteContext } from "@/lib/ai-site-context";
+import { appendAiSiteContext, fetchAiSiteContext, AI_SITE_SEARCH_LIMIT_LOCAL, AI_SITE_SEARCH_LOCAL_DEADLINE_MS } from "@/lib/ai-site-context";
 import RichContent from "@/components/RichContent";
 import { handleRichPaste } from "@/lib/rich-paste";
 import type { ManagedContent } from "@/lib/managed-types";
@@ -270,7 +270,10 @@ export default function AIDeveloperBlocks({
     try {
       if (useLocal) {
         const localPrompt = `${instruction}\n\nSOURCE:\n${selectedText}`;
-        const { context } = await fetchAiSiteContext(localPrompt, localAI.siteSearchEnabled);
+        const { context } = await fetchAiSiteContext(localPrompt, localAI.siteSearchEnabled, {
+          limit: AI_SITE_SEARCH_LIMIT_LOCAL,
+          deadlineMs: AI_SITE_SEARCH_LOCAL_DEADLINE_MS,
+        });
         await localAI.complete(
           [
             {

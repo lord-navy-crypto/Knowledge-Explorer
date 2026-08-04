@@ -8,7 +8,7 @@ import MarkdownLatexField from "@/components/MarkdownLatexField";
 import RichContent from "@/components/RichContent";
 import { useLocalAI } from "@/components/LocalAIProvider";
 import { englishTutorLocal } from "@/lib/ai-prompts";
-import { appendAiSiteContext, fetchAiSiteContext, AI_SITE_SEARCH_LIMIT_LOCAL } from "@/lib/ai-site-context";
+import { appendAiSiteContext, fetchAiSiteContext, AI_SITE_SEARCH_LIMIT_LOCAL, AI_SITE_SEARCH_LOCAL_DEADLINE_MS } from "@/lib/ai-site-context";
 import {
   LOCAL_ENGLISH_RETRY_NUDGE,
   localNudgeForEnglish,
@@ -64,6 +64,7 @@ export default function EnglishAiTutor({ embedded = false, hideChannelUi = false
         const localPrompt = `Mode: ${mode}\nTarget: ${target}\n\nStudent input:\n${input}`;
         const { context } = await fetchAiSiteContext(localPrompt, localAI.siteSearchEnabled, {
           limit: AI_SITE_SEARCH_LIMIT_LOCAL,
+          deadlineMs: AI_SITE_SEARCH_LOCAL_DEADLINE_MS,
         });
         setResult({
           refused: false,
