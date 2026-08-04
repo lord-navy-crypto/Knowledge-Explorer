@@ -97,11 +97,16 @@ export function localReplyLooksThin(text: string): boolean {
 /** True when an AP/science reply has almost no dollar-math. */
 export function localReplyNeedsMoreFormulas(text: string): boolean {
   const t = text.trim();
-  // Skip densify on already-long replies (re-runs often re-hit the context wall).
-  if (t.length < 120 || t.length >= 1200) return false;
+  // Densify only when there is essentially no math — prefer validate/repair over rewrite.
+  if (t.length < 160 || t.length >= 900) return false;
   const dollars = (t.match(/\$/g) || []).length;
-  return dollars < 2;
+  return dollars < 1;
 }
+
+/** Used when the reply has almost no rendered math. Prefer quoting pack/site formulas over inventing. */
+export const LOCAL_MORE_FORMULAS_NUDGE =
+  "Add KaTeX-ready equations. Keep your teaching text. Insert an ## Equations section with 2–4 lines as Name: $latex$ — symbol meanings. Prefer formulas from any site materials / formula pack already in the prompt. Do not rewrite the whole answer shorter. Do not invent conflicting physics.";
+
 
 export function localNudgeForModel(modelId: string): string {
   const base = shouldDisableThinking(modelId) ? LOCAL_DIRECT_ANSWER_NUDGE : LOCAL_MARKDOWN_NUDGE;
@@ -171,10 +176,6 @@ export const LOCAL_RETRY_NO_THINK_NUDGE =
 /** Used when the first Local pass is too thin. */
 export const LOCAL_EXPAND_NUDGE =
   "Your draft was too short or too light. Continue with a much longer teaching answer: more headings/bullets, MORE formulas in $...$ (with symbol meanings), detailed step-by-step explanation, a partial worked example, one common mistake, and what the student should do next. Do not restart from zero — expand.";
-
-/** Used when the reply has almost no rendered math. */
-export const LOCAL_MORE_FORMULAS_NUDGE =
-  "Add more formulas. Rewrite/expand with at least several $...$ / $$...$$ equations, explain each symbol, and walk through the reasoning in more detail while streaming the visible answer.";
 
 /** Used when WebLLM stopped early because the context window / max_tokens filled. */
 export const LOCAL_CONTINUE_NUDGE =

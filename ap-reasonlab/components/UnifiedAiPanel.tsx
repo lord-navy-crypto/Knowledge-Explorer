@@ -17,6 +17,11 @@ import {
 } from "@/lib/ai-prompts";
 import { appendAiSiteContext, fetchAiSiteContext, prefetchAiSiteContext, AI_SITE_SEARCH_LIMIT_LOCAL, AI_SITE_SEARCH_LOCAL_DEADLINE_MS } from "@/lib/ai-site-context";
 import {
+  mergeFormulaLists,
+  repairAiMarkdownMath,
+  withFormulaAccuracy,
+} from "@/lib/ai-latex-accuracy";
+import {
   loadToolboxPanelPrefs,
   saveToolboxPanelPrefs,
   type ToolboxCategory,
@@ -169,6 +174,8 @@ function formatAssistantText(parts: {
   snippet?: string;
   /** Only coding replies should fence snippets — math in ``` never renders as KaTeX. */
   snippetAsCode?: boolean;
+  /** When true, run KaTeX validate/repair on the assembled markdown. */
+  repairMath?: boolean;
 }): string {
   const chunks: string[] = [];
   if (parts.body?.trim()) chunks.push(parts.body.trim());
@@ -185,7 +192,9 @@ function formatAssistantText(parts: {
       chunks.push(snippet);
     }
   }
-  return chunks.join("\n\n");
+  const joined = chunks.join("\n\n");
+  if (parts.repairMath) return repairAiMarkdownMath(joined).text;
+  return joined;
 }
 
 function buildHistoryBlock(messages: ChatMessage[]): string {
@@ -391,10 +400,13 @@ export default function UnifiedAiPanel({
         : sitePrefer === "code"
           ? "When Knowledge Explorer site materials are appended below, prefer coding playgrounds, snippets, and programming docs. Cite hit titles. Ignore off-topic AP formula sheets. Follow the coding teaching rules."
           : "When Knowledge Explorer site materials are appended below, prefer their formulas/definitions and cite the hit titles. Ignore off-topic hits. Follow the same teaching rules as the cloud teacher for this tool.";
+    // AP/science Local: inject accuracy protocol + curated formula pack (Phase B/C).
+    const groundedSystem =
+      sitePrefer === "formulas" ? withFormulaAccuracy(system, subject) : system;
     const chatMessages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
       {
         role: "system",
-        content: `${system}\n\n${siteHint}`,
+        content: `${groundedSystem}\n\n${siteHint}`,
       },
     ];
     // Keep Local prompts lean — WebLLM context is ~4096 tokens; fat history/site
@@ -460,9 +472,19 @@ export default function UnifiedAiPanel({
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Hint request failed");
+      const formulaBlock = mergeFormulaLists(data.keyFormulas, data.equations);
       const lists = [
         { label: "Hints", items: data.hints || [] },
-        { label: "Key formulas", items: data.keyFormulas || [] },
+        {
+          label: "Key equations",
+          items: formulaBlock.equations.map((eq) => {
+            const math = `$${eq.latex}$`;
+            if (eq.name && eq.means) return `${eq.name}: ${math} — ${eq.means}`;
+            if (eq.name) return `${eq.name}: ${math}`;
+            if (eq.means) return `${math} — ${eq.means}`;
+            return math;
+          }),
+        },
         { label: "Knowns / unknowns", items: data.knownsUnknowns || [] },
         { label: "Checkpoints", items: data.checkpoints || [] },
         { label: "Process outline", items: data.processOutline || [] },
@@ -471,7 +493,7 @@ export default function UnifiedAiPanel({
       return {
         id: `a-${Date.now()}`,
         role: "assistant",
-        text: formatAssistantText({ lists }),
+        text: formatAssistantText({ lists, repairMath: true }),
         meta: data.note || "Hints & process",
         lists,
         aiMayBeWrong: data.aiMayBeWrong,
@@ -555,13 +577,23 @@ export default function UnifiedAiPanel({
       const body = [data.reply, data.quizPrompt ? `\n\n**Try this:** ${data.quizPrompt}` : ""]
         .filter(Boolean)
         .join("");
+      const formulaBlock = mergeFormulaLists(data.formulas, data.equations);
       const lists = [
-        { label: "Key formulas", items: Array.isArray(data.formulas) ? data.formulas : [] },
+        {
+          label: "Key equations",
+          items: formulaBlock.equations.map((eq) => {
+            const math = `$${eq.latex}$`;
+            if (eq.name && eq.means) return `${eq.name}: ${math} — ${eq.means}`;
+            if (eq.name) return `${eq.name}: ${math}`;
+            if (eq.means) return `${math} — ${eq.means}`;
+            return math;
+          }),
+        },
       ];
       return {
         id: `a-${Date.now()}`,
         role: "assistant",
-        text: formatAssistantText({ body, lists }),
+        text: formatAssistantText({ body, lists, repairMath: true }),
         meta: data.note || taskMeta.label,
         lists,
         refused: data.refused,
