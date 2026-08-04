@@ -351,10 +351,17 @@ export default function UnifiedAiPanel({
       },
     ];
     // Give Local models enough dialogue context now that hard timeouts are gone.
-    for (const message of history.slice(-6)) {
+    // Heavier models can use a bit more history for stronger follow-ups.
+    const historyWindow = /(?:^|[^0-9.])([789])B(?:-|$)/i.test(localAI.selectedModelId || "")
+      ? 8
+      : 6;
+    const turnCap = /(?:^|[^0-9.])([789])B(?:-|$)/i.test(localAI.selectedModelId || "")
+      ? 3200
+      : 2500;
+    for (const message of history.slice(-historyWindow)) {
       chatMessages.push({
         role: message.role === "user" ? "user" : "assistant",
-        content: message.text.slice(0, 2500),
+        content: message.text.slice(0, turnCap),
       });
     }
     chatMessages.push({

@@ -19,7 +19,10 @@ import { parseSiteModelChoice } from "@/lib/ai-site-models";
 import {
   isInsideOpenThinkBlock,
   LOCAL_EXPAND_NUDGE,
+  LOCAL_MORE_FORMULAS_NUDGE,
   LOCAL_RETRY_NO_THINK_NUDGE,
+  localReplyLooksThin,
+  localReplyNeedsMoreFormulas,
   mergeLocalDirectNudge,
   stripReasoningTrace,
 } from "@/lib/ai-reasoning-strip";
@@ -529,6 +532,9 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
             messages: prepared,
             stream: true,
             temperature: policy.temperature,
+            top_p: policy.topP,
+            frequency_penalty: policy.frequencyPenalty,
+            repetition_penalty: policy.repetitionPenalty,
             max_tokens: maxTokens,
             // Sole Local restriction: thinking mode off when supported.
             ...(policy.disableThinking ? { extra_body: { enable_thinking: false } } : {}),
@@ -569,6 +575,9 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
       try {
         // One pass with thinking off — no generation time limit; wait for the stream to end.
         let result = await runAttempt(policy.maxTokens, baseNudge);
+        const customNudge = Boolean(options?.nudge?.trim());
+        // English / special overrides pass custom nudges — do not force AP expand/formula passes.
+        const allowQualityPasses = !customNudge;
 
         // Blank after think-strip only → one retry (still no time cut).
         if (!result.trim()) {
@@ -579,6 +588,40 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
               ? `${baseNudge}\n\n${LOCAL_RETRY_NO_THINK_NUDGE}`
               : `${baseNudge}\n\n${LOCAL_EXPAND_NUDGE}`);
           result = (await runAttempt(policy.maxTokens, retryNudge)) || localFailGuidance(modelId);
+        }
+
+        // Thin stub → one expand pass (AP/default Local only). Keeps power up without loops.
+        if (
+          allowQualityPasses &&
+          result.trim() &&
+          !isLocalGuidanceReply(result) &&
+          localReplyLooksThin(result)
+        ) {
+          setStatusText("Expanding a fuller Local teaching reply…");
+          const expanded = await runAttempt(
+            policy.maxTokens,
+            `${baseNudge}\n\n${LOCAL_EXPAND_NUDGE}`
+          );
+          if (expanded.trim() && expanded.trim().length > result.trim().length) {
+            result = expanded;
+          }
+        }
+
+        // Almost no math on a long-ish AP reply → one formula densify pass.
+        if (
+          allowQualityPasses &&
+          result.trim() &&
+          !isLocalGuidanceReply(result) &&
+          localReplyNeedsMoreFormulas(result)
+        ) {
+          setStatusText("Adding formulas to the Local teaching reply…");
+          const withMath = await runAttempt(
+            policy.maxTokens,
+            `${baseNudge}\n\n${LOCAL_MORE_FORMULAS_NUDGE}`
+          );
+          if (withMath.trim() && (withMath.match(/\$/g) || []).length > (result.match(/\$/g) || []).length) {
+            result = withMath;
+          }
         }
 
         if (!result.trim()) {

@@ -219,7 +219,8 @@ export default function LocalAIControls({ embedded = false }: Props) {
               <p className="mt-2 text-xs text-amber-900/90">
                 Local keeps only <strong>thinking mode off</strong>. There is{" "}
                 <strong>no generation time limit</strong> — answers stream live and may be long.
-                Prefer Starter/Light on weak GPUs; Heavy needs a strong GPU.
+                Sampling is tuned by model size for stronger teaching while staying stable. Prefer
+                Starter/Light on weak GPUs; Heavy needs a strong GPU.
               </p>
             </div>
           )}
