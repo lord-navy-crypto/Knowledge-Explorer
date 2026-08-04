@@ -27,7 +27,7 @@ import {
   mergeLocalDirectNudge,
   stripReasoningTrace,
 } from "@/lib/ai-reasoning-strip";
-import { repairAiMarkdownMath } from "@/lib/ai-latex-accuracy";
+import { repairAiReplyMath } from "@/lib/ai-latex-accuracy";
 import {
   budgetLocalMaxTokens,
   compactLocalMessages,
@@ -717,9 +717,9 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
           }
         }
 
-        // Phase A: validate + deterministically repair each math span (no whole-answer rewrite).
+        // Phase A: repair prose $ spans; keep ## Equations as bare pipe latex for UI cards.
         if (result.trim() && !isLocalGuidanceReply(result) && allowQualityPasses) {
-          const repaired = repairAiMarkdownMath(result);
+          const repaired = repairAiReplyMath(result);
           if (repaired.text !== result) {
             result = repaired.text;
             onToken?.("", result);
