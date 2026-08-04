@@ -1,6 +1,11 @@
 import katex from "katex";
 import { FORMULA_BOARD, type FormulaBoardItem } from "@/data/formula-board";
-import { normalizeAuthoredText, toLatexSource } from "@/lib/unicode-math";
+import {
+  normalizeAuthoredText,
+  protectCurrencyDollars,
+  stabilizeStreamingMath,
+  toLatexSource,
+} from "@/lib/unicode-math";
 
 /** Structured equation unit for AI replies (Phase B). */
 export type AiEquation = {
@@ -59,9 +64,17 @@ export function buildGroundedFormulaPack(subject: string, maxItems = 8): string 
 }
 
 /** Append pack + accuracy rules onto an AP system prompt. */
-export function withFormulaAccuracy(system: string, subject?: string): string {
-  const pack = subject ? buildGroundedFormulaPack(subject) : "";
-  return [system.trim(), FORMULA_ACCURACY_RULES, pack].filter(Boolean).join("\n\n");
+export function withFormulaAccuracy(
+  system: string,
+  subject?: string,
+  options?: { maxPackItems?: number; compact?: boolean }
+): string {
+  const maxPackItems = options?.maxPackItems ?? (options?.compact ? 4 : 8);
+  const pack = subject ? buildGroundedFormulaPack(subject, maxPackItems) : "";
+  const rules = options?.compact
+    ? `Math protocol: wrap formulas in $...$/$$...$$; prefer equations from site hits / the formula pack below; put key equations in ## Equations as Name: $latex$ — meaning; KaTeX must parse the latex.`
+    : FORMULA_ACCURACY_RULES;
+  return [system.trim(), rules, pack].filter(Boolean).join("\n\n");
 }
 
 export function katexParses(latex: string): boolean {
@@ -115,21 +128,34 @@ export function deterministicRepairLatex(latex: string): string {
 export function repairLatexSource(latex: string): { latex: string; ok: boolean; repaired: boolean } {
   const original = String(latex ?? "").trim();
   if (!original) return { latex: "", ok: false, repaired: false };
-  if (katexParses(original)) return { latex: original, ok: true, repaired: false };
-  const repaired = deterministicRepairLatex(original);
-  if (repaired !== original && katexParses(repaired)) {
-    return { latex: repaired, ok: true, repaired: true };
+
+  // Always apply light deterministic hygiene (frac12, unicode minus) even when KaTeX
+  // already accepts the source — keeps student-facing TeX consistent.
+  const lightly = deterministicRepairLatex(original);
+  if (katexParses(lightly)) {
+    return { latex: lightly, ok: true, repaired: lightly !== original };
+  }
+  if (katexParses(original)) {
+    return { latex: original, ok: true, repaired: false };
   }
   // Last try: toLatexSource path (Unicode → TeX)
-  const viaUnicode = toLatexSource(repaired || original);
+  const viaUnicode = toLatexSource(lightly || original);
   if (viaUnicode && katexParses(viaUnicode)) {
     return { latex: viaUnicode, ok: true, repaired: true };
   }
-  return { latex: repaired || original, ok: katexParses(repaired || original), repaired: repaired !== original };
+  return {
+    latex: lightly || original,
+    ok: katexParses(lightly || original),
+    repaired: lightly !== original,
+  };
 }
 
 type SpanHit = { start: number; end: number; body: string; display: boolean };
 
+/**
+ * Collect $$…$$ then $…$ spans without letting the second `$` of `$$` start an
+ * inline match (that produced `$$$` and swallowed surrounding words).
+ */
 function collectMathSpans(markdown: string): SpanHit[] {
   const hits: SpanHit[] = [];
   const displayRe = /\$\$([\s\S]*?)\$\$/g;
@@ -137,28 +163,47 @@ function collectMathSpans(markdown: string): SpanHit[] {
   while ((m = displayRe.exec(markdown))) {
     hits.push({ start: m.index, end: m.index + m[0].length, body: m[1], display: true });
   }
-  const inlineRe = /\$([^$\n]+?)\$/g;
-  while ((m = inlineRe.exec(markdown))) {
-    const start = m.index;
-    const end = start + m[0].length;
-    // Skip if inside a $$…$$ span
-    if (hits.some((h) => h.display && start >= h.start && end <= h.end)) continue;
-    // Skip currency-like leftovers already protected elsewhere
-    hits.push({ start, end, body: m[1], display: false });
+
+  const displays = [...hits].sort((a, b) => a.start - b.start);
+  const proseRegions: Array<{ start: number; end: number }> = [];
+  let cursor = 0;
+  for (const d of displays) {
+    if (cursor < d.start) proseRegions.push({ start: cursor, end: d.start });
+    cursor = Math.max(cursor, d.end);
   }
-  hits.sort((a, b) => a.start - b.start);
+  if (cursor < markdown.length) proseRegions.push({ start: cursor, end: markdown.length });
+
+  for (const region of proseRegions) {
+    const slice = markdown.slice(region.start, region.end);
+    const inlineRe = /\$([^$\n]+?)\$/g;
+    let im: RegExpExecArray | null;
+    while ((im = inlineRe.exec(slice))) {
+      // Ignore empty / whitespace-only bodies
+      if (!im[1].trim()) continue;
+      hits.push({
+        start: region.start + im.index,
+        end: region.start + im.index + im[0].length,
+        body: im[1],
+        display: false,
+      });
+    }
+  }
+
+  hits.sort((a, b) => a.start - b.start || (b.end - b.start) - (a.end - a.start));
   return hits;
 }
 
 /**
  * Phase A: validate each $…$ / $$…$$ span; deterministically repair broken TeX in place.
  * Also runs normalizeAuthoredText so bare TeX gets promoted first.
+ * Currency `$5` is protected so it cannot open a false math span.
  */
 export function repairAiMarkdownMath(markdown: string): MathRepairReport {
   const promoted = normalizeAuthoredText(String(markdown ?? ""));
-  const spans = collectMathSpans(promoted);
+  const currency = protectCurrencyDollars(promoted);
+  const spans = collectMathSpans(currency.text);
   if (spans.length === 0) {
-    return { text: promoted, fixed: 0, stillBroken: 0 };
+    return { text: currency.restore(currency.text), fixed: 0, stillBroken: 0 };
   }
 
   let fixed = 0;
@@ -166,15 +211,20 @@ export function repairAiMarkdownMath(markdown: string): MathRepairReport {
   let out = "";
   let cursor = 0;
   for (const span of spans) {
-    out += promoted.slice(cursor, span.start);
+    // Overlaps (should not happen after region scan) — skip safely.
+    if (span.start < cursor) continue;
+    out += currency.text.slice(cursor, span.start);
     const result = repairLatexSource(span.body);
-    if (result.repaired) fixed += 1;
+    if (result.repaired || result.latex !== span.body.trim()) {
+      if (result.repaired || result.latex !== span.body) fixed += 1;
+    }
     if (!result.ok) stillBroken += 1;
-    out += span.display ? `$$${result.latex}$$` : `$${result.latex}$`;
+    const body = result.latex;
+    out += span.display ? `$$${body}$$` : `$${body}$`;
     cursor = span.end;
   }
-  out += promoted.slice(cursor);
-  return { text: out, fixed, stillBroken };
+  out += currency.text.slice(cursor);
+  return { text: currency.restore(out), fixed, stillBroken };
 }
 
 /** Normalize cloud JSON equation / formula list items into structured units. */
@@ -304,10 +354,43 @@ export function runAiLatexAccuracyFixtures(): string[] {
       },
     },
     {
+      name: "display-inline-no-triple-dollar",
+      ok: () => {
+        const r = repairAiMarkdownMath(
+          "Use $$F = ma$$ and $v^2 = v_0^2 + 2a\\Delta x$."
+        );
+        return (
+          !r.text.includes("$$$") &&
+          r.text.includes("$$F = ma$$") &&
+          r.text.includes(" and ") &&
+          r.text.includes("$v^2")
+        );
+      },
+    },
+    {
+      name: "frac12-normalized",
+      ok: () => {
+        const r = repairLatexSource("\\frac12 mv^2");
+        return r.ok && r.latex.includes("\\frac{1}{2}");
+      },
+    },
+    {
       name: "currency-kept",
       ok: () => {
         const r = repairAiMarkdownMath("Price is $5 and half is $\\frac{1}{2}$.");
-        return r.text.includes("$5") && /\$\\frac\{1\}\{2\}\$/.test(r.text);
+        return (
+          r.text.includes("$5") &&
+          r.text.includes(" half is $") &&
+          /\$\\frac\{1\}\{2\}\$/.test(r.text) &&
+          !r.text.includes("$$$")
+        );
+      },
+    },
+    {
+      name: "stream-currency-no-extra-dollar",
+      ok: () => {
+        const s = stabilizeStreamingMath("Price is $5 and half is $\\frac{1}{2}$.");
+        return s.includes("$5") && !s.endsWith(".$") && s.includes("$\\frac{1}{2}$");
       },
     },
     {

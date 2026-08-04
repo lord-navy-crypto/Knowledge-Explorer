@@ -253,7 +253,7 @@ function isMostlyLatexBody(body: string): boolean {
  * Protect `$5` / `$20.50` style currency so remark-math does not treat prices
  * as the start of inline math. Do NOT touch closed math like `$5$`.
  */
-function protectCurrencyDollars(input: string): { text: string; restore: (s: string) => string } {
+export function protectCurrencyDollars(input: string): { text: string; restore: (s: string) => string } {
   const slots: string[] = [];
   // Currency: $ + digits (+ optional decimals) when NOT immediately closed by $ (math).
   const text = input.replace(/\$(\d+(?:\.\d+)?)(?!\$)/g, (match, amount: string, offset: number, full: string) => {
@@ -677,23 +677,25 @@ export function normalizeAuthoredText(input: string): string {
 
   // Bare \frac / ```latex / ASCII physics → real math delimiters.
   value = promoteBareLatexToMath(value);
-  value = balanceMathDelimiters(value);
+  // Currency already protected above — use raw balancer (public one would wipe slots).
+  value = balanceMathDelimitersRaw(value);
   return currency.restore(value);
 }
 
 /**
  * Close unfinished $ / $$ while AI streams so remark-math does not swallow the
  * rest of the reply (which looks like “LaTeX disappeared”).
+ * Currency `$5` is protected so it does not count as an odd math delimiter.
  */
-export function balanceMathDelimiters(input: string): string {
-  let text = input;
+function balanceMathDelimitersRaw(text: string): string {
+  let next = text;
   // Unclosed display math: odd number of $$ fences.
-  const displayCount = (text.match(/\$\$/g) || []).length;
+  const displayCount = (next.match(/\$\$/g) || []).length;
   if (displayCount % 2 === 1) {
-    text = `${text}\n$$`;
+    next = `${next}\n$$`;
   }
   // Unclosed inline math outside $$ blocks.
-  const segments = text.split("$$");
+  const segments = next.split("$$");
   for (let i = 0; i < segments.length; i += 2) {
     let singles = 0;
     const chunk = segments[i];
@@ -705,6 +707,11 @@ export function balanceMathDelimiters(input: string): string {
     }
   }
   return segments.join("$$");
+}
+
+export function balanceMathDelimiters(input: string): string {
+  const currency = protectCurrencyDollars(input);
+  return currency.restore(balanceMathDelimitersRaw(currency.text));
 }
 
 /** Close open `{` / `\left` inside a math body so KaTeX can paint while tokens still arrive. */
@@ -729,14 +736,31 @@ function closeOpenMathGroups(math: string): string {
 }
 
 function mapClosedMathSegments(input: string, map: (math: string) => string): string {
-  // $$…$$ first
-  let text = input.replace(/\$\$([\s\S]*?)\$\$/g, (_full, body: string) => `$$${map(body)}$$`);
-  // Then inline $…$ (not part of $$)
-  text = text.replace(/\$([^$\n]+?)\$/g, (full, body: string, offset: number, src: string) => {
-    if (src[offset - 1] === "$" || src[offset + full.length] === "$") return full;
-    return `$${map(body)}$`;
-  });
-  return text;
+  // Region-safe: never let the second `$` of `$$` start an inline match.
+  const displayRe = /\$\$([\s\S]*?)\$\$/g;
+  const displays: Array<{ start: number; end: number; body: string }> = [];
+  let m: RegExpExecArray | null;
+  while ((m = displayRe.exec(input))) {
+    displays.push({ start: m.index, end: m.index + m[0].length, body: m[1] });
+  }
+
+  const parts: string[] = [];
+  let cursor = 0;
+  for (const d of displays) {
+    if (cursor < d.start) {
+      parts.push(mapInlineInProse(input.slice(cursor, d.start), map));
+    }
+    parts.push(`$$${map(d.body)}$$`);
+    cursor = d.end;
+  }
+  if (cursor < input.length) {
+    parts.push(mapInlineInProse(input.slice(cursor), map));
+  }
+  return parts.join("");
+}
+
+function mapInlineInProse(prose: string, map: (math: string) => string): string {
+  return prose.replace(/\$([^$\n]+?)\$/g, (_full, body: string) => `$${map(body)}$`);
 }
 
 /**
@@ -744,7 +768,9 @@ function mapClosedMathSegments(input: string, map: (math: string) => string): st
  * TeX groups so equations keep rendering instead of flashing raw/error LaTeX.
  */
 export function stabilizeStreamingMath(input: string): string {
-  const balanced = balanceMathDelimiters(String(input ?? ""));
-  return mapClosedMathSegments(balanced, closeOpenMathGroups);
+  const currency = protectCurrencyDollars(String(input ?? ""));
+  const balanced = balanceMathDelimitersRaw(currency.text);
+  const mapped = mapClosedMathSegments(balanced, closeOpenMathGroups);
+  return currency.restore(mapped);
 }
 

@@ -400,9 +400,11 @@ export default function UnifiedAiPanel({
         : sitePrefer === "code"
           ? "When Knowledge Explorer site materials are appended below, prefer coding playgrounds, snippets, and programming docs. Cite hit titles. Ignore off-topic AP formula sheets. Follow the coding teaching rules."
           : "When Knowledge Explorer site materials are appended below, prefer their formulas/definitions and cite the hit titles. Ignore off-topic hits. Follow the same teaching rules as the cloud teacher for this tool.";
-    // AP/science Local: inject accuracy protocol + curated formula pack (Phase B/C).
+    // AP/science Local: compact accuracy protocol + short formula pack (keep ~4k context free).
     const groundedSystem =
-      sitePrefer === "formulas" ? withFormulaAccuracy(system, subject) : system;
+      sitePrefer === "formulas"
+        ? withFormulaAccuracy(system, subject, { compact: true, maxPackItems: 4 })
+        : system;
     const chatMessages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
       {
         role: "system",
