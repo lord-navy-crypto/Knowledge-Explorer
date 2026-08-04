@@ -9,6 +9,10 @@ import RichContent from "@/components/RichContent";
 import { useLocalAI } from "@/components/LocalAIProvider";
 import { englishTutorLocal } from "@/lib/ai-prompts";
 import { appendAiSiteContext, fetchAiSiteContext, AI_SITE_SEARCH_LIMIT_LOCAL } from "@/lib/ai-site-context";
+import {
+  LOCAL_ENGLISH_RETRY_NUDGE,
+  localNudgeForEnglish,
+} from "@/lib/ai-reasoning-strip";
 
 type Result = {
   refused: boolean;
@@ -88,6 +92,10 @@ export default function EnglishAiTutor({ embedded = false, hideChannelUi = false
             flushSync(() => {
               setResult((prev) => (prev ? { ...prev, feedback: fullText } : prev));
             });
+          },
+          {
+            nudge: localNudgeForEnglish(localAI.selectedModelId || ""),
+            retryNudge: `${localNudgeForEnglish(localAI.selectedModelId || "")}\n\n${LOCAL_ENGLISH_RETRY_NUDGE}`,
           }
         );
         setResult({
@@ -180,7 +188,7 @@ export default function EnglishAiTutor({ embedded = false, hideChannelUi = false
         />
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-xs text-slate-500">
-            Maximum 10,000 characters · AI feedback is not an official test score.
+            Maximum 16,000 characters · AI feedback is not an official test score.
           </p>
           <button type="submit" className="btn-primary" disabled={loading || !input.trim()}>
             {loading ? "Working…" : mode === "translator" ? "Translate" : "Ask English AI"}

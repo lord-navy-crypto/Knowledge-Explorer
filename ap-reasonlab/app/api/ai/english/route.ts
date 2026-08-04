@@ -32,24 +32,24 @@ function mockEnglishTutor(input: string, mode: string) {
     const snippet = input.slice(0, 120);
     return {
       refused: false,
-      feedback: "Chinese ↔ English (demo). Configure a live API key for a real translation.",
+      feedback: "Demo · Chinese ↔ English (configure a live API key for a real translation)",
       strengths: [],
       priorities: [],
       revisionExample: `[Demo translation of]: ${snippet}${input.length > 120 ? "…" : ""}`,
       practicePrompt: "",
       aiMayBeWrong: "Demo translation is not a real model output.",
-      note: "Mock mode (no configured website AI key).",
+      note: "⚠️ Mock demo — no website AI key configured. Switch to Local AI or add an API key.",
     };
   }
   return {
     refused: false,
-    feedback: `The English tutor is in offline demo mode. Your ${mode} request was received. Focus first on a clear main idea, then check whether each sentence supports it.`,
+    feedback: `⚠️ Demo mode (no website AI key). Your ${mode} request was received, but this is generic placeholder feedback — not a live model. Focus first on a clear main idea, then check whether each sentence supports it.`,
     strengths: ["You provided text or a clear learning request for review."],
     priorities: ["Check sentence boundaries.", "Replace vague wording with one specific example.", "Review transitions between ideas."],
     revisionExample: input.split(/[.!?]/)[0]?.trim() ? `Try revising one sentence for precision: “${input.split(/[.!?]/)[0].trim().slice(0, 90)}…”` : "Write one claim followed by a specific reason.",
     practicePrompt: "Rewrite one sentence using a clear claim → reason structure.",
     aiMayBeWrong: "Demo feedback is generic; verify language advice with a teacher or trusted reference.",
-    note: "Mock mode (no configured website AI key).",
+    note: "⚠️ Mock demo — no website AI key configured. Switch to Local AI or add an API key.",
   };
 }
 
@@ -111,7 +111,7 @@ Return the required English Tutor JSON.`;
       const result = await runChatJson({
         system: englishTutorSystem(mode),
         user: userWithSite,
-        maxTokens: 3072,
+        maxTokens: mode === "language-materials" || mode === "practice-generator" ? 6144 : 4096,
         userApiKey: userApiKey || undefined,
         provider,
         siteModel,

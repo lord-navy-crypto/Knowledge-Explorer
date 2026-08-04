@@ -102,7 +102,8 @@ type LocalAIContextValue = {
   removeCachedModel: (modelId: string) => Promise<void>;
   complete: (
     messages: ChatCompletionMessageParam[],
-    onToken?: (token: string, fullText: string) => void
+    onToken?: (token: string, fullText: string) => void,
+    options?: { nudge?: string; retryNudge?: string }
   ) => Promise<string>;
   /** Stop an in-flight local generation (WebLLM interrupt). */
   interruptGeneration: () => void;
@@ -497,12 +498,14 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
   const complete = useCallback(
     async (
       messages: ChatCompletionMessageParam[],
-      onToken?: (token: string, fullText: string) => void
+      onToken?: (token: string, fullText: string) => void,
+      options?: { nudge?: string; retryNudge?: string }
     ) => {
       const engine = engineRef.current;
       if (!engine) throw new Error("Enable local AI before sending a local request.");
       const modelId = loadedModelRef.current || selectedModelId;
       const policy = getLocalGenPolicy(modelId);
+      const baseNudge = options?.nudge?.trim() || policy.nudge;
       setStatus("generating");
       setError("");
       setStatusText("Preparing answer…");
@@ -565,14 +568,16 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
 
       try {
         // One pass with thinking off — no generation time limit; wait for the stream to end.
-        let result = await runAttempt(policy.maxTokens, policy.nudge);
+        let result = await runAttempt(policy.maxTokens, baseNudge);
 
         // Blank after think-strip only → one retry (still no time cut).
         if (!result.trim()) {
           setStatusText("Retrying Local AI for a full visible answer…");
-          const retryNudge = policy.disableThinking
-            ? `${policy.nudge}\n\n${LOCAL_RETRY_NO_THINK_NUDGE}`
-            : `${policy.nudge}\n\n${LOCAL_EXPAND_NUDGE}`;
+          const retryNudge =
+            options?.retryNudge?.trim() ||
+            (policy.disableThinking
+              ? `${baseNudge}\n\n${LOCAL_RETRY_NO_THINK_NUDGE}`
+              : `${baseNudge}\n\n${LOCAL_EXPAND_NUDGE}`);
           result = (await runAttempt(policy.maxTokens, retryNudge)) || localFailGuidance(modelId);
         }
 

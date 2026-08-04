@@ -25,7 +25,7 @@ const moreGroups = [
       { href: "/tools/dual", label: "Dual-column editor" },
       { href: "/hints?tool=calculator", label: "Calculator (AI Toolbox)" },
       { href: "/hints?tool=grapher", label: "Grapher (AI Toolbox)" },
-      { href: "/hints?tool=english", label: "English AI" },
+      { href: "/english/ai", label: "English AI" },
       { href: "/hints?section=ai-for-ap", label: "AI for AP" },
       { href: "/search", label: "Search" },
     ],

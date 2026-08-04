@@ -14,7 +14,7 @@ const moreGroups = [
       { href: "/tools", label: "Tools" },
       { href: "/hints?tool=calculator", label: "Calculator" },
       { href: "/hints?tool=grapher", label: "Grapher" },
-      { href: "/hints?tool=english", label: "English AI" },
+      { href: "/english/ai", label: "English AI" },
       { href: "/search", label: "Search" },
       { href: "/hints", label: "AI Toolbox" },
       { href: "/forum", label: "Forum" },

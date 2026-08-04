@@ -23,6 +23,12 @@ import {
 } from "@/lib/ai-toolbox-prefs";
 import { takeToolboxPrefill } from "@/lib/ai-toolbox-prefill";
 import { migrateEnglishTask } from "@/lib/ai-toolbox-url";
+import {
+  LOCAL_ENGLISH_RETRY_NUDGE,
+  localNudgeForEnglish,
+} from "@/lib/ai-reasoning-strip";
+
+const ENGLISH_INPUT_MAX = 16_000;
 
 type Category = ToolboxCategory;
 
@@ -239,9 +245,13 @@ export default function UnifiedAiPanel({
   const chatRef = useRef<HTMLDivElement>(null);
 
   const taskMeta = useMemo(() => {
-    if (category === "ap") return AP_TASKS.find((t) => t.value === apTask)!;
-    if (category === "english") return ENGLISH_TASKS.find((t) => t.value === englishTask)!;
-    return CODING_TASKS.find((t) => t.value === codingTask)!;
+    if (category === "ap") {
+      return AP_TASKS.find((t) => t.value === apTask) || AP_TASKS[0];
+    }
+    if (category === "english") {
+      return ENGLISH_TASKS.find((t) => t.value === englishTask) || ENGLISH_TASKS[0];
+    }
+    return CODING_TASKS.find((t) => t.value === codingTask) || CODING_TASKS[0];
   }, [apTask, category, codingTask, englishTask]);
 
   useEffect(() => {
@@ -313,7 +323,8 @@ export default function UnifiedAiPanel({
     system: string,
     user: string,
     history: ChatMessage[],
-    onToken?: (token: string, fullText: string) => void
+    onToken?: (token: string, fullText: string) => void,
+    completeOptions?: { nudge?: string; retryNudge?: string; sitePrefer?: "formulas" | "language" }
   ) {
     await ensureLocalReady();
     // Search the latest question only — history pollutes keyword retrieval.
@@ -328,10 +339,15 @@ export default function UnifiedAiPanel({
         ? note || (hitCount ? `Using ${hitCount} site hit(s).` : "No site matches.")
         : "Site search off."
     );
+    const sitePrefer = completeOptions?.sitePrefer || "formulas";
+    const siteHint =
+      sitePrefer === "language"
+        ? "When Knowledge Explorer site materials are appended below, prefer useful English language snippets (vocab, phrases, example sentences) and cite the hit titles. Ignore AP science / formula hits. Follow the same English teaching rules as the cloud tutor."
+        : "When Knowledge Explorer site materials are appended below, prefer their formulas/definitions and cite the hit titles. Ignore off-topic hits. Follow the same teaching rules as the cloud teacher for this tool.";
     const chatMessages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
       {
         role: "system",
-        content: `${system}\n\nWhen Knowledge Explorer site materials are appended below, prefer their formulas/definitions and cite the hit titles. Ignore off-topic hits. Follow the same teaching rules as the cloud teacher for this tool.`,
+        content: `${system}\n\n${siteHint}`,
       },
     ];
     // Give Local models enough dialogue context now that hard timeouts are gone.
@@ -345,7 +361,8 @@ export default function UnifiedAiPanel({
       role: "user",
       content: appendAiSiteContext(user, context).slice(0, 12_000),
     });
-    return localAI.complete(chatMessages, onToken);
+    const { sitePrefer: _ignore, ...nudgeOpts } = completeOptions || {};
+    return localAI.complete(chatMessages, onToken, nudgeOpts);
   }
 
   async function askOnce(
@@ -501,34 +518,36 @@ export default function UnifiedAiPanel({
 
     if (category === "english") {
       const mode = englishTask;
-      const englishControls =
-        mode === "practice-generator"
-          ? `Exam/track target (tone only): ${englishTarget}
-Rule: COPY whatever the student pasted as the topic (do not judge if it is a “real topic”). Then GENERATE a NEW practice topic from that copy.
-Student paste (topic):`
-          : mode === "language-materials"
-            ? `Exam/track target: ${englishTarget}
-Role: language-materials collector on large pastes; language-materials generator on short commands/sentences (语言资料, not generic data).
-Student input:`
-            : mode === "translator"
-              ? `Exam/track target (ignore for translation): ${englishTarget}
-Rule: JUST TRANSLATE. Chinese ↔ English by default (auto-detect). If the student names a direction, follow it. Put the full translation in revisionExample.
-Student paste:`
-              : `Exam/track target: ${englishTarget}
-Student input:`;
-      const englishUser = `${englishControls}\n${userText}`;
-      if (localAI.usesLocal) {
+      // Keep student text + history only here — /api/ai/english adds mode/target controls.
+      // Local still gets a light mode label so the model knows which English tool is active.
+      const englishUserLocal = `Mode: ${mode}\nExam/track target: ${englishTarget}\nStudent input:\n${userText}`;
+      const englishUserCloud = `${historyPrefix}${userText}`;
+      const wantLocal = localAI.usesLocal && localAI.ready;
+      if (localAI.usesLocal && !localAI.ready) {
+        // Local is selected but not enabled — do not hard-fail English; use Website API this turn.
+        setSiteSearchNote(
+          "Local is selected but not enabled yet — using Website API for this reply. Click Enable Local above to run on-device."
+        );
+      }
+      if (wantLocal) {
+        const modelId = localAI.selectedModelId || "";
         const text = await runLocal(
           englishTutorLocal(mode),
-          `Mode: ${mode}\n${englishUser}`,
+          englishUserLocal,
           history,
-          onToken
+          onToken,
+          {
+            nudge: localNudgeForEnglish(modelId),
+            retryNudge: `${localNudgeForEnglish(modelId)}\n\n${LOCAL_ENGLISH_RETRY_NUDGE}`,
+            sitePrefer: "language",
+          }
         );
         return {
           id: `a-${Date.now()}`,
           role: "assistant",
           text,
           meta: `${taskMeta.label} · Local`,
+          aiMayBeWrong: "Local AI language advice may be wrong — verify important points.",
         };
       }
       const response = await fetch("/api/ai/english", {
@@ -537,25 +556,72 @@ Student input:`;
         body: JSON.stringify({
           mode,
           target: englishTarget,
-          input: `${historyPrefix}${englishUser}`,
+          input: englishUserCloud,
           ...localAI.cloudRequestFields,
         }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "English AI failed");
+      const cloudMeta =
+        data.note ||
+        (localAI.usesLocal && !localAI.ready
+          ? `${taskMeta.label} · Website API (Local not enabled)`
+          : taskMeta.label);
+      if (mode === "translator") {
+        const rawFeedback = String(data.feedback || data.raw || "").trim();
+        let translation = String(data.revisionExample || "").trim();
+        let direction = rawFeedback;
+        // Recover when the model returned markdown / put the translation in feedback.
+        if (!translation) {
+          const fromHeading = rawFeedback.match(
+            /##\s*Translation\s*\n+([\s\S]*?)(?=\n##\s|\n*$)/i
+          );
+          if (fromHeading?.[1]?.trim()) {
+            translation = fromHeading[1].trim();
+            const dirHeading = rawFeedback.match(/##\s*Direction\s*\n+([^\n#]+)/i);
+            direction = dirHeading?.[1]?.trim() || "Translation";
+          } else if (rawFeedback.length > 80 || /[\u4e00-\u9fff]/.test(rawFeedback)) {
+            // Long feedback (or CJK) is probably the translation itself.
+            translation = rawFeedback;
+            direction = "Translation";
+          }
+        }
+        const directionLine =
+          direction && direction.length < 120 && !direction.includes("\n")
+            ? `**${direction.replace(/\*\*/g, "").trim()}**`
+            : "**Translation**";
+        const body = [directionLine, translation || "(No translation returned.)"].join("\n\n");
+        return {
+          id: `a-${Date.now()}`,
+          role: "assistant",
+          text: body,
+          meta: cloudMeta,
+          snippet: translation,
+          refused: data.refused,
+          aiMayBeWrong: data.aiMayBeWrong,
+        };
+      }
       const lists = [
         { label: "Strengths", items: data.strengths || [] },
         { label: "Priorities", items: data.priorities || [] },
       ];
-      const snippet =
-        mode === "translator"
-          ? data.revisionExample || ""
-          : [data.revisionExample, data.practicePrompt].filter(Boolean).join("\n\n");
+      const feedbackBody = String(data.feedback || data.raw || "").trim();
+      const snippet = [data.revisionExample, data.practicePrompt].filter(Boolean).join("\n\n");
       return {
         id: `a-${Date.now()}`,
         role: "assistant",
-        text: formatAssistantText({ body: data.feedback || "", lists, snippet }),
-        meta: data.note || taskMeta.label,
+        text: formatAssistantText({
+          body: feedbackBody,
+          lists,
+          snippet: data.revisionExample
+            ? `**Revised example**\n${data.revisionExample}${
+                data.practicePrompt ? `\n\n**Next practice**\n${data.practicePrompt}` : ""
+              }`
+            : data.practicePrompt
+              ? `**Next practice**\n${data.practicePrompt}`
+              : "",
+        }),
+        meta: cloudMeta,
         lists,
         snippet,
         refused: data.refused,
@@ -623,8 +689,16 @@ Student input:`;
           ? "Describe the coding task and/or paste code."
           : category === "english" && englishTask === "practice-generator"
             ? "Paste a topic first — any text. We copy it and generate a new topic from it."
-            : "Type a question or paste content first."
+            : category === "english" && englishTask === "translator"
+              ? "Paste text to translate."
+              : category === "english"
+                ? "Enter English text or a learning question."
+                : "Type a question or paste content first."
       );
+      return;
+    }
+    if (category === "english" && userText.length > ENGLISH_INPUT_MAX) {
+      setError(`Input is too long (maximum ${ENGLISH_INPUT_MAX.toLocaleString()} characters).`);
       return;
     }
 
@@ -649,7 +723,9 @@ Student input:`;
     setError("");
 
     const draftId = `a-${Date.now()}`;
-    const streamLocal = localAI.usesLocal;
+    // Only stream when Local is actually ready — otherwise English (and others) may
+    // fall through to Website API while usesLocal is still true.
+    const streamLocal = localAI.usesLocal && localAI.ready;
     if (streamLocal) {
       setMessages((prev) => [
         ...prev,
@@ -1012,7 +1088,13 @@ Student input:`;
 
             <div className="flex flex-wrap gap-2">
               <button type="submit" className="btn-primary" disabled={loading}>
-                {loading ? "Working…" : messages.length ? "Ask follow-up" : "Ask AI"}
+                {loading
+                  ? "Working…"
+                  : messages.length
+                    ? "Ask follow-up"
+                    : category === "english" && englishTask === "translator"
+                      ? "Translate"
+                      : "Ask AI"}
               </button>
               {messages.length > 0 ? (
                 <button
