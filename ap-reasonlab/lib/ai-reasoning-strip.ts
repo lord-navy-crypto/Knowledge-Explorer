@@ -6,6 +6,8 @@
  * Generation budgets / thinking-disable policy: `lib/local-ai-policy.ts`.
  */
 
+import { splitAiReplyEquations } from "@/lib/ai-latex-accuracy";
+
 const THINK_OPEN = /<(?:redacted_)?think(?:ing)?\b[^>]*>/i;
 const THINK_CLOSE = /<\/(?:redacted_)?think(?:ing)?>/i;
 
@@ -99,13 +101,7 @@ export function localReplyNeedsMoreFormulas(text: string): boolean {
   const t = text.trim();
   // Densify only when there is essentially no math — prefer validate/repair over rewrite.
   if (t.length < 160 || t.length >= 900) return false;
-  if (/^##\s*Equations?/im.test(t)) {
-    // Section present — still densify if it has no pipe/latex lines yet.
-    const body = t.split(/^##\s*Equations?\s*$/im)[1] || "";
-    const next = body.split(/^##\s+/m)[0] || body;
-    return !/\|/.test(next) && (next.match(/\\[a-zA-Z]+/g) || []).length < 1;
-  }
-  return true;
+  return splitAiReplyEquations(t).equations.length < 1;
 }
 
 /** Used when the reply has almost no rendered math. Prefer quoting pack/site formulas over inventing. */

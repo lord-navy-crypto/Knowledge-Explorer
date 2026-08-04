@@ -19,9 +19,10 @@ import {
 import { appendAiSiteContext, fetchAiSiteContext, prefetchAiSiteContext, AI_SITE_SEARCH_LIMIT_LOCAL, AI_SITE_SEARCH_LOCAL_DEADLINE_MS } from "@/lib/ai-site-context";
 import {
   type AiEquation,
+  extractDollarMathToEquations,
+  finalizeAiAssistantMath,
   mergeFormulaLists,
   repairAiMarkdownMath,
-  splitAiReplyEquations,
   withFormulaAccuracy,
 } from "@/lib/ai-latex-accuracy";
 import {
@@ -188,7 +189,7 @@ function finalizeLocalApMessage(
   text: string,
   extra: Omit<ChatMessage, "id" | "role" | "text" | "equations"> & { id?: string }
 ): ChatMessage {
-  const { prose, equations } = splitAiReplyEquations(text);
+  const { prose, equations } = extractDollarMathToEquations(text);
   return {
     id: extra.id || `a-${Date.now()}`,
     role: "assistant",
@@ -201,6 +202,20 @@ function finalizeLocalApMessage(
     aiMayBeWrong: extra.aiMayBeWrong,
     saveAsPractice: extra.saveAsPractice,
   };
+}
+
+function scrubListDollars(items: string[] | undefined): {
+  items: string[];
+  equations: AiEquation[];
+} {
+  const outItems: string[] = [];
+  const equations: AiEquation[] = [];
+  for (const item of items || []) {
+    const lifted = extractDollarMathToEquations(String(item || ""));
+    if (lifted.prose.trim()) outItems.push(lifted.prose.trim());
+    equations.push(...lifted.equations);
+  }
+  return { items: outItems, equations };
 }
 
 function formatAssistantText(parts: {
@@ -507,20 +522,34 @@ export default function UnifiedAiPanel({
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Hint request failed");
       const formulaBlock = mergeFormulaLists(data.keyFormulas, data.equations);
+      const hintLift = scrubListDollars(data.hints || []);
+      const knownLift = scrubListDollars(data.knownsUnknowns || []);
+      const checkLift = scrubListDollars(data.checkpoints || []);
+      const processLift = scrubListDollars(data.processOutline || []);
+      const partialLift = scrubListDollars(data.workedPartial || []);
       const lists = [
-        { label: "Hints", items: data.hints || [] },
-        { label: "Knowns / unknowns", items: data.knownsUnknowns || [] },
-        { label: "Checkpoints", items: data.checkpoints || [] },
-        { label: "Process outline", items: data.processOutline || [] },
-        { label: "Worked partial", items: data.workedPartial || [] },
+        { label: "Hints", items: hintLift.items },
+        { label: "Knowns / unknowns", items: knownLift.items },
+        { label: "Checkpoints", items: checkLift.items },
+        { label: "Process outline", items: processLift.items },
+        { label: "Worked partial", items: partialLift.items },
       ];
+      const lifted = [
+        ...formulaBlock.equations,
+        ...hintLift.equations,
+        ...knownLift.equations,
+        ...checkLift.equations,
+        ...processLift.equations,
+        ...partialLift.equations,
+      ];
+      const equations = finalizeAiAssistantMath("", lifted).equations;
       return {
         id: `a-${Date.now()}`,
         role: "assistant",
         text: formatAssistantText({ lists }),
         meta: data.note || "Hints & process",
         lists,
-        equations: formulaBlock.equations.length ? formulaBlock.equations : undefined,
+        equations: equations.length ? equations : undefined,
         aiMayBeWrong: data.aiMayBeWrong,
       };
     }
@@ -600,13 +629,13 @@ export default function UnifiedAiPanel({
       const body = [data.reply, data.quizPrompt ? `\n\n**Try this:** ${data.quizPrompt}` : ""]
         .filter(Boolean)
         .join("");
-      const formulaBlock = mergeFormulaLists(data.formulas, data.equations);
+      const finalized = finalizeAiAssistantMath(body, data.equations, data.formulas);
       return {
         id: `a-${Date.now()}`,
         role: "assistant",
-        text: formatAssistantText({ body }),
+        text: finalized.prose,
         meta: data.note || taskMeta.label,
-        equations: formulaBlock.equations.length ? formulaBlock.equations : undefined,
+        equations: finalized.equations.length ? finalized.equations : undefined,
         refused: data.refused,
         aiMayBeWrong: data.aiMayBeWrong,
         saveAsPractice: apTask === "generate-questions",
@@ -865,7 +894,7 @@ export default function UnifiedAiPanel({
               // Paint each streamed chunk immediately; peel ## Equations into cards as they arrive.
               const live =
                 category === "ap"
-                  ? splitAiReplyEquations(fullText)
+                  ? extractDollarMathToEquations(fullText)
                   : { prose: fullText, equations: [] as AiEquation[] };
               flushSync(() => {
                 setMessages((prev) =>
@@ -1122,6 +1151,7 @@ export default function UnifiedAiPanel({
                       <RichContent
                         className="min-w-0 text-sm"
                         streaming={isStreamingReply}
+                        aiDialogue={category === "ap"}
                       >
                         {message.text}
                       </RichContent>

@@ -16,8 +16,8 @@ import { conceptExplainLocal } from "@/lib/ai-prompts";
 import { appendAiSiteContext, fetchAiSiteContext, AI_SITE_SEARCH_LIMIT_LOCAL, AI_SITE_SEARCH_LOCAL_DEADLINE_MS } from "@/lib/ai-site-context";
 import {
   type AiEquation,
-  mergeFormulaLists,
-  splitAiReplyEquations,
+  extractDollarMathToEquations,
+  finalizeAiAssistantMath,
   withFormulaAccuracy,
 } from "@/lib/ai-latex-accuracy";
 
@@ -98,7 +98,7 @@ export default function ConceptAskAi({
             },
           ],
           (_token, fullText) => {
-            const live = splitAiReplyEquations(fullText);
+            const live = extractDollarMathToEquations(fullText);
             flushSync(() => {
               setResult((prev) =>
                 prev
@@ -112,7 +112,7 @@ export default function ConceptAskAi({
             });
           }
         );
-        const split = splitAiReplyEquations(text);
+        const split = extractDollarMathToEquations(text);
         setResult({
           refused: false,
           reply: split.prose,
@@ -142,11 +142,15 @@ export default function ConceptAskAi({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "AI request failed");
-      const formulaBlock = mergeFormulaLists(data.formulas, data.equations);
+      const finalized = finalizeAiAssistantMath(
+        String(data.reply || ""),
+        data.equations,
+        data.formulas
+      );
       setResult({
         refused: Boolean(data.refused),
-        reply: String(data.reply || ""),
-        equations: formulaBlock.equations.length ? formulaBlock.equations : undefined,
+        reply: finalized.prose,
+        equations: finalized.equations.length ? finalized.equations : undefined,
         quizPrompt: String(data.quizPrompt || ""),
         aiMayBeWrong: String(data.aiMayBeWrong || ""),
         note: String(data.note || ""),
@@ -248,7 +252,7 @@ export default function ConceptAskAi({
               <AiEquationCards equations={result.equations} />
             </div>
           ) : null}
-          <RichContent className="text-sm text-slate-800" streaming={loading}>
+          <RichContent className="text-sm text-slate-800" streaming={loading} aiDialogue>
             {result.reply}
           </RichContent>
           {result.quizPrompt ? (

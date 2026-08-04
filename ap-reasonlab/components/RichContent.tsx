@@ -5,7 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
-import { normalizeAuthoredText, stabilizeStreamingMath, toLatexSource } from "@/lib/unicode-math";
+import { normalizeAiDialogueText, normalizeAuthoredText, stabilizeStreamingMath, toLatexSource } from "@/lib/unicode-math";
 
 type Mode = "markdown" | "math" | "inline-math";
 
@@ -18,6 +18,11 @@ type Props = {
   clampLines?: 2 | 3 | 4;
   /** While AI tokens arrive — close unfinished TeX so KaTeX keeps painting. */
   streaming?: boolean;
+  /**
+   * AI Toolbox / concept chat bubbles: skip bare-TeX → $ promotion.
+   * Formulas should arrive via AiEquationCards, not invented dollars.
+   */
+  aiDialogue?: boolean;
 };
 
 const KATEX_REHYPE_OPTIONS = {
@@ -47,11 +52,11 @@ export default function RichContent({
   className = "",
   clampLines,
   streaming = false,
+  aiDialogue = false,
 }: Props) {
   const raw = (children ?? "").toString();
-  const text = streaming
-    ? stabilizeStreamingMath(normalizeAuthoredText(raw))
-    : normalizeAuthoredText(raw);
+  const normalized = aiDialogue ? normalizeAiDialogueText(raw) : normalizeAuthoredText(raw);
+  const text = streaming ? stabilizeStreamingMath(normalized) : normalized;
   if (!text.trim()) return null;
 
   const clampClass =
