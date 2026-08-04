@@ -181,9 +181,8 @@ export const STUDY_TOOLS: StudyTool[] = [
     href: "/tools/speech-to-text",
     title: "Speech to text",
     blurb:
-      "Pure English speech → text: live mic, record a clip, or upload an audio file (Whisper).",
+      "English speech → text while you speak: live mic, record a clip, or upload audio (Whisper).",
     category: "english",
-    badge: "Special",
     security: "upload",
   },
   {
