@@ -508,6 +508,13 @@ function wrapOneLatexishLine(line: string): string {
   let content = bullet ? bullet[2] : trimmed;
   if (!content) return line;
 
+  // Keep closing punctuation from a preceding inline math outside the new wrap.
+  // Fixes: ($M_\oplus$) \approx ... → ($M_\oplus$) $$\approx...$$ (not $M_\oplus$$) ...)
+  const leadMatch = content.match(/^([)\],;:]+(?:\s+[)\],;:]*)*)\s*/);
+  const lead = leadMatch ? leadMatch[1] : "";
+  if (lead) content = content.slice(leadMatch![0].length);
+  if (!content) return line;
+
   // Label + formula: "Kinetic: 1/2 mv^2" / "Force: F_net = ma"
   const labeled = content.match(/^([^:]{1,40}):\s+(.+)$/);
   if (labeled && (looksLikeLatexSource(labeled[2]) || looksLikeAsciiEquation(labeled[2]))) {
@@ -538,12 +545,17 @@ function wrapOneLatexishLine(line: string): string {
 
   if (mostlyTex || asciiEq) {
     const displayBody = rewritePlainSubscripts(content);
-    if (bullet) return `${indent}${marker}$${displayBody}$`;
-    return `${indent}$$\n${displayBody}\n$$`;
+    // Keep fences on the same lines so sanitizeMathDelimiterSalad cannot
+    // strip paired `$$` openers/closers that sit alone on a line.
+    if (bullet) return `${indent}${marker}${lead}$${displayBody}$`;
+    if (displayBody.length > 80 || displayBody.includes("\n")) {
+      return `${indent}${lead}$$\n${displayBody}\n$$`;
+    }
+    return `${indent}${lead}$$${displayBody}$$`;
   }
 
   // Mixed prose → wrap each TeX / script run inline (keep bullet/indent outside).
-  const prefix = bullet ? `${indent}${marker}` : indent;
+  const prefix = `${bullet ? `${indent}${marker}` : indent}${lead}`;
   const source = content;
   let out = "";
   let i = 0;
@@ -646,6 +658,58 @@ export function prepareAiReplyMarkdown(input: string): string {
   return normalizeAuthoredText(input);
 }
 
+/**
+ * Collapse AI “dollar salad” ($$$ / $$$$ / mid-formula $$) before promote/balance.
+ * Without this, balanceMathDelimiters appends more $$ and makes rendering worse.
+ *
+ * NOTE: In String.replace replacement strings, `$$` means a literal `$`.
+ * To emit two dollar signs use a replacer function (or `$$$$`).
+ */
+export function sanitizeMathDelimiterSalad(input: string): string {
+  let text = String(input ?? "");
+
+  const twoDollars = () => "$$";
+  const collapse = (s: string) =>
+    s
+      .replace(/\${3,}/g, twoDollars)
+      .replace(/\$\$\s*\$\$/g, twoDollars);
+
+  text = collapse(text);
+
+  // Spurious $$ glued inside a formula (common Local/cloud glitch)
+  text = text.replace(
+    /(\\times|\\cdot|\\pm|\\approx|\\div|[\]A-Za-z0-9}])\$\$(\d)/g,
+    "$1 $2"
+  );
+  text = text.replace(/(\\times|\\cdot|\\pm)\s*\$\$\s*/g, "$1 ");
+  // Only glue before \text/\mathrm (unit tails) — never strip $$ before \sqrt/\frac
+  text = text.replace(/\$\$\s*(\\text|\\mathrm)/g, " $1");
+  // $$v_{\text{esc}}$ $$ → $$v_{\text{esc}}$$
+  text = text.replace(/\$\$([^$\n]+)\$\s*\$\$/g, (_m, body: string) => `$$${body}$$`);
+  // $$\tfrac{1}{2}$ → $\tfrac{1}{2}$ (display opener glued onto inline close)
+  text = text.replace(/\$\$(\\tfrac|\\frac|\\dfrac)\{/g, (_m, cmd: string) => `$${cmd}{`);
+
+  // Broken unit lists: $...,$$$$ \text{...}  → one math span
+  text = text.replace(/\$\s*,\s*\$\$\s*/g, ", ");
+  text = text.replace(/,\s*\$\$\s*/g, ", ");
+  text = text.replace(/\$\$\s*,\s*/g, ", ");
+  // ($6.67\times 10^{-11}$, \text{N}·...) → $(6.67\times 10^{-11}\,\text{N}...)$
+  text = text.replace(
+    /\(\$([^$\n]+),\s*((?:\\text\{[^}]+\}|\\cdot|\\,|\/|\s|[A-Za-z0-9^\\{}])*)\)/g,
+    (_m, expr: string, unit: string) => `$(${expr.trim()}\\,${unit.trim()})$`
+  );
+
+  // Split empty “$$ = $$” artifacts only (do not eat fences of neighboring formulas).
+  text = text.replace(/\$\$\s*=\s*\$\$/g, " = ");
+
+  text = collapse(text);
+
+  // Do NOT merge a real closing `$` with a following `$$` opener
+  // (that turned `$M_\\oplus$ $$` into `$M_\\oplus$$)`).
+
+  return text;
+}
+
 /** Normalize pasted content and safely repair common UTF-8-as-Latin-1 mojibake. */
 export function normalizeAuthoredText(input: string): string {
   let value = String(input ?? "")
@@ -666,6 +730,9 @@ export function normalizeAuthoredText(input: string): string {
     }
   }
 
+  // Fix $$$ / $$$$ / mid-formula $$ BEFORE currency protect + promote.
+  value = sanitizeMathDelimiterSalad(value);
+
   // Keep `$5` from being treated as math while we promote TeX dollars.
   const currency = protectCurrencyDollars(value);
   value = currency.text;
@@ -677,8 +744,11 @@ export function normalizeAuthoredText(input: string): string {
 
   // Bare \frac / ```latex / ASCII physics → real math delimiters.
   value = promoteBareLatexToMath(value);
+  // Promote can reintroduce salad — clean again before balancing.
+  value = sanitizeMathDelimiterSalad(value);
   // Currency already protected above — use raw balancer (public one would wipe slots).
   value = balanceMathDelimitersRaw(value);
+  value = sanitizeMathDelimiterSalad(value);
   return currency.restore(value);
 }
 
@@ -690,9 +760,16 @@ export function normalizeAuthoredText(input: string): string {
 function balanceMathDelimitersRaw(text: string): string {
   let next = text;
   // Unclosed display math: odd number of $$ fences.
-  const displayCount = (next.match(/\$\$/g) || []).length;
+  let displayCount = (next.match(/\$\$/g) || []).length;
   if (displayCount % 2 === 1) {
-    next = `${next}\n$$`;
+    // Prefer dropping a trailing orphan $$ over appending another (avoids $$$$ growth).
+    if (/\n?\$\$\s*$/.test(next) && displayCount >= 1) {
+      next = next.replace(/\n?\$\$\s*$/, "");
+      displayCount = (next.match(/\$\$/g) || []).length;
+    }
+    if (displayCount % 2 === 1) {
+      next = `${next}\n$$`;
+    }
   }
   // Unclosed inline math outside $$ blocks.
   const segments = next.split("$$");
@@ -768,9 +845,10 @@ function mapInlineInProse(prose: string, map: (math: string) => string): string 
  * TeX groups so equations keep rendering instead of flashing raw/error LaTeX.
  */
 export function stabilizeStreamingMath(input: string): string {
-  const currency = protectCurrencyDollars(String(input ?? ""));
+  const cleaned = sanitizeMathDelimiterSalad(String(input ?? ""));
+  const currency = protectCurrencyDollars(cleaned);
   const balanced = balanceMathDelimitersRaw(currency.text);
   const mapped = mapClosedMathSegments(balanced, closeOpenMathGroups);
-  return currency.restore(mapped);
+  return sanitizeMathDelimiterSalad(currency.restore(mapped));
 }
 
