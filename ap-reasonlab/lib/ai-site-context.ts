@@ -1,9 +1,9 @@
 import { extractAiSearchQuery } from "@/lib/ai-site-query";
 
 /** Keep in sync with lib/ai-site-search.ts — duplicated so clients never import the search engine. */
-export const AI_SITE_SEARCH_LIMIT = 8;
-/** Local can use the same site-search depth — no generation time budget to protect. */
-export const AI_SITE_SEARCH_LIMIT_LOCAL = 8;
+export const AI_SITE_SEARCH_LIMIT = 10;
+/** Local uses the same site-search depth — always search Knowledge Explorer. */
+export const AI_SITE_SEARCH_LIMIT_LOCAL = 10;
 
 /** Append server-fetched site context to a Local AI / client prompt. */
 export function appendAiSiteContext(userPrompt: string, context: string): string {
@@ -12,7 +12,9 @@ export function appendAiSiteContext(userPrompt: string, context: string): string
   return `${userPrompt}\n\n${trimmed}`;
 }
 
-/** Client helper: fetch Knowledge Explorer site search context for Local AI prompts. */
+/** Client helper: fetch Knowledge Explorer site search context for Local AI prompts.
+ * Always searches when enabled is true (default). Site search is always-on in the UI.
+ */
 export async function fetchAiSiteContext(
   query: string,
   enabled = true,
@@ -23,9 +25,8 @@ export async function fetchAiSiteContext(
   hitCount: number;
   hits: Array<{ title: string; href: string; subject?: string }>;
 }> {
-  if (!enabled) {
-    return { context: "", note: "Site search off.", hitCount: 0, hits: [] };
-  }
+  // Always search Knowledge Explorer — ignore legacy off switches from older clients.
+  void enabled;
   const searchQuery = extractAiSearchQuery(query);
   if (searchQuery.length < 2) {
     return { context: "", note: "Query too short for site search.", hitCount: 0, hits: [] };

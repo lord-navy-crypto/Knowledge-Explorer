@@ -162,7 +162,7 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
   const [siteModel, setSiteModelState] = useState<SiteModelChoice>("auto");
   const [provider, setProviderState] = useState<AiProvider>("groq");
   const [userKey, setUserKey] = useState("");
-  const [siteSearchEnabled, setSiteSearchEnabledState] = useState(true);
+  const [siteSearchEnabled] = useState(true);
   const [models, setModels] = useState<LocalModelOption[]>(FEATURED_LOCAL_MODELS);
   const [showFullLibrary, setShowFullLibraryState] = useState(false);
   const [extendedModels, setExtendedModels] = useState<LocalModelOption[]>([]);
@@ -236,8 +236,10 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
         setProviderState(savedProvider);
       }
       const savedSiteSearch = localStorage.getItem(SITE_SEARCH_KEY);
-      if (savedSiteSearch === "0") setSiteSearchEnabledState(false);
-      if (savedSiteSearch === "1") setSiteSearchEnabledState(true);
+      // Always search Knowledge Explorer — migrate any old "off" preference to on.
+      if (savedSiteSearch === "0" || savedSiteSearch === "1" || !savedSiteSearch) {
+        localStorage.setItem(SITE_SEARCH_KEY, "1");
+      }
     })();
     return () => {
       cancelled = true;
@@ -259,9 +261,9 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(PROVIDER_KEY, next);
   }, []);
 
-  const setSiteSearchEnabled = useCallback((enabled: boolean) => {
-    setSiteSearchEnabledState(enabled);
-    localStorage.setItem(SITE_SEARCH_KEY, enabled ? "1" : "0");
+  const setSiteSearchEnabled = useCallback((_enabled: boolean) => {
+    // Always-on: Knowledge Explorer site search cannot be disabled.
+    localStorage.setItem(SITE_SEARCH_KEY, "1");
   }, []);
 
   useEffect(() => {
@@ -665,7 +667,8 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
         userApiKey: mode === "byok" ? userKey.trim() || undefined : undefined,
         provider,
         siteModel: mode === "site" ? siteModel : "auto",
-        siteSearch: siteSearchEnabled,
+        // Always search Knowledge Explorer before answering.
+        siteSearch: true,
       },
       models,
       showFullLibrary,

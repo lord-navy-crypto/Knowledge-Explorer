@@ -164,23 +164,24 @@ export default function LocalAIControls({ embedded = false }: Props) {
             </button>
           ))}
         </div>
-        <label className="mt-3 flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-700">
-          <input
-            type="checkbox"
-            className="mt-1"
-            checked={localAI.siteSearchEnabled}
-            onChange={(event) => localAI.setSiteSearchEnabled(event.target.checked)}
-          />
+        <div className="mt-3 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/90 px-3 py-3 text-sm text-emerald-950">
+          <span
+            className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border border-emerald-500 bg-emerald-600 text-[10px] font-bold text-white"
+            aria-hidden="true"
+          >
+            ✓
+          </span>
           <span>
-            <span className="font-semibold text-slate-900">Always search Knowledge Explorer</span>
-            <span className="mt-0.5 block text-xs text-slate-500">
-              Before answering, look up matching concepts / formulas / practice / documents on this
-              site and feed them to the AI so it can teach from your materials. Free to search —
-              only a little extra prompt size if matches exist. Not Google / open-web search.
-              Author tip: keep this ON — Local AI works best with site content.
+            <span className="font-semibold text-emerald-950">
+              Always search Knowledge Explorer
+            </span>
+            <span className="mt-0.5 block text-xs text-emerald-900/85">
+              On for every AI path (Local, Website API, Your own API). Before answering, the tutor
+              looks up matching concepts / formulas / practice / documents on this site and teaches
+              from those materials. Not Google / open-web search — Knowledge Explorer only.
             </span>
           </span>
-        </label>
+        </div>
       </div>
 
       {localAI.mode === "site" && (
