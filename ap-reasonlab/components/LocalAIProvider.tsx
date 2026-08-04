@@ -27,6 +27,7 @@ import {
   mergeLocalDirectNudge,
   stripReasoningTrace,
 } from "@/lib/ai-reasoning-strip";
+import { repairAiMarkdownMath } from "@/lib/ai-latex-accuracy";
 import {
   budgetLocalMaxTokens,
   compactLocalMessages,
@@ -685,15 +686,15 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
           }
         }
 
-        // Almost no math on a short AP reply → one formula densify pass.
-        // Never replace a long good answer with a shorter truncated rewrite.
+        // Almost no math on a short AP reply → one light equations insert (not a full rewrite).
+        // Prefer validate/repair below over inventing denser TeX.
         if (
           allowQualityPasses &&
           result.trim() &&
           !isLocalGuidanceReply(result) &&
           localReplyNeedsMoreFormulas(result)
         ) {
-          setStatusText("Adding formulas to the Local teaching reply…");
+          setStatusText("Inserting KaTeX equations into the Local teaching reply…");
           const withMath = await runAttempt(
             policy.maxTokens,
             `${baseNudge}\n\n${LOCAL_MORE_FORMULAS_NUDGE}`
@@ -705,6 +706,22 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
           if (mathText && moreDollars && notShorter && withMath.finishReason !== "length") {
             result = withMath.text;
             finishReason = withMath.finishReason;
+          }
+        }
+
+        // Phase A: validate + deterministically repair each math span (no whole-answer rewrite).
+        if (result.trim() && !isLocalGuidanceReply(result) && allowQualityPasses) {
+          const repaired = repairAiMarkdownMath(result);
+          if (repaired.text !== result) {
+            result = repaired.text;
+            onToken?.("", result);
+            if (repaired.fixed > 0) {
+              setStatusText(
+                `Checked equations (${repaired.fixed} repaired${
+                  repaired.stillBroken ? `, ${repaired.stillBroken} still fragile` : ""
+                }).`
+              );
+            }
           }
         }
 

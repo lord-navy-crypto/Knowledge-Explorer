@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { parseAiProvider, parseSiteModelChoice, runChatJson } from "@/lib/ai-client";
 import { conceptExplainSystem } from "@/lib/ai-prompts";
 import { appendAiSiteContext, buildServerAiSiteContext } from "@/lib/ai-site-context-server";
+import { normalizeEquationItems, repairAiMarkdownMath, withFormulaAccuracy } from "@/lib/ai-latex-accuracy";
 
 export async function POST(req: NextRequest) {
   try {
@@ -50,7 +51,7 @@ Lock to this concept only: ${lockToConcept ? "yes" : "no — still must stay on 
 User message:
 ${question || defaultQuestion}
 
-Return JSON with refused, reply, formulas, quizPrompt, aiMayBeWrong.`;
+Return JSON with refused, reply, equations, formulas, quizPrompt, aiMayBeWrong.`;
 
     try {
       const siteSearch = body.siteSearch !== false;
@@ -61,7 +62,7 @@ Return JSON with refused, reply, formulas, quizPrompt, aiMayBeWrong.`;
       const userWithSite = appendAiSiteContext(user, siteContext);
 
       const result = await runChatJson({
-        system: conceptExplainSystem(mode),
+        system: withFormulaAccuracy(conceptExplainSystem(mode), subject),
         user: userWithSite,
         maxTokens: mode === "concept-extension" ? 4096 : 3072,
         userApiKey: userApiKey || undefined,
@@ -70,14 +71,17 @@ Return JSON with refused, reply, formulas, quizPrompt, aiMayBeWrong.`;
       });
       const data = result.data;
       const refused = Boolean(data.refused);
+      const replyRaw =
+        String(data.reply || "").trim() ||
+        (refused
+          ? "Sorry — that is unrelated to this concept or to learning, so I will not answer."
+          : "No response generated.");
+      const equations = normalizeEquationItems(data.equations).slice(0, 8);
       return NextResponse.json({
         refused,
-        reply:
-          String(data.reply || "").trim() ||
-          (refused
-            ? "Sorry — that is unrelated to this concept or to learning, so I will not answer."
-            : "No response generated."),
+        reply: repairAiMarkdownMath(replyRaw).text,
         quizPrompt: String(data.quizPrompt || "").trim(),
+        equations,
         formulas: Array.isArray(data.formulas)
           ? data.formulas.map(String).slice(0, 8)
           : [],

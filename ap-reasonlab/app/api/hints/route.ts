@@ -7,6 +7,7 @@ import {
 } from "@/lib/ai-client";
 import { HINT_PROCESS_SYSTEM } from "@/lib/ai-prompts";
 import { appendAiSiteContext, buildServerAiSiteContext } from "@/lib/ai-site-context-server";
+import { normalizeEquationItems, withFormulaAccuracy } from "@/lib/ai-latex-accuracy";
 
 function mockHints(question: string, subject: string) {
   return {
@@ -62,7 +63,7 @@ ${question}
 
 ${notes ? `Student notes / attempt (optional):\n${notes}` : ""}
 
-Return JSON with hints, keyFormulas, knownsUnknowns, checkpoints, processOutline, workedPartial, aiMayBeWrong.`;
+Return JSON with hints, equations, keyFormulas, knownsUnknowns, checkpoints, processOutline, workedPartial, aiMayBeWrong.`;
 
     try {
       const siteSearch = body.siteSearch !== false;
@@ -73,7 +74,7 @@ Return JSON with hints, keyFormulas, knownsUnknowns, checkpoints, processOutline
       const userWithSite = appendAiSiteContext(user, siteContext);
 
       const result = await runChatJson({
-        system: HINT_PROCESS_SYSTEM,
+        system: withFormulaAccuracy(HINT_PROCESS_SYSTEM, subject),
         user: userWithSite,
         maxTokens: 3072,
         userApiKey: userApiKey || undefined,
@@ -82,8 +83,10 @@ Return JSON with hints, keyFormulas, knownsUnknowns, checkpoints, processOutline
       });
 
       const data = result.data;
+      const equations = normalizeEquationItems(data.equations).slice(0, 8);
       return NextResponse.json({
         hints: asStringList(data.hints).slice(0, 6),
+        equations,
         keyFormulas: asStringList(data.keyFormulas).slice(0, 8),
         knownsUnknowns: asStringList(data.knownsUnknowns).slice(0, 10),
         checkpoints: asStringList(data.checkpoints).slice(0, 8),
