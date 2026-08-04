@@ -180,7 +180,7 @@ export function hasMathDelimiters(input: string): boolean {
 
 /** Common TeX commands AI emits without $…$ wrappers. */
 const TEX_CMD_NAMES =
-  "frac|dfrac|tfrac|sqrt|sum|int|oint|prod|partial|nabla|cdot|times|div|pm|mp|leq|geq|neq|approx|equiv|infty|alpha|beta|gamma|delta|epsilon|varepsilon|theta|lambda|mu|nu|xi|pi|rho|sigma|tau|phi|varphi|chi|psi|omega|Alpha|Beta|Gamma|Delta|Theta|Lambda|Pi|Sigma|Phi|Psi|Omega|vec|hat|bar|tilde|dot|ddot|mathbf|mathrm|operatorname|left|right|sin|cos|tan|sec|csc|cot|log|ln|exp|lim|to|rightarrow|leftarrow|Rightarrow|Leftarrow|leftrightarrow|Leftrightarrow|ldots|cdots|vdots|overline|underline|text|textbf|textit|quad|qquad|hspace|vspace|binom|choose|overset|underset|begin|end";
+  "frac|dfrac|tfrac|sqrt|sum|int|oint|prod|partial|nabla|cdot|times|div|pm|mp|leq|geq|neq|approx|equiv|infty|alpha|beta|gamma|delta|epsilon|varepsilon|theta|lambda|mu|nu|xi|pi|rho|sigma|tau|phi|varphi|chi|psi|omega|Alpha|Beta|Gamma|Delta|Theta|Lambda|Pi|Sigma|Phi|Psi|Omega|vec|hat|bar|tilde|dot|ddot|mathbf|mathrm|mathbb|mathcal|mathfrak|boldsymbol|operatorname|left|right|sin|cos|tan|sec|csc|cot|log|ln|exp|lim|to|rightarrow|leftarrow|Rightarrow|Leftarrow|leftrightarrow|Leftrightarrow|ldots|cdots|vdots|overline|underline|text|textbf|textit|quad|qquad|hspace|vspace|binom|choose|overset|underset|begin|end|perp|parallel|subset|supset|subseteq|supseteq|in|notin|forall|exists|emptyset|cup|cap|vee|wedge";
 
 const BARE_LATEX_HINT = new RegExp(String.raw`\\(?:${TEX_CMD_NAMES})(?![a-zA-Z])`);
 
@@ -250,14 +250,18 @@ function isMostlyLatexBody(body: string): boolean {
 }
 
 /**
- * Protect `$5` style currency so remark-math / dollar balancing does not
- * treat the price as the start of inline math.
+ * Protect `$5` / `$20.50` style currency so remark-math does not treat prices
+ * as the start of inline math. Do NOT touch closed math like `$5$`.
  */
 function protectCurrencyDollars(input: string): { text: string; restore: (s: string) => string } {
   const slots: string[] = [];
-  const text = input.replace(/\$(\d)/g, (_m, digit: string) => {
+  // Currency: $ + digits (+ optional decimals) when NOT immediately closed by $ (math).
+  const text = input.replace(/\$(\d+(?:\.\d+)?)(?!\$)/g, (match, amount: string, offset: number, full: string) => {
+    // Already inside a math span that started earlier — leave alone if previous char is letter/}.
+    const prev = full[offset - 1] || "";
+    if (prev === "\\" ) return match;
     const idx = slots.length;
-    slots.push(`$${digit}`);
+    slots.push(`$${amount}`);
     return `\uE050${idx}\uE051`;
   });
   return {
@@ -397,24 +401,81 @@ function wrapLatexRunFrom(line: string, start: number): { end: number; span: str
   return { end: start + span.length, span };
 }
 
-function wrapScriptFormulaRun(line: string, start: number): { end: number; span: string } | null {
-  // F_{net}, x^{2}, or plain physics a_x / v_0 / F_net
-  if (!/[A-Za-z0-9]/.test(line[start] || "")) return null;
+/** Physics / math variable bases worth auto-wrapping as subscripts. */
+const PHYSICS_SCRIPT_BASE =
+  /^(?:[A-Za-z]|KE|PE|TE|UE|RE|EMF|rms|avg|max|min|net)$/i;
 
-  const braced = line.slice(start).match(/^([A-Za-z0-9]+(?:_\{[^}]+\}|\^\{[^}]+\})+(?:[+\-*/=()0-9A-Za-z\\_^{}]*)?)/);
+/** Snake_case English identifiers — never treat as math (file_name, user_id). */
+function looksLikeSnakeIdentifier(base: string, sub: string): boolean {
+  if (base.length >= 2 && /[a-z]/.test(base) && /[a-z]{2,}/.test(sub) && !PHYSICS_SCRIPT_BASE.test(base)) {
+    return true;
+  }
+  if (base.length >= 3 && sub.length >= 2 && /^[a-z]+$/i.test(base) && /^[a-z]+$/i.test(sub) && !PHYSICS_SCRIPT_BASE.test(base)) {
+    return true;
+  }
+  return false;
+}
+
+function rewritePlainSubscripts(text: string): string {
+  return text.replace(/\b([A-Za-z]{1,3})_([A-Za-z0-9]{1,8})\b/g, (full, base: string, sub: string) => {
+    if (looksLikeSnakeIdentifier(base, sub)) return full;
+    if (!PHYSICS_SCRIPT_BASE.test(base) && !(base.length === 1 || /^[A-Z][a-z]?$/.test(base))) {
+      return full;
+    }
+    // Chemistry trailing letters after digit subscript: H_2O → keep O outside.
+    const digitChem = sub.match(/^(\d+)([A-Za-z].*)$/);
+    if (digitChem) {
+      return `${base}_{${digitChem[1]}}${digitChem[2]}`;
+    }
+    return `${base}_{${sub}}`;
+  });
+}
+
+function wrapScriptFormulaRun(line: string, start: number): { end: number; span: string } | null {
+  // F_{net}, x^{2}, or plain physics a_x / v_0 / F_net — not snake_case / chem mishaps.
+  if (!/[A-Za-z0-9]/.test(line[start] || "")) return null;
+  // Never start a subscript run mid-identifier (file_name → would match e_name).
+  if (start > 0 && /[A-Za-z0-9]/.test(line[start - 1] || "")) return null;
+
+  const braced = line
+    .slice(start)
+    .match(/^([A-Za-z0-9]+(?:_\{[^}]+\}|\^\{[^}]+\})+(?:[+\-*/=()0-9A-Za-z\\_^{}]*)?)/);
   if (braced) {
     const span = braced[1].trim();
-    if (span.length >= 3 && span.length <= 80) {
+    // Avoid swallowing trailing prose: stop at whitespace already via match.
+    if (span.length >= 3 && span.length <= 80 && !looksLikeSnakeIdentifier(span.split(/[_^]/)[0] || "", "x")) {
       return { end: start + span.length, span };
     }
   }
 
-  const plain = line.slice(start).match(/^([A-Za-z]_[A-Za-z0-9]{1,8})(?![A-Za-z0-9])/);
+  // Chemistry: H_2O / CO_2 — only the digit run is the subscript.
+  const chem = line.slice(start).match(/^([A-Z][a-z]?)_(\d+)(?=[A-Za-z]|$)/);
+  if (chem) {
+    const rawLen = chem[1].length + 1 + chem[2].length;
+    return { end: start + rawLen, span: `${chem[1]}_{${chem[2]}}` };
+  }
+
+  const plain = line.slice(start).match(/^([A-Za-z]{1,3})_([A-Za-z0-9]{1,8})(?![A-Za-z0-9])/);
   if (plain) {
-    const raw = plain[1];
-    const [base, sub] = raw.split("_");
-    const span = `${base}_{${sub}}`;
-    return { end: start + raw.length, span };
+    const base = plain[1];
+    const sub = plain[2];
+    if (looksLikeSnakeIdentifier(base, sub)) return null;
+    const digitOnly = /^\d+$/.test(sub);
+    const physicsOk = PHYSICS_SCRIPT_BASE.test(base) || base.length === 1;
+    const chemOk = digitOnly && /^[A-Z][a-z]?$|^[A-Z]{1,2}$/.test(base);
+    if (!physicsOk && !chemOk) return null;
+    // Digit + trailing letters already handled by chem; if sub is digits-only OK.
+    if (/^\d+[A-Za-z]/.test(sub)) {
+      const digits = sub.match(/^\d+/)![0];
+      return {
+        end: start + base.length + 1 + digits.length,
+        span: `${base}_{${digits}}`,
+      };
+    }
+    return {
+      end: start + plain[1].length + 1 + sub.length,
+      span: `${base}_{${sub}}`,
+    };
   }
 
   return null;
@@ -423,7 +484,8 @@ function wrapScriptFormulaRun(line: string, start: number): { end: number; span:
 function looksLikeAsciiEquation(line: string): boolean {
   const t = line.trim();
   if (!t.includes("=") || t.length > 100) return false;
-  if (hasMeaningfulProse(t) && countProseWords(t).length > 2) return false;
+  // Any real prose word → not a whole-line equation (wrap runs inline instead).
+  if (countProseWords(t).length > 0) return false;
   if (countCjkChars(t) > 0) return false;
   // KE = 1/2 mv^2  |  F_net = ma  |  a = dv/dt
   return /[=^_/]|\/\d|\d\//.test(t) && /^[A-Za-z0-9\\{}^_+\-*/=().\s]+$/.test(t);
@@ -457,6 +519,10 @@ function wrapOneLatexishLine(line: string): string {
   }
 
   content = promoteAsciiMathBits(content);
+  // Rewrite F_net → F_{net} before whole-line wrap so KaTeX gets real subscripts.
+  if (looksLikeAsciiEquation(content) || (!hasMeaningfulProse(content) && /_/.test(content))) {
+    content = rewritePlainSubscripts(content);
+  }
 
   const hasCmd = BARE_LATEX_HINT.test(content);
   const hasScript =
@@ -471,8 +537,9 @@ function wrapOneLatexishLine(line: string): string {
     (content.startsWith("\\") || hasCmd || hasScript || asciiEq);
 
   if (mostlyTex || asciiEq) {
-    if (bullet) return `${indent}${marker}$${content}$`;
-    return `${indent}$$\n${content}\n$$`;
+    const displayBody = rewritePlainSubscripts(content);
+    if (bullet) return `${indent}${marker}$${displayBody}$`;
+    return `${indent}$$\n${displayBody}\n$$`;
   }
 
   // Mixed prose → wrap each TeX / script run inline (keep bullet/indent outside).

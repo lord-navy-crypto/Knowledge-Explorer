@@ -520,3 +520,89 @@ export function mergeLocalModelLists(
 export function formatLocalModelTags(tags: LocalModelTag[]): string {
   return tags.filter((t) => t !== "Recommended").join(" · ");
 }
+
+/** Human labels for Local model weight groups (picker + suitability guide). */
+export const LOCAL_MODEL_GROUP_LABELS: Record<LocalModelGroup, string> = {
+  superlight: "Super light",
+  light: "Light",
+  medium: "Medium",
+  heavy: "Heavy",
+};
+
+export const LOCAL_MODEL_GROUP_ORDER: LocalModelGroup[] = [
+  "superlight",
+  "light",
+  "medium",
+  "heavy",
+];
+
+/** Task-oriented quick picks drawn from the curated catalog. */
+export type LocalModelUseCase = {
+  id: string;
+  title: string;
+  detail: string;
+  /** Match any of these tags, or fall back to id substrings. */
+  preferTags?: LocalModelTag[];
+  preferIdIncludes?: string[];
+  /** Prefer recommended curated models when present. */
+  preferRecommended?: boolean;
+};
+
+export const LOCAL_MODEL_USE_CASES: LocalModelUseCase[] = [
+  {
+    id: "bilingual-daily",
+    title: "Everyday Chinese / English study",
+    detail: "Default path — Qwen3.5 / Qwen3 bilingual tutors.",
+    preferTags: ["Bilingual"],
+    preferRecommended: true,
+  },
+  {
+    id: "ap-math",
+    title: "AP math & formulas",
+    detail: "Math-tuned models for symbolic steps and equation language.",
+    preferTags: ["Math"],
+  },
+  {
+    id: "coding",
+    title: "Coding / AI Developer",
+    detail: "Coder series for debug, write, and explain.",
+    preferTags: ["Coding"],
+  },
+  {
+    id: "english-only",
+    title: "English writing & explanations",
+    detail: "English-first instruct models (Gemma, Llama, Phi, OLMo…).",
+    preferTags: ["English"],
+  },
+  {
+    id: "weak-gpu",
+    title: "Weak GPU / first enable",
+    detail: "Super-light starters to confirm WebGPU and keep VRAM low.",
+    preferTags: ["Tiny"],
+    preferRecommended: true,
+  },
+];
+
+/** Pick curated models that best match a use-case (for the suitability guide). */
+export function modelsForUseCase(
+  models: LocalModelOption[],
+  useCase: LocalModelUseCase,
+  limit = 3
+): LocalModelOption[] {
+  const curated = models.filter((m) => !m.extended);
+  const scored = curated
+    .map((model) => {
+      let score = 0;
+      if (useCase.preferRecommended && model.recommended) score += 5;
+      if (useCase.preferTags?.some((tag) => model.tags.includes(tag))) score += 3;
+      if (useCase.preferIdIncludes?.some((part) => model.id.includes(part))) score += 2;
+      if (useCase.id === "weak-gpu" && model.group === "superlight") score += 2;
+      if (useCase.id === "bilingual-daily" && /Qwen3\.5|Qwen3/.test(model.id) && !/Coder|Math/.test(model.id)) {
+        score += 2;
+      }
+      return { model, score };
+    })
+    .filter((row) => row.score > 0)
+    .sort((a, b) => b.score - a.score || a.model.vramMB - b.model.vramMB);
+  return scored.slice(0, limit).map((row) => row.model);
+}
