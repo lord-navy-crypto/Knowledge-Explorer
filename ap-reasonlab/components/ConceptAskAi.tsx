@@ -188,15 +188,8 @@ export default function ConceptAskAi({
           <p className="text-xs font-medium text-slate-600">Follow-up question</p>
           <VoiceInputButton
             disabled={loading}
-            onTranscript={(text, isFinal) => {
-              setQuestion((prev) => {
-                if (!prev.trim() || isFinal) {
-                  const spacer = prev.trim() && isFinal ? (prev.endsWith(" ") ? "" : " ") : "";
-                  return `${prev}${spacer}${text}`.trimStart();
-                }
-                return `${prev.replace(/\s+$/, "")} ${text}`.trim();
-              });
-            }}
+            value={question}
+            onChange={setQuestion}
           />
         </div>
         <MarkdownLatexField
