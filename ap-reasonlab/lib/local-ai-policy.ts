@@ -2,12 +2,17 @@
  * Local AI generation policy.
  * Sole hard restriction: turn thinking mode off (Qwen3 `enable_thinking: false`).
  * No generation time limits — wait for the stream to finish. Allow long replies.
+ *
+ * Size-aware sampling: tiny models get a bit more exploration to fill answers;
+ * heavy models run cooler for accuracy/stability. All stay powerful via nudges.
  */
 
 import {
   localNudgeForModel,
   shouldDisableThinking,
   isHeavyLocalModel,
+  isMediumLocalModel,
+  isTinyLocalModel,
   isReasoningLocalModel,
 } from "@/lib/ai-reasoning-strip";
 
@@ -16,25 +21,89 @@ export type LocalGenPolicy = {
   disableThinking: boolean;
   /** High ceiling so long teaching answers can finish. */
   maxTokens: number;
-  /** Sampling temperature — helps small models write fuller replies. */
+  /** Sampling temperature — tuned by size for power + stability. */
   temperature: number;
+  /** Nucleus sampling — keeps outputs coherent. */
+  topP: number;
+  /** Mild anti-loop for small models; near-neutral for heavy. */
+  frequencyPenalty: number;
+  /** Light repetition control (WebLLM). */
+  repetitionPenalty: number;
   nudge: string;
   /** True when this id is a retired R1 / Distill reasoning dump model. */
   isRetiredReasoning: boolean;
+  /** Size band for UI / expand heuristics. */
+  sizeBand: "tiny" | "light" | "medium" | "heavy";
 };
 
-/** One shared policy for every local model size. */
+function sizeBandFor(modelId: string): LocalGenPolicy["sizeBand"] {
+  if (isHeavyLocalModel(modelId)) return "heavy";
+  if (isMediumLocalModel(modelId)) return "medium";
+  if (isTinyLocalModel(modelId)) return "tiny";
+  return "light";
+}
+
+/**
+ * Size-aware generation knobs — more capable replies without chaotic sampling.
+ * Thinking-off remains the only hard Local restriction.
+ */
 export function getLocalGenPolicy(modelId: string): LocalGenPolicy {
+  const band = sizeBandFor(modelId);
+
+  // Defaults aim for rich teaching; cooler on heavier models for stability.
+  let maxTokens = 8192;
+  let temperature = 0.7;
+  let topP = 0.9;
+  let frequencyPenalty = 0.05;
+  let repetitionPenalty = 1.05;
+
+  switch (band) {
+    case "tiny":
+      // Small models under-talk — nudge fullness; modest max keeps them stable.
+      maxTokens = 6144;
+      temperature = 0.78;
+      topP = 0.92;
+      frequencyPenalty = 0.12;
+      repetitionPenalty = 1.08;
+      break;
+    case "light":
+      maxTokens = 8192;
+      temperature = 0.72;
+      topP = 0.9;
+      frequencyPenalty = 0.08;
+      repetitionPenalty = 1.06;
+      break;
+    case "medium":
+      maxTokens = 8192;
+      temperature = 0.68;
+      topP = 0.9;
+      frequencyPenalty = 0.05;
+      repetitionPenalty = 1.05;
+      break;
+    case "heavy":
+      // Stronger models: cooler sampling → sharper formulas / fewer loops.
+      maxTokens = 8192;
+      temperature = 0.62;
+      topP = 0.88;
+      frequencyPenalty = 0.02;
+      repetitionPenalty = 1.03;
+      break;
+  }
+
   return {
     disableThinking: shouldDisableThinking(modelId),
-    maxTokens: 8192,
-    temperature: 0.7,
+    maxTokens,
+    temperature,
+    topP,
+    frequencyPenalty,
+    repetitionPenalty,
     nudge: localNudgeForModel(modelId),
     isRetiredReasoning: isReasoningLocalModel(modelId),
+    sizeBand: band,
   };
 }
 
-/** No context-window / prefill caps — use WebLLM defaults. */
+/** No context-window / prefill caps — use WebLLM defaults (avoids OOM surprises). */
 export function chatOptsForModel(
   _modelId: string,
   _contextWindow: number
@@ -73,8 +142,10 @@ export function isLocalGuidanceReply(text: string): boolean {
   );
 }
 
-export function isMediumLocalModel(modelId: string): boolean {
-  return /(?:^|[^0-9.])([34])B(?:-|$)/i.test(modelId) && !isHeavyLocalModel(modelId);
-}
-
-export { shouldDisableThinking, isHeavyLocalModel, localNudgeForModel };
+export {
+  shouldDisableThinking,
+  isHeavyLocalModel,
+  isMediumLocalModel,
+  isTinyLocalModel,
+  localNudgeForModel,
+};

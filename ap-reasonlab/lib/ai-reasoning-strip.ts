@@ -72,9 +72,42 @@ export function isHeavyLocalModel(modelId: string): boolean {
   return /(?:^|[^0-9.])([789])B(?:-|$)/i.test(modelId);
 }
 
+/** ~3B–4B mid-tier (not Heavy). */
+export function isMediumLocalModel(modelId: string): boolean {
+  return /(?:^|[^0-9.])([34])B(?:-|$)/i.test(modelId) && !isHeavyLocalModel(modelId);
+}
+
+/** Tiny / super-light (~≤1B or 135M). */
+export function isTinyLocalModel(modelId: string): boolean {
+  return /(?:135M|360M|0\.[0-9]+B|1B(?:-|$)|gemma3-1b)/i.test(modelId) && !isMediumLocalModel(modelId) && !isHeavyLocalModel(modelId);
+}
+
+/** Soft quality score for thin-reply expansion (AP / general Local). */
+export function localReplyLooksThin(text: string): boolean {
+  const t = text.trim();
+  if (!t || t.length < 280) return true;
+  const headings = (t.match(/^#{1,3}\s+\S+/gm) || []).length;
+  const bullets = (t.match(/^\s*[-*+]\s+\S+/gm) || []).length;
+  if (t.length < 500 && headings + bullets < 2) return true;
+  return false;
+}
+
+/** True when an AP/science reply has almost no dollar-math. */
+export function localReplyNeedsMoreFormulas(text: string): boolean {
+  const t = text.trim();
+  if (t.length < 120) return false;
+  const dollars = (t.match(/\$/g) || []).length;
+  return dollars < 2;
+}
+
 export function localNudgeForModel(modelId: string): string {
   const base = shouldDisableThinking(modelId) ? LOCAL_DIRECT_ANSWER_NUDGE : LOCAL_MARKDOWN_NUDGE;
-  return `${base}\n\n${LOCAL_DEPTH_NUDGE}`;
+  const sizeHint = isTinyLocalModel(modelId)
+    ? LOCAL_TINY_POWER_HINT
+    : isHeavyLocalModel(modelId)
+      ? LOCAL_HEAVY_POWER_HINT
+      : LOCAL_MID_POWER_HINT;
+  return `${base}\n\n${LOCAL_DEPTH_NUDGE}\n\n${LOCAL_QUALITY_NUDGE}\n\n${sizeHint}`;
 }
 
 /**
@@ -107,13 +140,34 @@ Formulas (required when the topic is math/science/AP):
 
 Put ALL of this in the visible streamed reply. Do not stop after one short paragraph.`;
 
+/**
+ * Quality / power layer — stronger teaching without fluff or instability.
+ * Shared by all Local sizes (AP / concept / coding paths).
+ */
+export const LOCAL_QUALITY_NUDGE = `Power & quality (stay stable):
+- Be precise: name the right law, formula, unit, or code symbol on the first relevant sentence.
+- Prefer correct, checkable steps over vague pep-talk. If unsure, say so briefly and give the best next check.
+- Structure clearly with markdown headings/bullets so students can scan.
+- Avoid filler loops (“as mentioned above…” repeated). Each sentence should add a new fact, formula, or step.
+- Never invent fake site citations. Only cite Knowledge Explorer hits when they were appended.
+- Keep ethics: do not finish graded numeric finals; leave the last algebra to the student when required.`;
+
+export const LOCAL_TINY_POWER_HINT =
+  "Small model mode: still give a full teaching reply with clear sections and at least a few $...$ formulas — short stubs are not enough. Stay concrete; skip long digressions.";
+
+export const LOCAL_MID_POWER_HINT =
+  "Mid model mode: aim for a rich worksheet-style answer — multiple formulas with symbol meanings, a partial numeric example, one common mistake, and a clear student finish step.";
+
+export const LOCAL_HEAVY_POWER_HINT =
+  "Heavy model mode: use your capacity for depth and accuracy — careful unit tracking, richer partial work, sharper misconception notes, and tighter formula explanations. Stay organized; do not ramble.";
+
 /** Used when the first Local pass is blank (thinking leftovers). */
 export const LOCAL_RETRY_NO_THINK_NUDGE =
   "Retry: start speaking a LONG teaching answer NOW, sentence by sentence. Zero <think> tags. Include several $...$ formulas with symbol meanings, detailed steps, and a partial example — not a one-liner.";
 
 /** Used when the first Local pass is too thin. */
 export const LOCAL_EXPAND_NUDGE =
-  "Your draft was too short or too light on formulas. Continue with a much longer teaching answer: more headings/bullets, MORE formulas in $...$ (with symbol meanings), detailed step-by-step explanation, a partial worked example, one common mistake, and what the student should do next.";
+  "Your draft was too short or too light. Continue with a much longer teaching answer: more headings/bullets, MORE formulas in $...$ (with symbol meanings), detailed step-by-step explanation, a partial worked example, one common mistake, and what the student should do next. Do not restart from zero — expand.";
 
 /** Used when the reply has almost no rendered math. */
 export const LOCAL_MORE_FORMULAS_NUDGE =
@@ -128,8 +182,9 @@ export const LOCAL_ENGLISH_NUDGE = `Thinking mode is OFF. Write the visible Engl
 This is English learning (grammar / translation / writing / language materials / exam strategy / practice) — NOT AP science.
 - Do NOT invent physics formulas, science worksheets, or $...$ math dumps.
 - Speak clearly sentence by sentence.
-- Translator: just translate. Coaching modes: concrete language feedback with examples.
-- Stay useful and concrete; avoid empty praise.`;
+- Translator: JUST TRANSLATE — direction line + full translation only.
+- Coaching modes (grammar / writing / materials / strategy / practice): be concrete and strong — name the grammar/vocab point, give 2 corrected examples, and one next practice step. Prefer substance over praise.
+- Stay useful; avoid empty pep-talk.`;
 
 export const LOCAL_ENGLISH_RETRY_NUDGE =
   "Retry: start the English answer NOW. Zero <think> tags. No fake math formulas. Translate or coach in clear language — not an AP science worksheet.";

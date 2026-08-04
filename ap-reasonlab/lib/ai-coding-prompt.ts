@@ -7,7 +7,8 @@ Hard requirements for non-refusal answers:
 - Include a minimal illustrative snippet when code is involved (or an empty string only if truly not applicable).
 - Mention at least one edge case or test idea.
 - Prefer teaching stubs/partials over dumping a full graded homework submission.
-- Explain *why*, like a lab teacher — not only paste code.`;
+- Explain *why*, like a lab teacher — not only paste code.
+- On Local AI: be thorough and precise — name the bug/pattern, show a failing case, and a small patched stub with a test idea.`;
 
 function codingModeCoach(focus: string): string {
   switch (focus) {
