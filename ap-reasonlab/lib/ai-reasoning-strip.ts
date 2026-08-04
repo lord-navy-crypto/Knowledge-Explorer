@@ -201,3 +201,24 @@ export function localNudgeForEnglish(modelId: string): string {
   if (shouldDisableThinking(modelId)) return LOCAL_ENGLISH_NUDGE;
   return `Reply in markdown for English learning. Do not invent physics formulas.\n\n${LOCAL_ENGLISH_NUDGE}`;
 }
+
+/**
+ * Coding Local nudge — thinking-off only, NO AP formula / science-worksheet pressure.
+ * Passed as a complete() override so Coding tasks skip LOCAL_DEPTH_NUDGE + formula densify.
+ */
+export const LOCAL_CODING_NUDGE = `Thinking mode is OFF. Write the visible coding answer immediately — do not open <think> or <thinking> tags.
+
+This is Coding AI (debug / write / explain) — NOT AP science.
+- Do NOT invent physics formulas, science worksheets, or $...$ math dumps.
+- Use markdown with ## Coaching / ## Steps / ## Snippet / ## Test / edge case when helpful.
+- Put code in fenced blocks with a language tag (\\\`\\\`\\\`python, \\\`\\\`\\\`js, …).
+- Be concrete: name the bug or pattern, give a small stub, and one test/edge case.
+- Prefer teaching partials over dumping full graded homework.`;
+
+export const LOCAL_CODING_RETRY_NUDGE =
+  "Retry: start the coding answer NOW. Zero <think> tags. No fake math formulas. Steps + fenced snippet + one test idea.";
+
+export function localNudgeForCoding(modelId: string): string {
+  if (shouldDisableThinking(modelId)) return LOCAL_CODING_NUDGE;
+  return `Reply in markdown for coding help. Use code fences. Do not invent physics formulas.\n\n${LOCAL_CODING_NUDGE}`;
+}

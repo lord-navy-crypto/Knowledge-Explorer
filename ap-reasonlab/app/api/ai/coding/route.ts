@@ -16,7 +16,7 @@ function mockCoding(language: string, task: string) {
       ? "def solve(data):\n    # TODO: start with the simplest case\n    return data\n"
       : "",
     aiMayBeWrong: "Demo advice is generic — verify with docs or a teacher.",
-    note: "Mock mode (no configured website AI key).",
+    note: "⚠️ Mock demo — no website AI key configured. Switch to Local AI or add an API key.",
   };
 }
 
@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
 
     const user = `Language / stack: ${language}
 Focus: ${focus}
+Role: coding tutor — prefer code playgrounds/snippets from site materials if appended; ignore AP formula sheets.
 Task / question:
 ${task}
 
@@ -55,7 +56,7 @@ Return Coding AI JSON.`;
       const result = await runChatJson({
         system: codingAiSystem(focus),
         user: userWithSite,
-        maxTokens: 3072,
+        maxTokens: 4096,
         userApiKey: userApiKey || undefined,
         provider,
         siteModel,
