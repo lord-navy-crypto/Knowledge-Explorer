@@ -3,6 +3,7 @@ import { FORMULA_BOARD, type FormulaBoardItem } from "@/data/formula-board";
 import {
   normalizeAuthoredText,
   protectCurrencyDollars,
+  sanitizeMathDelimiterSalad,
   stabilizeStreamingMath,
   toLatexSource,
 } from "@/lib/unicode-math";
@@ -24,7 +25,7 @@ export type MathRepairReport = {
  * Prompt rules shared by AP Local + cloud: display + structure + site grounding.
  */
 export const FORMULA_ACCURACY_RULES = `Math accuracy protocol (display + structure + grounding):
-A) Display: every equation must use $...$ or $$...$$. Never leave bare \\frac / \\sqrt in prose or inside code fences.
+A) Display: every equation must use $...$ or $$...$$. Never leave bare \\frac / \\sqrt in prose or inside code fences. Never emit $$$ or $$$$ or $$ in the middle of a formula.
 B) Structure: put the most important equations in a dedicated list (JSON "equations" / "keyFormulas" / "formulas", or a ## Equations section locally). Each item: Name — $latex$ — meaning of symbols.
 C) Grounding: when Knowledge Explorer site materials OR a curated formula pack are appended, PREFER those equations. Quote them with $...$; do not invent a conflicting formula. If you invent one, say it is not from site materials.
 D) Validate mentally: KaTeX must be able to parse your latex (balanced braces, \\frac{a}{b}, \\left/\\right pairs).`;
@@ -106,9 +107,7 @@ export function deterministicRepairLatex(latex: string): string {
   s = s.replace(/\\frac\s*(\d+)\s*(\d+)/g, "\\frac{$1}{$2}");
   s = s.replace(/\\dfrac\s*(\d+)\s*(\d+)/g, "\\dfrac{$1}{$2}");
   s = s.replace(/\\tfrac\s*(\d+)\s*(\d+)/g, "\\tfrac{$1}{$2}");
-  // Drop incomplete trailing command
-  s = s.replace(/\\[a-zA-Z]{1,24}$/, "");
-  s = s.replace(/[_^]$/, "");
+  // Do NOT strip trailing \\command here — that deleted valid \\oplus / \\infty / \\rightarrow.
 
   let open = 0;
   for (let i = 0; i < s.length; i++) {
@@ -138,8 +137,17 @@ export function repairLatexSource(latex: string): { latex: string; ok: boolean; 
   if (katexParses(original)) {
     return { latex: original, ok: true, repaired: false };
   }
+
+  // Last-resort: drop a clearly incomplete trailing command (\fra, \sqr) or lone _/^ 
+  const stripped = lightly
+    .replace(/\\(?:f|fr|fra|sq|sqr|tex|mat|mathematics)$/i, "")
+    .replace(/[_^]$/, "");
+  if (stripped !== lightly && katexParses(stripped)) {
+    return { latex: stripped, ok: true, repaired: true };
+  }
+
   // Last try: toLatexSource path (Unicode → TeX)
-  const viaUnicode = toLatexSource(lightly || original);
+  const viaUnicode = toLatexSource(stripped || lightly || original);
   if (viaUnicode && katexParses(viaUnicode)) {
     return { latex: viaUnicode, ok: true, repaired: true };
   }
@@ -224,7 +232,8 @@ export function repairAiMarkdownMath(markdown: string): MathRepairReport {
     cursor = span.end;
   }
   out += currency.text.slice(cursor);
-  return { text: currency.restore(out), fixed, stillBroken };
+  const restored = sanitizeMathDelimiterSalad(currency.restore(out));
+  return { text: restored, fixed, stillBroken };
 }
 
 /** Normalize cloud JSON equation / formula list items into structured units. */
@@ -403,8 +412,70 @@ export function runAiLatexAccuracyFixtures(): string[] {
       },
     },
     {
-      name: "physics-pack",
-      ok: () => buildGroundedFormulaPack("AP Physics 1").includes("Newton"),
+      name: "dollar-salad-units",
+      ok: () => {
+        const r = repairAiMarkdownMath(
+          String.raw`G ($6.674\times$$10^{-11}$,$$$$ \text{N}\cdot\text{m}^2/\text{kg}^2)`
+        );
+        return (
+          !r.text.includes("$$$") &&
+          !/\\times\$\$/.test(r.text) &&
+          r.text.includes("10^{-11}") &&
+          r.text.includes("\\text{N}")
+        );
+      },
+    },
+    {
+      name: "dollar-salad-display",
+      ok: () => {
+        const r = repairAiMarkdownMath(
+          String.raw`$$$$v_e = \sqrt{\frac{2GM}{R}}$$$`
+        );
+        return (
+          !r.text.includes("$$$") &&
+          r.text.includes("\\sqrt") &&
+          (r.text.match(/\$\$/g) || []).length % 2 === 0
+        );
+      },
+    },
+    {
+      name: "dollar-salad-energy",
+      ok: () => {
+        const r = repairAiMarkdownMath(
+          String.raw`Energy$$$K_i + U_i = K_f + U_f$$$$* Meaning`
+        );
+        return !r.text.includes("$$$") && r.text.includes("K_i");
+      },
+    },
+    {
+      name: "oplus-kept",
+      ok: () => {
+        const r = repairAiMarkdownMath("Earth ($M_\\oplus$) mass");
+        return r.text.includes("\\oplus") && r.text.includes("$M_");
+      },
+    },
+    {
+      name: "bare-frac-wrapped",
+      ok: () => {
+        const r = repairAiMarkdownMath("U(r) = -G \\frac{M m}{r}");
+        return r.text.includes("$") && r.text.includes("\\frac");
+      },
+    },
+    {
+      name: "escape-velocity-salad",
+      ok: () => {
+        const r = repairAiMarkdownMath(
+          String.raw`$$$v_{\text{esc}}$ $$
+=
+$$$\sqrt{\frac{2GM}{R}}$$$$`
+        );
+        return (
+          !r.text.includes("$$$") &&
+          r.text.includes("\\sqrt") &&
+          r.text.includes("v_{\\text{esc}}") &&
+          (r.text.match(/\$\$/g) || []).length >= 2
+        );
+      },
     },
   ];
   for (const c of cases) {
