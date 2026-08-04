@@ -5,7 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
-import { normalizeAuthoredText, toLatexSource } from "@/lib/unicode-math";
+import { normalizeAuthoredText, stabilizeStreamingMath, toLatexSource } from "@/lib/unicode-math";
 
 type Mode = "markdown" | "math" | "inline-math";
 
@@ -16,6 +16,8 @@ type Props = {
   className?: string;
   /** Clamp long previews (e.g. list cards). Uses CSS line-clamp. */
   clampLines?: 2 | 3 | 4;
+  /** While AI tokens arrive — close unfinished TeX so KaTeX keeps painting. */
+  streaming?: boolean;
 };
 
 const KATEX_REHYPE_OPTIONS = {
@@ -44,8 +46,12 @@ export default function RichContent({
   mode = "markdown",
   className = "",
   clampLines,
+  streaming = false,
 }: Props) {
-  const text = normalizeAuthoredText((children ?? "").toString());
+  const raw = (children ?? "").toString();
+  const text = streaming
+    ? stabilizeStreamingMath(normalizeAuthoredText(raw))
+    : normalizeAuthoredText(raw);
   if (!text.trim()) return null;
 
   const clampClass =

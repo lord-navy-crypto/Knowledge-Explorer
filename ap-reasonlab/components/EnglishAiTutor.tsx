@@ -213,7 +213,9 @@ export default function EnglishAiTutor({ embedded = false, hideChannelUi = false
                   ? "Translation"
                   : "Feedback"}
             </h2>
-            <RichContent className="mt-2 text-sm text-slate-700">{result.feedback}</RichContent>
+            <RichContent className="mt-2 text-sm text-slate-700" streaming={loading}>
+              {result.feedback}
+            </RichContent>
           </div>
           {mode !== "translator" && result.strengths?.length > 0 && (
             <div>

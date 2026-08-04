@@ -706,3 +706,45 @@ export function balanceMathDelimiters(input: string): string {
   }
   return segments.join("$$");
 }
+
+/** Close open `{` / `\left` inside a math body so KaTeX can paint while tokens still arrive. */
+function closeOpenMathGroups(math: string): string {
+  let m = math
+    // Incomplete command or script marker at the very end: \fra, \sqr, _, ^
+    .replace(/\\[a-zA-Z]{1,24}$/, "")
+    .replace(/[_^]$/, "");
+
+  let open = 0;
+  for (let i = 0; i < m.length; i++) {
+    const ch = m[i];
+    if (ch === "{" && m[i - 1] !== "\\") open += 1;
+    else if (ch === "}" && m[i - 1] !== "\\") open = Math.max(0, open - 1);
+  }
+  if (open > 0) m += "}".repeat(Math.min(open, 12));
+
+  const lefts = (m.match(/\\left(?![a-zA-Z])/g) || []).length;
+  const rights = (m.match(/\\right(?![a-zA-Z])/g) || []).length;
+  if (lefts > rights) m += "\\right.".repeat(Math.min(lefts - rights, 8));
+  return m;
+}
+
+function mapClosedMathSegments(input: string, map: (math: string) => string): string {
+  // $$…$$ first
+  let text = input.replace(/\$\$([\s\S]*?)\$\$/g, (_full, body: string) => `$$${map(body)}$$`);
+  // Then inline $…$ (not part of $$)
+  text = text.replace(/\$([^$\n]+?)\$/g, (full, body: string, offset: number, src: string) => {
+    if (src[offset - 1] === "$" || src[offset + full.length] === "$") return full;
+    return `$${map(body)}$`;
+  });
+  return text;
+}
+
+/**
+ * Extra streaming hygiene for AI replies: balance delimiters AND close unfinished
+ * TeX groups so equations keep rendering instead of flashing raw/error LaTeX.
+ */
+export function stabilizeStreamingMath(input: string): string {
+  const balanced = balanceMathDelimiters(String(input ?? ""));
+  return mapClosedMathSegments(balanced, closeOpenMathGroups);
+}
+

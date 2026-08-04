@@ -245,6 +245,9 @@ export default function UnifiedAiPanel({
   );
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const chatRef = useRef<HTMLDivElement>(null);
+  /** When true, new tokens pin the dialogue to the bottom. Scroll up to unlock. */
+  const stickToBottomRef = useRef(true);
+  const [showJumpLatest, setShowJumpLatest] = useState(false);
 
   const taskMeta = useMemo(() => {
     if (category === "ap") {
@@ -313,14 +316,39 @@ export default function UnifiedAiPanel({
   useEffect(() => {
     const node = chatRef.current;
     if (!node) return;
+    const onScroll = () => {
+      const distance = node.scrollHeight - node.scrollTop - node.clientHeight;
+      const nearBottom = distance <= 72;
+      stickToBottomRef.current = nearBottom;
+      setShowJumpLatest(!nearBottom && messages.length > 0);
+    };
+    node.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => node.removeEventListener("scroll", onScroll);
+  }, [messages.length]);
+
+  // Only follow the stream when the student is already at (or near) the bottom.
+  // Scrolling up unlocks free reading while AI keeps generating.
+  useEffect(() => {
+    const node = chatRef.current;
+    if (!node || !stickToBottomRef.current) return;
     node.scrollTop = node.scrollHeight;
   }, [messages, loading]);
+
+  function jumpToLatest() {
+    stickToBottomRef.current = true;
+    setShowJumpLatest(false);
+    const node = chatRef.current;
+    if (node) node.scrollTop = node.scrollHeight;
+  }
 
   function clearDialogue() {
     setMessages([]);
     setError("");
     setInput("");
     setCode("");
+    stickToBottomRef.current = true;
+    setShowJumpLatest(false);
   }
 
   async function ensureLocalReady() {
@@ -761,6 +789,8 @@ export default function UnifiedAiPanel({
     };
 
     const historyBefore = messages;
+    stickToBottomRef.current = true;
+    setShowJumpLatest(false);
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setLoading(true);
@@ -999,17 +1029,23 @@ export default function UnifiedAiPanel({
             </button>
           </div>
 
-          <div
-            ref={chatRef}
-            className="flex max-h-[28rem] min-h-[14rem] flex-col gap-3 overflow-y-auto overscroll-contain bg-white p-3"
-          >
-            {messages.length === 0 ? (
-              <p className="m-auto max-w-md text-center text-sm text-slate-500">
-                Start the conversation below. After the first reply, keep asking follow-up questions
-                in the same dialogue box.
-              </p>
-            ) : (
-              messages.map((message) => (
+          <div className="relative">
+            <div
+              ref={chatRef}
+              className="flex max-h-[28rem] min-h-[14rem] flex-col gap-3 overflow-y-auto overscroll-contain bg-white p-3"
+            >
+              {messages.length === 0 ? (
+                <p className="m-auto max-w-md text-center text-sm text-slate-500">
+                  Start the conversation below. After the first reply, keep asking follow-up questions
+                  in the same dialogue box.
+                </p>
+              ) : (
+                messages.map((message, index) => {
+                  const isStreamingReply =
+                    loading &&
+                    message.role === "assistant" &&
+                    index === messages.length - 1;
+                  return (
                 <div
                   key={message.id}
                   className={`max-w-[95%] min-w-0 break-words rounded-2xl px-3 py-2.5 text-sm ${
@@ -1031,7 +1067,12 @@ export default function UnifiedAiPanel({
                   {message.role === "user" ? (
                     <p className="whitespace-pre-wrap break-words">{message.text}</p>
                   ) : (
-                    <RichContent className="min-w-0 text-sm">{message.text}</RichContent>
+                    <RichContent
+                      className="min-w-0 text-sm"
+                      streaming={isStreamingReply}
+                    >
+                      {message.text}
+                    </RichContent>
                   )}
                   {message.role === "assistant" && message.aiMayBeWrong ? (
                     <p className="mt-2 text-[11px] text-amber-800">{message.aiMayBeWrong}</p>
@@ -1044,25 +1085,36 @@ export default function UnifiedAiPanel({
                     />
                   ) : null}
                 </div>
-              ))
-            )}
-            {loading ? (
-              <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                <p>
-                  {localAI.usesLocal && localAI.status === "generating"
-                    ? localAI.statusText || "Writing answer…"
-                    : "Working…"}
-                </p>
-                {localAI.usesLocal ? (
-                  <button
-                    type="button"
-                    className="rounded-md border border-slate-300 px-2 py-0.5 text-[11px] font-medium text-slate-700 hover:bg-white"
-                    onClick={() => localAI.interruptGeneration()}
-                  >
-                    Stop
-                  </button>
-                ) : null}
-              </div>
+                  );
+                })
+              )}
+              {loading ? (
+                <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                  <p>
+                    {localAI.usesLocal && localAI.status === "generating"
+                      ? localAI.statusText || "Writing answer…"
+                      : "Working…"}
+                  </p>
+                  {localAI.usesLocal ? (
+                    <button
+                      type="button"
+                      className="rounded-md border border-slate-300 px-2 py-0.5 text-[11px] font-medium text-slate-700 hover:bg-white"
+                      onClick={() => localAI.interruptGeneration()}
+                    >
+                      Stop
+                    </button>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+            {showJumpLatest ? (
+              <button
+                type="button"
+                onClick={jumpToLatest}
+                className="absolute bottom-3 left-1/2 z-10 -translate-x-1/2 rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50"
+              >
+                Jump to latest
+              </button>
             ) : null}
           </div>
 
