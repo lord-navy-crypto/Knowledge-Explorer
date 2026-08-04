@@ -2,8 +2,11 @@ import { extractAiSearchQuery } from "@/lib/ai-site-query";
 
 /** Keep in sync with lib/ai-site-search.ts — duplicated so clients never import the search engine. */
 export const AI_SITE_SEARCH_LIMIT = 10;
-/** Local uses the same site-search depth — always search Knowledge Explorer. */
-export const AI_SITE_SEARCH_LIMIT_LOCAL = 10;
+/**
+ * Local WebLLM context is ~4096 tokens. Keep Local site hits lean so answers
+ * are not cut mid-sentence when Always-search injects materials.
+ */
+export const AI_SITE_SEARCH_LIMIT_LOCAL = 5;
 
 /** Append server-fetched site context to a Local AI / client prompt. */
 export function appendAiSiteContext(userPrompt: string, context: string): string {

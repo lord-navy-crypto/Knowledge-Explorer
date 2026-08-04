@@ -24,7 +24,9 @@ import {
 import { takeToolboxPrefill } from "@/lib/ai-toolbox-prefill";
 import { migrateEnglishTask } from "@/lib/ai-toolbox-url";
 import {
+  LOCAL_CODING_RETRY_NUDGE,
   LOCAL_ENGLISH_RETRY_NUDGE,
+  localNudgeForCoding,
   localNudgeForEnglish,
 } from "@/lib/ai-reasoning-strip";
 
@@ -324,7 +326,11 @@ export default function UnifiedAiPanel({
     user: string,
     history: ChatMessage[],
     onToken?: (token: string, fullText: string) => void,
-    completeOptions?: { nudge?: string; retryNudge?: string; sitePrefer?: "formulas" | "language" }
+    completeOptions?: {
+      nudge?: string;
+      retryNudge?: string;
+      sitePrefer?: "formulas" | "language" | "code";
+    }
   ) {
     await ensureLocalReady();
     // Search the latest question only — history pollutes keyword retrieval.
@@ -341,30 +347,32 @@ export default function UnifiedAiPanel({
     const siteHint =
       sitePrefer === "language"
         ? "When Knowledge Explorer site materials are appended below, prefer useful English language snippets (vocab, phrases, example sentences) and cite the hit titles. Ignore AP science / formula hits. Follow the same English teaching rules as the cloud tutor."
-        : "When Knowledge Explorer site materials are appended below, prefer their formulas/definitions and cite the hit titles. Ignore off-topic hits. Follow the same teaching rules as the cloud teacher for this tool.";
+        : sitePrefer === "code"
+          ? "When Knowledge Explorer site materials are appended below, prefer coding playgrounds, snippets, and programming docs. Cite hit titles. Ignore off-topic AP formula sheets. Follow the coding teaching rules."
+          : "When Knowledge Explorer site materials are appended below, prefer their formulas/definitions and cite the hit titles. Ignore off-topic hits. Follow the same teaching rules as the cloud teacher for this tool.";
     const chatMessages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
       {
         role: "system",
         content: `${system}\n\n${siteHint}`,
       },
     ];
-    // Give Local models enough dialogue context now that hard timeouts are gone.
-    // Heavier models can use a bit more history for stronger follow-ups.
-    const historyWindow = /(?:^|[^0-9.])([789])B(?:-|$)/i.test(localAI.selectedModelId || "")
-      ? 8
-      : 6;
-    const turnCap = /(?:^|[^0-9.])([789])B(?:-|$)/i.test(localAI.selectedModelId || "")
-      ? 3200
-      : 2500;
+    // Keep Local prompts lean — WebLLM context is ~4096 tokens; fat history/site
+    // context is the main reason answers stop mid-sentence (finish_reason=length).
+    const historyWindow = 4;
+    const turnCap = 1000;
     for (const message of history.slice(-historyWindow)) {
       chatMessages.push({
         role: message.role === "user" ? "user" : "assistant",
         content: message.text.slice(0, turnCap),
       });
     }
+    const leanSiteContext =
+      context.length > 3200
+        ? `${context.slice(0, 3000)}\n\n[Site materials trimmed so Local AI has room to finish the answer.]`
+        : context;
     chatMessages.push({
       role: "user",
-      content: appendAiSiteContext(user, context).slice(0, 12_000),
+      content: appendAiSiteContext(user, leanSiteContext).slice(0, 5500),
     });
     const { sitePrefer: _ignore, ...nudgeOpts } = completeOptions || {};
     return localAI.complete(chatMessages, onToken, nudgeOpts);
@@ -640,18 +648,31 @@ export default function UnifiedAiPanel({
         : codingTask === "write"
           ? `Write / help implement:\n${userText}`
           : `Debug / find bugs:\n${userText}`;
-    if (localAI.usesLocal) {
+    const wantLocalCoding = localAI.usesLocal && localAI.ready;
+    if (localAI.usesLocal && !localAI.ready) {
+      setSiteSearchNote(
+        "Local is selected but not enabled yet — using Website API for this coding reply. Click Enable Local above to run on-device."
+      );
+    }
+    if (wantLocalCoding) {
+      const modelId = localAI.selectedModelId || "";
       const text = await runLocal(
         codingAiLocal(codingTask),
         `Language: ${language}\nFocus: ${codingTask}\nTask: ${taskText}\nCode:\n${codePaste || "(none)"}`,
         history,
-        onToken
+        onToken,
+        {
+          nudge: localNudgeForCoding(modelId),
+          retryNudge: `${localNudgeForCoding(modelId)}\n\n${LOCAL_CODING_RETRY_NUDGE}`,
+          sitePrefer: "code",
+        }
       );
       return {
         id: `a-${Date.now()}`,
         role: "assistant",
         text,
         meta: `${taskMeta.label} · Local`,
+        aiMayBeWrong: "Local AI coding advice may be wrong — test and verify.",
       };
     }
     const response = await fetch("/api/ai/coding", {
@@ -668,16 +689,21 @@ export default function UnifiedAiPanel({
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Coding AI failed");
     const lists = [{ label: "Steps", items: data.steps || [] }];
+    const cloudMeta =
+      data.note ||
+      (localAI.usesLocal && !localAI.ready
+        ? `${taskMeta.label} · Website API (Local not enabled)`
+        : taskMeta.label);
     return {
       id: `a-${Date.now()}`,
       role: "assistant",
       text: formatAssistantText({
-        body: data.reply || "",
+        body: data.reply || data.raw || "",
         lists,
         snippet: data.snippet || "",
         snippetAsCode: true,
       }),
-      meta: data.note || taskMeta.label,
+      meta: cloudMeta,
       lists,
       snippet: data.snippet || "",
       refused: data.refused,
