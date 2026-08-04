@@ -29,15 +29,12 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => ({}));
     const rawQuery = String(body.query || body.q || "").trim();
     const query = extractAiSearchQuery(rawQuery);
-    const enabled = body.enabled !== false;
+    // Always search Knowledge Explorer — ignore legacy enabled:false from older clients.
     const limit = Math.min(
       AI_SITE_SEARCH_LIMIT,
       Math.max(1, Number(body.limit) || AI_SITE_SEARCH_LIMIT)
     );
 
-    if (!enabled) {
-      return NextResponse.json({ hits: [], context: "", note: "Site search off.", hitCount: 0 });
-    }
     if (query.length < 2) {
       return NextResponse.json({
         hits: [],

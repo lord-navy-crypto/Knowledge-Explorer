@@ -42,9 +42,10 @@ async function loadSlimManagedCached(): Promise<ManagedContent> {
   return managed;
 }
 
-/** Server-side Knowledge Explorer search for AI prompts. No LLM API cost. */
-export async function buildServerAiSiteContext(query: string, enabled = true): Promise<string> {
-  if (!enabled) return "";
+/** Server-side Knowledge Explorer search for AI prompts. No LLM API cost.
+ * Always searches when a usable query exists — site materials stay primary.
+ */
+export async function buildServerAiSiteContext(query: string, _enabled = true): Promise<string> {
   const searchQuery = extractAiSearchQuery(query);
   if (searchQuery.length < 2) return "";
   try {

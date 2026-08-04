@@ -330,14 +330,12 @@ export default function UnifiedAiPanel({
     // Search the latest question only — history pollutes keyword retrieval.
     const { context, note, hitCount, hits } = await fetchAiSiteContext(
       user,
-      localAI.siteSearchEnabled,
+      true,
       { limit: AI_SITE_SEARCH_LIMIT_LOCAL }
     );
     setSiteHits(hits);
     setSiteSearchNote(
-      localAI.siteSearchEnabled
-        ? note || (hitCount ? `Using ${hitCount} site hit(s).` : "No site matches.")
-        : "Site search off."
+      note || (hitCount ? `Using ${hitCount} Knowledge Explorer hit(s).` : "No site matches.")
     );
     const sitePrefer = completeOptions?.sitePrefer || "formulas";
     const siteHint =
@@ -809,8 +807,8 @@ export default function UnifiedAiPanel({
         </h2>
         <p className="mt-1 text-sm text-slate-600">
           Choose Local / Website API / Your own API, pick a task, then chat in the dialogue box.
-          Follow-up questions stay in the same conversation. Keep{" "}
-          <strong>Always search Knowledge Explorer</strong> on so AI teaches from site materials.
+          Follow-up questions stay in the same conversation.{" "}
+          <strong>Always search Knowledge Explorer</strong> is on — AI teaches from site materials.
         </p>
         {siteSearchNote ? (
           <div className="mt-2 space-y-1">

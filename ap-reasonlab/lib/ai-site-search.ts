@@ -11,9 +11,9 @@ export type AiSiteSearchHit = {
 };
 
 /** How many site hits to inject into AI prompts. */
-export const AI_SITE_SEARCH_LIMIT = 8;
+export const AI_SITE_SEARCH_LIMIT = 10;
 /** Longer excerpts so the model can actually use formulas/steps from KE articles. */
-export const AI_SITE_DETAIL_MAX = 1400;
+export const AI_SITE_DETAIL_MAX = 1600;
 
 /**
  * Search Knowledge Explorer built-in + managed study content.
