@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import LocalAIControls from "@/components/LocalAIControls";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
+import AiEquationCards from "@/components/AiEquationCards";
 import RichContent from "@/components/RichContent";
 import VoiceInputButton from "@/components/VoiceInputButton";
 import SaveGeneratedPractice from "@/components/SaveGeneratedPractice";
@@ -17,8 +18,10 @@ import {
 } from "@/lib/ai-prompts";
 import { appendAiSiteContext, fetchAiSiteContext, prefetchAiSiteContext, AI_SITE_SEARCH_LIMIT_LOCAL, AI_SITE_SEARCH_LOCAL_DEADLINE_MS } from "@/lib/ai-site-context";
 import {
+  type AiEquation,
   mergeFormulaLists,
   repairAiMarkdownMath,
+  splitAiReplyEquations,
   withFormulaAccuracy,
 } from "@/lib/ai-latex-accuracy";
 import {
@@ -161,12 +164,44 @@ type ChatMessage = {
   text: string;
   meta?: string;
   lists?: Array<{ label: string; items: string[] }>;
+  /** Structured KaTeX equations — rendered as cards, not $…$ in the bubble. */
+  equations?: AiEquation[];
   snippet?: string;
   refused?: boolean;
   aiMayBeWrong?: string;
   /** Show editor save for generate-practice replies */
   saveAsPractice?: boolean;
 };
+
+function historyText(message: ChatMessage): string {
+  const base = message.text || "";
+  if (!message.equations?.length) return base;
+  const lines = message.equations.map((eq) => {
+    const name = eq.name?.trim() || "Equation";
+    const means = eq.means?.trim();
+    return means ? `${name} | ${eq.latex} | ${means}` : `${name} | ${eq.latex}`;
+  });
+  return `${base}\n\n## Equations\n${lines.join("\n")}`.trim();
+}
+
+function finalizeLocalApMessage(
+  text: string,
+  extra: Omit<ChatMessage, "id" | "role" | "text" | "equations"> & { id?: string }
+): ChatMessage {
+  const { prose, equations } = splitAiReplyEquations(text);
+  return {
+    id: extra.id || `a-${Date.now()}`,
+    role: "assistant",
+    text: prose,
+    equations: equations.length ? equations : undefined,
+    meta: extra.meta,
+    lists: extra.lists,
+    snippet: extra.snippet,
+    refused: extra.refused,
+    aiMayBeWrong: extra.aiMayBeWrong,
+    saveAsPractice: extra.saveAsPractice,
+  };
+}
 
 function formatAssistantText(parts: {
   body?: string;
@@ -202,7 +237,7 @@ function buildHistoryBlock(messages: ChatMessage[]): string {
   const recent = messages.slice(-8);
   const lines = recent.map((message) => {
     const who = message.role === "user" ? "Student" : "Tutor";
-    return `${who}: ${message.text.slice(0, 1200)}`;
+    return `${who}: ${historyText(message).slice(0, 1200)}`;
   });
   return `Conversation so far (continue from this context; do not restart unless asked):\n${lines.join("\n\n")}\n\n`;
 }
@@ -418,7 +453,7 @@ export default function UnifiedAiPanel({
     for (const message of history.slice(-historyWindow)) {
       chatMessages.push({
         role: message.role === "user" ? "user" : "assistant",
-        content: message.text.slice(0, turnCap),
+        content: historyText(message).slice(0, turnCap),
       });
     }
     const leanSiteContext =
@@ -454,13 +489,10 @@ export default function UnifiedAiPanel({
           history,
           onToken
         );
-        return {
-          id: `a-${Date.now()}`,
-          role: "assistant",
-          text,
+        return finalizeLocalApMessage(text, {
           meta: "Hints & process · Local",
           aiMayBeWrong: "Local AI may be wrong — verify with your notes.",
-        };
+        });
       }
       const response = await fetch("/api/hints", {
         method: "POST",
@@ -477,16 +509,6 @@ export default function UnifiedAiPanel({
       const formulaBlock = mergeFormulaLists(data.keyFormulas, data.equations);
       const lists = [
         { label: "Hints", items: data.hints || [] },
-        {
-          label: "Key equations",
-          items: formulaBlock.equations.map((eq) => {
-            const math = `$${eq.latex}$`;
-            if (eq.name && eq.means) return `${eq.name}: ${math} — ${eq.means}`;
-            if (eq.name) return `${eq.name}: ${math}`;
-            if (eq.means) return `${math} — ${eq.means}`;
-            return math;
-          }),
-        },
         { label: "Knowns / unknowns", items: data.knownsUnknowns || [] },
         { label: "Checkpoints", items: data.checkpoints || [] },
         { label: "Process outline", items: data.processOutline || [] },
@@ -495,9 +517,10 @@ export default function UnifiedAiPanel({
       return {
         id: `a-${Date.now()}`,
         role: "assistant",
-        text: formatAssistantText({ lists, repairMath: true }),
+        text: formatAssistantText({ lists }),
         meta: data.note || "Hints & process",
         lists,
+        equations: formulaBlock.equations.length ? formulaBlock.equations : undefined,
         aiMayBeWrong: data.aiMayBeWrong,
       };
     }
@@ -552,13 +575,10 @@ export default function UnifiedAiPanel({
           history,
           onToken
         );
-        return {
-          id: `a-${Date.now()}`,
-          role: "assistant",
-          text,
+        return finalizeLocalApMessage(text, {
           meta: `${taskMeta.label} · Local`,
           saveAsPractice: apTask === "generate-questions",
-        };
+        });
       }
       const response = await fetch("/api/ai/concept", {
         method: "POST",
@@ -580,24 +600,12 @@ export default function UnifiedAiPanel({
         .filter(Boolean)
         .join("");
       const formulaBlock = mergeFormulaLists(data.formulas, data.equations);
-      const lists = [
-        {
-          label: "Key equations",
-          items: formulaBlock.equations.map((eq) => {
-            const math = `$${eq.latex}$`;
-            if (eq.name && eq.means) return `${eq.name}: ${math} — ${eq.means}`;
-            if (eq.name) return `${eq.name}: ${math}`;
-            if (eq.means) return `${math} — ${eq.means}`;
-            return math;
-          }),
-        },
-      ];
       return {
         id: `a-${Date.now()}`,
         role: "assistant",
-        text: formatAssistantText({ body, lists, repairMath: true }),
+        text: formatAssistantText({ body }),
         meta: data.note || taskMeta.label,
-        lists,
+        equations: formulaBlock.equations.length ? formulaBlock.equations : undefined,
         refused: data.refused,
         aiMayBeWrong: data.aiMayBeWrong,
         saveAsPractice: apTask === "generate-questions",
@@ -1101,12 +1109,17 @@ export default function UnifiedAiPanel({
                   {message.role === "user" ? (
                     <p className="whitespace-pre-wrap break-words">{message.text}</p>
                   ) : (
-                    <RichContent
-                      className="min-w-0 text-sm"
-                      streaming={isStreamingReply}
-                    >
-                      {message.text}
-                    </RichContent>
+                    <div className="space-y-3">
+                      {!isStreamingReply && message.equations?.length ? (
+                        <AiEquationCards equations={message.equations} />
+                      ) : null}
+                      <RichContent
+                        className="min-w-0 text-sm"
+                        streaming={isStreamingReply}
+                      >
+                        {message.text}
+                      </RichContent>
+                    </div>
                   )}
                   {message.role === "assistant" && message.aiMayBeWrong ? (
                     <p className="mt-2 text-[11px] text-amber-800">{message.aiMayBeWrong}</p>

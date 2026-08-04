@@ -700,10 +700,18 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
             `${baseNudge}\n\n${LOCAL_MORE_FORMULAS_NUDGE}`
           );
           const mathText = withMath.text.trim();
-          const moreDollars =
-            (mathText.match(/\$/g) || []).length > (result.match(/\$/g) || []).length;
+          const hasEqSection = /^##\s*Equations?/im.test(mathText);
+          const gainedSection =
+            hasEqSection && !/^##\s*Equations?/im.test(result);
+          const morePipes =
+            (mathText.match(/\|/g) || []).length > (result.match(/\|/g) || []).length;
           const notShorter = mathText.length >= result.trim().length * 0.9;
-          if (mathText && moreDollars && notShorter && withMath.finishReason !== "length") {
+          if (
+            mathText &&
+            (gainedSection || morePipes) &&
+            notShorter &&
+            withMath.finishReason !== "length"
+          ) {
             result = withMath.text;
             finishReason = withMath.finishReason;
           }

@@ -22,13 +22,16 @@ export type MathRepairReport = {
 };
 
 /**
- * Prompt rules shared by AP Local + cloud: display + structure + site grounding.
+ * Prompt rules for AP AI — formulas are DATA, not dollar-marked prose.
+ * Site pages still use $…$ in RichContent; AI dialogue does not rely on that.
  */
-export const FORMULA_ACCURACY_RULES = `Math accuracy protocol (display + structure + grounding):
-A) Display: every equation must use $...$ or $$...$$. Never leave bare \\frac / \\sqrt in prose or inside code fences. Never emit $$$ or $$$$ or $$ in the middle of a formula.
-B) Structure: put the most important equations in a dedicated list (JSON "equations" / "keyFormulas" / "formulas", or a ## Equations section locally). Each item: Name — $latex$ — meaning of symbols.
-C) Grounding: when Knowledge Explorer site materials OR a curated formula pack are appended, PREFER those equations. Quote them with $...$; do not invent a conflicting formula. If you invent one, say it is not from site materials.
-D) Validate mentally: KaTeX must be able to parse your latex (balanced braces, \\frac{a}{b}, \\left/\\right pairs).`;
+export const FORMULA_ACCURACY_RULES = `Math language protocol (structured equations — do NOT use $...$ / $$...$$ in replies):
+A) Main formulas belong in the equations list (JSON "equations" or Local "## Equations"), NOT as dollar-wrapped TeX in the essay.
+B) Each equation item: name (human title), latex (KaTeX-ready source with NO $ characters), means (symbol meanings in plain words).
+   Example latex field: \\sqrt{\\frac{2GM}{R}}   — never $\\sqrt{...}$ and never $$$.
+C) Teaching prose: write in normal sentences. Refer to formulas by name (“escape velocity”, “Newton’s 2nd law”). Do not sprinkle $...$ or bare \\frac into paragraphs.
+D) Grounding: when site materials or the formula pack below are present, copy their latex into equations[]; do not invent a conflicting form.
+E) KaTeX must parse each latex string (balanced braces, \\frac{a}{b}, \\left/\\right).`;
 
 /** Soft subject → formula-board section id. */
 export function resolveFormulaBoardSectionId(subject: string): string | null {
@@ -41,12 +44,7 @@ export function resolveFormulaBoardSectionId(subject: string): string | null {
   return null;
 }
 
-function wrapInlineLatex(latex: string): string {
-  const body = latex.trim().replace(/^\$+|\$+$/g, "");
-  return `$${body}$`;
-}
-
-/** Curated formula pack injected into AP prompts (Phase C). */
+/** Curated formula pack injected into AP prompts (Phase C) — bare latex, no $. */
 export function buildGroundedFormulaPack(subject: string, maxItems = 8): string {
   const sectionId = resolveFormulaBoardSectionId(subject);
   if (!sectionId) return "";
@@ -55,12 +53,13 @@ export function buildGroundedFormulaPack(subject: string, maxItems = 8): string 
   const items = section.items.slice(0, maxItems);
   const lines = items.map(
     (item: FormulaBoardItem) =>
-      `- ${item.name}: ${wrapInlineLatex(item.latex)}${item.note ? ` — ${item.note}` : ""}`
+      `- ${item.name} | ${item.latex}${item.note ? ` | ${item.note}` : ""}`
   );
   return [
     `Curated Knowledge Explorer formula pack (${section.title}) — prefer these when relevant:`,
+    "Format reminder: name | latex | optional note  (latex has NO dollar signs)",
     ...lines,
-    "If a pack formula matches the question, use that latex (wrapped in $...$) and explain symbols. Do not invent a conflicting form.",
+    "Copy matching latex into your equations list. Do not invent a conflicting form.",
   ].join("\n");
 }
 
@@ -73,7 +72,7 @@ export function withFormulaAccuracy(
   const maxPackItems = options?.maxPackItems ?? (options?.compact ? 4 : 8);
   const pack = subject ? buildGroundedFormulaPack(subject, maxPackItems) : "";
   const rules = options?.compact
-    ? `Math protocol: wrap formulas in $...$/$$...$$; prefer equations from site hits / the formula pack below; put key equations in ## Equations as Name: $latex$ — meaning; KaTeX must parse the latex.`
+    ? `Math protocol: put key formulas in ## Equations as lines "Name | latex | meaning" (latex with NO $). Prose stays plain English — no $...$ and no $$$. Prefer pack/site latex.`
     : FORMULA_ACCURACY_RULES;
   return [system.trim(), rules, pack].filter(Boolean).join("\n\n");
 }
@@ -254,15 +253,24 @@ export function normalizeEquationItems(items: unknown): AiEquation[] {
       });
       continue;
     }
-    const line = String(raw ?? "").trim();
+    const line = String(raw ?? "").trim().replace(/^[-*•]\s+/, "");
     if (!line) continue;
-    // "Name: $latex$ — meaning" or "Name: latex — meaning"
-    const match = line.match(
-      /^([^:：]+)\s*[:：]\s*(.+?)(?:\s*[—–\-]\s*(.+))?$/
-    );
+    // Prefer "Name | latex | means" (no dollars)
+    const pipe = line.split("|").map((p) => p.trim());
+    if (pipe.length >= 2 && !pipe[1].includes("://")) {
+      const repaired = repairLatexSource(pipe[1].replace(/^\$+|\$+$/g, ""));
+      out.push({
+        name: pipe[0] || undefined,
+        latex: repaired.latex,
+        means: pipe[2] || undefined,
+      });
+      continue;
+    }
+    // Compat: "Name: $latex$ — meaning" or "Name: latex — meaning"
+    const match = line.match(/^([^:：]+)\s*[:：]\s*(.+?)(?:\s*[—–\-]\s*(.+))?$/);
     if (match) {
       const name = match[1].trim();
-      let latexPart = match[2].trim();
+      const latexPart = match[2].trim();
       const means = match[3]?.trim();
       const dollar = latexPart.match(/\$\$([\s\S]+?)\$\$|\$([^$\n]+?)\$/);
       const body = dollar ? (dollar[1] || dollar[2] || "").trim() : latexPart.replace(/^\$+|\$+$/g, "");
@@ -272,46 +280,47 @@ export function normalizeEquationItems(items: unknown): AiEquation[] {
       const dollar = line.match(/\$\$([\s\S]+?)\$\$|\$([^$\n]+?)\$/);
       const body = dollar ? (dollar[1] || dollar[2] || "").trim() : line.replace(/^\$+|\$+$/g, "");
       const repaired = repairLatexSource(body);
-      out.push({ latex: repaired.latex });
+      if (repaired.latex) out.push({ latex: repaired.latex });
     }
   }
   return out.slice(0, 12);
 }
 
-/** Phase B display: structured equations as markdown bullets with validated $latex$. */
+/**
+ * Pull ## Equations from a Local markdown reply into structured cards.
+ * Prose is returned without that section so the bubble does not show raw TeX lines.
+ */
+export function splitAiReplyEquations(markdown: string): {
+  prose: string;
+  equations: AiEquation[];
+} {
+  const text = String(markdown ?? "");
+  const sectionRe = /^##\s*(?:Equations?|Key formulas?)\s*\r?\n([\s\S]*?)(?=^##\s+|\Z)/gim;
+  const collected: string[] = [];
+  let prose = text;
+  let match: RegExpExecArray | null;
+  const re = new RegExp(sectionRe.source, sectionRe.flags);
+  while ((match = re.exec(text)) !== null) {
+    const body = match[1] || "";
+    for (const line of body.split("\n")) {
+      const trimmed = line.trim();
+      if (trimmed && !/^<!--/.test(trimmed)) collected.push(trimmed);
+    }
+  }
+  prose = text.replace(sectionRe, "").replace(/\n{3,}/g, "\n\n").trim();
+  const equations = normalizeEquationItems(collected);
+  return { prose, equations };
+}
+
+/** Fallback markdown list — only used if UI cannot show cards. Prefer AiEquationCards. */
 export function formatEquationsMarkdown(equations: AiEquation[], label = "Key equations"): string {
   if (!equations.length) return "";
   const lines = equations.map((eq) => {
-    const math = wrapInlineLatex(eq.latex);
-    const name = eq.name?.trim();
+    const name = eq.name?.trim() || "Equation";
     const means = eq.means?.trim();
-    if (name && means) return `- ${name}: ${math} — ${means}`;
-    if (name) return `- ${name}: ${math}`;
-    if (means) return `- ${math} — ${means}`;
-    return `- ${math}`;
+    return means ? `- ${name} | ${eq.latex} | ${means}` : `- ${name} | ${eq.latex}`;
   });
   return `**${label}**\n${lines.join("\n")}`;
-}
-
-/** Ensure a free-text formula list item has a renderable $…$ span. */
-export function ensureFormulaListItem(item: string): string {
-  const line = String(item ?? "").trim();
-  if (!line) return line;
-  if (/\$.+\$/.test(line)) {
-    return repairAiMarkdownMath(line).text;
-  }
-  // Try to wrap the latex-ish middle of "Name: expr — when"
-  const match = line.match(/^([^:：]+)\s*[:：]\s*(.+?)(?:\s*[—–\-]\s*(.+))?$/);
-  if (match) {
-    const name = match[1].trim();
-    const expr = match[2].trim().replace(/^\$+|\$+$/g, "");
-    const means = match[3]?.trim();
-    const repaired = repairLatexSource(expr);
-    const math = wrapInlineLatex(repaired.latex);
-    return means ? `${name}: ${math} — ${means}` : `${name}: ${math}`;
-  }
-  const repaired = repairLatexSource(line);
-  return wrapInlineLatex(repaired.latex);
 }
 
 /** Merge legacy string formula arrays + optional structured equations. */
@@ -408,7 +417,21 @@ export function runAiLatexAccuracyFixtures(): string[] {
         const md = formatEquationsMarkdown([
           { name: "KE", latex: "\\tfrac{1}{2}mv^2", means: "kinetic energy" },
         ]);
-        return md.includes("$") && md.includes("KE");
+        return md.includes("KE | \\tfrac{1}{2}mv^2") && !md.includes("$");
+      },
+    },
+    {
+      name: "split-equations-section",
+      ok: () => {
+        const { prose, equations } = splitAiReplyEquations(
+          "## Idea\nEnergy conserves.\n\n## Equations\nEscape speed | \\sqrt{\\frac{2GM}{R}} | from surface\n\n## Next\nFinish the algebra."
+        );
+        return (
+          !prose.includes("\\sqrt") &&
+          equations.length === 1 &&
+          equations[0].latex.includes("\\sqrt") &&
+          prose.includes("Energy conserves")
+        );
       },
     },
     {
