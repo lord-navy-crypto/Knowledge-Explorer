@@ -23,6 +23,12 @@ import {
 } from "@/lib/ai-toolbox-prefs";
 import { takeToolboxPrefill } from "@/lib/ai-toolbox-prefill";
 import { migrateEnglishTask } from "@/lib/ai-toolbox-url";
+import {
+  LOCAL_ENGLISH_RETRY_NUDGE,
+  localNudgeForEnglish,
+} from "@/lib/ai-reasoning-strip";
+
+const ENGLISH_INPUT_MAX = 16_000;
 
 type Category = ToolboxCategory;
 
@@ -313,7 +319,8 @@ export default function UnifiedAiPanel({
     system: string,
     user: string,
     history: ChatMessage[],
-    onToken?: (token: string, fullText: string) => void
+    onToken?: (token: string, fullText: string) => void,
+    completeOptions?: { nudge?: string; retryNudge?: string }
   ) {
     await ensureLocalReady();
     // Search the latest question only — history pollutes keyword retrieval.
@@ -345,7 +352,7 @@ export default function UnifiedAiPanel({
       role: "user",
       content: appendAiSiteContext(user, context).slice(0, 12_000),
     });
-    return localAI.complete(chatMessages, onToken);
+    return localAI.complete(chatMessages, onToken, completeOptions);
   }
 
   async function askOnce(
@@ -501,34 +508,28 @@ export default function UnifiedAiPanel({
 
     if (category === "english") {
       const mode = englishTask;
-      const englishControls =
-        mode === "practice-generator"
-          ? `Exam/track target (tone only): ${englishTarget}
-Rule: COPY whatever the student pasted as the topic (do not judge if it is a “real topic”). Then GENERATE a NEW practice topic from that copy.
-Student paste (topic):`
-          : mode === "language-materials"
-            ? `Exam/track target: ${englishTarget}
-Role: language-materials collector on large pastes; language-materials generator on short commands/sentences (语言资料, not generic data).
-Student input:`
-            : mode === "translator"
-              ? `Exam/track target (ignore for translation): ${englishTarget}
-Rule: JUST TRANSLATE. Chinese ↔ English by default (auto-detect). If the student names a direction, follow it. Put the full translation in revisionExample.
-Student paste:`
-              : `Exam/track target: ${englishTarget}
-Student input:`;
-      const englishUser = `${englishControls}\n${userText}`;
+      // Keep student text + history only here — /api/ai/english adds mode/target controls.
+      // Local still gets a light mode label so the model knows which English tool is active.
+      const englishUserLocal = `Mode: ${mode}\nExam/track target: ${englishTarget}\nStudent input:\n${userText}`;
+      const englishUserCloud = `${historyPrefix}${userText}`;
       if (localAI.usesLocal) {
+        const modelId = localAI.selectedModelId || "";
         const text = await runLocal(
           englishTutorLocal(mode),
-          `Mode: ${mode}\n${englishUser}`,
+          englishUserLocal,
           history,
-          onToken
+          onToken,
+          {
+            nudge: localNudgeForEnglish(modelId),
+            retryNudge: `${localNudgeForEnglish(modelId)}\n\n${LOCAL_ENGLISH_RETRY_NUDGE}`,
+          }
         );
         return {
           id: `a-${Date.now()}`,
           role: "assistant",
           text,
           meta: `${taskMeta.label} · Local`,
+          aiMayBeWrong: "Local AI language advice may be wrong — verify important points.",
         };
       }
       const response = await fetch("/api/ai/english", {
@@ -537,24 +538,48 @@ Student input:`;
         body: JSON.stringify({
           mode,
           target: englishTarget,
-          input: `${historyPrefix}${englishUser}`,
+          input: englishUserCloud,
           ...localAI.cloudRequestFields,
         }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "English AI failed");
+      if (mode === "translator") {
+        const translation = String(data.revisionExample || "").trim();
+        const direction = String(data.feedback || "").trim();
+        const body = [
+          direction ? `**${direction}**` : "**Translation**",
+          translation || "(No translation returned.)",
+        ].join("\n\n");
+        return {
+          id: `a-${Date.now()}`,
+          role: "assistant",
+          text: body,
+          meta: data.note || taskMeta.label,
+          snippet: translation,
+          refused: data.refused,
+          aiMayBeWrong: data.aiMayBeWrong,
+        };
+      }
       const lists = [
         { label: "Strengths", items: data.strengths || [] },
         { label: "Priorities", items: data.priorities || [] },
       ];
-      const snippet =
-        mode === "translator"
-          ? data.revisionExample || ""
-          : [data.revisionExample, data.practicePrompt].filter(Boolean).join("\n\n");
+      const snippet = [data.revisionExample, data.practicePrompt].filter(Boolean).join("\n\n");
       return {
         id: `a-${Date.now()}`,
         role: "assistant",
-        text: formatAssistantText({ body: data.feedback || "", lists, snippet }),
+        text: formatAssistantText({
+          body: data.feedback || "",
+          lists,
+          snippet: data.revisionExample
+            ? `**Revised example**\n${data.revisionExample}${
+                data.practicePrompt ? `\n\n**Next practice**\n${data.practicePrompt}` : ""
+              }`
+            : data.practicePrompt
+              ? `**Next practice**\n${data.practicePrompt}`
+              : "",
+        }),
         meta: data.note || taskMeta.label,
         lists,
         snippet,
@@ -623,8 +648,16 @@ Student input:`;
           ? "Describe the coding task and/or paste code."
           : category === "english" && englishTask === "practice-generator"
             ? "Paste a topic first — any text. We copy it and generate a new topic from it."
-            : "Type a question or paste content first."
+            : category === "english" && englishTask === "translator"
+              ? "Paste text to translate."
+              : category === "english"
+                ? "Enter English text or a learning question."
+                : "Type a question or paste content first."
       );
+      return;
+    }
+    if (category === "english" && userText.length > ENGLISH_INPUT_MAX) {
+      setError(`Input is too long (maximum ${ENGLISH_INPUT_MAX.toLocaleString()} characters).`);
       return;
     }
 
@@ -1012,7 +1045,13 @@ Student input:`;
 
             <div className="flex flex-wrap gap-2">
               <button type="submit" className="btn-primary" disabled={loading}>
-                {loading ? "Working…" : messages.length ? "Ask follow-up" : "Ask AI"}
+                {loading
+                  ? "Working…"
+                  : messages.length
+                    ? "Ask follow-up"
+                    : category === "english" && englishTask === "translator"
+                      ? "Translate"
+                      : "Ask AI"}
               </button>
               {messages.length > 0 ? (
                 <button

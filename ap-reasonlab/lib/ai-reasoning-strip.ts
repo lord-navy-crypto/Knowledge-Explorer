@@ -118,3 +118,24 @@ export const LOCAL_EXPAND_NUDGE =
 /** Used when the reply has almost no rendered math. */
 export const LOCAL_MORE_FORMULAS_NUDGE =
   "Add more formulas. Rewrite/expand with at least several $...$ / $$...$$ equations, explain each symbol, and walk through the reasoning in more detail while streaming the visible answer.";
+
+/**
+ * English Local nudge — thinking-off only, NO AP formula / science-worksheet pressure.
+ * Passed as a complete() override so English tasks are not polluted by LOCAL_DEPTH_NUDGE.
+ */
+export const LOCAL_ENGLISH_NUDGE = `Thinking mode is OFF. Write the visible English answer immediately — do not open <think> or <thinking> tags.
+
+This is English learning (grammar / translation / writing / language materials / exam strategy / practice) — NOT AP science.
+- Do NOT invent physics formulas, science worksheets, or $...$ math dumps.
+- Speak clearly sentence by sentence.
+- Translator: just translate. Coaching modes: concrete language feedback with examples.
+- Stay useful and concrete; avoid empty praise.`;
+
+export const LOCAL_ENGLISH_RETRY_NUDGE =
+  "Retry: start the English answer NOW. Zero <think> tags. No fake math formulas. Translate or coach in clear language — not an AP science worksheet.";
+
+export function localNudgeForEnglish(modelId: string): string {
+  // Thinking-off still applies for Qwen; English skips the AP depth/formula stack.
+  if (shouldDisableThinking(modelId)) return LOCAL_ENGLISH_NUDGE;
+  return `Reply in markdown for English learning. Do not invent physics formulas.\n\n${LOCAL_ENGLISH_NUDGE}`;
+}
