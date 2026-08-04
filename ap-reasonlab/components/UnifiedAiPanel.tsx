@@ -531,7 +531,8 @@ export default function UnifiedAiPanel({
           SITE_GUIDE_LOCAL,
           userText,
           history,
-          onToken
+          onToken,
+          { sitePrefer: "language" }
         );
         return {
           id: `a-${Date.now()}`,
@@ -861,14 +862,19 @@ export default function UnifiedAiPanel({
         code,
         streamLocal
           ? (_token, fullText) => {
-              // Paint each streamed chunk immediately (speak-as-you-go), not after the full reply.
+              // Paint each streamed chunk immediately; peel ## Equations into cards as they arrive.
+              const live =
+                category === "ap"
+                  ? splitAiReplyEquations(fullText)
+                  : { prose: fullText, equations: [] as AiEquation[] };
               flushSync(() => {
                 setMessages((prev) =>
                   prev.map((message) =>
                     message.id === draftId
                       ? {
                           ...message,
-                          text: fullText,
+                          text: live.prose,
+                          equations: live.equations.length ? live.equations : undefined,
                           meta: `${taskMeta.label} · Local · speaking…`,
                         }
                       : message
@@ -1110,7 +1116,7 @@ export default function UnifiedAiPanel({
                     <p className="whitespace-pre-wrap break-words">{message.text}</p>
                   ) : (
                     <div className="space-y-3">
-                      {!isStreamingReply && message.equations?.length ? (
+                      {message.equations?.length ? (
                         <AiEquationCards equations={message.equations} />
                       ) : null}
                       <RichContent

@@ -287,29 +287,67 @@ export function normalizeEquationItems(items: unknown): AiEquation[] {
 }
 
 /**
- * Pull ## Equations from a Local markdown reply into structured cards.
- * Prose is returned without that section so the bubble does not show raw TeX lines.
+ * Pull ## Equations / ## Key formulas from a Local markdown reply into structured cards.
+ * Line-based (not regex `\Z`) so a trailing Equations section at EOF still parses in JS.
+ * Prose is returned without those sections so the bubble does not show raw TeX lines.
  */
 export function splitAiReplyEquations(markdown: string): {
   prose: string;
   equations: AiEquation[];
 } {
   const text = String(markdown ?? "");
-  const sectionRe = /^##\s*(?:Equations?|Key formulas?)\s*\r?\n([\s\S]*?)(?=^##\s+|\Z)/gim;
+  if (!text.trim()) return { prose: text, equations: [] };
+
+  const eqHeading = /^##\s*(?:Equations?|Key formulas?)\s*$/i;
+  const anyHeading = /^##\s+\S/;
   const collected: string[] = [];
-  let prose = text;
-  let match: RegExpExecArray | null;
-  const re = new RegExp(sectionRe.source, sectionRe.flags);
-  while ((match = re.exec(text)) !== null) {
-    const body = match[1] || "";
-    for (const line of body.split("\n")) {
-      const trimmed = line.trim();
+  const proseLines: string[] = [];
+  let inEquations = false;
+
+  for (const line of text.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (eqHeading.test(trimmed)) {
+      inEquations = true;
+      continue;
+    }
+    if (inEquations && anyHeading.test(trimmed)) {
+      inEquations = false;
+    }
+    if (inEquations) {
       if (trimmed && !/^<!--/.test(trimmed)) collected.push(trimmed);
+    } else {
+      proseLines.push(line);
     }
   }
-  prose = text.replace(sectionRe, "").replace(/\n{3,}/g, "\n\n").trim();
+
   const equations = normalizeEquationItems(collected);
+  const prose = proseLines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
   return { prose, equations };
+}
+
+/** Repair prose $ spans only; keep ## Equations as bare latex pipe lines for card parsing. */
+export function repairAiReplyMath(markdown: string): MathRepairReport {
+  const { prose, equations } = splitAiReplyEquations(markdown);
+  const repairedProse = repairAiMarkdownMath(prose);
+  let fixed = repairedProse.fixed;
+  let stillBroken = repairedProse.stillBroken;
+  const fixedEqs: AiEquation[] = equations.map((eq) => {
+    const result = repairLatexSource(eq.latex.replace(/^\$+|\$+$/g, ""));
+    if (result.repaired) fixed += 1;
+    if (!result.ok) stillBroken += 1;
+    return { ...eq, latex: result.latex };
+  });
+
+  let text = repairedProse.text.trim();
+  if (fixedEqs.length) {
+    const lines = fixedEqs.map((eq) => {
+      const name = eq.name?.trim() || "Equation";
+      const means = eq.means?.trim();
+      return means ? `${name} | ${eq.latex} | ${means}` : `${name} | ${eq.latex}`;
+    });
+    text = `${text}\n\n## Equations\n${lines.join("\n")}`.trim();
+  }
+  return { text, fixed, stillBroken };
 }
 
 /** Fallback markdown list — only used if UI cannot show cards. Prefer AiEquationCards. */
@@ -431,6 +469,34 @@ export function runAiLatexAccuracyFixtures(): string[] {
           equations.length === 1 &&
           equations[0].latex.includes("\\sqrt") &&
           prose.includes("Energy conserves")
+        );
+      },
+    },
+    {
+      name: "split-equations-at-eof",
+      ok: () => {
+        const { prose, equations } = splitAiReplyEquations(
+          "## Hints\nUse energy.\n\n## Equations\nEscape speed | \\sqrt{\\frac{2GM}{R}} | from surface"
+        );
+        return (
+          equations.length === 1 &&
+          equations[0].name === "Escape speed" &&
+          !prose.includes("\\sqrt") &&
+          prose.includes("Use energy")
+        );
+      },
+    },
+    {
+      name: "repair-keeps-equation-pipes",
+      ok: () => {
+        const r = repairAiReplyMath(
+          "Kinetic energy matters.\n\n## Equations\nKE | \\frac12 mv^2 | mass and speed"
+        );
+        const split = splitAiReplyEquations(r.text);
+        return (
+          split.equations.length === 1 &&
+          split.equations[0].latex.includes("\\frac{1}{2}") &&
+          !r.text.includes("$\\frac")
         );
       },
     },

@@ -18,6 +18,7 @@ import {
   type AiEquation,
   mergeFormulaLists,
   splitAiReplyEquations,
+  withFormulaAccuracy,
 } from "@/lib/ai-latex-accuracy";
 
 type Props = {
@@ -86,7 +87,10 @@ export default function ConceptAskAi({
           [
             {
               role: "system",
-              content: conceptExplainLocal(nextMode),
+              content: withFormulaAccuracy(conceptExplainLocal(nextMode), defaultSubject, {
+                compact: true,
+                maxPackItems: 4,
+              }),
             },
             {
               role: "user",
@@ -94,8 +98,17 @@ export default function ConceptAskAi({
             },
           ],
           (_token, fullText) => {
+            const live = splitAiReplyEquations(fullText);
             flushSync(() => {
-              setResult((prev) => (prev ? { ...prev, reply: fullText } : prev));
+              setResult((prev) =>
+                prev
+                  ? {
+                      ...prev,
+                      reply: live.prose,
+                      equations: live.equations.length ? live.equations : undefined,
+                    }
+                  : prev
+              );
             });
           }
         );
@@ -230,7 +243,7 @@ export default function ConceptAskAi({
       {error && <p className="text-sm text-red-600">{error}</p>}
       {result && (
         <div className={`rounded-xl border p-4 ${result.refused ? "border-amber-200 bg-amber-50" : "border-slate-200"}`}>
-          {!loading && result.equations?.length ? (
+          {result.equations?.length ? (
             <div className="mb-3">
               <AiEquationCards equations={result.equations} />
             </div>

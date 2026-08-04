@@ -49,7 +49,7 @@ export function formatAiSiteSearchContext(hits: AiSiteSearchHit[]): string {
     "- Cite the hit title or href when you use them.",
     "- If a hit is off-topic, ignore it.",
     "- Teach with the site content; do not invent conflicting formulas when a hit already has one.",
-    "- When a hit type is [formula], copy its expression into $...$ / $$...$$ (KaTeX-ready) and explain symbols — do not paraphrase into a different equation.",
+    "- When a hit type is [formula], copy its latex into equations[] or ## Equations as Name | latex | meaning (latex has NO $ characters). Do not paraphrase into a different equation.",
     "",
     lines.join("\n\n"),
   ].join("\n");
