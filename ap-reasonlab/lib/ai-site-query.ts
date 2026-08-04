@@ -4,7 +4,7 @@
  */
 
 const BOILERPLATE =
-  /^(?:subject|mode|language|focus|task|target|notes?|latest student message)\s*:/i;
+  /^(?:subject|mode|language|focus|task|target|notes?|latest student message|exam\/?\s*track\s*target|student\s+(?:input|paste)|role|rule)\s*:/i;
 
 /**
  * Prefer the latest student question for retrieval.

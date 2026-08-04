@@ -245,9 +245,13 @@ export default function UnifiedAiPanel({
   const chatRef = useRef<HTMLDivElement>(null);
 
   const taskMeta = useMemo(() => {
-    if (category === "ap") return AP_TASKS.find((t) => t.value === apTask)!;
-    if (category === "english") return ENGLISH_TASKS.find((t) => t.value === englishTask)!;
-    return CODING_TASKS.find((t) => t.value === codingTask)!;
+    if (category === "ap") {
+      return AP_TASKS.find((t) => t.value === apTask) || AP_TASKS[0];
+    }
+    if (category === "english") {
+      return ENGLISH_TASKS.find((t) => t.value === englishTask) || ENGLISH_TASKS[0];
+    }
+    return CODING_TASKS.find((t) => t.value === codingTask) || CODING_TASKS[0];
   }, [apTask, category, codingTask, englishTask]);
 
   useEffect(() => {
@@ -320,7 +324,7 @@ export default function UnifiedAiPanel({
     user: string,
     history: ChatMessage[],
     onToken?: (token: string, fullText: string) => void,
-    completeOptions?: { nudge?: string; retryNudge?: string }
+    completeOptions?: { nudge?: string; retryNudge?: string; sitePrefer?: "formulas" | "language" }
   ) {
     await ensureLocalReady();
     // Search the latest question only — history pollutes keyword retrieval.
@@ -335,10 +339,15 @@ export default function UnifiedAiPanel({
         ? note || (hitCount ? `Using ${hitCount} site hit(s).` : "No site matches.")
         : "Site search off."
     );
+    const sitePrefer = completeOptions?.sitePrefer || "formulas";
+    const siteHint =
+      sitePrefer === "language"
+        ? "When Knowledge Explorer site materials are appended below, prefer useful English language snippets (vocab, phrases, example sentences) and cite the hit titles. Ignore AP science / formula hits. Follow the same English teaching rules as the cloud tutor."
+        : "When Knowledge Explorer site materials are appended below, prefer their formulas/definitions and cite the hit titles. Ignore off-topic hits. Follow the same teaching rules as the cloud teacher for this tool.";
     const chatMessages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
       {
         role: "system",
-        content: `${system}\n\nWhen Knowledge Explorer site materials are appended below, prefer their formulas/definitions and cite the hit titles. Ignore off-topic hits. Follow the same teaching rules as the cloud teacher for this tool.`,
+        content: `${system}\n\n${siteHint}`,
       },
     ];
     // Give Local models enough dialogue context now that hard timeouts are gone.
@@ -352,7 +361,8 @@ export default function UnifiedAiPanel({
       role: "user",
       content: appendAiSiteContext(user, context).slice(0, 12_000),
     });
-    return localAI.complete(chatMessages, onToken, completeOptions);
+    const { sitePrefer: _ignore, ...nudgeOpts } = completeOptions || {};
+    return localAI.complete(chatMessages, onToken, nudgeOpts);
   }
 
   async function askOnce(
@@ -512,7 +522,14 @@ export default function UnifiedAiPanel({
       // Local still gets a light mode label so the model knows which English tool is active.
       const englishUserLocal = `Mode: ${mode}\nExam/track target: ${englishTarget}\nStudent input:\n${userText}`;
       const englishUserCloud = `${historyPrefix}${userText}`;
-      if (localAI.usesLocal) {
+      const wantLocal = localAI.usesLocal && localAI.ready;
+      if (localAI.usesLocal && !localAI.ready) {
+        // Local is selected but not enabled — do not hard-fail English; use Website API this turn.
+        setSiteSearchNote(
+          "Local is selected but not enabled yet — using Website API for this reply. Click Enable Local above to run on-device."
+        );
+      }
+      if (wantLocal) {
         const modelId = localAI.selectedModelId || "";
         const text = await runLocal(
           englishTutorLocal(mode),
@@ -522,6 +539,7 @@ export default function UnifiedAiPanel({
           {
             nudge: localNudgeForEnglish(modelId),
             retryNudge: `${localNudgeForEnglish(modelId)}\n\n${LOCAL_ENGLISH_RETRY_NUDGE}`,
+            sitePrefer: "language",
           }
         );
         return {
@@ -544,18 +562,40 @@ export default function UnifiedAiPanel({
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "English AI failed");
+      const cloudMeta =
+        data.note ||
+        (localAI.usesLocal && !localAI.ready
+          ? `${taskMeta.label} · Website API (Local not enabled)`
+          : taskMeta.label);
       if (mode === "translator") {
-        const translation = String(data.revisionExample || "").trim();
-        const direction = String(data.feedback || "").trim();
-        const body = [
-          direction ? `**${direction}**` : "**Translation**",
-          translation || "(No translation returned.)",
-        ].join("\n\n");
+        const rawFeedback = String(data.feedback || data.raw || "").trim();
+        let translation = String(data.revisionExample || "").trim();
+        let direction = rawFeedback;
+        // Recover when the model returned markdown / put the translation in feedback.
+        if (!translation) {
+          const fromHeading = rawFeedback.match(
+            /##\s*Translation\s*\n+([\s\S]*?)(?=\n##\s|\n*$)/i
+          );
+          if (fromHeading?.[1]?.trim()) {
+            translation = fromHeading[1].trim();
+            const dirHeading = rawFeedback.match(/##\s*Direction\s*\n+([^\n#]+)/i);
+            direction = dirHeading?.[1]?.trim() || "Translation";
+          } else if (rawFeedback.length > 80 || /[\u4e00-\u9fff]/.test(rawFeedback)) {
+            // Long feedback (or CJK) is probably the translation itself.
+            translation = rawFeedback;
+            direction = "Translation";
+          }
+        }
+        const directionLine =
+          direction && direction.length < 120 && !direction.includes("\n")
+            ? `**${direction.replace(/\*\*/g, "").trim()}**`
+            : "**Translation**";
+        const body = [directionLine, translation || "(No translation returned.)"].join("\n\n");
         return {
           id: `a-${Date.now()}`,
           role: "assistant",
           text: body,
-          meta: data.note || taskMeta.label,
+          meta: cloudMeta,
           snippet: translation,
           refused: data.refused,
           aiMayBeWrong: data.aiMayBeWrong,
@@ -565,12 +605,13 @@ export default function UnifiedAiPanel({
         { label: "Strengths", items: data.strengths || [] },
         { label: "Priorities", items: data.priorities || [] },
       ];
+      const feedbackBody = String(data.feedback || data.raw || "").trim();
       const snippet = [data.revisionExample, data.practicePrompt].filter(Boolean).join("\n\n");
       return {
         id: `a-${Date.now()}`,
         role: "assistant",
         text: formatAssistantText({
-          body: data.feedback || "",
+          body: feedbackBody,
           lists,
           snippet: data.revisionExample
             ? `**Revised example**\n${data.revisionExample}${
@@ -580,7 +621,7 @@ export default function UnifiedAiPanel({
               ? `**Next practice**\n${data.practicePrompt}`
               : "",
         }),
-        meta: data.note || taskMeta.label,
+        meta: cloudMeta,
         lists,
         snippet,
         refused: data.refused,
@@ -682,7 +723,9 @@ export default function UnifiedAiPanel({
     setError("");
 
     const draftId = `a-${Date.now()}`;
-    const streamLocal = localAI.usesLocal;
+    // Only stream when Local is actually ready — otherwise English (and others) may
+    // fall through to Website API while usesLocal is still true.
+    const streamLocal = localAI.usesLocal && localAI.ready;
     if (streamLocal) {
       setMessages((prev) => [
         ...prev,
