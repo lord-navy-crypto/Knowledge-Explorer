@@ -6,6 +6,7 @@ import Link from "next/link";
 import EthicsBanner from "@/components/EthicsBanner";
 import LocalAIControls from "@/components/LocalAIControls";
 import VoiceInputButton from "@/components/VoiceInputButton";
+import AiEquationCards from "@/components/AiEquationCards";
 import RichContent from "@/components/RichContent";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
 import { toolboxHref } from "@/lib/ai-toolbox-url";
@@ -13,6 +14,11 @@ import { stashToolboxPrefill } from "@/lib/ai-toolbox-prefill";
 import { useLocalAI } from "@/components/LocalAIProvider";
 import { conceptExplainLocal } from "@/lib/ai-prompts";
 import { appendAiSiteContext, fetchAiSiteContext, AI_SITE_SEARCH_LIMIT_LOCAL, AI_SITE_SEARCH_LOCAL_DEADLINE_MS } from "@/lib/ai-site-context";
+import {
+  type AiEquation,
+  mergeFormulaLists,
+  splitAiReplyEquations,
+} from "@/lib/ai-latex-accuracy";
 
 type Props = {
   defaultSubject?: string;
@@ -35,6 +41,7 @@ export default function ConceptAskAi({
   const [result, setResult] = useState<{
     refused: boolean;
     reply: string;
+    equations?: AiEquation[];
     quizPrompt: string;
     aiMayBeWrong: string;
     note: string;
@@ -92,9 +99,11 @@ export default function ConceptAskAi({
             });
           }
         );
+        const split = splitAiReplyEquations(text);
         setResult({
           refused: false,
-          reply: text,
+          reply: split.prose,
+          equations: split.equations.length ? split.equations : undefined,
           quizPrompt: "",
           aiMayBeWrong: "Local AI may be wrong — verify with your notes.",
           note: context ? "Local · with Knowledge Explorer site search" : "Local · processed in this browser",
@@ -120,7 +129,15 @@ export default function ConceptAskAi({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "AI request failed");
-      setResult(data);
+      const formulaBlock = mergeFormulaLists(data.formulas, data.equations);
+      setResult({
+        refused: Boolean(data.refused),
+        reply: String(data.reply || ""),
+        equations: formulaBlock.equations.length ? formulaBlock.equations : undefined,
+        quizPrompt: String(data.quizPrompt || ""),
+        aiMayBeWrong: String(data.aiMayBeWrong || ""),
+        note: String(data.note || ""),
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -213,6 +230,11 @@ export default function ConceptAskAi({
       {error && <p className="text-sm text-red-600">{error}</p>}
       {result && (
         <div className={`rounded-xl border p-4 ${result.refused ? "border-amber-200 bg-amber-50" : "border-slate-200"}`}>
+          {!loading && result.equations?.length ? (
+            <div className="mb-3">
+              <AiEquationCards equations={result.equations} />
+            </div>
+          ) : null}
           <RichContent className="text-sm text-slate-800" streaming={loading}>
             {result.reply}
           </RichContent>

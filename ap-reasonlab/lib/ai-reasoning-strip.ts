@@ -94,18 +94,23 @@ export function localReplyLooksThin(text: string): boolean {
   return false;
 }
 
-/** True when an AP/science reply has almost no dollar-math. */
+/** True when an AP/science reply has almost no structured equations. */
 export function localReplyNeedsMoreFormulas(text: string): boolean {
   const t = text.trim();
   // Densify only when there is essentially no math — prefer validate/repair over rewrite.
   if (t.length < 160 || t.length >= 900) return false;
-  const dollars = (t.match(/\$/g) || []).length;
-  return dollars < 1;
+  if (/^##\s*Equations?/im.test(t)) {
+    // Section present — still densify if it has no pipe/latex lines yet.
+    const body = t.split(/^##\s*Equations?\s*$/im)[1] || "";
+    const next = body.split(/^##\s+/m)[0] || body;
+    return !/\|/.test(next) && (next.match(/\\[a-zA-Z]+/g) || []).length < 1;
+  }
+  return true;
 }
 
 /** Used when the reply has almost no rendered math. Prefer quoting pack/site formulas over inventing. */
 export const LOCAL_MORE_FORMULAS_NUDGE =
-  "Add KaTeX-ready equations. Keep your teaching text. Insert an ## Equations section with 2–4 lines as Name: $latex$ — symbol meanings. Prefer formulas from any site materials / formula pack already in the prompt. Do not rewrite the whole answer shorter. Do not invent conflicting physics.";
+  "Add KaTeX-ready equations. Keep your teaching text. Insert an ## Equations section with 2–4 lines as: Name | latex | symbol meanings (latex has NO $ characters). Prefer formulas from any site materials / formula pack already in the prompt. Do not rewrite the whole answer shorter. Do not invent conflicting physics. Never emit $...$ or $$$.";
 
 
 export function localNudgeForModel(modelId: string): string {
@@ -127,11 +132,11 @@ export const REASONING_MODEL_DIRECT_ANSWER =
 
 /** Soft nudge when thinking mode does not apply — keep formulas visible. */
 export const LOCAL_MARKDOWN_NUDGE =
-  "Reply in markdown. Wrap EVERY formula in $...$ or $$...$$ so students see equations (never bare \\frac / \\sqrt, never formula code fences).";
+  "Reply in markdown. Put every important formula under ## Equations as lines Name | latex | meaning (latex has NO $). Prose stays plain English — never $...$, $$...$$, or $$$, and never bare \\frac in paragraphs.";
 
 /** Nudge paired with thinking-off (sole Local restriction). */
 export const LOCAL_DIRECT_ANSWER_NUDGE =
-  "Thinking mode is OFF. Write the visible answer immediately — do not open <think> or <thinking> tags. Wrap EVERY formula in $...$ or $$...$$ (never bare TeX, never formula code fences).";
+  "Thinking mode is OFF. Write the visible answer immediately — do not open <think> or <thinking> tags. Put key formulas under ## Equations as Name | latex | meaning (NO $ in latex). Prose has no $...$ / $$$.";
 
 /** Push Local models to speak more, use more formulas, and explain in detail. */
 export const LOCAL_DEPTH_NUDGE = `Speak as you go: write useful teaching text sentence by sentence right away. Do not silently plan a short answer first.
@@ -142,8 +147,8 @@ Length & detail:
 - Explain WHY each step works, not only what to do.
 
 Formulas (required when the topic is math/science/AP):
-- Include SEVERAL formulas, each wrapped in $...$ or $$...$$ (never bare TeX, never formula code fences).
-- After each important formula, explain what every symbol means and when to use it.
+- Include a ## Equations section with SEVERAL lines: Name | latex | symbol meanings (latex has NO $ characters).
+- Do not wrap formulas in $...$ / $$...$$ in prose — the UI renders equation cards.
 - Show at least one worked PARTIAL example with numbers/units when possible.
 
 Put ALL of this in the visible streamed reply. Do not stop after one short paragraph.`;
@@ -161,7 +166,7 @@ export const LOCAL_QUALITY_NUDGE = `Power & quality (stay stable):
 - Keep ethics: do not finish graded numeric finals; leave the last algebra to the student when required.`;
 
 export const LOCAL_TINY_POWER_HINT =
-  "Small model mode: still give a full teaching reply with clear sections and at least a few $...$ formulas — short stubs are not enough. Stay concrete; skip long digressions.";
+  "Small model mode: still give a full teaching reply with clear sections and a ## Equations block (Name | latex | meaning) — short stubs are not enough. Stay concrete; skip long digressions.";
 
 export const LOCAL_MID_POWER_HINT =
   "Mid model mode: aim for a rich worksheet-style answer — multiple formulas with symbol meanings, a partial numeric example, one common mistake, and a clear student finish step.";
@@ -171,11 +176,11 @@ export const LOCAL_HEAVY_POWER_HINT =
 
 /** Used when the first Local pass is blank (thinking leftovers). */
 export const LOCAL_RETRY_NO_THINK_NUDGE =
-  "Retry: start speaking a LONG teaching answer NOW, sentence by sentence. Zero <think> tags. Include several $...$ formulas with symbol meanings, detailed steps, and a partial example — not a one-liner.";
+  "Retry: start speaking a LONG teaching answer NOW, sentence by sentence. Zero <think> tags. Include ## Equations with several Name | latex | meaning lines, detailed steps, and a partial example — not a one-liner. No $...$.";
 
 /** Used when the first Local pass is too thin. */
 export const LOCAL_EXPAND_NUDGE =
-  "Your draft was too short or too light. Continue with a much longer teaching answer: more headings/bullets, MORE formulas in $...$ (with symbol meanings), detailed step-by-step explanation, a partial worked example, one common mistake, and what the student should do next. Do not restart from zero — expand.";
+  "Your draft was too short or too light. Continue with a much longer teaching answer: more headings/bullets, a fuller ## Equations section (Name | latex | meaning, NO $), detailed step-by-step explanation, a partial worked example, one common mistake, and what the student should do next. Do not restart from zero — expand.";
 
 /** Used when WebLLM stopped early because the context window / max_tokens filled. */
 export const LOCAL_CONTINUE_NUDGE =
