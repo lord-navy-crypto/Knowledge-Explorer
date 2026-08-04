@@ -213,7 +213,9 @@ export default function ConceptAskAi({
       {error && <p className="text-sm text-red-600">{error}</p>}
       {result && (
         <div className={`rounded-xl border p-4 ${result.refused ? "border-amber-200 bg-amber-50" : "border-slate-200"}`}>
-          <RichContent className="text-sm text-slate-800">{result.reply}</RichContent>
+          <RichContent className="text-sm text-slate-800" streaming={loading}>
+            {result.reply}
+          </RichContent>
           {result.quizPrompt ? (
             <p className="mt-3 text-sm text-slate-700">
               <strong>Quiz:</strong> {result.quizPrompt}
