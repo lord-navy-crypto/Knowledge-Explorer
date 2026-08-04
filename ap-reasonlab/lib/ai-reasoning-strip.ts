@@ -85,6 +85,8 @@ export function isTinyLocalModel(modelId: string): boolean {
 /** Soft quality score for thin-reply expansion (AP / general Local). */
 export function localReplyLooksThin(text: string): boolean {
   const t = text.trim();
+  // Do not treat a long cut-off draft as "thin" — continue instead of rewrite.
+  if (t.length >= 700) return false;
   if (!t || t.length < 280) return true;
   const headings = (t.match(/^#{1,3}\s+\S+/gm) || []).length;
   const bullets = (t.match(/^\s*[-*+]\s+\S+/gm) || []).length;
@@ -95,7 +97,8 @@ export function localReplyLooksThin(text: string): boolean {
 /** True when an AP/science reply has almost no dollar-math. */
 export function localReplyNeedsMoreFormulas(text: string): boolean {
   const t = text.trim();
-  if (t.length < 120) return false;
+  // Skip densify on already-long replies (re-runs often re-hit the context wall).
+  if (t.length < 120 || t.length >= 1200) return false;
   const dollars = (t.match(/\$/g) || []).length;
   return dollars < 2;
 }
@@ -172,6 +175,10 @@ export const LOCAL_EXPAND_NUDGE =
 /** Used when the reply has almost no rendered math. */
 export const LOCAL_MORE_FORMULAS_NUDGE =
   "Add more formulas. Rewrite/expand with at least several $...$ / $$...$$ equations, explain each symbol, and walk through the reasoning in more detail while streaming the visible answer.";
+
+/** Used when WebLLM stopped early because the context window / max_tokens filled. */
+export const LOCAL_CONTINUE_NUDGE =
+  "Your previous reply was cut off mid-answer by the model context window. Continue EXACTLY from the last incomplete sentence or heading. Do NOT restart. Do NOT repeat earlier sections. Finish the remaining teaching content now.";
 
 /**
  * English Local nudge — thinking-off only, NO AP formula / science-worksheet pressure.

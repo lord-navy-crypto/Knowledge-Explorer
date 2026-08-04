@@ -348,23 +348,23 @@ export default function UnifiedAiPanel({
         content: `${system}\n\n${siteHint}`,
       },
     ];
-    // Give Local models enough dialogue context now that hard timeouts are gone.
-    // Heavier models can use a bit more history for stronger follow-ups.
-    const historyWindow = /(?:^|[^0-9.])([789])B(?:-|$)/i.test(localAI.selectedModelId || "")
-      ? 8
-      : 6;
-    const turnCap = /(?:^|[^0-9.])([789])B(?:-|$)/i.test(localAI.selectedModelId || "")
-      ? 3200
-      : 2500;
+    // Keep Local prompts lean — WebLLM context is ~4096 tokens; fat history/site
+    // context is the main reason answers stop mid-sentence (finish_reason=length).
+    const historyWindow = 4;
+    const turnCap = 1000;
     for (const message of history.slice(-historyWindow)) {
       chatMessages.push({
         role: message.role === "user" ? "user" : "assistant",
         content: message.text.slice(0, turnCap),
       });
     }
+    const leanSiteContext =
+      context.length > 3200
+        ? `${context.slice(0, 3000)}\n\n[Site materials trimmed so Local AI has room to finish the answer.]`
+        : context;
     chatMessages.push({
       role: "user",
-      content: appendAiSiteContext(user, context).slice(0, 12_000),
+      content: appendAiSiteContext(user, leanSiteContext).slice(0, 5500),
     });
     const { sitePrefer: _ignore, ...nudgeOpts } = completeOptions || {};
     return localAI.complete(chatMessages, onToken, nudgeOpts);

@@ -18,6 +18,7 @@ import type { AiProvider, SiteModelChoice } from "@/lib/ai-site-models";
 import { parseSiteModelChoice } from "@/lib/ai-site-models";
 import {
   isInsideOpenThinkBlock,
+  LOCAL_CONTINUE_NUDGE,
   LOCAL_EXPAND_NUDGE,
   LOCAL_MORE_FORMULAS_NUDGE,
   LOCAL_RETRY_NO_THINK_NUDGE,
@@ -27,10 +28,13 @@ import {
   stripReasoningTrace,
 } from "@/lib/ai-reasoning-strip";
 import {
+  budgetLocalMaxTokens,
   compactLocalMessages,
+  estimateMessagesTokens,
   getLocalGenPolicy,
   isLocalGuidanceReply,
   localFailGuidance,
+  localReplyLooksCutOff,
 } from "@/lib/local-ai-policy";
 import {
   DEFAULT_LOCAL_MODEL_ID,
@@ -515,14 +519,30 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
       setError("");
       setStatusText("Preparing answer…");
 
-      const runAttempt = async (maxTokens: number, nudge: string): Promise<string> => {
+      const runAttempt = async (
+        maxTokens: number,
+        nudge: string,
+        baseMessages: ChatCompletionMessageParam[] = messages
+      ): Promise<{ text: string; finishReason: string | null }> => {
         const prepared = compactLocalMessages(
-          mergeLocalDirectNudge(messages as Array<{ role: string; content: string }>, nudge)
+          mergeLocalDirectNudge(baseMessages as Array<{ role: string; content: string }>, nudge)
         ) as ChatCompletionMessageParam[];
+        const promptTokens = estimateMessagesTokens(
+          prepared.map((m) => ({
+            role: m.role,
+            content: typeof m.content === "string" ? m.content : JSON.stringify(m.content ?? ""),
+          }))
+        );
+        const cappedMax = budgetLocalMaxTokens(promptTokens, maxTokens);
 
         let raw = "";
         let sawToken = false;
-        setStatusText("Writing answer…");
+        let finishReason: string | null = null;
+        setStatusText(
+          cappedMax < maxTokens
+            ? `Writing answer… (keeping room in the ${4096}-token Local context)`
+            : "Writing answer…"
+        );
         const heartbeatId = window.setInterval(() => {
           if (!sawToken) {
             setStatusText("Still preparing Local answer… (small/medium models can take a moment)");
@@ -537,36 +557,45 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
             top_p: policy.topP,
             frequency_penalty: policy.frequencyPenalty,
             repetition_penalty: policy.repetitionPenalty,
-            max_tokens: maxTokens,
+            max_tokens: cappedMax,
             // Sole Local restriction: thinking mode off when supported.
             ...(policy.disableThinking ? { extra_body: { enable_thinking: false } } : {}),
           });
 
           for await (const chunk of stream) {
-            const token = chunk.choices[0]?.delta?.content ?? "";
+            const choice = chunk.choices[0];
+            const token = choice?.delta?.content ?? "";
+            if (choice?.finish_reason) finishReason = String(choice.finish_reason);
             if (token) sawToken = true;
             raw += token;
             const visible = stripReasoningTrace(raw, { trim: false });
             if (isInsideOpenThinkBlock(raw) && !visible.trim()) {
               setStatusText("Model opened a think block — keeping the visible teaching reply…");
             } else if (visible.trim()) {
-              setStatusText("Speaking answer… (streaming live)");
+              setStatusText(
+                finishReason === "length"
+                  ? "Context filled — finishing this chunk…"
+                  : "Speaking answer… (streaming live)"
+              );
             }
             // Stream every visible update immediately so students see each sentence as it arrives.
             onToken?.(token, visible);
           }
 
           const text = stripReasoningTrace(raw);
-          if (text) {
-            setStatusText("Local AI is ready on this device.");
-            return text;
-          }
-          return "";
+          return { text, finishReason };
         } catch (caught) {
           const message = caught instanceof Error ? caught.message : String(caught);
           if (/interrupt|abort|cancel/i.test(message)) {
             const partial = stripReasoningTrace(raw);
-            return partial || localFailGuidance(modelId);
+            return { text: partial || localFailGuidance(modelId), finishReason: "interrupt" };
+          }
+          // Context overflow on the prompt itself — compact harder and surface guidance.
+          if (/context.?window|exceed|kv.?cache|too long/i.test(message)) {
+            return {
+              text: `${localFailGuidance(modelId)}\n\n_(Prompt was too large for the Local context window. Start a New chat or shorten the paste.)_`,
+              finishReason: "length",
+            };
           }
           throw caught;
         } finally {
@@ -576,7 +605,7 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
 
       try {
         // One pass with thinking off — no generation time limit; wait for the stream to end.
-        let result = await runAttempt(policy.maxTokens, baseNudge);
+        let { text: result, finishReason } = await runAttempt(policy.maxTokens, baseNudge);
         const customNudge = Boolean(options?.nudge?.trim());
         // English / special overrides pass custom nudges — do not force AP expand/formula passes.
         const allowQualityPasses = !customNudge;
@@ -589,10 +618,52 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
             (policy.disableThinking
               ? `${baseNudge}\n\n${LOCAL_RETRY_NO_THINK_NUDGE}`
               : `${baseNudge}\n\n${LOCAL_EXPAND_NUDGE}`);
-          result = (await runAttempt(policy.maxTokens, retryNudge)) || localFailGuidance(modelId);
+          const retry = await runAttempt(policy.maxTokens, retryNudge);
+          result = retry.text || localFailGuidance(modelId);
+          finishReason = retry.finishReason;
         }
 
-        // Thin stub → one expand pass (AP/default Local only). Keeps power up without loops.
+        // Context/max_tokens cut mid-answer → continue from the partial (do not restart).
+        const needsContinue =
+          result.trim().length > 80 &&
+          !isLocalGuidanceReply(result) &&
+          (finishReason === "length" || localReplyLooksCutOff(result));
+        if (needsContinue) {
+          setStatusText("Continuing Local answer (was cut by the context window)…");
+          const continueMessages: ChatCompletionMessageParam[] = [
+            ...(messages as ChatCompletionMessageParam[]),
+            { role: "assistant", content: result },
+            {
+              role: "user",
+              content:
+                "Continue exactly where you stopped. Do not restart. Do not repeat earlier sections. Finish the remaining answer now.",
+            },
+          ];
+          const continued = await runAttempt(
+            policy.maxTokens,
+            `${baseNudge}\n\n${LOCAL_CONTINUE_NUDGE}`,
+            continueMessages
+          );
+          if (continued.text.trim()) {
+            // Append continuation; avoid duplicating if the model repeated the tail.
+            const tail = result.slice(-120);
+            const addition = continued.text.startsWith(tail)
+              ? continued.text.slice(tail.length)
+              : continued.text.startsWith(result.slice(0, 80))
+                ? ""
+                : continued.text;
+            if (addition.trim()) {
+              result = `${result.trim()}\n\n${addition.trim()}`;
+              onToken?.("", result);
+            } else if (continued.text.trim().length > result.trim().length) {
+              result = continued.text;
+              onToken?.("", result);
+            }
+            finishReason = continued.finishReason;
+          }
+        }
+
+        // Thin stub → one expand pass (AP/default Local only). Skip if we just continued a long cut-off.
         if (
           allowQualityPasses &&
           result.trim() &&
@@ -604,12 +675,18 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
             policy.maxTokens,
             `${baseNudge}\n\n${LOCAL_EXPAND_NUDGE}`
           );
-          if (expanded.trim() && expanded.trim().length > result.trim().length) {
-            result = expanded;
+          if (
+            expanded.text.trim() &&
+            expanded.text.trim().length > result.trim().length &&
+            expanded.finishReason !== "length"
+          ) {
+            result = expanded.text;
+            finishReason = expanded.finishReason;
           }
         }
 
-        // Almost no math on a long-ish AP reply → one formula densify pass.
+        // Almost no math on a short AP reply → one formula densify pass.
+        // Never replace a long good answer with a shorter truncated rewrite.
         if (
           allowQualityPasses &&
           result.trim() &&
@@ -621,8 +698,13 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
             policy.maxTokens,
             `${baseNudge}\n\n${LOCAL_MORE_FORMULAS_NUDGE}`
           );
-          if (withMath.trim() && (withMath.match(/\$/g) || []).length > (result.match(/\$/g) || []).length) {
-            result = withMath;
+          const mathText = withMath.text.trim();
+          const moreDollars =
+            (mathText.match(/\$/g) || []).length > (result.match(/\$/g) || []).length;
+          const notShorter = mathText.length >= result.trim().length * 0.9;
+          if (mathText && moreDollars && notShorter && withMath.finishReason !== "length") {
+            result = withMath.text;
+            finishReason = withMath.finishReason;
           }
         }
 
@@ -630,7 +712,11 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
           result = localFailGuidance(modelId);
         }
         if (!isLocalGuidanceReply(result)) {
-          setStatusText("Local AI is ready on this device.");
+          setStatusText(
+            finishReason === "length"
+              ? "Local AI stopped at the context limit — open New chat for longer follow-ups."
+              : "Local AI is ready on this device."
+          );
         }
         return result;
       } catch (caught) {

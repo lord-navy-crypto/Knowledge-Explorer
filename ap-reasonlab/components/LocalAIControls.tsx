@@ -221,7 +221,9 @@ export default function LocalAIControls({ embedded = false }: Props) {
                 Local keeps only <strong>thinking mode off</strong>. There is{" "}
                 <strong>no generation time limit</strong> — answers stream live and may be long.
                 Sampling is tuned by model size for stronger teaching while staying stable. Prefer
-                Starter/Light on weak GPUs; Heavy needs a strong GPU.
+                Starter/Light on weak GPUs; Heavy needs a strong GPU. If an answer stops mid-sentence,
+                Local hit the ~4096-token context wall — use <strong>New chat</strong> or a shorter
+                paste so more room remains for the reply.
               </p>
             </div>
           )}
