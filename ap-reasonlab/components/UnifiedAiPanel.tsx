@@ -521,12 +521,13 @@ export default function UnifiedAiPanel({
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Hint request failed");
-      const formulaBlock = mergeFormulaLists(data.keyFormulas, data.equations);
+      const formulaBlock = mergeFormulaLists([], data.equations);
       const hintLift = scrubListDollars(data.hints || []);
       const knownLift = scrubListDollars(data.knownsUnknowns || []);
       const checkLift = scrubListDollars(data.checkpoints || []);
       const processLift = scrubListDollars(data.processOutline || []);
       const partialLift = scrubListDollars(data.workedPartial || []);
+      // Do not merge scrubbed keyFormulas into cards — those are often English prose.
       const lists = [
         { label: "Hints", items: hintLift.items },
         { label: "Knowns / unknowns", items: knownLift.items },
@@ -563,12 +564,9 @@ export default function UnifiedAiPanel({
           onToken,
           { sitePrefer: "language" }
         );
-        return {
-          id: `a-${Date.now()}`,
-          role: "assistant",
-          text,
+        return finalizeLocalApMessage(text, {
           meta: "Site guide · Local",
-        };
+        });
       }
       const response = await fetch("/api/ai/guide", {
         method: "POST",
