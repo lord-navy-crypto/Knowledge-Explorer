@@ -7,7 +7,7 @@ import {
 } from "@/lib/ai-client";
 import { HINT_PROCESS_SYSTEM } from "@/lib/ai-prompts";
 import { appendAiSiteContext, buildServerAiSiteContext } from "@/lib/ai-site-context-server";
-import { normalizeEquationItems, withFormulaAccuracy } from "@/lib/ai-latex-accuracy";
+import { extractDollarMathToEquations, normalizeEquationItems, withFormulaAccuracy, type AiEquation } from "@/lib/ai-latex-accuracy";
 
 function mockHints(question: string, subject: string) {
   return {
@@ -84,14 +84,39 @@ Return JSON with hints, equations, keyFormulas, knownsUnknowns, checkpoints, pro
 
       const data = result.data;
       const equations = normalizeEquationItems(data.equations).slice(0, 8);
+      const liftList = (items: string[]) => {
+        const out: string[] = [];
+        const extra: AiEquation[] = [];
+        for (const item of items) {
+          const lifted = extractDollarMathToEquations(item);
+          if (lifted.prose.trim()) out.push(lifted.prose.trim());
+          extra.push(...lifted.equations);
+        }
+        return { out, extra };
+      };
+      const hints = liftList(asStringList(data.hints).slice(0, 6));
+      const knowns = liftList(asStringList(data.knownsUnknowns).slice(0, 10));
+      const checks = liftList(asStringList(data.checkpoints).slice(0, 8));
+      const process = liftList(asStringList(data.processOutline).slice(0, 8));
+      const partial = liftList(asStringList(data.workedPartial).slice(0, 6));
+      const keyFormulas = liftList(asStringList(data.keyFormulas).slice(0, 8));
+      const allEq = normalizeEquationItems([
+        ...equations,
+        ...hints.extra,
+        ...knowns.extra,
+        ...checks.extra,
+        ...process.extra,
+        ...partial.extra,
+        ...keyFormulas.extra,
+      ]).slice(0, 12);
       return NextResponse.json({
-        hints: asStringList(data.hints).slice(0, 6),
-        equations,
-        keyFormulas: asStringList(data.keyFormulas).slice(0, 8),
-        knownsUnknowns: asStringList(data.knownsUnknowns).slice(0, 10),
-        checkpoints: asStringList(data.checkpoints).slice(0, 8),
-        processOutline: asStringList(data.processOutline).slice(0, 8),
-        workedPartial: asStringList(data.workedPartial).slice(0, 6),
+        hints: hints.out,
+        equations: allEq,
+        keyFormulas: keyFormulas.out,
+        knownsUnknowns: knowns.out,
+        checkpoints: checks.out,
+        processOutline: process.out,
+        workedPartial: partial.out,
         aiMayBeWrong:
           String(data.aiMayBeWrong || "").trim() ||
           "AI may make mistakes. Verify with your textbook or teacher.",

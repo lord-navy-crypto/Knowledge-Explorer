@@ -753,6 +753,41 @@ export function normalizeAuthoredText(input: string): string {
 }
 
 /**
+ * AI dialogue bubbles: do NOT invent new $…$ around bare TeX (cards own formulas).
+ * Still cleans delimiter salad and MathJax delimiters if a model sneaks them in.
+ */
+export function normalizeAiDialogueText(input: string): string {
+  let value = String(input ?? "")
+    .replace(/\r\n?/g, "\n")
+    .replace(/\u0000/g, "")
+    .replace(/\u00a0/g, " ")
+    .normalize("NFC");
+
+  const suspicious = /Ã.|Â.|â.|ðŸ|[åæç][\u0080-\u00ff]/.test(value);
+  if (suspicious && [...value].every((character) => character.charCodeAt(0) <= 255)) {
+    try {
+      const bytes = Uint8Array.from([...value], (character) => character.charCodeAt(0));
+      const repaired = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+      const noise = (text: string) => (text.match(/Ã.|Â.|â.|ðŸ|�/g) || []).length;
+      if (noise(repaired) < noise(value)) value = repaired;
+    } catch {
+      // Preserve the original when the bytes cannot be recovered safely.
+    }
+  }
+
+  value = sanitizeMathDelimiterSalad(value);
+  const currency = protectCurrencyDollars(value);
+  value = currency.text;
+  value = value
+    .replace(/\\\[([\s\S]*?)\\\]/g, (_match, math: string) => `\n$$\n${math.trim()}\n$$\n`)
+    .replace(/\\\(([^\n]*?)\\\)/g, (_match, math: string) => `$${math.trim()}$`);
+  value = sanitizeMathDelimiterSalad(value);
+  value = balanceMathDelimitersRaw(value);
+  value = sanitizeMathDelimiterSalad(value);
+  return currency.restore(value);
+}
+
+/**
  * Close unfinished $ / $$ while AI streams so remark-math does not swallow the
  * rest of the reply (which looks like “LaTeX disappeared”).
  * Currency `$5` is protected so it does not count as an odd math delimiter.

@@ -235,60 +235,123 @@ export function repairAiMarkdownMath(markdown: string): MathRepairReport {
   return { text: restored, fixed, stillBroken };
 }
 
+/** True for Local/cloud equation section headings models commonly emit. */
+export function isAiEquationsHeading(line: string): boolean {
+  const t = String(line ?? "").trim();
+  // ## Equations / ### Key formulas / ## Equations: / ## Equations ✨
+  return /^#{1,3}\s*(?:Equations?|Key\s*formulas?)\b/i.test(t);
+}
+
+function latexFromObject(obj: Record<string, unknown>): string {
+  return String(
+    obj.latex || obj.expression || obj.tex || obj.formula || obj.equation || obj.math || ""
+  ).trim();
+}
+
+function pushUniqueEquation(out: AiEquation[], eq: AiEquation, limit = 12) {
+  if (!eq.latex || out.length >= limit) return;
+  if (out.some((e) => e.latex === eq.latex)) return;
+  out.push(eq);
+}
+
+/** Unwrap ```math / ```latex fences; skip fence markers as fake cards. */
+export function unwrapEquationBodyLines(rawLines: string[]): string[] {
+  const out: string[] = [];
+  let inFence = false;
+  const fenceBuf: string[] = [];
+  for (const line of rawLines) {
+    const trimmed = line.trim();
+    if (/^```/.test(trimmed)) {
+      if (inFence) {
+        const body = fenceBuf.join("\n").trim();
+        fenceBuf.length = 0;
+        inFence = false;
+        if (body) out.push(body);
+      } else {
+        inFence = true;
+      }
+      continue;
+    }
+    if (inFence) {
+      fenceBuf.push(line);
+      continue;
+    }
+    if (trimmed && !/^<!--/.test(trimmed)) out.push(trimmed);
+  }
+  if (fenceBuf.length) {
+    const body = fenceBuf.join("\n").trim();
+    if (body) out.push(body);
+  }
+  return out;
+}
+
+function normalizeOneEquationItem(raw: unknown, out: AiEquation[]) {
+  if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+    const obj = raw as Record<string, unknown>;
+    const latex = latexFromObject(obj);
+    if (!latex) return;
+    const repaired = repairLatexSource(latex.replace(/^\$+|\$+$/g, ""));
+    const meansRaw = obj.means ?? obj.meaning ?? obj.when;
+    pushUniqueEquation(out, {
+      name: obj.name ? String(obj.name) : undefined,
+      latex: repaired.latex,
+      means: meansRaw != null && String(meansRaw).trim() ? String(meansRaw).trim() : undefined,
+    });
+    return;
+  }
+  const line0 = String(raw ?? "").trim().replace(/^[-*•]\s+/, "");
+  if (!line0 || /^```/.test(line0)) return;
+  if (line0.startsWith("{") && line0.endsWith("}")) {
+    try {
+      normalizeOneEquationItem(JSON.parse(line0), out);
+      return;
+    } catch {
+      // fall through
+    }
+  }
+  const pipe = line0.split("|").map((p) => p.trim());
+  if (pipe.length >= 2 && !pipe[1].includes("://")) {
+    const repaired = repairLatexSource(pipe[1].replace(/^\$+|\$+$/g, ""));
+    pushUniqueEquation(out, {
+      name: pipe[0] || undefined,
+      latex: repaired.latex,
+      means: pipe[2] || undefined,
+    });
+    return;
+  }
+  const match = line0.match(/^([^:：]+)\s*[:：]\s*(.+?)(?:\s*[—–\-]\s*(.+))?$/);
+  if (match) {
+    const name = match[1].trim();
+    const latexPart = match[2].trim();
+    const means = match[3]?.trim();
+    const dollar = latexPart.match(/\$\$([\s\S]+?)\$\$|\$([^$\n]+?)\$/);
+    const body = dollar ? (dollar[1] || dollar[2] || "").trim() : latexPart.replace(/^\$+|\$+$/g, "");
+    const repaired = repairLatexSource(body);
+    pushUniqueEquation(out, { name, latex: repaired.latex, means });
+    return;
+  }
+  const dollar = line0.match(/\$\$([\s\S]+?)\$\$|\$([^$\n]+?)\$/);
+  const body = dollar ? (dollar[1] || dollar[2] || "").trim() : line0.replace(/^\$+|\$+$/g, "");
+  const repaired = repairLatexSource(body);
+  if (repaired.latex) pushUniqueEquation(out, { latex: repaired.latex });
+}
+
 /** Normalize cloud JSON equation / formula list items into structured units. */
 export function normalizeEquationItems(items: unknown): AiEquation[] {
   if (!Array.isArray(items)) return [];
   const out: AiEquation[] = [];
-  for (const raw of items) {
-    if (raw && typeof raw === "object" && !Array.isArray(raw)) {
-      const obj = raw as Record<string, unknown>;
-      const latex = String(obj.latex || obj.expression || obj.tex || "").trim();
-      if (!latex) continue;
-      const repaired = repairLatexSource(latex.replace(/^\$+|\$+$/g, ""));
-      const meansRaw = obj.means ?? obj.meaning ?? obj.when;
-      out.push({
-        name: obj.name ? String(obj.name) : undefined,
-        latex: repaired.latex,
-        means: meansRaw != null && String(meansRaw).trim() ? String(meansRaw).trim() : undefined,
-      });
-      continue;
-    }
-    const line = String(raw ?? "").trim().replace(/^[-*•]\s+/, "");
-    if (!line) continue;
-    // Prefer "Name | latex | means" (no dollars)
-    const pipe = line.split("|").map((p) => p.trim());
-    if (pipe.length >= 2 && !pipe[1].includes("://")) {
-      const repaired = repairLatexSource(pipe[1].replace(/^\$+|\$+$/g, ""));
-      out.push({
-        name: pipe[0] || undefined,
-        latex: repaired.latex,
-        means: pipe[2] || undefined,
-      });
-      continue;
-    }
-    // Compat: "Name: $latex$ — meaning" or "Name: latex — meaning"
-    const match = line.match(/^([^:：]+)\s*[:：]\s*(.+?)(?:\s*[—–\-]\s*(.+))?$/);
-    if (match) {
-      const name = match[1].trim();
-      const latexPart = match[2].trim();
-      const means = match[3]?.trim();
-      const dollar = latexPart.match(/\$\$([\s\S]+?)\$\$|\$([^$\n]+?)\$/);
-      const body = dollar ? (dollar[1] || dollar[2] || "").trim() : latexPart.replace(/^\$+|\$+$/g, "");
-      const repaired = repairLatexSource(body);
-      out.push({ name, latex: repaired.latex, means });
-    } else {
-      const dollar = line.match(/\$\$([\s\S]+?)\$\$|\$([^$\n]+?)\$/);
-      const body = dollar ? (dollar[1] || dollar[2] || "").trim() : line.replace(/^\$+|\$+$/g, "");
-      const repaired = repairLatexSource(body);
-      if (repaired.latex) out.push({ latex: repaired.latex });
-    }
+  const objects = items.filter((x) => x && typeof x === "object" && !Array.isArray(x));
+  const strings = items.filter((x) => typeof x === "string" || typeof x === "number");
+  for (const obj of objects) normalizeOneEquationItem(obj, out);
+  for (const line of unwrapEquationBodyLines(strings.map(String))) {
+    normalizeOneEquationItem(line, out);
   }
   return out.slice(0, 12);
 }
 
 /**
  * Pull ## Equations / ## Key formulas from a Local markdown reply into structured cards.
- * Line-based (not regex `\Z`) so a trailing Equations section at EOF still parses in JS.
+ * Accepts common heading variants (colon, ###, trailing emoji).
  * Prose is returned without those sections so the bubble does not show raw TeX lines.
  */
 export function splitAiReplyEquations(markdown: string): {
@@ -298,39 +361,82 @@ export function splitAiReplyEquations(markdown: string): {
   const text = String(markdown ?? "");
   if (!text.trim()) return { prose: text, equations: [] };
 
-  const eqHeading = /^##\s*(?:Equations?|Key formulas?)\s*$/i;
-  const anyHeading = /^##\s+\S/;
+  const anyHeading = /^#{1,3}\s+\S/;
   const collected: string[] = [];
   const proseLines: string[] = [];
   let inEquations = false;
 
   for (const line of text.split(/\r?\n/)) {
     const trimmed = line.trim();
-    if (eqHeading.test(trimmed)) {
+    if (isAiEquationsHeading(trimmed)) {
       inEquations = true;
       continue;
     }
-    if (inEquations && anyHeading.test(trimmed)) {
+    if (inEquations && anyHeading.test(trimmed) && !isAiEquationsHeading(trimmed)) {
       inEquations = false;
     }
     if (inEquations) {
-      if (trimmed && !/^<!--/.test(trimmed)) collected.push(trimmed);
+      collected.push(line);
     } else {
       proseLines.push(line);
     }
   }
 
-  const equations = normalizeEquationItems(collected);
+  const equations = normalizeEquationItems(unwrapEquationBodyLines(collected));
   const prose = proseLines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
   return { prose, equations };
 }
 
-/** Repair prose $ spans only; keep ## Equations as bare latex pipe lines for card parsing. */
+/** Lift $...$ / $$...$$ out of AI prose into equation cards; leave plain teaching text. */
+export function extractDollarMathToEquations(
+  markdown: string,
+  existing: AiEquation[] = []
+): { prose: string; equations: AiEquation[] } {
+  const split = splitAiReplyEquations(markdown);
+  const currency = protectCurrencyDollars(split.prose);
+  let text = currency.text;
+  const extracted: AiEquation[] = [];
+
+  text = text.replace(/\$\$([\s\S]+?)\$\$/g, (_m, body: string) => {
+    const repaired = repairLatexSource(String(body).trim());
+    if (repaired.latex) extracted.push({ latex: repaired.latex });
+    return "";
+  });
+  text = text.replace(/\$([^$\n]+?)\$/g, (_m, body: string) => {
+    const repaired = repairLatexSource(String(body).trim());
+    if (repaired.latex) extracted.push({ latex: repaired.latex });
+    return "";
+  });
+
+  const prose = currency
+    .restore(text)
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .replace(/[ \t]{2,}/g, " ")
+    .trim();
+
+  const equations: AiEquation[] = [];
+  for (const eq of [...existing, ...split.equations, ...extracted]) {
+    pushUniqueEquation(equations, eq);
+  }
+  return { prose, equations };
+}
+
+/** Cloud/Local finalize: sections + dollar lift + legacy formula lists → cards + plain prose. */
+export function finalizeAiAssistantMath(
+  reply: string,
+  equationsField?: unknown,
+  legacyFormulas?: unknown
+): { prose: string; equations: AiEquation[] } {
+  const merged = mergeFormulaLists(legacyFormulas, equationsField);
+  return extractDollarMathToEquations(reply, merged.equations);
+}
+
+/** Repair equation latex; peel $ math into cards; keep ## Equations as bare pipe lines. */
 export function repairAiReplyMath(markdown: string): MathRepairReport {
-  const { prose, equations } = splitAiReplyEquations(markdown);
-  const repairedProse = repairAiMarkdownMath(prose);
-  let fixed = repairedProse.fixed;
-  let stillBroken = repairedProse.stillBroken;
+  const { prose, equations } = extractDollarMathToEquations(markdown);
+  let fixed = 0;
+  let stillBroken = 0;
   const fixedEqs: AiEquation[] = equations.map((eq) => {
     const result = repairLatexSource(eq.latex.replace(/^\$+|\$+$/g, ""));
     if (result.repaired) fixed += 1;
@@ -338,7 +444,7 @@ export function repairAiReplyMath(markdown: string): MathRepairReport {
     return { ...eq, latex: result.latex };
   });
 
-  let text = repairedProse.text.trim();
+  let text = prose.trim();
   if (fixedEqs.length) {
     const lines = fixedEqs.map((eq) => {
       const name = eq.name?.trim() || "Equation";
@@ -498,6 +604,45 @@ export function runAiLatexAccuracyFixtures(): string[] {
           split.equations[0].latex.includes("\\frac{1}{2}") &&
           !r.text.includes("$\\frac")
         );
+      },
+    },
+    {
+      name: "split-equations-colon-heading",
+      ok: () => {
+        const { prose, equations } = splitAiReplyEquations(
+          "## Hints\nGo slow.\n\n## Equations:\nNewton 2 | F = ma | net force"
+        );
+        return equations.length === 1 && !prose.includes("F = ma") && prose.includes("Go slow");
+      },
+    },
+    {
+      name: "split-equations-math-fence",
+      ok: () => {
+        const { equations } = splitAiReplyEquations(
+          "## Equations\n```math\n\\frac{1}{2}mv^2\n```\n"
+        );
+        return equations.length === 1 && equations[0].latex.includes("\\frac{1}{2}");
+      },
+    },
+    {
+      name: "extract-dollars-to-cards",
+      ok: () => {
+        const { prose, equations } = extractDollarMathToEquations(
+          "Energy $K = \\frac{1}{2}mv^2$ is kinetic."
+        );
+        return (
+          equations.length === 1 &&
+          !prose.includes("$") &&
+          prose.includes("Energy") &&
+          prose.includes("is kinetic")
+        );
+      },
+    },
+    {
+      name: "object-formula-key",
+      ok: () => {
+        const eqs = normalizeEquationItems([{ name: "KE", formula: "\\tfrac{1}{2}mv^2" }]);
+        return eqs.length === 1 && eqs[0].latex.includes("tfrac");
       },
     },
     {

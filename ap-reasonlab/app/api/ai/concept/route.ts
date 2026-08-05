@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { parseAiProvider, parseSiteModelChoice, runChatJson } from "@/lib/ai-client";
 import { conceptExplainSystem } from "@/lib/ai-prompts";
 import { appendAiSiteContext, buildServerAiSiteContext } from "@/lib/ai-site-context-server";
-import { normalizeEquationItems, repairAiMarkdownMath, withFormulaAccuracy } from "@/lib/ai-latex-accuracy";
+import { finalizeAiAssistantMath, withFormulaAccuracy } from "@/lib/ai-latex-accuracy";
 
 export async function POST(req: NextRequest) {
   try {
@@ -76,12 +76,16 @@ Return JSON with refused, reply, equations, formulas, quizPrompt, aiMayBeWrong.`
         (refused
           ? "Sorry — that is unrelated to this concept or to learning, so I will not answer."
           : "No response generated.");
-      const equations = normalizeEquationItems(data.equations).slice(0, 8);
+      const finalized = finalizeAiAssistantMath(
+        replyRaw,
+        data.equations,
+        data.formulas
+      );
       return NextResponse.json({
         refused,
-        reply: repairAiMarkdownMath(replyRaw).text,
+        reply: finalized.prose,
         quizPrompt: String(data.quizPrompt || "").trim(),
-        equations,
+        equations: finalized.equations.slice(0, 8),
         formulas: Array.isArray(data.formulas)
           ? data.formulas.map(String).slice(0, 8)
           : [],
