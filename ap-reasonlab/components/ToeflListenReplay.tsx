@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import {
+  listEnglishVoices,
+  speakEnglish,
+  whenVoicesReady,
+} from "@/lib/english-tts";
 
 function splitChunks(text: string): string[] {
   return text
@@ -9,7 +14,6 @@ function splitChunks(text: string): string[] {
     .map((line) => line.trim())
     .filter(Boolean)
     .flatMap((line) => {
-      // Prefer sentence-ish chunks when a line is long
       if (line.length < 220) return [line];
       return line
         .split(/(?<=[.!?。！？])\s+/)
@@ -18,7 +22,7 @@ function splitChunks(text: string): string[] {
     });
 }
 
-/** Paste / load a listening script → browser TTS replays it for daily listening practice (no quiz). */
+/** Paste / load a listening script → browser TTS with a fixed natural English voice. */
 export default function ToeflListenReplay() {
   const [script, setScript] = useState(
     "Professor: Today we’ll look at how coral reefs respond to rising ocean temperatures.\nStudent: Does bleaching always kill the coral?\nProfessor: Not always — recovery is possible if the stress ends soon enough."
@@ -27,9 +31,18 @@ export default function ToeflListenReplay() {
   const [index, setIndex] = useState(0);
   const [speaking, setSpeaking] = useState(false);
   const [hideText, setHideText] = useState(false);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [voiceName, setVoiceName] = useState("");
 
   const chunks = useMemo(() => splitChunks(script), [script]);
   const current = chunks[Math.min(index, Math.max(chunks.length - 1, 0))] || "";
+
+  useEffect(() => {
+    return whenVoicesReady((list) => {
+      setVoices(list);
+      setVoiceName((prev) => prev || list[0]?.name || "");
+    });
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -38,21 +51,17 @@ export default function ToeflListenReplay() {
   }, []);
 
   function speakText(text: string, onEnd?: () => void) {
-    if (typeof window === "undefined" || !window.speechSynthesis) {
-      window.alert("Speech synthesis is not available in this browser.");
-      return;
-    }
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = "en-US";
-    u.rate = rate;
-    u.onstart = () => setSpeaking(true);
-    u.onend = () => {
-      setSpeaking(false);
-      onEnd?.();
-    };
-    u.onerror = () => setSpeaking(false);
-    window.speechSynthesis.speak(u);
+    const ok = speakEnglish(text, {
+      rate,
+      voiceName: voiceName || undefined,
+      onStart: () => setSpeaking(true),
+      onEnd: () => {
+        setSpeaking(false);
+        onEnd?.();
+      },
+      onError: () => setSpeaking(false),
+    });
+    if (!ok) window.alert("Speech synthesis is not available in this browser.");
   }
 
   function playAllFrom(start: number) {
@@ -77,8 +86,8 @@ export default function ToeflListenReplay() {
       <div>
         <h2 className="text-lg font-semibold text-sky-950">Listen · machine replay</h2>
         <p className="mt-1 text-sm leading-6 text-sky-900/80">
-          Paste a lecture / conversation script (or the transcript of audio you uploaded). The
-          browser reads it aloud so you can practice listening in daily study — no quiz questions.
+          Paste a lecture / conversation script. Playback uses a selected <strong>English</strong>{" "}
+          voice (prefers natural US English) — not a Chinese/default engine.
         </p>
       </div>
 
@@ -95,7 +104,25 @@ export default function ToeflListenReplay() {
         />
       </label>
 
-      <div className="flex flex-wrap items-center gap-3 text-sm">
+      <div className="flex flex-wrap items-end gap-3 text-sm">
+        <label className="block min-w-[14rem] flex-1 text-slate-600">
+          English voice (accent)
+          <select
+            className="input mt-1"
+            value={voiceName}
+            onChange={(e) => setVoiceName(e.target.value)}
+          >
+            {voices.length === 0 ? (
+              <option value="">Loading English voices…</option>
+            ) : (
+              voices.map((v) => (
+                <option key={`${v.name}-${v.lang}`} value={v.name}>
+                  {v.name} ({v.lang})
+                </option>
+              ))
+            )}
+          </select>
+        </label>
         <label className="flex items-center gap-2 text-slate-600">
           Speed
           <input
@@ -111,6 +138,13 @@ export default function ToeflListenReplay() {
         </label>
         <button type="button" className="btn-ghost" onClick={() => setHideText((v) => !v)}>
           {hideText ? "Show text" : "Hide text while listening"}
+        </button>
+        <button
+          type="button"
+          className="btn-ghost"
+          onClick={() => setVoices(listEnglishVoices())}
+        >
+          Refresh voices
         </button>
         <span className="text-slate-500">
           {chunks.length} chunk{chunks.length === 1 ? "" : "s"}

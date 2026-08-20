@@ -3,6 +3,7 @@ import EnglishPageHeader from "@/components/EnglishPageHeader";
 import EnglishResourcePanel from "@/components/EnglishResourcePanel";
 import ToeflListenReplay from "@/components/ToeflListenReplay";
 import ToeflSpeakShadow from "@/components/ToeflSpeakShadow";
+import ToeflWritingTimers from "@/components/ToeflWritingTimers";
 import type { EnglishExamConfig, EnglishExamSection } from "@/data/english-exam-sections";
 
 type LaneCopy = {
@@ -32,7 +33,7 @@ function toeflLaneCopy(sectionId: string): LaneCopy {
           "Upload writing prompts (题目) and model essays (范文). Browse and study them — no timed scoring on this page.",
         guideTitle: "Writing · prompts + model essays",
         guideBody:
-          "Upload writing topics and sample essays into this folder. Use clear file names (e.g. Prompt-…, Model-…) so students can find 题目 and 范文 quickly.",
+          "Upload writing topics and sample essays into this folder. Use the 7-minute and 10-minute timers above for timed drafts. Clear file names (e.g. Prompt-…, Model-…) help students find 题目 and 范文.",
         uploadTitle: "Upload writing prompts & model essays (范文)",
       };
     case "listening":
@@ -136,6 +137,7 @@ export default function EnglishExamSectionView({
 
       {/* Reading / Writing / Listening: upload slot first. Speaking: shadow tool first. */}
       {isToefl && section.id === "speaking" ? <ToeflSpeakShadow /> : null}
+      {isToefl && section.id === "writing" ? <ToeflWritingTimers /> : null}
 
       <EnglishResourcePanel
         space={section.spaceKey}
