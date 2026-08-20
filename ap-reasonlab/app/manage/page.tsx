@@ -288,7 +288,7 @@ export default function ManagePage() {
       {tab === "content" && (
         <section className="space-y-4">
           <div className="card grid gap-3 md:grid-cols-4"><input className="input md:col-span-2" type="search" placeholder="Search content…" value={query} onChange={(event) => setQuery(event.target.value)} /><select className="input" value={subjectId} onChange={(event) => setSubjectId(event.target.value)}><option value="all">All subjects</option>{subjects.map((subject) => <option key={subject.id} value={subject.id}>{subject.name}</option>)}</select><select className="input" value={status} onChange={(event) => setStatus(event.target.value)}><option value="all">All statuses</option><option value="draft">Draft</option><option value="published">Published</option></select></div>
-          <div className="space-y-3">{filtered.map((item) => <ContentRow key={item.id} item={item} subject={subjects.find((subject) => subject.id === item.subjectId)} onAction={mutate} onSaved={(content) => setData(content as ManagedContent)} />)}{filtered.length === 0 && <div className="card text-sm text-slate-500">No content matches these filters.</div>}</div>
+          <div className="space-y-3">{filtered.map((item) => <ContentRow key={item.id} item={item} subject={subjects.find((subject) => subjectIdsMatch(subject.id, item.subjectId))} onAction={mutate} onSaved={(content) => setData(content as ManagedContent)} />)}{filtered.length === 0 && <div className="card text-sm text-slate-500">No content matches these filters.</div>}</div>
         </section>
       )}
 
