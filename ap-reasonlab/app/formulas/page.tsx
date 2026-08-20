@@ -8,6 +8,7 @@ import { AP_SUBJECTS } from "@/data/ap-expanded";
 import FolderGrid from "@/components/FolderGrid";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import { ROOT_SPACE, spaceFromSearchParams } from "@/lib/storage-space";
+import { subjectsMatch } from "@/lib/managed-types";
 import RichContent, { FormulaMath } from "@/components/RichContent";
 import type { Formula } from "@/lib/types";
 
@@ -63,17 +64,17 @@ function FormulasContent() {
     title: s,
     subtitle: "Open to browse formulas by unit · + to add",
     count:
-      formulas.filter((f) => f.subject === s).length +
-      managedFormulas.filter((f) => f.subject === s).length,
+      formulas.filter((f) => subjectsMatch(f.subject, s)).length +
+      managedFormulas.filter((f) => subjectsMatch(f.subject, s)).length,
     href: `/formulas?subject=${encodeURIComponent(s)}`,
   }));
 
   const filtered = useMemo(() => {
     if (!activeSubject) return [];
-    const builtIn = formulas.filter((f) => f.subject === activeSubject);
+    const builtIn = formulas.filter((f) => subjectsMatch(f.subject, activeSubject));
     const seen = new Set(builtIn.map((f) => f.id));
     const extra = managedFormulas.filter(
-      (f) => f.subject === activeSubject && !seen.has(f.id)
+      (f) => subjectsMatch(f.subject, activeSubject) && !seen.has(f.id)
     );
     return [...builtIn, ...extra];
   }, [activeSubject, managedFormulas]);

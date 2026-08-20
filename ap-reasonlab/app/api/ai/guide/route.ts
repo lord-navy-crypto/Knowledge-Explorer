@@ -27,14 +27,10 @@ ${question}
 Return JSON with refused, reply, aiMayBeWrong.`;
 
     try {
-      // Site Guide already embeds SITE_GUIDE_FACTS; still allow concept/formula hits when relevant.
-      const siteSearch = body.siteSearch !== false;
-      const siteContext = await buildServerAiSiteContext(question, siteSearch);
-      const userWithSite = appendAiSiteContext(user, siteContext);
-
+      // Site Guide already embeds SITE_GUIDE_FACTS — skip KE formula search to avoid ## Equations pressure.
       const result = await runChatJson({
         system: SITE_GUIDE_SYSTEM,
-        user: userWithSite,
+        user,
         maxTokens: 2048,
         userApiKey: userApiKey || undefined,
         provider,

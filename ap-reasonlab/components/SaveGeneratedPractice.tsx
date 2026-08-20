@@ -78,13 +78,17 @@ export default function SaveGeneratedPractice({
       });
       const parsedRes = await readResponseJson<{
         error?: string;
+        createdId?: string;
         content?: { questionnaires?: Array<{ id: string; title: string }> };
       }>(res);
       if (!parsedRes.ok) throw new Error(parsedRes.error);
       if (!res.ok) throw new Error(parsedRes.data.error || "Save failed");
 
-      const created = parsedRes.data.content?.questionnaires?.find((q) => q.title === title.trim());
-      const setId = created?.id;
+      const setId =
+        parsedRes.data.createdId ||
+        [...(parsedRes.data.content?.questionnaires || [])]
+          .reverse()
+          .find((q) => q.title === title.trim())?.id;
       if (!setId) throw new Error("Practice set saved but id not returned — check Practice.");
 
       for (let i = 1; i < cleaned.length; i += 1) {

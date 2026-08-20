@@ -29,6 +29,7 @@ export {
   canonicalizeSubjectId,
   canonicalizeSubjectName,
   subjectIdsMatch,
+  subjectsMatch,
   normalizeManagedContent,
   uid,
 } from "@/lib/managed-types";
@@ -528,6 +529,7 @@ export async function saveManagedContent(
       ...(incoming.subjects || []).map((row) => row.id),
       ...(incoming.units || []).map((row) => row.id),
       ...(incoming.contentItems || []).map((row) => row.id),
+      ...(incoming.forumPosts || []).map((row) => row.id),
     ]);
 
     const liveDeleted = new Set(live.deletedIds || []);
@@ -640,22 +642,32 @@ export async function saveManagedContent(
           deletedSet,
           (row) => row.createdAt || 0
         );
-    const contentItems = clientFresh
-      ? incoming.contentItems
-      : mergeRowsById(
-          live.contentItems || [],
-          incoming.contentItems || [],
-          deletedSet,
-          (row) => Number((row as { updatedAt?: number }).updatedAt || 0)
-        );
-    const units = clientFresh
-      ? incoming.units
-      : mergeRowsById(
-          live.units || [],
-          incoming.units || [],
-          deletedSet,
-          (row) => Number((row as { createdAt?: number }).createdAt || 0)
-        );
+    const pickMerged = <T extends { id: string }>(
+      liveRows: T[],
+      incomingRows: T[] | undefined,
+      stamp: (row: T) => number
+    ) => {
+      const incomingList = incomingRows || [];
+      // Never let an empty array wipe additive collections — even on a "fresh" client.
+      if (clientFresh && incomingList.length > 0) return incomingList;
+      return mergeRowsById(liveRows, incomingList, deletedSet, stamp);
+    };
+
+    const contentItems = pickMerged(
+      live.contentItems || [],
+      incoming.contentItems,
+      (row) => Number((row as { updatedAt?: number }).updatedAt || 0)
+    );
+    const units = pickMerged(
+      live.units || [],
+      incoming.units,
+      (row) => Number((row as { createdAt?: number }).createdAt || 0)
+    );
+    const forumPosts = pickMerged(
+      live.forumPosts || [],
+      incoming.forumPosts,
+      (row) => Number((row as { createdAt?: number; updatedAt?: number }).updatedAt || (row as { createdAt?: number }).createdAt || 0)
+    );
 
     next = normalizeManagedContent({
       ...incoming,
@@ -670,6 +682,7 @@ export async function saveManagedContent(
       subjects,
       units,
       contentItems,
+      forumPosts,
       recycleBin: mergedRecycle,
       deletedIds: mergedDeleted,
       // Settings: prefer incoming when fresh, else keep live knobs if client omitted them.
