@@ -1,7 +1,10 @@
 import Link from "next/link";
 import EnglishPageHeader from "@/components/EnglishPageHeader";
 import EnglishResourcePanel from "@/components/EnglishResourcePanel";
+import EnglishSkillsBoard from "@/components/EnglishSkillsBoard";
 import { sentencePatterns } from "@/data/english-content";
+
+const GRAMMAR_SUBJECT = "English Grammar";
 
 export default function GrammarPage() {
   return (
@@ -9,7 +12,7 @@ export default function GrammarPage() {
       <EnglishPageHeader
         eyebrow="English · Skills · Real English"
         title="Grammar & Sentences"
-        description="Build reliable sentences for school writing and tests. This skills lane is separate from exam practice sets."
+        description="Build reliable sentences for school writing and tests. Add theory cubes and practice sets the same way as AP Concepts."
       />
 
       <section className="flex flex-wrap gap-2 text-sm">
@@ -24,16 +27,25 @@ export default function GrammarPage() {
         </Link>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2">
-        {sentencePatterns.map((item) => (
-          <article key={item.title} className="card">
-            <h2 className="font-semibold text-brand-800">{item.title}</h2>
-            <p className="mt-3 rounded-xl bg-slate-950 px-4 py-3 font-mono text-sm text-slate-100">
-              {item.pattern}
-            </p>
-            <p className="mt-3 text-sm leading-6 text-slate-600">{item.example}</p>
-          </article>
-        ))}
+      <EnglishSkillsBoard
+        subject={GRAMMAR_SUBJECT}
+        theoryLabel="Grammar theory cubes"
+        practiceLabel="Grammar practice cubes"
+      />
+
+      <section className="space-y-3">
+        <h2 className="section-title">Starter sentence patterns</h2>
+        <div className="grid gap-4 md:grid-cols-2">
+          {sentencePatterns.map((item) => (
+            <article key={item.title} className="card">
+              <h2 className="font-semibold text-brand-800">{item.title}</h2>
+              <p className="mt-3 rounded-xl bg-slate-950 px-4 py-3 font-mono text-sm text-slate-100">
+                {item.pattern}
+              </p>
+              <p className="mt-3 text-sm leading-6 text-slate-600">{item.example}</p>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className="card">
@@ -53,7 +65,12 @@ export default function GrammarPage() {
         </div>
       </section>
 
-      <EnglishResourcePanel space="grammar" title="Grammar exercises & sentence notes" />
+      <EnglishResourcePanel
+        space="grammar"
+        title="Grammar exercises & sentence notes"
+        defaultSubject={GRAMMAR_SUBJECT}
+        alsoShow={["concept", "questionnaire", "document", "folder"]}
+      />
     </div>
   );
 }
