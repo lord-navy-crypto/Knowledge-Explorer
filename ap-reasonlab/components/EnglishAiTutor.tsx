@@ -172,7 +172,6 @@ export default function EnglishAiTutor({ embedded = false, hideChannelUi = false
             <select className="input mt-1" value={target} onChange={(event) => setTarget(event.target.value)}>
               <option>General academic English</option>
               <option>TOEFL iBT</option>
-              <option>IELTS Academic</option>
               <option>SAT Reading & Writing</option>
               <option>School writing</option>
             </select>

@@ -53,7 +53,7 @@ export default function VocabBookTool() {
     <StudyToolShell
       title="Vocab book"
       description="Save English words with meanings and examples. Flip to self-test. Stored in this browser only."
-      tip="Great for TOEFL / IELTS / SAT lists. Pair with Dictation for listening practice."
+      tip="Great for TOEFL / SAT lists. Pair with Dictation for listening practice."
     >
       <form onSubmit={addCard} className="card grid gap-3 sm:grid-cols-2">
         <label className="block text-sm">

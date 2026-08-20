@@ -62,7 +62,6 @@ export const SITE_SECTION_FOLDERS: SiteSectionFolder[] = [
       { area: "english", space: ROOT_SPACE, label: "English hub", href: "/english" },
       { area: "english", space: "ai", label: "English AI", href: "/english/ai" },
       { area: "english", space: "toefl", label: "TOEFL hub", href: "/english/toefl" },
-      { area: "english", space: "ielts", label: "IELTS hub", href: "/english/ielts" },
       { area: "english", space: "sat", label: "SAT hub", href: "/english/sat" },
       ...allEnglishExamSectionSpaces(),
       { area: "english", space: "vocabulary", label: "Vocabulary", href: "/english/vocabulary" },

@@ -16,12 +16,6 @@ export const englishExamAreas = [
     description: "4 subject folders: Reading, Listening, Writing, Speaking — practice questions per folder.",
   },
   {
-    href: "/english/ielts",
-    title: "IELTS",
-    icon: "I",
-    description: "4 subject folders: Listening, Reading, Writing, Speaking — practice questions per folder.",
-  },
-  {
     href: "/english/sat",
     title: "SAT",
     icon: "S",
@@ -120,12 +114,6 @@ export const toeflQuestions: EnglishPracticeQuestion[] = [
   { id: "toefl-1", skill: "Complete the Words", prompt: "The new evidence did not con___dict the earlier finding; instead, it strengthened it.", choices: ["tra", "tro", "tre", "tru"], answer: 0, explanation: "The complete word is contradict. The sentence says the evidence did the opposite: it strengthened the finding." },
   { id: "toefl-2", skill: "Academic Reading", prompt: "A campus replaced fixed lighting schedules with motion sensors. Energy use fell, but students reported that some hallways became dark too quickly. Which conclusion is best supported?", choices: ["Motion sensors always improve campus safety.", "The system saved energy but may need timing adjustments.", "Students preferred the old system in every building.", "Lighting had no measurable effect on energy use."], answer: 1, explanation: "The passage supports both the energy benefit and a specific usability problem; it does not support absolute claims." },
   { id: "toefl-3", skill: "Academic Discussion", prompt: "A class is discussing whether universities should record every lecture. Which response has the clearest position and support?", choices: ["Yes. Recordings are good.", "It depends, and many things matter.", "Universities should record lectures because students can review complex explanations; however, instructors should control access to protect class discussion.", "Lectures have existed for a long time."], answer: 2, explanation: "This response states a position, gives a relevant reason, and addresses a reasonable limitation." },
-];
-
-export const ieltsQuestions: EnglishPracticeQuestion[] = [
-  { id: "ielts-1", skill: "Reading · writer's view", prompt: "A researcher writes: ‘Urban gardens cannot replace regional farms, but their educational value is often underestimated.’ What is the writer's view?", choices: ["Urban gardens should replace farms.", "Urban gardens have no practical value.", "Their educational benefit deserves more recognition.", "Regional farms are mainly educational."], answer: 2, explanation: "The contrast after ‘but’ introduces the writer's main emphasis." },
-  { id: "ielts-2", skill: "Writing Task 1", prompt: "A graph rises from 40 to 75, remains near 75, then falls to 60. Which overview is strongest?", choices: ["The graph has many numbers.", "Overall, the value rose sharply, levelled off, and then declined moderately while remaining above its starting point.", "First it was 40, then 75, then 75, then 60.", "The graph is interesting and important."], answer: 1, explanation: "A Task 1 overview should summarize the main trend and major stages rather than list every point." },
-  { id: "ielts-3", skill: "Speaking · development", prompt: "For a question about a useful technology, which answer plan is easiest to develop?", choices: ["Name only", "Name → how you use it → concrete example → why it matters", "Definition from a dictionary", "Several unrelated technologies"], answer: 1, explanation: "A clear sequence helps you extend the response naturally and provide specific language." },
 ];
 
 export const satQuestions: EnglishPracticeQuestion[] = [

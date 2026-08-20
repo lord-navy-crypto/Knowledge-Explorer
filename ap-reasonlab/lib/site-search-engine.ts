@@ -10,7 +10,6 @@ import { keyConceptGuides } from "@/data/key-concepts";
 import {
   academicVocabulary,
   englishAreas,
-  ieltsQuestions,
   satQuestions,
   sentencePatterns,
   toeflQuestions,
@@ -345,7 +344,7 @@ export function searchSiteEngine(
     { id: "external-tools", title: "External connections & tools", subject: "Tools", detail: "Off-site AP, math, science, English, coding links", href: "/tools/external" },
     { id: "word-import", title: "Word → Markdown", subject: "Tools", detail: "Extract Markdown from docx", href: "/tools/word-import" },
     { id: "markdown-pdf", title: "Markdown → PDF", subject: "Tools", detail: "Print Markdown as PDF", href: "/tools/markdown-pdf" },
-    { id: "english", title: "English Learning", subject: "English", detail: "TOEFL IELTS SAT vocabulary writing", href: "/english" },
+    { id: "english", title: "English Learning", subject: "English", detail: "TOEFL SAT vocabulary writing", href: "/english" },
     { id: "ap", title: "AP Subject Library", subject: "AP", detail: "Choose an AP subject", href: "/ap" },
     { id: "concepts", title: "Concepts", subject: "AP", detail: "Topic and concept library", href: "/concepts" },
     { id: "formulas", title: "Formulas", subject: "AP", detail: "Formula sheets by subject", href: "/formulas" },
@@ -565,18 +564,14 @@ export function searchSiteEngine(
       score: scoreFields(tokens, pattern.title, `${pattern.pattern} ${pattern.example}`),
     });
   }
-  for (const q of [...toeflQuestions, ...ieltsQuestions, ...satQuestions]) {
+  for (const q of [...toeflQuestions, ...satQuestions]) {
     pushHit(bag, {
       id: q.id,
       type: "english",
       title: `${q.skill}: ${q.prompt.slice(0, 60)}…`,
       subject: "English practice",
       detail: clip(q.explanation),
-      href: q.id.startsWith("toefl")
-        ? "/english/toefl"
-        : q.id.startsWith("ielts")
-          ? "/english/ielts"
-          : "/english/sat",
+      href: q.id.startsWith("toefl") ? "/english/toefl" : "/english/sat",
       score: scoreFields(
         tokens,
         q.skill,

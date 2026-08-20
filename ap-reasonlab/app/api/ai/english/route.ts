@@ -12,7 +12,7 @@ function isClearlyOutsideEnglishScope(input: string, mode: string): boolean {
   ) {
     return false;
   }
-  const asksEnglish = /english|grammar|sentence|writing|vocab|word|reading|speaking|listening|toefl|ielts|sat|rewrite|revise|proofread|translate/i.test(input);
+  const asksEnglish = /english|grammar|sentence|writing|vocab|word|reading|speaking|listening|toefl|sat|rewrite|revise|proofread|translate/i.test(input);
   const asksAnotherSubject = /\b(AP\s+)?(physics|chemistry|biology|calculus|statistics|macroeconomics|microeconomics|computer science)\b|calculate|solve the equation|find the force/i.test(input);
   return asksAnotherSubject && !asksEnglish;
 }
@@ -20,7 +20,7 @@ function isClearlyOutsideEnglishScope(input: string, mode: string): boolean {
 function scopeRefusal() {
   return {
     refused: true,
-    feedback: "This tutor is limited to English learning, writing, grammar, translation, TOEFL, IELTS, and SAT Reading & Writing. Please use AI Toolbox for AP subject questions.",
+    feedback: "This tutor is limited to English learning, writing, grammar, translation, TOEFL, and SAT Reading & Writing. Please use AI Toolbox for AP subject questions.",
     strengths: [], priorities: [], revisionExample: "", practicePrompt: "",
     aiMayBeWrong: "If your goal was to improve the English wording of subject text, choose Writing feedback and paste the passage again.",
     note: "English-only scope check.",

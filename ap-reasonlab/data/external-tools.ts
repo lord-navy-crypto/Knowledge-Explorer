@@ -29,7 +29,7 @@ export const EXTERNAL_TOOL_CATEGORIES: Array<{
   {
     id: "exams",
     label: "Official exams & AP",
-    detail: "College Board, ETS, IELTS — format and official practice hubs.",
+    detail: "College Board, ETS — format and official practice hubs.",
   },
   {
     id: "math",
@@ -112,14 +112,6 @@ export const EXTERNAL_TOOLS: ExternalTool[] = [
     category: "exams",
     tags: ["TOEFL", "ETS"],
     featured: true,
-  },
-  {
-    id: "ielts",
-    name: "IELTS",
-    href: "https://www.ielts.org/",
-    blurb: "Official IELTS test information and preparation resources.",
-    category: "exams",
-    tags: ["IELTS"],
   },
   {
     id: "cambridge-english",

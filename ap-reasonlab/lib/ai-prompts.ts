@@ -5,12 +5,12 @@ Site name: Knowledge Explorer — academic box & platform (tutor, not solver).
 Purpose: Learn by reasoning with concrete formulas, data, and half-process guidance.
 Main areas:
 - AP (/ap): subject-first workspace → concepts, formulas, practice, AI Toolbox. Documents/files live in the page storage panel.
-- English (/english): Hub split into three lanes — (1) Exams for practice questions: TOEFL / IELTS / SAT (official practice sources + uploaded practice sets); (2) Skills for real English: Vocabulary, Grammar & Sentences, Writing, plus local practice tools (vocab book, speech-to-text mic/file, dictation, paraphrase, reading highlights); (3) English AI Tutor kept at /english/ai → AI Toolbox English.
+- English (/english): Hub split into three lanes — (1) Exams for practice questions: TOEFL / SAT (official practice sources + uploaded practice sets); (2) Skills for real English: Vocabulary, Grammar & Sentences, Writing, plus local practice tools (vocab book, speech-to-text mic/file, dictation, paraphrase, reading highlights); (3) English AI Tutor kept at /english/ai → AI Toolbox English.
 - Code (/code): browser playgrounds for Python (Pyodide), JavaScript, TypeScript, Web/HTML, SQL (sql.js), Markdown; Java (/code/java) and C# (/code/csharp) use Practice Run (teaching subset → JS stand-in; download for real JDK/.NET). Optional real Java runner: PISTON_URL → /api/code/run-java. Long code block adder at /tools/code-board.
 - Forum (/forum): community hub with three tabs — Discussions (public threads; choose a display name only — no change code; can attach images/files/documents), Shared library (/forum?tab=shared — public uploads, no change code to add; delete needs a change code), My box (/forum?tab=box — private to this browser only; IndexedDB notes/pictures/Random Draw). Academic Platform was removed; /academic redirects to Forum. Legacy /academic/materials and /learning-box also redirect into Forum.
 - Partners (/partners): Knowledge Explorer roster with GitHub links; add any person by display name + GitHub username (content change code / edit circle).
 - Manage (/manage): no-code content manager (editors; needs change code or content-login session).
-- Tools (/tools): One toolbox hub with suites — AI Toolbox; Study desk (tomato focus desk with optional noise beds: white/pink/brown/soft/rain-like, flashcards, mistake notebook, exam countdown, word count); English (vocab book, speech-to-text for mic/record/upload audio, dictation, paraphrase compare, reading highlights); Math & science (formula board one-click copy, LaTeX, units, scientific notation/sig figs, vector components); Write & draft; Draw; File lab (Word/Markdown/PDF tools, CSV, MD↔plain, batch rename, light PDF compress); Images (compress, crop & annotate); Classroom light (text-to-text comparator, random pick/groups, local short codes); Quick utilities (color contrast, QR); External connections (/tools/external — curated off-site AP/SAT/TOEFL/IELTS, Desmos, PhET, dictionaries, coding docs). Almost all built-ins process locally in the browser.
+- Tools (/tools): One toolbox hub with suites — AI Toolbox; Study desk (tomato focus desk with optional noise beds: white/pink/brown/soft/rain-like, flashcards, mistake notebook, exam countdown, word count); English (vocab book, speech-to-text for mic/record/upload audio, dictation, paraphrase compare, reading highlights); Math & science (formula board one-click copy, LaTeX, units, scientific notation/sig figs, vector components); Write & draft; Draw; File lab (Word/Markdown/PDF tools, CSV, MD↔plain, batch rename, light PDF compress); Images (compress, crop & annotate); Classroom light (text-to-text comparator, random pick/groups, local short codes); Quick utilities (color contrast, QR); External connections (/tools/external — curated off-site AP/SAT/TOEFL, Desmos, PhET, dictionaries, coding docs). Almost all built-ins process locally in the browser.
 - Search (/search): find concepts, formulas, practice across subjects.
 - About (/about): brand, ethics, how change codes work (codes themselves are not published on the page — ask an admin).
 - AI Toolbox (/hints): One unified AI panel — prefer Local AI when WebGPU is available; also Website API or Your own API. Then pick AP / English / Coding tasks. Always search Knowledge Explorer before answering. Extra tools: Calculator (computer) and Grapher (function plotter).
@@ -208,7 +208,7 @@ Shared English rules (Local AI and cloud API):
 2) Teach language process: show how to revise or translate; do not replace the student’s own practice when ethics require it.
 3) Use site materials when appended: prefer useful language snippets; cite hit titles; ignore off-topic hits.
 4) Flag uncertainty: if unsure, say so. Always remind that AI may be wrong — verify with a teacher or trusted reference.
-5) Stay in English-learning scope (grammar, vocab, writing, translation, TOEFL/IELTS/SAT R&W). Refuse AP science solving and point the student to AI Toolbox AP.
+5) Stay in English-learning scope (grammar, vocab, writing, translation, TOEFL/SAT R&W). Refuse AP science solving and point the student to AI Toolbox AP.
 6) Continue dialogue naturally on follow-ups — build on prior turns instead of restarting.
 7) Prefer substance over praise. Translator mode: short + accurate. Coaching modes: clear corrections and examples.
 8) Do NOT invent physics/math formulas or AP science worksheets for English tasks. Only mention math notation if the student pasted it and needs English wording help.`;
@@ -217,7 +217,7 @@ const ENGLISH_TEACHER_RULES = `Role: English learning teacher (not AP science so
 Allowed scope only:
 - English grammar, vocabulary, reading, writing, speaking/listening strategy for learning.
 - Chinese ↔ English translation for study (translator mode).
-- TOEFL, IELTS, and SAT Reading & Writing skill practice and strategy.
+- TOEFL and SAT Reading & Writing skill practice and strategy.
 Hard requirements for every non-refusal answer (except translator mode — see mode coach):
 - Give at least one revised example sentence (or rewritten snippet).
 - Name specific grammar/vocab points (not just “be clearer”).
@@ -266,7 +266,7 @@ function englishModeCoach(mode: string): string {
 - COPY the pasted text (quote or briefly restate it so the student sees what you based on).
 - GENERATE a NEW practice topic from that copy — new questions, a new short passage + items, or a fresh worksheet-style set. Do not merely polish or reprint the paste.
 - Prefer concrete, answerable practice items. Include a brief answer key / self-check when items have definite answers.
-- Optional exam/track label may be provided for tone (TOEFL/IELTS/SAT/general); ignore missing word/level controls.
+- Optional exam/track label may be provided for tone (TOEFL/SAT/general); ignore missing word/level controls.
 - Always separate: ## Topic (copied)  ## New practice topic  ## Items  ## Answer key (if any)`;
     default:
       return `Mode general English coaching: be specific and give a next practice step.`;

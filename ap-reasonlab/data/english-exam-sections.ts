@@ -1,6 +1,6 @@
 /** Exam subject folders for practice-question files (not skills/vocab). */
 
-export type EnglishExamId = "toefl" | "ielts" | "sat";
+export type EnglishExamId = "toefl" | "sat";
 
 export type EnglishExamSection = {
   id: string;
@@ -59,47 +59,6 @@ export const englishExamConfigs: Record<EnglishExamId, EnglishExamConfig> = {
         description: "Independent and integrated speaking prompts and timing notes.",
         spaceKey: "toefl-speaking",
         href: "/english/toefl/speaking",
-      },
-    ],
-  },
-  ielts: {
-    id: "ielts",
-    title: "IELTS",
-    hubHref: "/english/ielts",
-    blurb:
-      "Four subject folders (Listening, Reading, Writing, Speaking) for practice questions. Open a subject to file materials in that folder.",
-    sections: [
-      {
-        id: "listening",
-        title: "Listening",
-        short: "L",
-        description: "Section recordings, transcripts, and listening practice sets.",
-        spaceKey: "ielts-listening",
-        href: "/english/ielts/listening",
-      },
-      {
-        id: "reading",
-        title: "Reading",
-        short: "R",
-        description: "Passage sets, question types, and reading practice packs.",
-        spaceKey: "ielts-reading",
-        href: "/english/ielts/reading",
-      },
-      {
-        id: "writing",
-        title: "Writing",
-        short: "W",
-        description: "Task 1 / Task 2 prompts, outlines, and marked samples.",
-        spaceKey: "ielts-writing",
-        href: "/english/ielts/writing",
-      },
-      {
-        id: "speaking",
-        title: "Speaking",
-        short: "S",
-        description: "Part 1–3 cue cards, timing plans, and speaking notes.",
-        spaceKey: "ielts-speaking",
-        href: "/english/ielts/speaking",
       },
     ],
   },
