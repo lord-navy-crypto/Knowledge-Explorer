@@ -56,7 +56,7 @@ export default function EnglishHubPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rose-700">
             Exams · practice questions
           </p>
-          <h2 className="section-title mt-1">TOEFL · IELTS · SAT</h2>
+          <h2 className="section-title mt-1">TOEFL · SAT</h2>
           <p className="mt-1 max-w-2xl text-sm text-slate-600">
             Use these pages for exam-style practice questions: official practice sources and sets
             you upload. Core language drills live under Basic skills — keep them separate from exam

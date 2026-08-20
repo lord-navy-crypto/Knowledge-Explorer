@@ -139,7 +139,7 @@ const ENGLISH_TASKS: Array<{ value: EnglishTask; label: string; hint: string }> 
   {
     value: "test-strategy",
     label: "Exam strategy",
-    hint: "TOEFL / IELTS / SAT section tips — not AP science.",
+    hint: "TOEFL / SAT section tips — not AP science.",
   },
   {
     value: "practice-generator",
@@ -1068,7 +1068,6 @@ export default function UnifiedAiPanel({
                 {[
                   "General academic English",
                   "TOEFL",
-                  "IELTS",
                   "SAT Reading & Writing",
                   "Writing revision",
                 ].map((option) => (

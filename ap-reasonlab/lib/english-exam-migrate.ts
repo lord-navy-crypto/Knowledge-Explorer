@@ -1,6 +1,7 @@
 /**
- * Remap legacy English exam hub buckets (toefl / ielts / sat) into
+ * Remap legacy English exam hub buckets (toefl / sat) into
  * per-subject spaces after the exam folder split.
+ * Former IELTS spaces fold into matching TOEFL folders (IELTS UI removed).
  */
 
 type Spaced = { area?: string; space?: string; name?: string; title?: string };
@@ -20,11 +21,12 @@ function remapLegacyExamSpace(space: string, label: string): string {
     return "toefl-reading";
   }
 
-  if (n === "ielts") {
-    if (/听力|listening/.test(label)) return "ielts-listening";
-    if (/写作|writing/.test(label)) return "ielts-writing";
-    if (/口语|speaking/.test(label)) return "ielts-speaking";
-    return "ielts-reading";
+  // IELTS removed — fold legacy hub + section spaces into TOEFL counterparts
+  if (n === "ielts" || n.startsWith("ielts-")) {
+    if (n === "ielts-listening" || /听力|listening/.test(label)) return "toefl-listening";
+    if (n === "ielts-writing" || /写作|writing/.test(label)) return "toefl-writing";
+    if (n === "ielts-speaking" || /口语|speaking/.test(label)) return "toefl-speaking";
+    return "toefl-reading";
   }
 
   if (n === "sat") {

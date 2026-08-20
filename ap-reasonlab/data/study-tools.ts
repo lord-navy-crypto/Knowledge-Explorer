@@ -422,7 +422,7 @@ export const STUDY_TOOLS: StudyTool[] = [
     id: "external-hub",
     href: "/tools/external",
     title: "External connections & tools",
-    blurb: "Curated off-site links: AP/SAT/TOEFL/IELTS hubs, Desmos, PhET, dictionaries, coding docs, and more.",
+    blurb: "Curated off-site links: AP/SAT/TOEFL hubs, Desmos, PhET, dictionaries, coding docs, and more.",
     category: "external",
     security: "safe",
   },
