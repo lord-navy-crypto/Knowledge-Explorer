@@ -9,6 +9,16 @@ import {
 export default function EnglishHubPage() {
   return (
     <div className="space-y-10">
+      <div
+        role="status"
+        className="rounded-2xl border-2 border-amber-400 bg-amber-50 px-5 py-4 text-center shadow-sm"
+      >
+        <p className="text-2xl font-bold tracking-wide text-amber-900 md:text-3xl">
+          正在施工 · 正在施工 · 正在施工 · 正在施工
+        </p>
+        <p className="mt-1 text-sm text-amber-800/80">Under construction — English Learning Hub</p>
+      </div>
+
       <section className="overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950 via-blue-900 to-brand-700 px-6 py-10 text-white shadow-xl md:px-10">
         <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wider">
           English Learning
