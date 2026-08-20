@@ -13,6 +13,7 @@ import FolderGrid from "@/components/FolderGrid";
 import FrqPackCard from "@/components/FrqPackCard";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import { ROOT_SPACE, spaceFromSearchParams } from "@/lib/storage-space";
+import { subjectsMatch } from "@/lib/managed-types";
 import RichContent from "@/components/RichContent";
 import type { Questionnaire } from "@/lib/types";
 
@@ -67,10 +68,10 @@ function PracticeContent() {
   }, [managedSubjects, managedQuizzes]);
 
   const subjectFolders = subjects.map((s) => {
-    const drillCount = practiceQuestions.filter((q) => q.subject === s).length;
+    const drillCount = practiceQuestions.filter((q) => subjectsMatch(q.subject, s)).length;
     const setCount =
-      questionnaires.filter((q) => q.subject === s).length +
-      managedQuizzes.filter((q) => q.subject === s).length;
+      questionnaires.filter((q) => subjectsMatch(q.subject, s)).length +
+      managedQuizzes.filter((q) => subjectsMatch(q.subject, s)).length;
     return {
       id: s,
       title: s,
@@ -108,9 +109,9 @@ function PracticeContent() {
     );
   }
 
-  const drills = practiceQuestions.filter((q) => q.subject === subject);
-  const builtInSets = questionnaires.filter((q) => q.subject === subject);
-  const managedSets = managedQuizzes.filter((q) => q.subject === subject);
+  const drills = practiceQuestions.filter((q) => subjectsMatch(q.subject, subject || ""));
+  const builtInSets = questionnaires.filter((q) => subjectsMatch(q.subject, subject || ""));
+  const managedSets = managedQuizzes.filter((q) => subjectsMatch(q.subject, subject || ""));
   const seen = new Set(builtInSets.map((q) => q.id));
   const sets = [
     ...builtInSets,

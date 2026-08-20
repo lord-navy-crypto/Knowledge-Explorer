@@ -778,9 +778,10 @@ export function normalizeAiDialogueText(input: string): string {
   value = sanitizeMathDelimiterSalad(value);
   const currency = protectCurrencyDollars(value);
   value = currency.text;
+  // Peel MathJax delimiters into plain text markers — do not invent $…$ for dialogue cards.
   value = value
-    .replace(/\\\[([\s\S]*?)\\\]/g, (_match, math: string) => `\n$$\n${math.trim()}\n$$\n`)
-    .replace(/\\\(([^\n]*?)\\\)/g, (_match, math: string) => `$${math.trim()}$`);
+    .replace(/\\\[([\s\S]*?)\\\]/g, (_match, math: string) => ` ${String(math).trim()} `)
+    .replace(/\\\(([^\n]*?)\\\)/g, (_match, math: string) => ` ${String(math).trim()} `);
   value = sanitizeMathDelimiterSalad(value);
   value = balanceMathDelimitersRaw(value);
   value = sanitizeMathDelimiterSalad(value);

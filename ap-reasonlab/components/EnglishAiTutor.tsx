@@ -213,7 +213,7 @@ export default function EnglishAiTutor({ embedded = false, hideChannelUi = false
                   ? "Translation"
                   : "Feedback"}
             </h2>
-            <RichContent className="mt-2 text-sm text-slate-700" streaming={loading}>
+            <RichContent className="mt-2 text-sm text-slate-700" streaming={loading} aiDialogue>
               {result.feedback}
             </RichContent>
           </div>
@@ -242,7 +242,7 @@ export default function EnglishAiTutor({ embedded = false, hideChannelUi = false
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
                 {mode === "translator" ? "Translation" : "Short revision example"}
               </p>
-              <RichContent>{result.revisionExample}</RichContent>
+              <RichContent aiDialogue>{result.revisionExample}</RichContent>
             </div>
           )}
           {mode !== "translator" && result.practicePrompt && (

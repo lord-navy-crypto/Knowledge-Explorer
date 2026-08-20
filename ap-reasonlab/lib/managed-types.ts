@@ -346,6 +346,14 @@ export function subjectIdsMatch(a: string, b: string): boolean {
   return canonicalizeSubjectId(a) === canonicalizeSubjectId(b);
 }
 
+/** True when two subject *names* (or ids) refer to the same AP subject. */
+export function subjectsMatch(a: string, b: string): boolean {
+  if (!a || !b) return false;
+  if (a === b) return true;
+  if (canonicalizeSubjectName(a) === canonicalizeSubjectName(b)) return true;
+  return canonicalizeSubjectId(a) === canonicalizeSubjectId(b);
+}
+
 /**
  * Map free-typed subject labels onto catalog names when possible
  * (e.g. "US History" → "AP US History").

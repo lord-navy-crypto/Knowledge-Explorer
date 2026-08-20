@@ -198,6 +198,15 @@ This is English learning (grammar / translation / writing / language materials /
 export const LOCAL_ENGLISH_RETRY_NUDGE =
   "Retry: start the English answer NOW. Zero <think> tags. No fake math formulas. Translate or coach in clear language — not an AP science worksheet.";
 
+/** Site Guide Local — navigation only; never densify with AP equation cards. */
+export const LOCAL_GUIDE_NUDGE = `Thinking mode is OFF. Write the visible site-navigation answer immediately — do not open <think> or <thinking> tags.
+
+This is Knowledge Explorer Site Guide — NOT AP science tutoring.
+- Do NOT invent formulas, ## Equations sections, or $...$ math.
+- Name real paths, tabs, and buttons (e.g. /hints, Manage, Concepts).
+- Give numbered steps. If the student asks homework, refuse and point to AI Toolbox AP.
+- Stay short and concrete.`;
+
 export function localNudgeForEnglish(modelId: string): string {
   // Thinking-off still applies for Qwen; English skips the AP depth/formula stack.
   if (shouldDisableThinking(modelId)) return LOCAL_ENGLISH_NUDGE;

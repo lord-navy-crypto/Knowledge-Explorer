@@ -24,7 +24,7 @@ import {
   normalizeSpace,
   spaceAliases,
 } from "@/lib/storage-space";
-import { MAX_UPLOAD_DATA_URL_CHARS } from "@/lib/upload-limits";
+import { MAX_PUBLIC_UPLOAD_DATA_URL_CHARS, MAX_UPLOAD_BATCH_DATA_URL_CHARS, MAX_UPLOAD_DATA_URL_CHARS } from "@/lib/upload-limits";
 
 const forumWriteTimes = new Map<string, number>();
 
@@ -293,6 +293,7 @@ export async function POST(req: NextRequest) {
 
     const token = await tokenFrom(body);
     const current: ManagedContent = normalizeManagedContent(await loadManagedContent(token));
+    let createdId: string | undefined;
 
     if (action === "add_forum_post") {
       const author = String(item.author || "").trim();
@@ -353,7 +354,7 @@ export async function POST(req: NextRequest) {
         // still return success below
       } else {
         current.subjects.push({
-          id: uid("subject"),
+          id: canonicalizeSubjectId(slug),
           slug,
           name,
           shortName: String(item.shortName || name.replace(/^AP /, "")),
@@ -606,9 +607,23 @@ export async function POST(req: NextRequest) {
       if (files.length === 0 || files.length > 10) {
         return NextResponse.json({ error: "Choose between 1 and 10 files" }, { status: 400 });
       }
-      const bulkLimit = publicMaterialsContribution ? 1_000_000 : MAX_UPLOAD_DATA_URL_CHARS;
+      const bulkLimit = publicMaterialsContribution
+        ? MAX_PUBLIC_UPLOAD_DATA_URL_CHARS
+        : MAX_UPLOAD_DATA_URL_CHARS;
+      let batchChars = 0;
       for (const item of files) {
-        if (!item.name || !item.dataUrl || String(item.dataUrl).length > bulkLimit) {
+        const dataUrl = String(item.dataUrl || "");
+        batchChars += dataUrl.length;
+        if (batchChars > MAX_UPLOAD_BATCH_DATA_URL_CHARS) {
+          return NextResponse.json(
+            {
+              error:
+                "This batch is too large for one upload. Send fewer/smaller files (total under ~2.5MB encoded), or upload in smaller batches.",
+            },
+            { status: 413 }
+          );
+        }
+        if (!item.name || !dataUrl || dataUrl.length > bulkLimit) {
           return NextResponse.json({ error: "Each file needs a name and must stay under ~1MB" }, { status: 400 });
         }
         const area = publicMaterialsContribution ? "materials" : item.area ? String(item.area) : undefined;
@@ -742,10 +757,11 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "title and subject required" }, { status: 400 });
       }
       const conceptId = uid(action === "add_topic" ? "m-topic" : "m-concept");
+      const subjectName = canonicalizeSubjectName(String(item.subject));
       current.concepts.push({
         id: conceptId,
         title: String(item.title),
-        subject: String(item.subject),
+        subject: subjectName,
         summary: normalizeAuthoredText(String(item.summary || "")),
         keyPoints: Array.isArray(item.keyPoints) ? item.keyPoints.map(String) : [],
         commonMistakes: Array.isArray(item.commonMistakes) ? item.commonMistakes.map(String) : [],
@@ -755,7 +771,7 @@ export async function POST(req: NextRequest) {
         current.topics.push({
           id: conceptId,
           title: String(item.title),
-          subject: String(item.subject),
+          subject: subjectName,
           summary: normalizeAuthoredText(String(item.summary || "")),
           createdAt: Date.now(),
           area: item.area ? String(item.area) : undefined,
@@ -768,6 +784,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "title and subject required" }, { status: 400 });
       }
       const setId = uid("m-quiz");
+      createdId = setId;
       const firstPrompt = normalizeAuthoredText(String(item.firstPrompt || item.prompt || "")).trim();
       const items: QuestionnaireItem[] = [];
       if (firstPrompt) {
@@ -793,7 +810,7 @@ export async function POST(req: NextRequest) {
       current.questionnaires.push({
         id: setId,
         title: String(item.title),
-        subject: String(item.subject),
+        subject: canonicalizeSubjectName(String(item.subject)),
         kind: "generated",
         description: normalizeAuthoredText(
           String(item.description || "AI-generated practice set added from the UI.")
@@ -892,7 +909,7 @@ export async function POST(req: NextRequest) {
       }
       current.formulas.push({
         id: uid("m-formula"),
-        subject: String(item.subject),
+        subject: canonicalizeSubjectName(String(item.subject)),
         unit: String(item.unit || "Managed"),
         name: String(item.name),
         expression: String(item.expression || ""),
@@ -1132,6 +1149,7 @@ export async function POST(req: NextRequest) {
       ok: true,
       mode: result.mode,
       level,
+      createdId: createdId || undefined,
       // Return the persisted document (real updatedAt) — not the pre-merge snapshot.
       content: slimManagedContent(result.content),
     });

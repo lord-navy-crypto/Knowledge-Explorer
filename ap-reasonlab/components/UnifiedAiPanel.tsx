@@ -35,6 +35,7 @@ import { migrateEnglishTask } from "@/lib/ai-toolbox-url";
 import {
   LOCAL_CODING_RETRY_NUDGE,
   LOCAL_ENGLISH_RETRY_NUDGE,
+  LOCAL_GUIDE_NUDGE,
   localNudgeForCoding,
   localNudgeForEnglish,
 } from "@/lib/ai-reasoning-strip";
@@ -70,11 +71,15 @@ const SUBJECT_OPTIONS = [
   "AP Statistics",
   "AP Chemistry",
   "AP Biology",
+  "AP Environmental Science",
   "AP Psychology",
   "AP Computer Science A",
+  "AP Computer Science Principles",
   "AP Microeconomics",
   "AP Macroeconomics",
   "AP US History",
+  "AP World History",
+  "AP European History",
 ] as const;
 
 const AP_TASKS: Array<{ value: ApTask; label: string; hint: string }> = [
@@ -562,7 +567,7 @@ export default function UnifiedAiPanel({
           userText,
           history,
           onToken,
-          { sitePrefer: "language" }
+          { sitePrefer: "language", nudge: LOCAL_GUIDE_NUDGE }
         );
         return finalizeLocalApMessage(text, {
           meta: "Site guide · Local",
@@ -645,7 +650,7 @@ export default function UnifiedAiPanel({
       // Keep student text + history only here — /api/ai/english adds mode/target controls.
       // Local still gets a light mode label so the model knows which English tool is active.
       const englishUserLocal = `Mode: ${mode}\nExam/track target: ${englishTarget}\nStudent input:\n${userText}`;
-      const englishUserCloud = `${historyPrefix}${userText}`;
+      const englishUserCloud = `${historyPrefix}Latest student message:\n${userText}`;
       const wantLocal = localAI.usesLocal && localAI.ready;
       if (localAI.usesLocal && !localAI.ready) {
         // Local is selected but not enabled — do not hard-fail English; use Website API this turn.
@@ -792,7 +797,7 @@ export default function UnifiedAiPanel({
       body: JSON.stringify({
         language,
         focus: codingTask,
-        task: `${historyPrefix}${taskText}`,
+        task: `${historyPrefix}Latest student message:\n${taskText}`,
         code: codePaste,
         ...localAI.cloudRequestFields,
       }),
@@ -989,7 +994,11 @@ export default function UnifiedAiPanel({
             <button
               key={item.id}
               type="button"
-              onClick={() => setCategory(item.id)}
+              onClick={() => {
+                setCategory(item.id);
+                setMessages([]);
+                setError("");
+              }}
               className={`rounded-xl border px-3 py-3 text-left transition ${
                 category === item.id
                   ? "border-brand-400 bg-brand-50 shadow-sm"
@@ -1149,7 +1158,7 @@ export default function UnifiedAiPanel({
                       <RichContent
                         className="min-w-0 text-sm"
                         streaming={isStreamingReply}
-                        aiDialogue={category === "ap"}
+                        aiDialogue
                       >
                         {message.text}
                       </RichContent>

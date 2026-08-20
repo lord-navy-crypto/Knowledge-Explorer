@@ -14,6 +14,7 @@ import {
   isFolderSpace,
   spaceFromSearchParams,
 } from "@/lib/storage-space";
+import { subjectsMatch } from "@/lib/managed-types";
 
 type Filter = "all" | "concept" | "guide";
 
@@ -79,9 +80,9 @@ function ConceptsContent() {
 
   const subjectFolders = subjects.map((s) => {
     const conceptCount =
-      concepts.filter((c) => c.subject === s).length +
-      managedConcepts.filter((c) => c.subject === s).length;
-    const guideCount = keyConceptGuides.filter((g) => g.subject === s).length;
+      concepts.filter((c) => subjectsMatch(c.subject, s)).length +
+      managedConcepts.filter((c) => subjectsMatch(c.subject, s)).length;
+    const guideCount = keyConceptGuides.filter((g) => subjectsMatch(g.subject, s)).length;
     return {
       id: s,
       title: s,
@@ -104,7 +105,7 @@ function ConceptsContent() {
     if (filter === "all" || filter === "concept") {
       const seen = new Set<string>();
       concepts
-        .filter((c) => c.subject === subject)
+        .filter((c) => subjectsMatch(c.subject, subject || ""))
         .forEach((c) => {
           seen.add(c.id);
           items.push({
@@ -116,7 +117,7 @@ function ConceptsContent() {
           });
         });
       managedConcepts
-        .filter((c) => c.subject === subject && !seen.has(c.id))
+        .filter((c) => subjectsMatch(c.subject, subject || "") && !seen.has(c.id))
         .forEach((c) =>
           items.push({
             kind: "concept",
@@ -129,7 +130,7 @@ function ConceptsContent() {
     }
     if (filter === "all" || filter === "guide") {
       keyConceptGuides
-        .filter((g) => g.subject === subject)
+        .filter((g) => subjectsMatch(g.subject, subject || ""))
         .forEach((g) =>
           items.push({
             kind: "guide",
