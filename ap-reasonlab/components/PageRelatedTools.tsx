@@ -56,10 +56,14 @@ export default function PageRelatedTools({
           <Link
             key={tool.id}
             href={tool.href}
-            className="rounded-xl bg-white px-3 py-2.5 text-sm shadow-sm ring-1 ring-slate-200 hover:ring-brand-300"
+            className={
+              tool.id === "short-code"
+                ? "rounded-xl bg-brand-50 px-3 py-2.5 text-sm shadow-sm ring-1 ring-brand-200 hover:ring-brand-400"
+                : "rounded-xl bg-white px-3 py-2.5 text-sm shadow-sm ring-1 ring-slate-200 hover:ring-brand-300"
+            }
           >
             <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-              Built-in
+              {tool.id === "short-code" ? "Presets" : "Built-in"}
             </span>
             <span className="mt-0.5 block font-semibold text-slate-900">{tool.title}</span>
             <span className="mt-0.5 block text-xs text-slate-600">{tool.blurb}</span>

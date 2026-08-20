@@ -11,6 +11,7 @@ import EditorToolsChrome from "@/components/EditorToolsChrome";
 import StyleWindow from "@/components/StyleWindow";
 import TomatoCloudCircle from "@/components/TomatoCloudCircle";
 import SiteFooter from "@/components/SiteFooter";
+import SiteRelatedToolsBar from "@/components/SiteRelatedToolsBar";
 import { EditorModeProvider } from "@/components/EditorModeProvider";
 import { LocalAIProvider } from "@/components/LocalAIProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -72,6 +73,7 @@ export default function RootLayout({
               <EditorToolsChrome />
               <main className="relative z-[1] mx-auto max-w-6xl px-4 py-8 pb-24 md:pb-8">
                 {children}
+                <SiteRelatedToolsBar />
               </main>
               <RandomPageButton />
               <TomatoCloudCircle />

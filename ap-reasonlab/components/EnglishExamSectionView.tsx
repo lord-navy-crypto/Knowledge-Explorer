@@ -1,11 +1,9 @@
 import Link from "next/link";
 import EnglishPageHeader from "@/components/EnglishPageHeader";
 import EnglishResourcePanel from "@/components/EnglishResourcePanel";
-import PageRelatedTools from "@/components/PageRelatedTools";
 import ToeflListenReplay from "@/components/ToeflListenReplay";
 import ToeflSpeakShadow from "@/components/ToeflSpeakShadow";
 import ToeflWritingTimers from "@/components/ToeflWritingTimers";
-import { ENGLISH_RELATED } from "@/data/english-related-tools";
 import type { EnglishExamConfig, EnglishExamSection } from "@/data/english-exam-sections";
 
 type LaneCopy = {
@@ -148,14 +146,6 @@ export default function EnglishExamSectionView({
       />
 
       {isToefl && section.id === "listening" ? <ToeflListenReplay /> : null}
-
-      {isToefl ? (
-        <PageRelatedTools
-          {...(ENGLISH_RELATED[
-            `toefl-${section.id}` as keyof typeof ENGLISH_RELATED
-          ] ?? ENGLISH_RELATED.hub)}
-        />
-      ) : null}
 
       <p className="text-xs text-slate-500">
         <Link href={exam.hubHref} className="text-brand-600 hover:underline">

@@ -2,9 +2,7 @@ import Link from "next/link";
 import EnglishPageHeader from "@/components/EnglishPageHeader";
 import EnglishResourcePanel from "@/components/EnglishResourcePanel";
 import EnglishSkillsBoard from "@/components/EnglishSkillsBoard";
-import PageRelatedTools from "@/components/PageRelatedTools";
 import { academicVocabulary } from "@/data/english-content";
-import { ENGLISH_RELATED } from "@/data/english-related-tools";
 
 const VOCAB_SUBJECT = "English Vocabulary";
 
@@ -87,8 +85,6 @@ export default function VocabularyPage() {
         defaultSubject={VOCAB_SUBJECT}
         alsoShow={["concept", "questionnaire", "document", "folder"]}
       />
-
-      <PageRelatedTools {...ENGLISH_RELATED.vocabulary} />
     </div>
   );
 }

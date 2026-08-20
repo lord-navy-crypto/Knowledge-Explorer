@@ -396,6 +396,7 @@ export const STUDY_TOOLS: StudyTool[] = [
     title: "Short codes · presets",
     blurb: "Save a short code → link + optional embed window. Create once, reuse anytime (this browser).",
     category: "collab",
+    badge: "Presets",
     security: "local-data",
   },
 
