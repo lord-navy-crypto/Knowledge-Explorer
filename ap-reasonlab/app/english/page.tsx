@@ -25,9 +25,10 @@ export default function EnglishHubPage() {
         </span>
         <h1 className="mt-4 text-4xl font-bold">English Learning Hub</h1>
         <p className="mt-3 max-w-2xl text-lg leading-8 text-blue-100">
-          Two study lanes plus a tutor: <strong className="text-white">Exams</strong> for practice
-          questions, <strong className="text-white">Skills</strong> for core English, and{" "}
-          <strong className="text-white">English AI</strong> when you want feedback.
+          Two study lanes plus a tutor: <strong className="text-white">Exams</strong> for TOEFL
+          daily materials &amp; SAT practice, <strong className="text-white">Skills</strong> for
+          core English, and <strong className="text-white">English AI</strong> when you want
+          feedback.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
@@ -40,7 +41,7 @@ export default function EnglishHubPage() {
             href="#exams"
             className="rounded-xl border border-white/30 px-5 py-2.5 text-sm font-semibold"
           >
-            Exam practice
+            Exam lanes
           </a>
           <a
             href="#skills"
@@ -54,13 +55,12 @@ export default function EnglishHubPage() {
       <section id="exams" className="space-y-3 scroll-mt-24">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rose-700">
-            Exams · practice questions
+            Exams · materials &amp; practice
           </p>
           <h2 className="section-title mt-1">TOEFL · SAT</h2>
           <p className="mt-1 max-w-2xl text-sm text-slate-600">
-            Use these pages for exam-style practice questions: official practice sources and sets
-            you upload. Core language drills live under Basic skills — keep them separate from exam
-            practice.
+            TOEFL is daily materials practice (articles, listening replay, writing 范文, speaking
+            shadow). SAT keeps practice-set folders. Core language drills live under Basic skills.
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

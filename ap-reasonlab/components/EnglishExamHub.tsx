@@ -23,18 +23,29 @@ export default function EnglishExamHub({
       : exam.sections.length === 2
         ? "sm:grid-cols-2"
         : "sm:grid-cols-2 lg:grid-cols-4";
+  const isToefl = exam.id === "toefl";
 
   return (
     <div className="space-y-8">
       <EnglishPageHeader
-        eyebrow="English · Exam · Practice questions"
+        eyebrow={
+          isToefl ? "English · TOEFL · Daily practice" : "English · Exam · Practice questions"
+        }
         title={title}
         description={description}
       />
 
-      <section className="rounded-xl border border-rose-200 bg-rose-50/70 px-4 py-3 text-sm text-rose-950">
-        <p className="font-semibold">Subject file folders</p>
-        <p className="mt-1 text-rose-900/85">
+      <section
+        className={
+          isToefl
+            ? "rounded-xl border border-emerald-200 bg-emerald-50/70 px-4 py-3 text-sm text-emerald-950"
+            : "rounded-xl border border-rose-200 bg-rose-50/70 px-4 py-3 text-sm text-rose-950"
+        }
+      >
+        <p className="font-semibold">
+          {isToefl ? "Four practice lanes (materials, not quizzes)" : "Subject file folders"}
+        </p>
+        <p className={`mt-1 ${isToefl ? "text-emerald-900/85" : "text-rose-900/85"}`}>
           {exam.blurb} Vocabulary and basic skills stay under{" "}
           <Link href="/english#skills" className="font-semibold underline">
             Basic skills
@@ -47,11 +58,13 @@ export default function EnglishExamHub({
         {exam.sections.map((item) => (
           <Link key={item.id} href={item.href} className="card transition hover:border-brand-300">
             <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">
-              {item.short} · folder
+              {item.short} · {isToefl ? "lane" : "folder"}
             </p>
             <h2 className="mt-1 font-semibold text-brand-800">{item.title}</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">{item.description}</p>
-            <p className="mt-3 text-sm font-medium text-brand-700">Open {item.title} folder →</p>
+            <p className="mt-3 text-sm font-medium text-brand-700">
+              Open {item.title} {isToefl ? "lane" : "folder"} →
+            </p>
           </Link>
         ))}
       </section>

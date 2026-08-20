@@ -13,7 +13,8 @@ export const englishExamAreas = [
     href: "/english/toefl",
     title: "TOEFL",
     icon: "T",
-    description: "4 subject folders: Reading, Listening, Writing, Speaking — practice questions per folder.",
+    description:
+      "Daily practice lanes: upload reading articles, listening scripts, writing prompts/范文, and speaking dialogues — no quiz bank.",
   },
   {
     href: "/english/sat",

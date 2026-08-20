@@ -6,8 +6,8 @@ export default function ToeflPage() {
     <EnglishExamHub
       exam={getExamConfig("toefl")}
       title="TOEFL iBT"
-      description="Four subject folders for TOEFL practice questions. Open Reading, Listening, Writing, or Speaking to upload into that folder. Vocabulary and basic skills stay under Basic skills."
-      officialNote="Use ETS for current format and official preparation. Knowledge Explorer is not affiliated with ETS."
+      description="Daily English practice with TOEFL-shaped materials — not a question bank. Reading = articles; Writing = prompts + 范文; Listening = upload + machine replay; Speaking = dialogue shadowing."
+      officialNote="Use ETS for current format and official preparation. Knowledge Explorer is not affiliated with ETS. Our lanes focus on materials and follow-along practice in everyday study time."
       officialLinks={[
         {
           href: "https://www.ets.org/toefl/test-takers/ibt/about/content.html",
