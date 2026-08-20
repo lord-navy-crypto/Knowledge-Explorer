@@ -1,9 +1,11 @@
 import Link from "next/link";
 import EnglishPageHeader from "@/components/EnglishPageHeader";
 import EnglishResourcePanel from "@/components/EnglishResourcePanel";
+import PageRelatedTools from "@/components/PageRelatedTools";
 import ToeflListenReplay from "@/components/ToeflListenReplay";
 import ToeflSpeakShadow from "@/components/ToeflSpeakShadow";
 import ToeflWritingTimers from "@/components/ToeflWritingTimers";
+import { ENGLISH_RELATED } from "@/data/english-related-tools";
 import type { EnglishExamConfig, EnglishExamSection } from "@/data/english-exam-sections";
 
 type LaneCopy = {
@@ -51,9 +53,9 @@ function toeflLaneCopy(sectionId: string): LaneCopy {
         eyebrow: "English · TOEFL · Daily practice",
         headerDescription:
           "Paste dialogues or shadowing lines, play one sentence at a time, and read after the model voice for pronunciation.",
-        guideTitle: "Speaking · dialogue shadowing",
+        guideTitle: "Speaking · dialogue & tongue twisters",
         guideBody:
-          "Optional: upload dialogue sheets below. Main practice is the shadow box — paste lines, play each sentence, then speak along with the same rhythm.",
+          "Load dialogues or tongue twisters, play each line, shadow the model, and optionally score your reading with the mic. Upload sheets below if you want.",
         uploadTitle: "Upload speaking dialogues / shadow sheets (optional)",
       };
     default:
@@ -146,6 +148,15 @@ export default function EnglishExamSectionView({
       />
 
       {isToefl && section.id === "listening" ? <ToeflListenReplay /> : null}
+
+      {isToefl ? (
+        <PageRelatedTools
+          {...(ENGLISH_RELATED[
+            `toefl-${section.id}` as keyof typeof ENGLISH_RELATED
+          ] ?? ENGLISH_RELATED.hub)}
+        />
+      ) : null}
+
       <p className="text-xs text-slate-500">
         <Link href={exam.hubHref} className="text-brand-600 hover:underline">
           Back to {exam.title}
