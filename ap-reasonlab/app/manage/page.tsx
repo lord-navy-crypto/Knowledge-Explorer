@@ -12,6 +12,7 @@ import ResourceEditor from "@/components/ResourceEditor";
 import RichContent from "@/components/RichContent";
 import { AP_CATALOG, type SubjectDefinition } from "@/data/ap-catalog";
 import type { ManagedContent, ManagedContentItem, ManagedUnit } from "@/lib/managed-types";
+import { canonicalizeSubjectId, subjectIdsMatch } from "@/lib/managed-types";
 import MacFinderDesktop from "@/components/MacFinderDesktop";
 import { readResponseJson } from "@/lib/safe-json";
 
@@ -33,7 +34,7 @@ export default function ManagePage() {
 
   // Edit chrome auto-activates sitewide via EditorModeProvider when unlocked.
   const [query, setQuery] = useState("");
-  const [subjectId, setSubjectId] = useState(AP_CATALOG[0].id);
+  const [subjectId, setSubjectId] = useState(() => canonicalizeSubjectId(AP_CATALOG[0].id));
   const [status, setStatus] = useState("all");
   const [changeCode, setChangeCode] = useState("");
   const [githubToken, setGithubToken] = useState("");
@@ -58,22 +59,35 @@ export default function ManagePage() {
   const subjects = useMemo<SubjectDefinition[]>(() => {
     const managed = (data.subjects || []).map((subject) => ({
       ...subject,
+      // Prefer canonical subject-* ids so Manage uploads match AP subject pages.
+      id: canonicalizeSubjectId(subject.id || subject.slug || subject.name),
       shortName: subject.shortName || subject.name,
       description: subject.description || "Managed subject",
       icon: subject.icon || "◇",
       color: subject.color || "blue",
       group: "Humanities" as const,
     }));
-    return [...AP_CATALOG, ...managed.filter((item) => !AP_CATALOG.some((builtIn) => builtIn.slug === item.slug))];
+    const catalog = AP_CATALOG.map((builtIn) => ({
+      ...builtIn,
+      id: canonicalizeSubjectId(builtIn.id || builtIn.slug),
+    }));
+    return [
+      ...catalog,
+      ...managed.filter((item) => !catalog.some((builtIn) => builtIn.slug === item.slug)),
+    ];
   }, [data.subjects]);
 
   const selectedSubject = subjects.find((subject) => subject.id === subjectId) || subjects[0];
-  const units = (data.units || []).filter((unit) => unit.subjectId === subjectId);
+  const units = (data.units || []).filter((unit) => subjectIdsMatch(unit.subjectId, subjectId));
   const activeItems = (data.contentItems || []).filter((item) => !item.deletedAt);
   const trash = (data.contentItems || []).filter((item) => item.deletedAt);
   const filtered = activeItems.filter((item) => {
     const needle = query.trim().toLowerCase();
-    return (subjectId === "all" || item.subjectId === subjectId) && (status === "all" || item.status === status) && (!needle || `${item.title} ${item.content} ${item.tags.join(" ")}`.toLowerCase().includes(needle));
+    return (
+      (subjectId === "all" || subjectIdsMatch(item.subjectId, subjectId)) &&
+      (status === "all" || item.status === status) &&
+      (!needle || `${item.title} ${item.content} ${item.tags.join(" ")}`.toLowerCase().includes(needle))
+    );
   }).sort((a, b) => a.order - b.order || b.updatedAt - a.updatedAt);
 
   async function mutate(action: string, extra: Record<string, unknown>) {
@@ -274,7 +288,7 @@ export default function ManagePage() {
       {tab === "content" && (
         <section className="space-y-4">
           <div className="card grid gap-3 md:grid-cols-4"><input className="input md:col-span-2" type="search" placeholder="Search content…" value={query} onChange={(event) => setQuery(event.target.value)} /><select className="input" value={subjectId} onChange={(event) => setSubjectId(event.target.value)}><option value="all">All subjects</option>{subjects.map((subject) => <option key={subject.id} value={subject.id}>{subject.name}</option>)}</select><select className="input" value={status} onChange={(event) => setStatus(event.target.value)}><option value="all">All statuses</option><option value="draft">Draft</option><option value="published">Published</option></select></div>
-          <div className="space-y-3">{filtered.map((item) => <ContentRow key={item.id} item={item} subject={subjects.find((subject) => subject.id === item.subjectId)} onAction={mutate} onSaved={(content) => setData(content as ManagedContent)} />)}{filtered.length === 0 && <div className="card text-sm text-slate-500">No content matches these filters.</div>}</div>
+          <div className="space-y-3">{filtered.map((item) => <ContentRow key={item.id} item={item} subject={subjects.find((subject) => subjectIdsMatch(subject.id, item.subjectId))} onAction={mutate} onSaved={(content) => setData(content as ManagedContent)} />)}{filtered.length === 0 && <div className="card text-sm text-slate-500">No content matches these filters.</div>}</div>
         </section>
       )}
 

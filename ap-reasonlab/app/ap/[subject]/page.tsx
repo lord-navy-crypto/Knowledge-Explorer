@@ -15,6 +15,7 @@ import { formulas } from "@/data/formulas";
 import { questionnaires } from "@/data/questionnaires";
 import { getSubjectBySlug } from "@/data/ap-catalog";
 import type { ManagedContent, ManagedContentItem } from "@/lib/managed-types";
+import { canonicalizeSubjectId, subjectIdsMatch } from "@/lib/managed-types";
 
 const sectionConfig = [
   { key: "concept", label: "Concepts", icon: "◇" },
@@ -89,12 +90,17 @@ function SubjectWorkspaceContent() {
   }, [params.subject, subject]);
 
   const subjectName = subject?.name || "";
-  const managedSubjectId = managedSubject?.id || params.subject;
+  const managedSubjectId = canonicalizeSubjectId(
+    managedSubject?.id || managedSubject?.slug || params.subject
+  );
 
   const items = useMemo(
     () =>
       (managed.contentItems || []).filter(
-        (item) => item.subjectId === managedSubjectId && !item.deletedAt && item.status === "published"
+        (item) =>
+          subjectIdsMatch(item.subjectId, managedSubjectId) &&
+          !item.deletedAt &&
+          item.status === "published"
       ),
     [managed.contentItems, managedSubjectId]
   );

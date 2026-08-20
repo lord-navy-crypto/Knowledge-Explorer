@@ -26,6 +26,9 @@ export {
   emptyManagedContent,
   normalizeSubjects,
   managedSubjectNames,
+  canonicalizeSubjectId,
+  canonicalizeSubjectName,
+  subjectIdsMatch,
   normalizeManagedContent,
   uid,
 } from "@/lib/managed-types";
@@ -523,6 +526,7 @@ export async function saveManagedContent(
       ...(incoming.topics || []).map((row) => row.id),
       ...(incoming.questionnaires || []).map((row) => row.id),
       ...(incoming.subjects || []).map((row) => row.id),
+      ...(incoming.units || []).map((row) => row.id),
       ...(incoming.contentItems || []).map((row) => row.id),
     ]);
 
@@ -644,6 +648,14 @@ export async function saveManagedContent(
           deletedSet,
           (row) => Number((row as { updatedAt?: number }).updatedAt || 0)
         );
+    const units = clientFresh
+      ? incoming.units
+      : mergeRowsById(
+          live.units || [],
+          incoming.units || [],
+          deletedSet,
+          (row) => Number((row as { createdAt?: number }).createdAt || 0)
+        );
 
     next = normalizeManagedContent({
       ...incoming,
@@ -656,6 +668,7 @@ export async function saveManagedContent(
       topics,
       questionnaires,
       subjects,
+      units,
       contentItems,
       recycleBin: mergedRecycle,
       deletedIds: mergedDeleted,

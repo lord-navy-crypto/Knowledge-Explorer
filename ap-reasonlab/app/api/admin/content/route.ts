@@ -82,8 +82,13 @@ export async function POST(req: NextRequest) {
             members: body.members ?? current.members ?? [],
             folders: body.folders ?? current.folders ?? [],
             subjects: body.subjects ?? current.subjects ?? [],
-            units: body.units ?? current.units ?? [],
-            contentItems: body.contentItems ?? current.contentItems ?? [],
+            units: Array.isArray(body.units) && body.units.length === 0 && !body.replace
+              ? current.units || []
+              : body.units ?? current.units ?? [],
+            contentItems:
+              Array.isArray(body.contentItems) && body.contentItems.length === 0 && !body.replace
+                ? current.contentItems || []
+                : body.contentItems ?? current.contentItems ?? [],
             forumPosts: body.forumPosts ?? current.forumPosts ?? [],
             questionnaires: body.questionnaires ?? current.questionnaires ?? [],
             topics: body.topics ?? current.topics ?? [],

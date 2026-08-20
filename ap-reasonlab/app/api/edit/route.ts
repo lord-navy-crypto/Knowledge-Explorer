@@ -10,6 +10,8 @@ import {
   looksLikeGithubPat,
   sanitizeGithubToken,
   normalizeManagedContent,
+  canonicalizeSubjectId,
+  canonicalizeSubjectName,
   uid,
   type ManagedContent,
 } from "@/lib/managed-store";
@@ -370,7 +372,7 @@ export async function POST(req: NextRequest) {
       }
       current.units.push({
         id: uid("unit"),
-        subjectId: String(item.subjectId),
+        subjectId: canonicalizeSubjectId(String(item.subjectId)),
         title: String(item.title),
         description: item.description ? String(item.description) : undefined,
         order: Number.isFinite(Number(item.order)) ? Number(item.order) : current.units.length,
@@ -388,7 +390,7 @@ export async function POST(req: NextRequest) {
       }
       current.contentItems.unshift({
         id: uid("content"),
-        subjectId: String(item.subjectId),
+        subjectId: canonicalizeSubjectId(String(item.subjectId)),
         unitId: item.unitId ? String(item.unitId) : undefined,
         type: String(item.type) as "concept" | "formula" | "practice" | "document" | "file" | "folder",
         title: String(item.title),
@@ -420,7 +422,7 @@ export async function POST(req: NextRequest) {
         }
         current.contentItems.unshift({
           id: uid("content"),
-          subjectId: String(item.subjectId),
+          subjectId: canonicalizeSubjectId(String(item.subjectId)),
           unitId: item.unitId ? String(item.unitId) : undefined,
           type: String(item.type) as "concept" | "formula" | "practice" | "document" | "file" | "folder",
           title: String(item.title),
@@ -638,10 +640,11 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ error: "Each item needs title and subject" }, { status: 400 });
         }
         const conceptId = uid(asTopic ? "m-topic" : "m-concept");
+        const subjectName = canonicalizeSubjectName(String(item.subject));
         current.concepts.push({
           id: conceptId,
           title: String(item.title),
-          subject: String(item.subject),
+          subject: subjectName,
           summary: normalizeAuthoredText(String(item.summary || "")),
           keyPoints: Array.isArray(item.keyPoints) ? item.keyPoints.map(String) : [],
           commonMistakes: Array.isArray(item.commonMistakes) ? item.commonMistakes.map(String) : [],
@@ -651,7 +654,7 @@ export async function POST(req: NextRequest) {
           current.topics.push({
             id: conceptId,
             title: String(item.title),
-            subject: String(item.subject),
+            subject: subjectName,
             summary: normalizeAuthoredText(String(item.summary || "")),
             createdAt: Date.now(),
             area: item.area ? String(item.area) : undefined,
@@ -673,7 +676,7 @@ export async function POST(req: NextRequest) {
         }
         current.formulas.push({
           id: uid("m-formula"),
-          subject: String(item.subject),
+          subject: canonicalizeSubjectName(String(item.subject)),
           unit: String(item.unit || "Managed"),
           name: String(item.name),
           expression: String(item.expression || ""),
