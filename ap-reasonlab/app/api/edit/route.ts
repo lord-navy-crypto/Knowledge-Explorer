@@ -12,6 +12,8 @@ import {
   normalizeManagedContent,
   canonicalizeSubjectId,
   canonicalizeSubjectName,
+  subjectIdsMatch,
+  subjectsMatch,
   uid,
   type ManagedContent,
 } from "@/lib/managed-store";
@@ -37,6 +39,40 @@ function rememberDeleted(content: ManagedContent, id?: string | null) {
 function forgetDeleted(content: ManagedContent, id?: string | null) {
   if (!id || !Array.isArray(content.deletedIds)) return;
   content.deletedIds = content.deletedIds.filter((entry) => entry !== id);
+}
+
+function buildQuestionnaireItems(raw: unknown, fallbackHint?: string): QuestionnaireItem[] {
+  if (!Array.isArray(raw) || raw.length === 0) return [];
+  const out: QuestionnaireItem[] = [];
+  for (const entry of raw.slice(0, 40)) {
+    if (!entry || typeof entry !== "object") continue;
+    const item = entry as Record<string, unknown>;
+    const prompt = normalizeAuthoredText(String(item.prompt || item.firstPrompt || "")).trim();
+    if (!prompt) continue;
+    out.push({
+      id: uid("m-item"),
+      format: (String(item.format || "concept_check") as QuestionFormat) || "concept_check",
+      prompt,
+      hints: Array.isArray(item.hints)
+        ? item.hints.map((h: unknown) => normalizeAuthoredText(String(h)))
+        : [
+            normalizeAuthoredText(
+              String(item.hint || fallbackHint || "Attempt before asking AI for more hints.")
+            ),
+          ],
+      visibleSteps: Array.isArray(item.visibleSteps)
+        ? item.visibleSteps.map((s: unknown) => normalizeAuthoredText(String(s)))
+        : undefined,
+      blankSteps: Array.isArray(item.blankSteps)
+        ? item.blankSteps.map((s: unknown) => normalizeAuthoredText(String(s)))
+        : undefined,
+      choices: Array.isArray(item.choices) ? item.choices.map(String) : undefined,
+      conceptIntro: item.conceptIntro
+        ? normalizeAuthoredText(String(item.conceptIntro))
+        : undefined,
+    });
+  }
+  return out;
 }
 
 /** Drop heavy dataUrls from save responses so clients don't hit Request Entity Too Large. */
@@ -511,6 +547,22 @@ export async function POST(req: NextRequest) {
         if (!found) return NextResponse.json({ error: "Subject not found" }, { status: 404 });
         if (update.name !== undefined || update.title !== undefined) found.name = text(update.name ?? update.title, 160);
         if (update.description !== undefined) found.description = text(update.description, 2_000);
+      } else if (target === "unit") {
+        const found = current.units.find((entry) => entry.id === id);
+        if (!found) return NextResponse.json({ error: "Unit not found" }, { status: 404 });
+        if (update.title !== undefined) found.title = text(update.title, 160);
+        if (update.description !== undefined) {
+          found.description = String(update.description || "").trim()
+            ? text(update.description, 4_000)
+            : undefined;
+        }
+        if (update.order !== undefined && Number.isFinite(Number(update.order))) {
+          found.order = Number(update.order);
+        }
+        if (update.enabled !== undefined) found.enabled = Boolean(update.enabled);
+        if (update.subjectId !== undefined) {
+          found.subjectId = canonicalizeSubjectId(String(update.subjectId));
+        }
       } else if (target === "member") {
         const found = current.members.find((entry) => entry.id === id);
         if (!found) return NextResponse.json({ error: "Member not found" }, { status: 404 });
@@ -551,10 +603,18 @@ export async function POST(req: NextRequest) {
             createdAt: Date.now(),
           });
         }
-      } else if (entry.target === "formula") current.formulas.unshift(payload as never);
+      }       else if (entry.target === "formula") current.formulas.unshift(payload as never);
       else if (entry.target === "questionnaire") current.questionnaires.unshift(payload as never);
       else if (entry.target === "member") current.members.unshift(payload as never);
-      else if (entry.target === "content_item") {
+      else if (entry.target === "unit") {
+        if (!current.units.some((u) => u.id === restoredId)) {
+          current.units.unshift(payload as never);
+        }
+      } else if (entry.target === "subject") {
+        if (!current.subjects.some((s) => s.id === restoredId)) {
+          current.subjects.unshift(payload as never);
+        }
+      } else if (entry.target === "content_item") {
         const item = current.contentItems.find((c) => c.id === String(payload.id || ""));
         if (item) delete item.deletedAt;
         else current.contentItems.unshift(payload as never);
@@ -785,27 +845,27 @@ export async function POST(req: NextRequest) {
       }
       const setId = uid("m-quiz");
       createdId = setId;
-      const firstPrompt = normalizeAuthoredText(String(item.firstPrompt || item.prompt || "")).trim();
-      const items: QuestionnaireItem[] = [];
-      if (firstPrompt) {
-        items.push({
-          id: uid("m-item"),
-          format: (String(item.format || "concept_check") as QuestionFormat) || "concept_check",
-          prompt: firstPrompt,
-          hints: Array.isArray(item.hints)
-            ? item.hints.map((h: unknown) => normalizeAuthoredText(String(h)))
-            : [normalizeAuthoredText(String(item.hint || "Attempt before asking AI for more hints."))],
-          visibleSteps: Array.isArray(item.visibleSteps)
-            ? item.visibleSteps.map((s: unknown) => normalizeAuthoredText(String(s)))
-            : undefined,
-          blankSteps: Array.isArray(item.blankSteps)
-            ? item.blankSteps.map((s: unknown) => normalizeAuthoredText(String(s)))
-            : undefined,
-          choices: Array.isArray(item.choices) ? item.choices.map(String) : undefined,
-          conceptIntro: item.conceptIntro
-            ? normalizeAuthoredText(String(item.conceptIntro))
-            : undefined,
-        });
+      // Prefer full items[] (one-shot save). Fall back to firstPrompt for older clients.
+      let items = buildQuestionnaireItems(item.items, String(item.hint || ""));
+      if (items.length === 0) {
+        const firstPrompt = normalizeAuthoredText(String(item.firstPrompt || item.prompt || "")).trim();
+        if (firstPrompt) {
+          items = buildQuestionnaireItems(
+            [
+              {
+                prompt: firstPrompt,
+                hint: item.hint,
+                hints: item.hints,
+                format: item.format,
+                visibleSteps: item.visibleSteps,
+                blankSteps: item.blankSteps,
+                choices: item.choices,
+                conceptIntro: item.conceptIntro,
+              },
+            ],
+            String(item.hint || "")
+          );
+        }
       }
       current.questionnaires.push({
         id: setId,
@@ -1078,10 +1138,89 @@ export async function POST(req: NextRequest) {
           current.folders = current.folders.filter((f) => f.id !== id);
         }
       } else if (target === "subject") {
-        rememberDeleted(current, id);
-        current.subjects = current.subjects.filter(
-          (s) => s.id !== id && s.name !== id && s.slug !== id
-        );
+        const found =
+          current.subjects.find(
+            (s) => s.id === id || s.slug === id || s.name === id || subjectIdsMatch(s.id, id)
+          ) || null;
+        if (!found) {
+          // Still allow cascading cleanup for catalog-only ids with no managed twin.
+          const canonId = canonicalizeSubjectId(id);
+          const canonName = canonicalizeSubjectName(id);
+          const unitIds = current.units
+            .filter((u) => subjectIdsMatch(u.subjectId, canonId) || subjectIdsMatch(u.subjectId, id))
+            .map((u) => u.id);
+          for (const unit of current.units.filter((u) => unitIds.includes(u.id))) {
+            pushRecycle("unit", unit.title, unit);
+          }
+          current.units = current.units.filter((u) => !unitIds.includes(u.id));
+          for (const item of current.contentItems.filter(
+            (row) => subjectIdsMatch(row.subjectId, canonId) || subjectIdsMatch(row.subjectId, id)
+          )) {
+            item.deletedAt = Date.now();
+            item.updatedAt = Date.now();
+            pushRecycle("content_item", item.title, { ...item });
+          }
+          const dropConcepts = current.concepts.filter((c) => subjectsMatch(c.subject, canonName));
+          for (const c of dropConcepts) pushRecycle("concept", c.title, c);
+          current.concepts = current.concepts.filter((c) => !subjectsMatch(c.subject, canonName));
+          current.topics = current.topics.filter((t) => !subjectsMatch(t.subject, canonName));
+          const dropFormulas = current.formulas.filter((f) => subjectsMatch(f.subject, canonName));
+          for (const f of dropFormulas) pushRecycle("formula", f.name, f);
+          current.formulas = current.formulas.filter((f) => !subjectsMatch(f.subject, canonName));
+          const dropQuizzes = current.questionnaires.filter((q) => subjectsMatch(q.subject, canonName));
+          for (const q of dropQuizzes) pushRecycle("questionnaire", q.title, q);
+          current.questionnaires = current.questionnaires.filter(
+            (q) => !subjectsMatch(q.subject, canonName)
+          );
+          rememberDeleted(current, id);
+          rememberDeleted(current, canonId);
+        } else {
+          const canonId = canonicalizeSubjectId(found.id || found.slug);
+          const unitIds = current.units
+            .filter((u) => subjectIdsMatch(u.subjectId, found.id) || subjectIdsMatch(u.subjectId, canonId))
+            .map((u) => u.id);
+          for (const unit of current.units.filter((u) => unitIds.includes(u.id))) {
+            pushRecycle("unit", unit.title, unit);
+          }
+          current.units = current.units.filter((u) => !unitIds.includes(u.id));
+          for (const item of current.contentItems.filter(
+            (row) =>
+              subjectIdsMatch(row.subjectId, found.id) || subjectIdsMatch(row.subjectId, canonId)
+          )) {
+            item.deletedAt = Date.now();
+            item.updatedAt = Date.now();
+            pushRecycle("content_item", item.title, { ...item });
+          }
+          const dropConcepts = current.concepts.filter((c) => subjectsMatch(c.subject, found.name));
+          for (const c of dropConcepts) pushRecycle("concept", c.title, c);
+          current.concepts = current.concepts.filter((c) => !subjectsMatch(c.subject, found.name));
+          current.topics = current.topics.filter((t) => !subjectsMatch(t.subject, found.name));
+          const dropFormulas = current.formulas.filter((f) => subjectsMatch(f.subject, found.name));
+          for (const f of dropFormulas) pushRecycle("formula", f.name, f);
+          current.formulas = current.formulas.filter((f) => !subjectsMatch(f.subject, found.name));
+          const dropQuizzes = current.questionnaires.filter((q) =>
+            subjectsMatch(q.subject, found.name)
+          );
+          for (const q of dropQuizzes) pushRecycle("questionnaire", q.title, q);
+          current.questionnaires = current.questionnaires.filter(
+            (q) => !subjectsMatch(q.subject, found.name)
+          );
+          pushRecycle("subject", found.name, found);
+          current.subjects = current.subjects.filter((s) => s.id !== found.id);
+        }
+      } else if (target === "unit") {
+        const found = current.units.find((entry) => entry.id === id);
+        if (found) {
+          pushRecycle("unit", found.title, found);
+          current.units = current.units.filter((entry) => entry.id !== id);
+          // Detach content items from this unit (keep items, clear unitId).
+          for (const item of current.contentItems) {
+            if (item.unitId === id) {
+              item.unitId = undefined;
+              item.updatedAt = Date.now();
+            }
+          }
+        }
       } else if (target === "questionnaire") {
         const found = current.questionnaires.find((q) => q.id === id);
         if (found) {

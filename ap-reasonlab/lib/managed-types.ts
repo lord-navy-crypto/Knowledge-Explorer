@@ -174,7 +174,9 @@ export type ManagedRecycleEntry = {
     | "formula"
     | "questionnaire"
     | "content_item"
-    | "member";
+    | "member"
+    | "unit"
+    | "subject";
   label: string;
   deletedAt: number;
   payload: unknown;

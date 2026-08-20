@@ -301,8 +301,82 @@ export default function ManagePage() {
 
       {tab === "units" && (
         <section className="grid gap-5 lg:grid-cols-[1fr_1.3fr]">
-          <form onSubmit={addUnit} className="card space-y-3"><h2 className="text-xl font-bold">Add unit</h2><select className="input" value={subjectId === "all" ? subjects[0].id : subjectId} onChange={(event) => setSubjectId(event.target.value)}>{subjects.map((subject) => <option key={subject.id} value={subject.id}>{subject.name}</option>)}</select><input className="input" placeholder="Unit title" value={newUnit.title} onChange={(event) => setNewUnit({ ...newUnit, title: event.target.value })} required /><textarea className="textarea" placeholder="Unit description" value={newUnit.description} onChange={(event) => setNewUnit({ ...newUnit, description: event.target.value })} /><button className="btn-primary">Add unit</button></form>
-          <div className="card"><h2 className="text-xl font-bold">Configured units</h2><div className="mt-4 space-y-2">{units.map((unit, index) => <div key={unit.id} className="rounded-xl border border-slate-200 p-3"><span className="text-xs text-slate-400">Unit {index + 1}</span><h3 className="font-semibold">{unit.title}</h3>{unit.description && <p className="text-sm text-slate-600">{unit.description}</p>}</div>)}{units.length === 0 && <p className="text-sm text-slate-500">Choose a subject and add its first unit.</p>}</div></div>
+          <form onSubmit={addUnit} className="card space-y-3">
+            <h2 className="text-xl font-bold">Add unit</h2>
+            <select
+              className="input"
+              value={subjectId === "all" ? subjects[0].id : subjectId}
+              onChange={(event) => setSubjectId(event.target.value)}
+            >
+              {subjects.map((subject) => (
+                <option key={subject.id} value={subject.id}>
+                  {subject.name}
+                </option>
+              ))}
+            </select>
+            <input
+              className="input"
+              placeholder="Unit title"
+              value={newUnit.title}
+              onChange={(event) => setNewUnit({ ...newUnit, title: event.target.value })}
+              required
+            />
+            <textarea
+              className="textarea"
+              placeholder="Unit description"
+              value={newUnit.description}
+              onChange={(event) => setNewUnit({ ...newUnit, description: event.target.value })}
+            />
+            <button className="btn-primary">Add unit</button>
+          </form>
+          <div className="card">
+            <h2 className="text-xl font-bold">Configured units</h2>
+            <div className="mt-4 space-y-2">
+              {units.map((unit, index) => (
+                <div key={unit.id} className="rounded-xl border border-slate-200 p-3">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <span className="text-xs text-slate-400">Unit {index + 1}</span>
+                      <h3 className="font-semibold">{unit.title}</h3>
+                      {unit.description ? (
+                        <p className="text-sm text-slate-600">{unit.description}</p>
+                      ) : null}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        className="btn-secondary text-xs"
+                        onClick={async () => {
+                          const title = window.prompt("Rename unit", unit.title);
+                          if (title == null) return;
+                          const next = title.trim();
+                          if (!next || next === unit.title) return;
+                          await mutate("update", { target: "unit", id: unit.id, update: { title: next } });
+                        }}
+                      >
+                        Rename
+                      </button>
+                      <button
+                        type="button"
+                        className="rounded-md border border-red-200 px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-50"
+                        onClick={async () => {
+                          if (!window.confirm(`Delete unit “${unit.title}”? Content items stay; they just leave this unit.`)) {
+                            return;
+                          }
+                          await mutate("delete", { target: "unit", id: unit.id });
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {units.length === 0 && (
+                <p className="text-sm text-slate-500">Choose a subject and add its first unit.</p>
+              )}
+            </div>
+          </div>
         </section>
       )}
 

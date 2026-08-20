@@ -63,10 +63,13 @@ export default function SaveGeneratedPractice({
           title: title.trim(),
           subject: subject.trim(),
           description: description.trim() || firstParagraph(practiceText),
-          firstPrompt: cleaned[0].prompt,
           generationNote: generationNote.trim(),
           estimatedMinutes: Number(minutes) || 20,
-          hint: cleaned[0].hint || "Attempt before asking for more hints.",
+          items: cleaned.map((q) => ({
+            prompt: q.prompt,
+            hint: q.hint || "Attempt before asking for more hints.",
+            format: "concept_check",
+          })),
         },
       };
 
@@ -90,33 +93,6 @@ export default function SaveGeneratedPractice({
           .reverse()
           .find((q) => q.title === title.trim())?.id;
       if (!setId) throw new Error("Practice set saved but id not returned — check Practice.");
-
-      for (let i = 1; i < cleaned.length; i += 1) {
-        const extra = cleaned[i];
-        const itemRes = await fetch("/api/edit", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            action: "add_questionnaire_item",
-            setId,
-            changeCode: changeCode.trim() || undefined,
-            githubToken: githubToken.trim() || undefined,
-            item: {
-              prompt: extra.prompt,
-              hints: [extra.hint || "Attempt before asking for more hints."],
-              format: "concept_check",
-            },
-          }),
-        });
-        const itemParsed = await readResponseJson<{ error?: string }>(itemRes);
-        if (!itemParsed.ok) {
-          throw new Error(itemParsed.error || `Failed to add question ${i + 1}`);
-        }
-        if (!itemRes.ok) {
-          throw new Error(itemParsed.data.error || `Failed to add question ${i + 1}`);
-        }
-      }
 
       setSavedId(setId);
       setOpen(false);
