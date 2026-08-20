@@ -8,6 +8,8 @@ import MarkdownLatexField from "@/components/MarkdownLatexField";
 import { readResponseJson } from "@/lib/safe-json";
 import { sortNotesWithAi } from "@/lib/structure-concept-client";
 import { assertUploadableDataUrl, assertUploadableFile } from "@/lib/upload-limits";
+import { AP_CATALOG } from "@/data/ap-catalog";
+import { canonicalizeSubjectName } from "@/lib/managed-types";
 
 export type ChangeMode =
   | "concept"
@@ -290,7 +292,7 @@ export default function ChangePanel({
           action = mode === "topic" ? "add_topics" : "add_concepts";
           items = cleaned.map((row) => ({
             title: row.title,
-            subject,
+            subject: canonicalizeSubjectName(subject),
             summary: row.content,
             keyPoints: [],
             commonMistakes: [],
@@ -302,7 +304,7 @@ export default function ChangePanel({
           action = "add_formulas";
           items = cleaned.map((row) => ({
             name: row.title,
-            subject,
+            subject: canonicalizeSubjectName(subject),
             unit: "Managed",
             expression: "",
             content: row.content,
@@ -413,13 +415,25 @@ export default function ChangePanel({
             mode === "topic" ||
             mode === "formula" ||
             mode === "questionnaire") && (
-            <input
-              className="input"
-              placeholder="Subject (shared for all rows, e.g. AP Statistics)"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              required
-            />
+            <div className="space-y-1">
+              <input
+                className="input"
+                list="ke-subject-catalog"
+                placeholder="Subject (pick from list — e.g. AP US History)"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                onBlur={() => setSubject((prev) => canonicalizeSubjectName(prev))}
+                required
+              />
+              <datalist id="ke-subject-catalog">
+                {AP_CATALOG.map((s) => (
+                  <option key={s.slug} value={s.name} />
+                ))}
+              </datalist>
+              <p className="text-[11px] text-slate-500">
+                Pick the exact AP subject name so uploads do not land in the wrong folder.
+              </p>
+            </div>
           )}
 
           {multiMode && mode !== "file" ? (

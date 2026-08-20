@@ -316,6 +316,57 @@ export function managedSubjectNames(subjects: ManagedSubject[] | unknown): strin
   return normalizeSubjects(subjects).map((s) => s.name);
 }
 
+/**
+ * Canonical managed subject id: always `subject-{slug}`.
+ * Fixes Manage (catalog id `environmental-science`) vs AP page (`subject-environmental-science`) mismatch.
+ */
+export function canonicalizeSubjectId(idOrSlugOrName: string): string {
+  const raw = String(idOrSlugOrName || "").trim();
+  if (!raw) return raw;
+  const withoutPrefix = raw.replace(/^subject-/i, "");
+  const hit =
+    AP_CATALOG.find(
+      (s) =>
+        s.id === raw ||
+        s.slug === raw ||
+        s.id === withoutPrefix ||
+        s.slug === withoutPrefix ||
+        s.name === raw ||
+        s.shortName === raw
+    ) || null;
+  if (hit) return `subject-${hit.slug}`;
+  if (/^subject-/i.test(raw)) return `subject-${subjectSlug(withoutPrefix)}`;
+  return `subject-${subjectSlug(raw)}`;
+}
+
+/** True when two subject ids/slugs refer to the same subject. */
+export function subjectIdsMatch(a: string, b: string): boolean {
+  if (!a || !b) return false;
+  if (a === b) return true;
+  return canonicalizeSubjectId(a) === canonicalizeSubjectId(b);
+}
+
+/**
+ * Map free-typed subject labels onto catalog names when possible
+ * (e.g. "US History" → "AP US History").
+ */
+export function canonicalizeSubjectName(name: string): string {
+  const n = String(name || "").trim();
+  if (!n) return n;
+  const exact = AP_CATALOG.find(
+    (s) => s.name === n || s.shortName === n || s.name.toLowerCase() === n.toLowerCase()
+  );
+  if (exact) return exact.name;
+  const stripped = n.replace(/^ap\s+/i, "").trim().toLowerCase();
+  if (stripped.length < 3) return n;
+  const fuzzy = AP_CATALOG.find((s) => {
+    const short = s.shortName.toLowerCase();
+    const full = s.name.toLowerCase().replace(/^ap\s+/, "");
+    return short === stripped || full === stripped;
+  });
+  return fuzzy?.name || n;
+}
+
 /** Merge built-in AP catalog into managed subjects so hubs/Manage never look empty. */
 export function mergeBuiltinSubjects(subjects: ManagedSubject[]): ManagedSubject[] {
   const bySlug = new Map<string, ManagedSubject>();
@@ -374,8 +425,14 @@ export function normalizeManagedContent(
     members: Array.isArray(raw.members) ? raw.members : [],
     folders: migrateLegacyEnglishExamSpaces(Array.isArray(raw.folders) ? [...raw.folders] : []),
     subjects: mergeBuiltinSubjects(normalizeSubjects(raw.subjects)),
-    units: Array.isArray(raw.units) ? raw.units : [],
-    contentItems: Array.isArray(raw.contentItems) ? raw.contentItems : [],
+    units: (Array.isArray(raw.units) ? raw.units : []).map((unit) => ({
+      ...unit,
+      subjectId: canonicalizeSubjectId(String(unit.subjectId || "")),
+    })),
+    contentItems: (Array.isArray(raw.contentItems) ? raw.contentItems : []).map((item) => ({
+      ...item,
+      subjectId: canonicalizeSubjectId(String(item.subjectId || "")),
+    })),
     forumPosts: Array.isArray(raw.forumPosts) ? raw.forumPosts : [],
     questionnaires: Array.isArray(raw.questionnaires) ? raw.questionnaires : [],
     topics: Array.isArray(raw.topics) ? raw.topics : [],
