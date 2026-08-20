@@ -89,8 +89,8 @@ export default function EnglishHubPage() {
           </p>
           <h2 className="section-title mt-1">Vocabulary · Grammar</h2>
           <p className="mt-1 max-w-2xl text-sm text-slate-600">
-            Build language ability here — words and sentences. Writing materials live under TOEFL
-            Writing (prompts + 范文), not a second skills card.
+            Build language ability here — words and sentences. Each page can add theory cubes and
+            practice sets (same flow as AP Concepts). Writing materials live under TOEFL Writing.
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
