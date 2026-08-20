@@ -66,7 +66,6 @@ export const SITE_SECTION_FOLDERS: SiteSectionFolder[] = [
       ...allEnglishExamSectionSpaces(),
       { area: "english", space: "vocabulary", label: "Vocabulary", href: "/english/vocabulary" },
       { area: "english", space: "grammar", label: "Grammar", href: "/english/grammar" },
-      { area: "english", space: "writing", label: "Writing", href: "/english/writing" },
     ],
   },
   {

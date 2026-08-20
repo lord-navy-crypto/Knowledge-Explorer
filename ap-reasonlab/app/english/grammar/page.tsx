@@ -16,8 +16,8 @@ export default function GrammarPage() {
         <Link href="/tools/paraphrase" className="btn-secondary">
           Paraphrase compare
         </Link>
-        <Link href="/english/writing" className="btn-secondary">
-          Writing workshop
+        <Link href="/english/toefl/writing" className="btn-secondary">
+          TOEFL Writing
         </Link>
         <Link href="/english/ai" className="btn-primary">
           English AI Tutor

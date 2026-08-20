@@ -87,10 +87,10 @@ export default function EnglishHubPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-indigo-700">
             Skills · real English
           </p>
-          <h2 className="section-title mt-1">Vocabulary · Grammar · Writing</h2>
+          <h2 className="section-title mt-1">Vocabulary · Grammar</h2>
           <p className="mt-1 max-w-2xl text-sm text-slate-600">
-            Build language ability here — words, sentences, and writing craft. Not exam practice
-            sets.
+            Build language ability here — words and sentences. Writing materials live under TOEFL
+            Writing (prompts + 范文), not a second skills card.
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

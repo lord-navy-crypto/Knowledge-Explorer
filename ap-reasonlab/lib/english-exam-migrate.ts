@@ -36,6 +36,9 @@ function remapLegacyExamSpace(space: string, label: string): string {
     return "sat-english";
   }
 
+  // Skills Writing page removed — fold uploads into TOEFL Writing
+  if (n === "writing") return "toefl-writing";
+
   return n;
 }
 
