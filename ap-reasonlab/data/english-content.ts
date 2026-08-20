@@ -38,12 +38,6 @@ export const englishSkillAreas = [
     icon: "G",
     description: "Sentence control, clauses, transitions, and revision.",
   },
-  {
-    href: "/english/writing",
-    title: "Writing",
-    icon: "W",
-    description: "Paragraph logic, evidence, clarity, and draft revision.",
-  },
 ] as const;
 
 /** Local practice tools that support skills (not exam practice sets). */
