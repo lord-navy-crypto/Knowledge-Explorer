@@ -393,8 +393,8 @@ export const STUDY_TOOLS: StudyTool[] = [
   {
     id: "short-code",
     href: "/tools/short-code",
-    title: "Short codes (local)",
-    blurb: "Map short codes to URLs/notes in this browser for class sharing.",
+    title: "Short codes · presets",
+    blurb: "Save a short code → link + optional embed window. Create once, reuse anytime (this browser).",
     category: "collab",
     security: "local-data",
   },

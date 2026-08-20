@@ -1,10 +1,12 @@
 import Link from "next/link";
 import EnglishResourcePanel from "@/components/EnglishResourcePanel";
+import PageRelatedTools from "@/components/PageRelatedTools";
 import {
   englishExamAreas,
   englishPracticeTools,
   englishSkillAreas,
 } from "@/data/english-content";
+import { ENGLISH_RELATED } from "@/data/english-related-tools";
 
 export default function EnglishHubPage() {
   return (
@@ -150,6 +152,8 @@ export default function EnglishHubPage() {
       </section>
 
       <EnglishResourcePanel space="_root" title="English shared resources" />
+
+      <PageRelatedTools {...ENGLISH_RELATED.hub} />
     </div>
   );
 }

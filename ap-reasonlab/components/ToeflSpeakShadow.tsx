@@ -1,12 +1,28 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ToeflPracticeTimer from "@/components/ToeflPracticeTimer";
 import {
   listEnglishVoices,
   speakEnglish,
   whenVoicesReady,
 } from "@/lib/english-tts";
+
+const TONGUE_TWISTER_PACK = `She sells seashells by the seashore.
+The thirty-three thieves thought that they thrilled the throne throughout Thursday.
+Red leather, yellow leather.
+Unique New York, unique New York.
+How much wood would a woodchuck chuck if a woodchuck could chuck wood?
+Fresh fried fish, fish fresh fried.
+Irish wristwatch, Swiss wristwatch.
+Six slippery snails slid slowly seaward.
+Betty Botter bought some butter, but she said the butter’s bitter.
+A proper copper coffee pot.`;
+
+const DIALOGUE_PACK = `A: Could you tell me where the library is?
+B: Sure — go straight, then turn left at the fountain.
+A: How long does it usually take to walk there?
+B: About ten minutes if you keep a steady pace.`;
 
 function splitLines(text: string): string[] {
   return text
@@ -16,20 +32,64 @@ function splitLines(text: string): string[] {
     .filter(Boolean);
 }
 
-/** Paste dialogue / shadow lines → natural English TTS + 40s response timer. */
+function normalizeWords(text: string): string[] {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s']/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .split(" ")
+    .filter(Boolean);
+}
+
+function scoreOverlap(target: string, heard: string): number | null {
+  const a = normalizeWords(target);
+  const b = normalizeWords(heard);
+  if (!a.length || !b.length) return null;
+  const bag = new Set(b);
+  let hit = 0;
+  for (const w of a) if (bag.has(w)) hit += 1;
+  return Math.round((hit / a.length) * 100);
+}
+
+type SpeechRec = {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onresult: ((ev: { results: ArrayLike<{ 0: { transcript: string }; isFinal: boolean }> }) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+};
+
+function getSpeechRecognition(): (new () => SpeechRec) | null {
+  if (typeof window === "undefined") return null;
+  const w = window as Window & {
+    SpeechRecognition?: new () => SpeechRec;
+    webkitSpeechRecognition?: new () => SpeechRec;
+  };
+  return w.SpeechRecognition || w.webkitSpeechRecognition || null;
+}
+
+/** Paste dialogue / tongue twisters → natural English TTS + mic score + 40s timer. */
 export default function ToeflSpeakShadow() {
-  const [corpus, setCorpus] = useState(
-    "A: Could you tell me where the library is?\nB: Sure — go straight, then turn left at the fountain.\nA: How long does it usually take to walk there?\nB: About ten minutes if you keep a steady pace."
-  );
+  const [corpus, setCorpus] = useState(DIALOGUE_PACK);
+  const [packLabel, setPackLabel] = useState("Dialogue");
   const [rate, setRate] = useState(0.9);
   const [index, setIndex] = useState(0);
   const [speaking, setSpeaking] = useState(false);
   const [autoAdvance, setAutoAdvance] = useState(false);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [voiceName, setVoiceName] = useState("");
+  const [listening, setListening] = useState(false);
+  const [heard, setHeard] = useState("");
+  const [score, setScore] = useState<number | null>(null);
+  const recRef = useRef<SpeechRec | null>(null);
 
   const lines = useMemo(() => splitLines(corpus), [corpus]);
   const current = lines[Math.min(index, Math.max(lines.length - 1, 0))] || "";
+  const canMic = typeof window !== "undefined" && Boolean(getSpeechRecognition());
 
   useEffect(() => {
     return whenVoicesReady((list) => {
@@ -41,8 +101,26 @@ export default function ToeflSpeakShadow() {
   useEffect(() => {
     return () => {
       if (typeof window !== "undefined") window.speechSynthesis?.cancel();
+      try {
+        recRef.current?.stop();
+      } catch {
+        /* ignore */
+      }
     };
   }, []);
+
+  function loadPack(kind: "dialogue" | "twisters") {
+    if (kind === "twisters") {
+      setCorpus(TONGUE_TWISTER_PACK);
+      setPackLabel("Tongue twisters");
+    } else {
+      setCorpus(DIALOGUE_PACK);
+      setPackLabel("Dialogue");
+    }
+    setIndex(0);
+    setHeard("");
+    setScore(null);
+  }
 
   function speakLine(text: string, thenNext?: boolean) {
     if (!text) return;
@@ -65,28 +143,87 @@ export default function ToeflSpeakShadow() {
     speakLine(current, autoAdvance && index < lines.length - 1);
   }
 
+  function stopMic() {
+    try {
+      recRef.current?.stop();
+    } catch {
+      /* ignore */
+    }
+    recRef.current = null;
+    setListening(false);
+  }
+
+  function startMicScore() {
+    const Ctor = getSpeechRecognition();
+    if (!Ctor || !current) {
+      window.alert("Live mic scoring needs Chrome or Edge.");
+      return;
+    }
+    stopMic();
+    setHeard("");
+    setScore(null);
+    const rec = new Ctor();
+    rec.lang = "en-US";
+    rec.continuous = false;
+    rec.interimResults = true;
+    rec.onresult = (ev) => {
+      let text = "";
+      for (let i = 0; i < ev.results.length; i++) {
+        text += ev.results[i][0].transcript + " ";
+      }
+      const trimmed = text.trim();
+      setHeard(trimmed);
+      const s = scoreOverlap(current, trimmed);
+      setScore(s);
+    };
+    rec.onerror = () => setListening(false);
+    rec.onend = () => setListening(false);
+    recRef.current = rec;
+    try {
+      rec.start();
+      setListening(true);
+    } catch {
+      setListening(false);
+      window.alert("Could not start the microphone.");
+    }
+  }
+
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_16rem]">
       <section className="space-y-4 rounded-2xl border border-violet-200 bg-violet-50/50 p-5">
         <div>
-          <h2 className="text-lg font-semibold text-violet-950">Speak · shadow each line</h2>
+          <h2 className="text-lg font-semibold text-violet-950">
+            Speak · shadow &amp; tongue twisters
+          </h2>
           <p className="mt-1 text-sm leading-6 text-violet-900/80">
-            Paste dialogues or shadowing lines. Model audio uses a selected{" "}
-            <strong>English</strong> voice. Use the 40-second timer beside you for response
-            practice.
+            Load a dialogue or tongue-twister pack, play the model voice, then score your follow-along
+            with the mic (approximate word match — not a formal speaking grade).
           </p>
         </div>
 
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className="btn-secondary text-sm" onClick={() => loadPack("dialogue")}>
+            Load dialogue pack
+          </button>
+          <button type="button" className="btn-primary text-sm" onClick={() => loadPack("twisters")}>
+            Load tongue twisters
+          </button>
+          <span className="self-center text-xs text-slate-500">Active: {packLabel}</span>
+        </div>
+
         <label className="block text-sm font-medium text-slate-700">
-          Dialogue / shadow corpus
+          Dialogue / tongue-twister corpus
           <textarea
             className="input mt-1 min-h-[10rem]"
             value={corpus}
             onChange={(e) => {
               setCorpus(e.target.value);
+              setPackLabel("Custom");
               setIndex(0);
+              setHeard("");
+              setScore(null);
             }}
-            placeholder={"A: …\nB: …\nOne sentence per line works best."}
+            placeholder={"One sentence per line works best."}
           />
         </label>
 
@@ -158,8 +295,20 @@ export default function ToeflSpeakShadow() {
           <button
             type="button"
             className="btn-secondary"
+            disabled={!current || !canMic}
+            onClick={() => (listening ? stopMic() : startMicScore())}
+          >
+            {listening ? "Stop mic score…" : "Score my reading (mic)"}
+          </button>
+          <button
+            type="button"
+            className="btn-secondary"
             disabled={index <= 0}
-            onClick={() => setIndex((i) => Math.max(0, i - 1))}
+            onClick={() => {
+              setIndex((i) => Math.max(0, i - 1));
+              setHeard("");
+              setScore(null);
+            }}
           >
             Previous line
           </button>
@@ -167,7 +316,11 @@ export default function ToeflSpeakShadow() {
             type="button"
             className="btn-secondary"
             disabled={index >= lines.length - 1}
-            onClick={() => setIndex((i) => Math.min(lines.length - 1, i + 1))}
+            onClick={() => {
+              setIndex((i) => Math.min(lines.length - 1, i + 1));
+              setHeard("");
+              setScore(null);
+            }}
           >
             Next line
           </button>
@@ -177,11 +330,36 @@ export default function ToeflSpeakShadow() {
             onClick={() => {
               window.speechSynthesis?.cancel();
               setSpeaking(false);
+              stopMic();
             }}
           >
             Stop
           </button>
         </div>
+
+        {score != null || heard ? (
+          <div className="rounded-xl border border-violet-100 bg-white px-4 py-3 text-sm text-slate-700">
+            <p>
+              Practice score:{" "}
+              <span className="font-bold tabular-nums text-violet-800">
+                {score == null ? "—" : `${score}%`}
+              </span>
+              <span className="ml-2 text-xs text-slate-500">
+                (word overlap vs model line — approximate)
+              </span>
+            </p>
+            {heard ? (
+              <p className="mt-1 text-xs text-slate-500">
+                Heard: <span className="text-slate-700">{heard}</span>
+              </p>
+            ) : null}
+            {!canMic ? (
+              <p className="mt-1 text-xs text-amber-700">
+                Mic scoring needs Chrome/Edge. You can still shadow without a score.
+              </p>
+            ) : null}
+          </div>
+        ) : null}
       </section>
 
       <ToeflPracticeTimer
