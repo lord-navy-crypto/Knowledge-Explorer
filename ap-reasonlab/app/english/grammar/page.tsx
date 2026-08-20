@@ -2,9 +2,7 @@ import Link from "next/link";
 import EnglishPageHeader from "@/components/EnglishPageHeader";
 import EnglishResourcePanel from "@/components/EnglishResourcePanel";
 import EnglishSkillsBoard from "@/components/EnglishSkillsBoard";
-import PageRelatedTools from "@/components/PageRelatedTools";
 import { sentencePatterns } from "@/data/english-content";
-import { ENGLISH_RELATED } from "@/data/english-related-tools";
 
 const GRAMMAR_SUBJECT = "English Grammar";
 
@@ -73,8 +71,6 @@ export default function GrammarPage() {
         defaultSubject={GRAMMAR_SUBJECT}
         alsoShow={["concept", "questionnaire", "document", "folder"]}
       />
-
-      <PageRelatedTools {...ENGLISH_RELATED.grammar} />
     </div>
   );
 }
