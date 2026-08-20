@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import StudyToolShell from "@/components/StudyToolShell";
+import { listEnglishVoices, speakEnglish, whenVoicesReady } from "@/lib/english-tts";
 
 export default function DictationTool() {
   const [prompt, setPrompt] = useState(
@@ -10,6 +11,15 @@ export default function DictationTool() {
   const [answer, setAnswer] = useState("");
   const [revealed, setRevealed] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [voiceName, setVoiceName] = useState("");
+
+  useEffect(() => {
+    return whenVoicesReady((list) => {
+      setVoices(list);
+      setVoiceName((prev) => prev || list[0]?.name || "");
+    });
+  }, []);
 
   const score = useMemo(() => {
     const norm = (s: string) =>
@@ -31,24 +41,47 @@ export default function DictationTool() {
   }, [prompt, answer]);
 
   function speak() {
-    if (typeof window === "undefined" || !window.speechSynthesis) {
-      window.alert("Speech synthesis is not available in this browser.");
-      return;
-    }
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(prompt);
-    u.rate = 0.9;
-    u.onstart = () => setSpeaking(true);
-    u.onend = () => setSpeaking(false);
-    window.speechSynthesis.speak(u);
+    const ok = speakEnglish(prompt, {
+      rate: 0.9,
+      voiceName: voiceName || undefined,
+      onStart: () => setSpeaking(true),
+      onEnd: () => setSpeaking(false),
+      onError: () => setSpeaking(false),
+    });
+    if (!ok) window.alert("Speech synthesis is not available in this browser.");
   }
 
   return (
     <StudyToolShell
       title="Dictation"
-      description="Listen to a sentence (browser speech), type what you hear, then check against the original."
-      tip="Uses your device’s speech synthesis — quality varies by browser/OS. Hide the prompt before you play."
+      description="Listen to a sentence (natural English voice), type what you hear, then check against the original."
+      tip="Picks an English TTS voice automatically — change it below if your browser offers several."
     >
+      <label className="block text-sm">
+        English voice
+        <select
+          className="input mt-1"
+          value={voiceName}
+          onChange={(e) => setVoiceName(e.target.value)}
+        >
+          {voices.length === 0 ? (
+            <option value="">Loading English voices…</option>
+          ) : (
+            voices.map((v) => (
+              <option key={`${v.name}-${v.lang}`} value={v.name}>
+                {v.name} ({v.lang})
+              </option>
+            ))
+          )}
+        </select>
+      </label>
+      <button
+        type="button"
+        className="btn-ghost text-sm"
+        onClick={() => setVoices(listEnglishVoices())}
+      >
+        Refresh voices
+      </button>
       <label className="block text-sm">
         Prompt sentence (hide this while practicing)
         <textarea
@@ -77,7 +110,11 @@ export default function DictationTool() {
       </div>
       <label className="block text-sm">
         Your dictation
-        <textarea className="input mt-1 min-h-[8rem]" value={answer} onChange={(e) => setAnswer(e.target.value)} />
+        <textarea
+          className="input mt-1 min-h-[8rem]"
+          value={answer}
+          onChange={(e) => setAnswer(e.target.value)}
+        />
       </label>
       {score != null ? (
         <p className="card text-sm">
