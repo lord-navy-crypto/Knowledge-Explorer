@@ -145,7 +145,7 @@ QUIZZES = [
                 2,
             ),
             mcq(
-                "A satellite moves from a circular orbit of radius \(R\) to a circular orbit of radius \(4R\) "
+                r"A satellite moves from a circular orbit of radius \(R\) to a circular orbit of radius \(4R\) "
                 "around the same planet. Its orbital speed changes by what factor?",
                 [
                     "A) It becomes one fourth as large.",
@@ -163,7 +163,7 @@ QUIZZES = [
             ),
             frq(
                 "Students whirl the same stopper in circles of several radii while keeping its speed constant. "
-                "They measure string tension \(T\). Describe a graph that tests the circular-motion model, state "
+                r"They measure string tension \(T\). Describe a graph that tests the circular-motion model, state "
                 "its predicted slope, and identify one measurement that should be repeated to reduce uncertainty.",
                 [
                     r"Begin with the model \(T=mv^2/r\) for a horizontal radial string force.",
@@ -471,7 +471,7 @@ QUIZZES = [
                 r"the time when \(q=0.90C\mathcal E\).",
                 [
                     r"Use the loop equation \(\mathcal E-iR-q/C=0\) with \(i=dq/dt\).",
-                    "Separate variables or quote the first-order charging solution that satisfies \(q(0)=0\).",
+                    r"Separate variables or quote the first-order charging solution that satisfies \(q(0)=0\).",
                     "Solve the exponential equation for the 90% charging time.",
                 ],
                 [
@@ -495,7 +495,7 @@ QUIZZES = [
             frq(
                 r"A long cylindrical conductor of radius \(a\) carries total current \(I\) uniformly over its "
                 r"cross section. Use Ampère's law to derive the magnetic-field magnitude for \(r<a\) and \(r>a\), "
-                "and show that the expressions agree at \(r=a\).",
+                r"and show that the expressions agree at \(r=a\).",
                 [
                     "Choose a circular Amperian loop concentric with the conductor.",
                     r"For \(r<a\), compute enclosed current from the area fraction \(r^2/a^2\).",
@@ -614,7 +614,7 @@ QUIZZES = [
                 [r"A) \(Pv/g\)", r"B) \(P/(gv)\)", r"C) \(Pg/v\)", r"D) \(gv/P\)"],
                 1,
                 [
-                    "At constant speed, the lifting force equals the weight \(mg\).",
+                    r"At constant speed, the lifting force equals the weight \(mg\).",
                     r"Instantaneous mechanical power is \(P=Fv=mgv\).",
                     r"Solving gives \(m=P/(gv)\).",
                 ],
@@ -704,7 +704,7 @@ QUIZZES = [
             frq(
                 r"A physical pendulum has moment of inertia \(I\) about its pivot, mass \(M\), and center of mass "
                 r"a distance \(d\) below the pivot at equilibrium. Derive its small-angle equation of motion and "
-                "period. Then state what happens to the period if \(I\) is quadrupled while \(M\) and \(d\) remain fixed.",
+                r"period. Then state what happens to the period if \(I\) is quadrupled while \(M\) and \(d\) remain fixed.",
                 [
                     r"Write rotational dynamics using the gravitational torque \(\tau=-Mgd\sin\theta\).",
                     r"For small angles, use \(\sin\theta\approx\theta\).",
@@ -714,7 +714,7 @@ QUIZZES = [
                     r"\(I\ddot\theta=-Mgd\sin\theta\approx-Mgd\,\theta\), so "
                     r"\(\ddot\theta+(Mgd/I)\theta=0\).",
                     r"\(\omega=\sqrt{Mgd/I}\) and \(T=2\pi\sqrt{I/(Mgd)}\).",
-                    "Quadrupling \(I\) doubles the period.",
+                    r"Quadrupling \(I\) doubles the period.",
                 ],
                 "mech-6.3-physical-pendulum-b4",
                 4,
@@ -822,7 +822,7 @@ QUIZZES = [
                     "Interpret the interval for the population mean, not for individual batteries.",
                 ],
                 [
-                    "The SRS supports randomness; the population should contain at least 160 batteries, and the stated shape is acceptable for \(n=16\).",
+                    r"The SRS supports randomness; the population should contain at least 160 batteries, and the stated shape is acceptable for \(n=16\).",
                     r"\(\mathrm{SE}=1.2/\sqrt{16}=0.30\), so the interval is "
                     r"\(9.8\pm2.131(0.30)=(9.161,10.439)\) hours.",
                     "We are 95% confident that the population mean battery life is between about 9.16 and 10.44 hours.",
@@ -848,7 +848,7 @@ QUIZZES = [
             ),
             mcq(
                 r"A one-sample test of \(H_0:\mu=50\) versus \(H_a:\mu>50\) gives \(t=2.20\) with \(14\) "
-                "degrees of freedom. If the sample standard deviation were smaller while \(\bar x\) and \(n\) "
+                r"degrees of freedom. If the sample standard deviation were smaller while \(\bar x\) and \(n\) "
                 "stayed fixed, what would happen?",
                 [
                     "A) The t statistic would decrease and the p-value would increase.",
@@ -859,7 +859,7 @@ QUIZZES = [
                 1,
                 [
                     r"The statistic is \(t=(\bar x-\mu_0)/(s/\sqrt n)\).",
-                    "A smaller \(s\) makes the standard error smaller and the positive t statistic larger.",
+                    r"A smaller \(s\) makes the standard error smaller and the positive t statistic larger.",
                     "For a fixed right-tailed t distribution, a larger statistic has a smaller p-value.",
                 ],
                 "stats-7.4-t-statistic-b4",
@@ -909,7 +909,7 @@ QUIZZES = [
             frq(
                 r"Solve \(\frac{dy}{dx}=2xy\) subject to \(y(0)=3\). Then find the value of \(y(1)\).",
                 [
-                    "Separate the \(y\) and \(x\) variables.",
+                    r"Separate the \(y\) and \(x\) variables.",
                     "Integrate both sides and include an arbitrary constant.",
                     "Use the initial condition before evaluating the requested value.",
                 ],
@@ -937,10 +937,10 @@ QUIZZES = [
             frq(
                 r"A population \(P\) satisfies \(\frac{dP}{dt}=\frac{1}{500}P(1000-P)\), with \(P(0)=100\). "
                 "Find the population's initial growth rate, the population at which growth is fastest, and "
-                "whether the graph is concave up or concave down at \(P=100\).",
+                r"whether the graph is concave up or concave down at \(P=100\).",
                 [
                     "Substitute the initial population into the differential equation.",
-                    "For a logistic model, maximize the quadratic \(P(K-P)\).",
+                    r"For a logistic model, maximize the quadratic \(P(K-P)\).",
                     r"Determine the sign of \(d^2P/dt^2=f'(P)\,dP/dt\).",
                 ],
                 [
@@ -967,7 +967,7 @@ QUIZZES = [
                 [
                     r"Use polar area \(A=\tfrac12\int r^2\,d\theta\).",
                     r"Apply \(\cos^2\theta=(1+\cos2\theta)/2\) to evaluate the integral.",
-                    "Convert the equation using \(r^2=x^2+y^2\) and \(r\cos\theta=x\).",
+                    r"Convert the equation using \(r^2=x^2+y^2\) and \(r\cos\theta=x\).",
                 ],
                 [
                     r"\(A=\tfrac12\int_{-\pi/2}^{\pi/2}4\cos^2\theta\,d\theta=2(\pi/2)=\pi\).",
@@ -1054,8 +1054,8 @@ QUIZZES = [
                 ],
                 [
                     r"There are three equivalent structures, each with one \(\mathrm{N{=}O}\) bond and two \(\mathrm{N{-}O^-}\) bonds.",
-                    "In any one structure, N has formal charge \(+1\), each singly bonded O has \(-1\), and the doubly bonded O has \(0\), totaling \(-1\).",
-                    "The pi bonding is delocalized across all three N–O positions, so each bond has the same average bond order \(4/3\) and the same intermediate length.",
+                    r"In any one structure, N has formal charge \(+1\), each singly bonded O has \(-1\), and the doubly bonded O has \(0\), totaling \(-1\).",
+                    r"The pi bonding is delocalized across all three N–O positions, so each bond has the same average bond order \(4/3\) and the same intermediate length.",
                 ],
                 "chem-2.5-resonance-nitrate-b4",
                 3,
@@ -1083,7 +1083,7 @@ QUIZZES = [
                 ],
                 [
                     "Nitrogen has four electron domains, giving tetrahedral electron-domain geometry; one is a lone pair, so the molecular shape is trigonal pyramidal.",
-                    "The lone pair repels bonding pairs more strongly and compresses the H–N–H angles below \(109.5^\circ\).",
+                    r"The lone pair repels bonding pairs more strongly and compresses the H–N–H angles below \(109.5^\circ\).",
                     "The asymmetric trigonal-pyramidal geometry prevents the N–H bond dipoles from canceling, so the molecule is polar.",
                 ],
                 "chem-2.7-vsepr-ammonia-b4",
@@ -1536,7 +1536,7 @@ QUIZZES = [
                 [
                     "Trace the loop variable after each multiplication.",
                     "`k` takes the values 1, 2, 4, and 8; it then becomes 16.",
-                    "The sum is \(1+2+4+8=15\), and 16 fails the condition.",
+                    r"The sum is \(1+2+4+8=15\), and 16 fails the condition.",
                 ],
                 "csa-4.2-for-loop-trace-b4",
                 2,
@@ -1706,7 +1706,7 @@ QUIZZES = [
                 [
                     "On each trial generate `a ← RANDOM(1, 6)` and `b ← RANDOM(1, 6)`; record a success if `a + b = 8`. Return successes divided by trials.",
                     "More trials generally reduce random sampling variability and make the estimate stabilize near the true probability, though no finite run guarantees exact agreement.",
-                    "The successful ordered pairs are (2,6), (3,5), (4,4), (5,3), and (6,2), so the exact probability is \(5/36\).",
+                    r"The successful ordered pairs are (2,6), (3,5), (4,4), (5,3), and (6,2), so the exact probability is \(5/36\).",
                 ],
                 "csp-3.16-random-simulation-b4",
                 3,
@@ -1802,7 +1802,7 @@ QUIZZES = [
         ["ap-psychology", "unit-0", "research-methods", "data-interpretation", "set-4"],
         [
             mcq(
-                "A researcher reports a correlation of \(r=-0.78\) between nightly sleep duration and daytime "
+                r"A researcher reports a correlation of \(r=-0.78\) between nightly sleep duration and daytime "
                 "sleepiness. Which conclusion is justified?",
                 [
                     "A) More sleep causes less daytime sleepiness.",
@@ -2092,8 +2092,8 @@ QUIZZES = [
                     "Identify a channel that affects utilization or productive capacity.",
                 ],
                 [
-                    "Potential real output grows approximately \(2\%+1\%=3\%\).",
-                    "The rule of 70 gives a doubling time of about \(70/3\approx23.3\) years.",
+                    r"Potential real output grows approximately \(2\%+1\%=3\%\).",
+                    r"The rule of 70 gives a doubling time of about \(70/3\approx23.3\) years.",
                     "Actual growth can differ because of recessions, changes in capital formation, labor-force participation, technology, institutions, or resource shocks.",
                 ],
                 "macro-5.7-productivity-growth-b4",
@@ -2162,9 +2162,9 @@ QUIZZES = [
                 2,
             ),
             frq(
-                "A firm's total fixed cost is \(\$120\). At 10 units, total variable cost is \(\$300\); at 11 "
-                "units, total variable cost is \(\$336\). Calculate AFC, AVC, and ATC at 10 units and MC of the "
-                "11th unit. If market price is \(\$34\), explain whether producing the 11th unit raises profit.",
+                r"A firm's total fixed cost is \(\$120\). At 10 units, total variable cost is \(\$300\); at 11 "
+                r"units, total variable cost is \(\$336\). Calculate AFC, AVC, and ATC at 10 units and MC of the "
+                r"11th unit. If market price is \(\$34\), explain whether producing the 11th unit raises profit.",
                 [
                     "Divide each cost total by the 10-unit output for average measures.",
                     "Marginal cost is the change in total cost, which here equals the change in variable cost.",
@@ -2999,7 +2999,7 @@ QUIZZES = [
                 [
                     "A) A report says, “Trees cool streets.”",
                     "B) “Trees cool streets,” and that is the quotation.",
-                    "C) Because the county heat survey found blocks with mature canopy averaged \(4^\circ\text{C}\) cooler, targeted planting can function as heat infrastructure rather than decoration.",
+                    r"C) Because the county heat survey found blocks with mature canopy averaged \(4^\circ\text{C}\) cooler, targeted planting can function as heat infrastructure rather than decoration.",
                     "D) There are many quotations about trees and cities.",
                 ],
                 2,
