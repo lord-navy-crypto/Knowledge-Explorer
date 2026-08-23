@@ -952,6 +952,19 @@ def unique_id(prefix, used):
     return candidate
 
 
+def load_wave3_formula_sheets():
+    path = ROOT / "scripts" / "_wave3_formula_sheets.py"
+    if not path.exists():
+        return []
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("_wave3_formula_sheets", path)
+    module = importlib.util.module_from_spec(spec)
+    assert spec and spec.loader
+    spec.loader.exec_module(module)
+    return list(getattr(module, "WAVE3_FORMULA_SHEETS", []))
+
+
 def add_formula_sheets(data):
     formulas = data.setdefault("formulas", [])
     names = {
@@ -960,7 +973,7 @@ def add_formula_sheets(data):
     }
     used = existing_ids(data)
     added = 0
-    for candidate in FORMULA_SHEETS:
+    for candidate in list(FORMULA_SHEETS) + load_wave3_formula_sheets():
         name_key = candidate["name"].strip().casefold()
         if name_key in names:
             continue

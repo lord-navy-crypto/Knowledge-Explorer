@@ -13,6 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data" / "managed-content.json"
 MARKER = "## Related Knowledge Expansion"
+STUDY_MARKER = "## Study Connections"
 WORKED_MARKERS = (
     "## Worked Example",
     "Worked Example & Deeper Points",
@@ -162,14 +163,7 @@ def deepen_mistakes(concept: dict, title: str, subject: str) -> list[str]:
     return merged[:4]
 
 
-def load_all_blocks() -> dict[tuple[str, str], str]:
-    modules: list[tuple[str, str]] = []
-    candidates = [
-        ("_wave2_hss_stem_blocks.py", "WAVE2_BLOCKS"),
-        ("_wave2_chem_calc_bio_csa.py", "WAVE2_STEM_BLOCKS"),
-        ("_wave2_physics2_stats.py", "WAVE2_P2_STATS"),
-        ("_wave2_english_hss_p1.py", "WAVE2_MORE"),
-    ]
+def load_block_modules(candidates: list[tuple[str, str]]) -> dict[tuple[str, str], str]:
     dicts = []
     for filename, attr in candidates:
         path = ROOT / "scripts" / filename
@@ -180,12 +174,33 @@ def load_all_blocks() -> dict[tuple[str, str], str]:
     return build_lookup(*dicts)
 
 
+def load_all_blocks() -> dict[tuple[str, str], str]:
+    return load_block_modules(
+        [
+            ("_wave2_hss_stem_blocks.py", "WAVE2_BLOCKS"),
+            ("_wave2_chem_calc_bio_csa.py", "WAVE2_STEM_BLOCKS"),
+            ("_wave2_physics2_stats.py", "WAVE2_P2_STATS"),
+            ("_wave2_english_hss_p1.py", "WAVE2_MORE"),
+        ]
+    )
+
+
+def load_study_blocks() -> dict[tuple[str, str], str]:
+    return load_block_modules(
+        [
+            ("_wave3_physics_c.py", "WAVE3_PHYSICS_C"),
+        ]
+    )
+
+
 def expand(data: dict) -> dict[str, int]:
     blocks = load_all_blocks()
+    study_blocks = load_study_blocks()
     formulas = data.get("formulas", [])
     stats = {
         "related_inserted": 0,
         "fallback_related": 0,
+        "study_inserted": 0,
         "key_points_expanded": 0,
         "mistakes_expanded": 0,
         "examples_expanded": 0,
@@ -216,6 +231,16 @@ def expand(data: dict) -> dict[str, int]:
                 )
                 stats["fallback_related"] += 1
             changed = True
+
+        if STUDY_MARKER not in summary:
+            key = (subject, normalize_title(title))
+            study = study_blocks.get(key) or study_blocks.get(
+                (subject, normalize_title(concept.get("title") or ""))
+            )
+            if study:
+                summary = insert_before_worked(summary, study)
+                stats["study_inserted"] += 1
+                changed = True
 
         new_kp = deepen_key_points(concept, title, subject)
         if new_kp != (concept.get("keyPoints") or []):
