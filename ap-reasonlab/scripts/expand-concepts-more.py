@@ -296,6 +296,7 @@ def load_advanced_study_blocks() -> dict[tuple[str, str], str]:
     return load_block_modules(
         [
             ("_wave3_hss_study.py", "WAVE3_HSS_STUDY"),
+            ("_wave3_physics_advanced.py", "WAVE3_PHYSICS_ADVANCED"),
         ]
     )
 
