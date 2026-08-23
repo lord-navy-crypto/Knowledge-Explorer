@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data" / "managed-content.json"
 MARKER = "## Related Knowledge Expansion"
 STUDY_MARKER = "## Study Connections"
+ADVANCED_STUDY_MARKER = "## Advanced Study Notes"
 WORKED_MARKERS = (
     "## Worked Example",
     "Worked Example & Deeper Points",
@@ -107,6 +108,104 @@ def related_fallback(title: str, subject: str, formulas: list[dict]) -> str:
     return "\n".join(parts)
 
 
+def study_fallback(title: str, subject: str, formulas: list[dict]) -> str:
+    formula_lines = extract_formula_lines(formulas, subject)
+    skill = (
+        "rhetorical analysis and argumentation"
+        if "English Language" in subject
+        else "close reading and literary argument"
+        if "English Literature" in subject
+        else "historical thinking (causation, comparison, CCOT)"
+        if "History" in subject
+        else "spatial analysis and models"
+        if "Geography" in subject
+        else "modeling with equations and assumptions"
+        if any(x in subject for x in ("Physics", "Calculus", "Chemistry", "Statistics"))
+        else "AP course skills for this subject"
+    )
+    parts = [
+        STUDY_MARKER,
+        "",
+        f"## 1. Prerequisites for {title}",
+        f"Before applying **{title}**, make sure earlier course ideas are fluent. "
+        f"Name the definitions, conditions, or prior units this topic depends on.",
+        "",
+        "## 2. Formula and model anchors",
+    ]
+    if formula_lines:
+        parts.extend(formula_lines)
+    else:
+        parts.append(
+            "- Use the course formula/model sheet for this subject; write symbols "
+            "before substituting numbers or evidence."
+        )
+    parts.extend(
+        [
+            "",
+            "## 3. AP exam patterns",
+            f"Expect tasks that require {skill}. Respond with a claim, supporting "
+            "steps, and an explicit interpretation — not vocabulary alone.",
+            "",
+            "## 4. Common traps",
+            f"- Treating **{title}** as isolated facts instead of a connected system.",
+            "- Skipping assumptions, context, or units before concluding.",
+            "- Stopping after the first correct-looking special case.",
+            "",
+            "## 5. Self-check",
+            f"- Explain **{title}** in three sentences with one concrete example.",
+            "- Change one input and predict the directional effect.",
+            "- Name one distractor assumption that does **not** apply.",
+        ]
+    )
+    return "\n".join(parts)
+
+
+def rid(prefix: str) -> str:
+    import random
+    import string
+
+    token = f"{random.getrandbits(32):08x}"
+    suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=5))
+    return f"{prefix}-{token}-{suffix}"
+
+
+def add_wave3_formula_sheets(data: dict) -> int:
+    path = ROOT / "scripts" / "_wave3_formula_sheets.py"
+    if not path.exists():
+        return 0
+    sheets = load_module(path, "wave3_sheets").WAVE3_FORMULA_SHEETS
+    formulas = data.setdefault("formulas", [])
+    existing_names = {
+        str(f.get("name", "")).strip().casefold() for f in formulas
+    }
+    existing_ids = {f.get("id") for f in formulas if f.get("id")}
+    added = 0
+    for sheet in sheets:
+        name = str(sheet.get("name", "")).strip()
+        if not name or name.casefold() in existing_names:
+            continue
+        formula_id = rid("m-formula")
+        while formula_id in existing_ids:
+            formula_id = rid("m-formula")
+        formulas.append(
+            {
+                "id": formula_id,
+                "subject": sheet["subject"],
+                "unit": sheet.get("unit") or "CED Formula Reference",
+                "name": name,
+                "expression": "",
+                "content": sheet["content"],
+                "variables": "",
+                "whenToUse": "Use as a unit reference while studying related concepts.",
+                "sourceNote": "Original AP-aligned reference; CED skills and equations, not exam questions.",
+            }
+        )
+        existing_names.add(name.casefold())
+        existing_ids.add(formula_id)
+        added += 1
+    return added
+
+
 def deepen_key_points(concept: dict, title: str, subject: str) -> list[str]:
     existing = [str(p) for p in (concept.get("keyPoints") or []) if p]
     extras: list[str] = []
@@ -193,18 +292,33 @@ def load_study_blocks() -> dict[tuple[str, str], str]:
     )
 
 
+def load_advanced_study_blocks() -> dict[tuple[str, str], str]:
+    return load_block_modules(
+        [
+            ("_wave3_hss_study.py", "WAVE3_HSS_STUDY"),
+        ]
+    )
+
+
 def expand(data: dict) -> dict[str, int]:
     blocks = load_all_blocks()
     study_blocks = load_study_blocks()
+    advanced_study_blocks = load_advanced_study_blocks()
     formulas = data.get("formulas", [])
     stats = {
         "related_inserted": 0,
         "fallback_related": 0,
         "study_inserted": 0,
+        "study_fallback": 0,
+        "advanced_study_inserted": 0,
         "key_points_expanded": 0,
         "mistakes_expanded": 0,
         "examples_expanded": 0,
+        "formula_sheets_added": 0,
     }
+
+    stats["formula_sheets_added"] = add_wave3_formula_sheets(data)
+    formulas = data.get("formulas", [])
 
     for concept in data.get("concepts", []):
         subject = concept.get("subject", "")
@@ -220,7 +334,6 @@ def expand(data: dict) -> dict[str, int]:
             key = (subject, normalize_title(title))
             block = blocks.get(key)
             if not block:
-                # try raw title match without clean_title hash strip already done
                 block = blocks.get((subject, normalize_title(concept.get("title") or "")))
             if block:
                 summary = insert_before_worked(summary, block)
@@ -240,6 +353,21 @@ def expand(data: dict) -> dict[str, int]:
             if study:
                 summary = insert_before_worked(summary, study)
                 stats["study_inserted"] += 1
+            else:
+                summary = insert_before_worked(
+                    summary, study_fallback(title, subject, formulas)
+                )
+                stats["study_fallback"] += 1
+            changed = True
+
+        if ADVANCED_STUDY_MARKER not in summary:
+            key = (subject, normalize_title(title))
+            advanced = advanced_study_blocks.get(key) or advanced_study_blocks.get(
+                (subject, normalize_title(concept.get("title") or ""))
+            )
+            if advanced:
+                summary = insert_before_worked(summary, advanced)
+                stats["advanced_study_inserted"] += 1
                 changed = True
 
         new_kp = deepen_key_points(concept, title, subject)
@@ -274,7 +402,7 @@ def main() -> None:
     data = json.loads(DATA.read_text(encoding="utf-8"))
     stats = expand(data)
     DATA.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print("Wave-2 concept expansion complete:")
+    print("Wave-3 concept expansion complete:")
     for key, value in stats.items():
         print(f"  {key}: {value}")
 
