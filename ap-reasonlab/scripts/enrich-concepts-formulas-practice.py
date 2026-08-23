@@ -1198,7 +1198,7 @@ QUIZZES = [
             mcq(
                 "Using the midpoint method, price rises from $10 to $12 while quantity demanded falls from 100 to 80. Demand over this range is approximately",
                 ["A) perfectly inelastic", "B) inelastic", "C) unit elastic", "D) elastic"],
-                2,
+                3,
                 [
                     r"\(\%\Delta Q=-20/90=-22.2\%\) and \(\%\Delta P=2/11=18.2\%\).",
                     r"\(E_d=|-22.2/18.2|\approx1.22\), so demand is elastic.",
