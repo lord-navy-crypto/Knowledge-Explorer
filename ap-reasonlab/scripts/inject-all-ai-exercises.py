@@ -60,6 +60,9 @@ def main():
         "_gen_csa_csp_psych_econ.py",
         "_gen_history_english_geo.py",
         "generate-em-mech-ai-exercises-batch2.py",
+        "_gen_batch3_physics.py",
+        "_gen_batch3_stem.py",
+        "_gen_batch3_hss.py",
     ]:
         path = SCRIPTS / name
         if not path.exists():
