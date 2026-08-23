@@ -198,7 +198,7 @@ QUIZZES = [
                     r"Use \(R_f=(\text{distance traveled by solute})/(\text{distance traveled by solvent})\).",
                 ],
                 [
-                    "The less polar red dye should have the larger \(R_f\) because it interacts less strongly with the polar paper.",
+                    r"The less polar red dye should have the larger \(R_f\) because it interacts less strongly with the polar paper.",
                     r"For the red dye, \(R_f=6.0/8.0=0.75\).",
                 ],
                 "3.10 Separation of Solutions and Mixtures Chromatography",
@@ -444,7 +444,7 @@ QUIZZES = [
                 r"\([\mathrm{PCl_5}]=0.50\text{ M}\) and both products are absent. Write the ICE relation, calculate "
                 "the equilibrium concentrations, and state whether equilibrium is static or dynamic.",
                 [
-                    "Let \(x\) molar of PCl₅ dissociate and express all equilibrium concentrations in terms of x.",
+                    r"Let \(x\) molar of PCl₅ dissociate and express all equilibrium concentrations in terms of x.",
                     r"Substitute into \(K_c=x^2/(0.50-x)\) and solve the quadratic.",
                     "Check that the root is physically possible and describe molecular behavior at equilibrium.",
                 ],
@@ -1495,8 +1495,8 @@ QUIZZES = [
                     "Identify why grid emissions can vary with time, place, or marginal generator.",
                 ],
                 [
-                    "Monthly savings are \(900(0.20)=180\) kWh; annual savings are \(180(12)=2,160\) kWh.",
-                    "Avoided emissions are \(2,160(0.40)=864\) kg CO₂ per year.",
+                    r"Monthly savings are \(900(0.20)=180\) kWh; annual savings are \(180(12)=2,160\) kWh.",
+                    r"Avoided emissions are \(2,160(0.40)=864\) kg CO₂ per year.",
                     "The grid generation mix and marginal power source vary, so a single average factor may not equal the emissions avoided at the times energy is saved.",
                 ],
                 "6.13 Energy Conservation",
