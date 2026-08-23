@@ -63,6 +63,7 @@ def main():
         "_gen_batch3_physics.py",
         "_gen_batch3_stem.py",
         "_gen_batch3_hss.py",
+        "_gen_batch4_all_subjects.py",
     ]:
         path = SCRIPTS / name
         if not path.exists():
