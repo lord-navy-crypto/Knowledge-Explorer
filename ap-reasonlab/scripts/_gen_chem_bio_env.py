@@ -80,27 +80,27 @@ QUIZZES = [
             frq(
                 "Element X has two stable isotopes: X-62 with mass 61.93 u and X-64 with mass 63.93 u. "
                 "Its average atomic mass is 62.55 u. Calculate the fractional abundance of X-62. Then write the "
-                "ground-state electron configuration of the element if X is nickel.",
+                "ground-state electron configuration of nickel as a separate task.",
                 [
                     r"Let \(x\) be the fractional abundance of X-62 and write the weighted-average equation.",
                     "Solve for the fraction and check that both isotope fractions sum to 1.",
-                    "For Ni, place 28 electrons according to the Aufbau pattern.",
+                    "For the separate Ni task, place 28 electrons according to the Aufbau pattern.",
                 ],
                 [
                     r"\(62.55=61.93x+63.93(1-x)\), so \(x=0.690\); X-62 is about \(69.0\%\).",
                     r"\(\mathrm{Ni}:[Ar]\,3d^8 4s^2\).",
                 ],
-                "1.2 Mass Spectroscopy of Elements",
+                "1.2 Mass Spectra of Elements",
                 2,
             ),
         ],
         38,
     ),
     quiz(
-        "AP Chemistry Unit 2: Molecular and Ionic Compound Structure and Properties",
+        "AP Chemistry Unit 2: Compound Structure and Properties",
         "AP Chemistry",
         "CED-aligned practice with ionic solids, Lewis diagrams, resonance, formal charge, bond polarity, and molecular geometry.",
-        ["unit-2", "molecular-and-ionic-structure"],
+        ["unit-2", "compound-structure-and-properties"],
         [
             mcq(
                 "Which substance is expected to have the greatest lattice energy?",
@@ -128,7 +128,7 @@ QUIZZES = [
                     "Three electron domains give trigonal-planar electron geometry; one is a lone pair.",
                     "The bent shape prevents the S–O bond dipoles from canceling.",
                 ],
-                "2.7 VSEPR and Bond Hybridization",
+                "2.7 VSEPR and Hybridization",
                 2,
             ),
             frq(
@@ -152,10 +152,10 @@ QUIZZES = [
         40,
     ),
     quiz(
-        "AP Chemistry Unit 3: Intermolecular Forces and Properties",
+        "AP Chemistry Unit 3: Properties of Substances and Mixtures",
         "AP Chemistry",
         "CED-aligned practice with intermolecular forces, gases, solutions, separation methods, and electromagnetic spectroscopy.",
-        ["unit-3", "intermolecular-forces-and-properties"],
+        ["unit-3", "properties-of-substances-and-mixtures"],
         [
             mcq(
                 "At the same temperature, which pure liquid is expected to have the lowest vapor pressure?",
@@ -201,7 +201,7 @@ QUIZZES = [
                     r"The less polar red dye should have the larger \(R_f\) because it interacts less strongly with the polar paper.",
                     r"For the red dye, \(R_f=6.0/8.0=0.75\).",
                 ],
-                "3.10 Separation of Solutions and Mixtures Chromatography",
+                "3.9 Separation of Solutions and Mixtures",
                 2,
             ),
         ],
@@ -264,7 +264,7 @@ QUIZZES = [
                     r"\([\mathrm{Fe^{2+}}]=0.0744\text{ M}\).",
                     r"\(\mathrm{Fe^{2+}}\) is oxidized to \(\mathrm{Fe^{3+}}\).",
                 ],
-                "4.9 Redox Reactions",
+                "4.9 Oxidation-Reduction (Redox) Reactions",
                 3,
             ),
         ],
@@ -291,7 +291,7 @@ QUIZZES = [
                     r"For A, \(2^m=4\), so \(m=2\).",
                     r"For B, \(2^n=2\), so \(n=1\).",
                 ],
-                "5.3 Concentration Changes Over Time",
+                "5.2 Introduction to Rate Law",
                 2,
             ),
             mcq(
@@ -333,10 +333,10 @@ QUIZZES = [
         40,
     ),
     quiz(
-        "AP Chemistry Unit 6: Thermodynamics",
+        "AP Chemistry Unit 6: Thermochemistry",
         "AP Chemistry",
         "CED-aligned practice with heat transfer, calorimetry, phase changes, reaction enthalpy, Hess's law, and bond enthalpy.",
-        ["unit-6", "thermodynamics"],
+        ["unit-6", "thermochemistry"],
         [
             mcq(
                 r"A reaction warms \(100.0\text{ g}\) of solution from \(22.0^\circ\text{C}\) to "
@@ -418,7 +418,7 @@ QUIZZES = [
                     "Use stoichiometric coefficients as exponents.",
                     "Both species are gases, so both appear in the expression.",
                 ],
-                "7.2 Direction of Reversible Reactions",
+                "7.4 Calculating the Equilibrium Constant",
                 1,
             ),
             mcq(
@@ -454,7 +454,7 @@ QUIZZES = [
                     r"\([\mathrm{PCl_3}]=[\mathrm{Cl_2}]=0.123\text{ M}\).",
                     "Equilibrium is dynamic: forward and reverse reaction rates are equal while both reactions continue.",
                 ],
-                "7.5 Calculating the Equilibrium Constant",
+                "7.7 Calculating Equilibrium Concentrations",
                 3,
             ),
         ],
@@ -475,7 +475,7 @@ QUIZZES = [
                     r"Thus \([\mathrm{H_3O^+}]=2.5\times10^{-3}\text{ M}\).",
                     r"Use \(\mathrm{pH}=-\log[\mathrm{H_3O^+}]\).",
                 ],
-                "8.3 pH and pOH of Strong Acids and Bases",
+                "8.2 pH and pOH of Strong Acids and Bases",
                 1,
             ),
             mcq(
@@ -488,7 +488,7 @@ QUIZZES = [
                     "The concentration ratio is 1.",
                     r"Because \(\log(1)=0\), pH equals \(pK_a\).",
                 ],
-                "8.8 Buffer Solutions",
+                "8.9 Henderson-Hasselbalch Equation",
                 2,
             ),
             frq(
@@ -512,10 +512,10 @@ QUIZZES = [
         42,
     ),
     quiz(
-        "AP Chemistry Unit 9: Applications of Thermodynamics",
+        "AP Chemistry Unit 9: Thermodynamics and Electrochemistry",
         "AP Chemistry",
         "CED-aligned practice with entropy, Gibbs free energy, thermodynamic favorability, galvanic cells, electrolysis, and Faraday's law.",
-        ["unit-9", "applications-of-thermodynamics", "electrochemistry"],
+        ["unit-9", "thermodynamics-and-electrochemistry"],
         [
             mcq(
                 r"For a process with \(\Delta H>0\) and \(\Delta S>0\), under which condition is the process "
@@ -563,7 +563,7 @@ QUIZZES = [
                     r"\(\mathrm{Cu^{2+}+2e^-\rightarrow Cu(s)}\), so \(n(\mathrm{Cu})=0.0199\text{ mol}\).",
                     r"The deposited mass is \((0.0199)(63.55)=1.26\text{ g Cu}\).",
                 ],
-                "9.10 Electrolysis and Faraday's Law",
+                "9.11 Electrolysis and Faraday's Law",
                 3,
             ),
         ],
@@ -606,7 +606,7 @@ QUIZZES = [
                     "Distinguish nonelectrolytes, weak electrolytes, and strong electrolytes.",
                     r"\(\mathrm{AlCl_3}\) dissociates into four ions per formula unit under the stated idealized comparison.",
                 ],
-                "3.9 Separation of Solutions and Mixtures Solubility",
+                "3.7 Solutions and Mixtures",
                 2,
             ),
             frq(
@@ -626,7 +626,7 @@ QUIZZES = [
                     r"\(q_{\mathrm{solution}}=(100.0)(4.18)(2.20)=0.920\text{ kJ}\); "
                     r"\(\Delta H=-0.920/0.00400=-230\text{ kJ mol}^{-1}\) for the experimental data.",
                 ],
-                "4.5 Stoichiometry / 6.4 Calorimetry / 8.3 pH",
+                "4.5 Stoichiometry / 6.4 Heat Capacity and Calorimetry / 8.2 pH and pOH of Strong Acids and Bases",
                 3,
             ),
         ],
@@ -672,7 +672,7 @@ QUIZZES = [
                     "Hydrolysis consumes water as a covalent linkage is broken.",
                     "Dehydration synthesis removes water while making a linkage.",
                 ],
-                "1.5 Structure and Function of Biological Macromolecules",
+                "1.3 Introduction to Macromolecules",
                 1,
             ),
             frq(
@@ -689,17 +689,17 @@ QUIZZES = [
                     "If the active site's shape or chemistry changes, substrate binding or catalysis will likely decrease.",
                     "The substitution changes the amino-acid sequence (primary structure), but it does not require hydrolysis of the other peptide bonds.",
                 ],
-                "1.7 Multiple Choice Questions / Structure-Function Integration",
+                "1.7 Proteins",
                 2,
             ),
         ],
         36,
     ),
     quiz(
-        "AP Biology Unit 2: Cell Structure and Function",
+        "AP Biology Unit 2: Cells",
         "AP Biology",
         "CED-aligned practice with organelles, cell size, plasma membranes, membrane transport, tonicity, and compartmentalization.",
-        ["unit-2", "cell-structure-and-function"],
+        ["unit-2", "cells"],
         [
             mcq(
                 "A pancreatic cell that exports large quantities of digestive enzymes would be expected to contain abundant",
@@ -715,7 +715,7 @@ QUIZZES = [
                     "Ribosomes on rough ER synthesize proteins entering the endomembrane system.",
                     "The Golgi modifies, sorts, and packages secreted proteins.",
                 ],
-                "2.1 Cell Structure: Subcellular Components",
+                "2.1 Cell Structure and Function",
                 1,
             ),
             mcq(
@@ -732,7 +732,7 @@ QUIZZES = [
                     r"Thus the ratio scales as \(1/r\).",
                     "A larger radius therefore reduces exchange area available per unit volume.",
                 ],
-                "2.3 Cell Size",
+                "2.2 Cell Size",
                 1,
             ),
             frq(
@@ -749,7 +749,7 @@ QUIZZES = [
                     "Water moves from the solution into the cell because −0.30 MPa is higher than −0.50 MPa.",
                     "The cell's pressure potential increases as the cell becomes more turgid, until equilibrium is approached.",
                 ],
-                "2.8 Tonicity and Osmoregulation",
+                "2.7 Tonicity and Osmoregulation",
                 2,
             ),
         ],
@@ -775,7 +775,7 @@ QUIZZES = [
                     "Competition reduces the fraction of active sites occupied by substrate.",
                     "Sufficiently high substrate concentration can reduce the inhibitor's effect.",
                 ],
-                "3.3 Environmental Impacts on Enzyme Function",
+                "3.2 Environmental Impacts on Enzyme Function",
                 1,
             ),
             mcq(
@@ -792,7 +792,7 @@ QUIZZES = [
                     "Photosystem II replaces lost electrons by oxidizing water.",
                     "That reaction produces electrons, protons, and molecular oxygen.",
                 ],
-                "3.5 Photosynthesis",
+                "3.4 Photosynthesis",
                 1,
             ),
             frq(
@@ -809,7 +809,7 @@ QUIZZES = [
                     "Oxygen is the final electron acceptor in Culture A and is reduced to water.",
                     r"Fermentation oxidizes NADH to regenerate \(\mathrm{NAD^+}\), allowing glycolysis to continue producing ATP.",
                 ],
-                "3.6 Cellular Respiration",
+                "3.5 Cellular Respiration",
                 2,
             ),
         ],
@@ -852,7 +852,7 @@ QUIZZES = [
                     "Insulin promotes glucose uptake and storage after glucose rises.",
                     "The response therefore reduces the original stimulus.",
                 ],
-                "4.5 Feedback",
+                "4.4 Feedback",
                 1,
             ),
             frq(
@@ -869,7 +869,7 @@ QUIZZES = [
                     "Unregulated checkpoint passage can increase proliferation and allow replication of damaged DNA, contributing to tumor formation.",
                     "Compare otherwise matched wild-type and mutant cells after DNA damage; measure the fraction entering S phase or mitosis. More mutant cells proceeding supports the prediction.",
                 ],
-                "4.7 Regulation of Cell Cycle",
+                "4.6 Regulation of Cell Cycle",
                 2,
             ),
         ],
@@ -925,7 +925,7 @@ QUIZZES = [
                     r"\(\chi^2=[(-2)^2+5^2+2^2+(-5)^2]/50=58/50=1.16\); \(df=4-1=3\).",
                     "Because 1.16 < 7.815, fail to reject the null hypothesis; the deviations are consistent with chance under the 1:1:1:1 model.",
                 ],
-                "5.4 Non-Mendelian Genetics",
+                "5.3 Mendelian Genetics",
                 2,
             ),
         ],
@@ -951,7 +951,7 @@ QUIZZES = [
                     "Therefore the new strand is synthesized 5′ to 3′.",
                     "The antiparallel template is read 3′ to 5′.",
                 ],
-                "6.2 Replication",
+                "6.2 DNA Replication",
                 1,
             ),
             mcq(
@@ -1123,7 +1123,7 @@ QUIZZES = [
                     "Receptor activation begins with specific ligand-receptor interactions.",
                     "Reduced binding can reduce activation of the intracellular signaling cascade.",
                 ],
-                "1.6 Nucleic Acids / 4.2 Introduction to Signal Transduction Pathways",
+                "1.7 Proteins / 4.2 Introduction to Signal Transduction",
                 2,
             ),
             mcq(
@@ -1157,7 +1157,7 @@ QUIZZES = [
                     "Linear electron flow, proton-gradient formation, ATP production, and NADPH production decline; carbon fixation then declines from insufficient ATP and NADPH.",
                     "Resistant plants leave more offspring under herbicide exposure, so resistance alleles can increase in frequency over generations.",
                 ],
-                "3.5 Photosynthesis / 7.1 Introduction to Natural Selection",
+                "3.4 Photosynthesis / 7.1 Introduction to Natural Selection",
                 3,
             ),
         ],
@@ -1167,7 +1167,7 @@ QUIZZES = [
 
     # AP Environmental Science
     quiz(
-        "AP Environmental Science Unit 1: The Living World—Ecosystems",
+        "AP Environmental Science Unit 1: The Living World: Ecosystems",
         "AP Environmental Science",
         "CED-aligned practice with ecosystem structure, terrestrial and aquatic biomes, productivity, trophic levels, and biogeochemical cycles.",
         ["unit-1", "the-living-world-ecosystems"],
@@ -1222,7 +1222,7 @@ QUIZZES = [
         36,
     ),
     quiz(
-        "AP Environmental Science Unit 2: The Living World—Biodiversity",
+        "AP Environmental Science Unit 2: The Living World: Biodiversity",
         "AP Environmental Science",
         "CED-aligned practice with levels of biodiversity, ecosystem services, island biogeography, succession, and conservation.",
         ["unit-2", "the-living-world-biodiversity"],
@@ -1274,7 +1274,7 @@ QUIZZES = [
                     "Edges may be warmer, drier, brighter, and more accessible to predators or invasive species than forest interiors.",
                     "Wildlife corridors or vegetated overpasses can reconnect patches; wide protected buffers can also preserve interior habitat.",
                 ],
-                "2.6 Adaptations / 2.2 Ecosystem Services",
+                "2.1 Introduction to Biodiversity / 2.2 Ecosystem Services",
                 2,
             ),
         ],
@@ -1356,7 +1356,7 @@ QUIZZES = [
                     "The oceanic plate descends into the mantle at the boundary.",
                     "Subduction produces earthquakes and magma that can feed a continental volcanic arc.",
                 ],
-                "4.2 Soil Formation and Erosion / Plate Tectonics",
+                "4.1 Plate Tectonics",
                 1,
             ),
             mcq(
@@ -1428,7 +1428,7 @@ QUIZZES = [
                     "It combines prevention and biological or physical methods.",
                     "Targeted pesticides are used only when needed, reducing resistance and non-target harm.",
                 ],
-                "5.6 Pest Control Methods",
+                "5.14 Integrated Pest Management",
                 1,
             ),
             frq(
@@ -1470,7 +1470,7 @@ QUIZZES = [
                     "Wind turbines do not combust carbon- or sulfur-containing fuel.",
                     "Therefore direct operational CO₂ and SO₂ emissions are minimal.",
                 ],
-                "6.8 Solar Energy / 6.9 Wind Energy",
+                "6.12 Wind Energy",
                 1,
             ),
             mcq(
@@ -1525,7 +1525,7 @@ QUIZZES = [
                     "NOₓ and VOC reactions are driven by sunlight.",
                     "Their reaction network produces tropospheric ozone.",
                 ],
-                "7.4 Atmospheric CO2 and Particulates / Photochemical Smog",
+                "7.2 Photochemical Smog",
                 1,
             ),
             mcq(
@@ -1542,7 +1542,7 @@ QUIZZES = [
                     "An inversion has a warm layer above cooler surface air.",
                     "The stable layering suppresses vertical mixing and concentrates pollutants near the ground.",
                 ],
-                "7.6 Reduction of Air Pollutants",
+                "7.3 Thermal Inversion",
                 1,
             ),
             frq(
@@ -1559,7 +1559,7 @@ QUIZZES = [
                     "Less SO₂ means less atmospheric sulfuric acid formation, reducing acidic wet and dry deposition.",
                     "CO₂ is not substantially removed by either device; NOₓ also generally requires separate controls.",
                 ],
-                "7.8 Acid Rain / 7.6 Reduction of Air Pollutants",
+                "7.6 Reduction of Air Pollutants / 7.7 Acid Rain",
                 2,
             ),
         ],
@@ -1602,7 +1602,7 @@ QUIZZES = [
                     "Aluminum production from ore is highly energy intensive.",
                     "Recycling retains the metal and generally requires much less energy than primary production.",
                 ],
-                "8.10 Solid Waste Disposal",
+                "8.10 Waste Reduction Methods",
                 1,
             ),
             frq(
@@ -1619,7 +1619,7 @@ QUIZZES = [
                     "Biomagnification is increasing concentration at successively higher trophic levels; long-lived top predatory fish should have the highest concentration.",
                     "Reduce mercury emissions at the source or issue fish-consumption advisories, especially for pregnant people and children.",
                 ],
-                "8.7 Persistent Organic Pollutants / Bioaccumulation and Biomagnification",
+                "8.8 Bioaccumulation and Biomagnification",
                 2,
             ),
         ],
@@ -1645,7 +1645,7 @@ QUIZZES = [
                     "Ultraviolet radiation releases reactive chlorine from CFCs.",
                     "A chlorine radical can participate repeatedly in ozone-destroying reactions.",
                 ],
-                "9.2 Stratospheric Ozone Depletion",
+                "9.1 Stratospheric Ozone Depletion",
                 1,
             ),
             mcq(
@@ -1662,7 +1662,7 @@ QUIZZES = [
                     r"Acid dissociation increases \(\mathrm{H^+}\), lowering pH.",
                     "Hydrogen ions also reduce carbonate availability, challenging calcifying organisms.",
                 ],
-                "9.10 Ocean Acidification",
+                "9.7 Ocean Acidification",
                 1,
             ),
             frq(
