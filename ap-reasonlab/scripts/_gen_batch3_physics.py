@@ -89,7 +89,7 @@ QUIZZES = [
             frq(
                 r"A motion sensor records a cart released from rest at \(t=0\): \(x=0.000,\ 0.040,\ 0.160,\ "
                 r"0.360,\ 0.640\text{ m}\) at \(t=0.0,\ 0.1,\ 0.2,\ 0.3,\ 0.4\text{ s}\), respectively. "
-                "Use the data to test whether acceleration is constant, determine its value, and predict \(x\) at "
+                r"Use the data to test whether acceleration is constant, determine its value, and predict \(x\) at "
                 r"\(t=0.50\text{ s}\). Describe one graph that would linearize the data.",
                 [
                     r"For equally spaced times, compare the second differences or calculate \(x/t^2\) for nonzero times.",
@@ -203,7 +203,7 @@ QUIZZES = [
                 2,
             ),
             mcq(
-                "A student on a nearly frictionless rotating platform pulls two equal masses from radius \(r\) to "
+                r"A student on a nearly frictionless rotating platform pulls two equal masses from radius \(r\) to "
                 r"radius \(r/2\). If the masses dominate the system's rotational inertia, the angular speed becomes",
                 [r"A) \(\omega/4\)", r"B) \(\omega/2\)", r"C) \(2\omega\)", r"D) \(4\omega\)"],
                 3,
@@ -534,7 +534,7 @@ QUIZZES = [
             frq(
                 r"A diffraction grating has \(500\) lines per millimeter. Monochromatic light produces a second-order "
                 r"maximum at \(30.0^\circ\). Determine the wavelength. If the angle uncertainty is \(0.5^\circ\), "
-                "estimate the resulting wavelength uncertainty using the nearby change in \(\sin\theta\).",
+                r"estimate the resulting wavelength uncertainty using the nearby change in \(\sin\theta\).",
                 [
                     "Convert line density to slit spacing.",
                     r"Use the grating condition \(d\sin\theta=m\lambda\).",
@@ -631,15 +631,15 @@ QUIZZES = [
         ["ap-physics-c-em", "units-8-10", "electrostatics", "capacitors", "challenge", "set-3"],
         [
             mcq(
-                "A neutral conductor contains an empty cavity. A point charge \(+q\) is placed inside the cavity "
+                r"A neutral conductor contains an empty cavity. A point charge \(+q\) is placed inside the cavity "
                 "without touching the conductor. In electrostatic equilibrium, the net induced charge on the cavity "
                 "surface and on the conductor's exterior surface are, respectively,",
                 [r"A) \(0,\ 0\)", r"B) \(-q,\ 0\)", r"C) \(-q,\ +q\)", r"D) \(+q,\ -q\)"],
                 2,
                 [
                     "A Gaussian surface within the conducting material has zero electric flux because the field there is zero.",
-                    "The enclosed charge must therefore vanish, requiring induced cavity-surface charge \(-q\).",
-                    "The conductor remains neutral overall, so its exterior surface carries \(+q\).",
+                    r"The enclosed charge must therefore vanish, requiring induced cavity-surface charge \(-q\).",
+                    r"The conductor remains neutral overall, so its exterior surface carries \(+q\).",
                 ],
                 "8.5 Gauss's Law",
                 2,
@@ -648,15 +648,15 @@ QUIZZES = [
                 r"Equal charges \(+q\) and \(-q\) are fixed at \(x=-a\) and \(x=+a\), respectively. At the origin,",
                 [
                     "A) both electric potential and electric field are zero",
-                    "B) potential is zero, but the electric field points in the \(+x\) direction",
+                    r"B) potential is zero, but the electric field points in the \(+x\) direction",
                     "C) potential is positive, but the electric field is zero",
-                    "D) potential is negative, and the electric field points in the \(-x\) direction",
+                    r"D) potential is negative, and the electric field points in the \(-x\) direction",
                 ],
                 1,
                 [
                     "Electric potential is a scalar sum; equal opposite contributions cancel at the midpoint.",
-                    "The field from \(+q\) points away from it, toward \(+x\) at the origin.",
-                    "The field toward \(-q\) also points toward \(+x\), so the fields add.",
+                    r"The field from \(+q\) points away from it, toward \(+x\) at the origin.",
+                    r"The field toward \(-q\) also points toward \(+x\), so the fields add.",
                 ],
                 "9.2 Electric Potential",
                 2,
@@ -668,7 +668,7 @@ QUIZZES = [
                 r"charge \(q_0\) from infinity to that point.",
                 [
                     "All ring elements are the same distance from an axial observation point.",
-                    "Obtain the axial field from the potential using \(E_x=-dV/dx\).",
+                    r"Obtain the axial field from the potential using \(E_x=-dV/dx\).",
                     "Relate quasistatic external work to the change in electric potential energy.",
                 ],
                 [
@@ -688,7 +688,7 @@ QUIZZES = [
                 "released while only partly inserted.",
                 [
                     "After disconnection, free charge on the plates is fixed.",
-                    "A fully inserted dielectric multiplies capacitance by \(\kappa\).",
+                    r"A fully inserted dielectric multiplies capacitance by \(\kappa\).",
                     r"At fixed charge, use \(V=Q/C\) and \(U=Q^2/(2C)\).",
                 ],
                 [
@@ -743,7 +743,7 @@ QUIZZES = [
                 [
                     "Reduce the parallel pair before adding the series resistance.",
                     "Use the parallel section's voltage to determine each branch current.",
-                    "Check that branch currents sum to the total current and that battery power is \(IV\).",
+                    r"Check that branch currents sum to the total current and that battery power is \(IV\).",
                 ],
                 [
                     r"\(R_{\parallel}=(1/6.0+1/3.0)^{-1}=2.0\,\Omega\), so \(R_{\text{eq}}=6.0\,\Omega\).",
@@ -762,7 +762,7 @@ QUIZZES = [
                 [
                     r"Use motional emf \(\mathcal{E}=BLv\).",
                     "The induced current creates a magnetic force that opposes the flux change.",
-                    "Compare external mechanical power \(Fv\) with resistive power \(I^2R\).",
+                    r"Compare external mechanical power \(Fv\) with resistive power \(I^2R\).",
                 ],
                 [
                     r"\(\mathcal{E}=(0.800)(0.500)(6.00)=2.40\text{ V}\).",
@@ -968,8 +968,8 @@ QUIZZES = [
                 ],
                 1,
                 [
-                    "Angular momentum \(L=I\omega\) is conserved when external torque is negligible.",
-                    "Increasing \(I\) therefore decreases \(\omega\).",
+                    r"Angular momentum \(L=I\omega\) is conserved when external torque is negligible.",
+                    r"Increasing \(I\) therefore decreases \(\omega\).",
                     r"At fixed angular momentum, \(K=L^2/(2I)\), so kinetic energy decreases; internal work accounts for the change.",
                 ],
                 "5.7 Angular Momentum",
@@ -978,7 +978,7 @@ QUIZZES = [
             frq(
                 r"A wheel with rotational inertia \(I=2.00\text{ kg·m}^2\) starts from rest. From \(t=0\) to "
                 r"\(t=3.00\text{ s}\), a torque \(\tau(t)=6.00-2.00t\) N·m acts in a fixed direction. Determine the "
-                "wheel's angular speed and angular displacement at \(3.00\text{ s}\), and the work done by the torque.",
+                r"wheel's angular speed and angular displacement at \(3.00\text{ s}\), and the work done by the torque.",
                 [
                     "Integrate torque over time to obtain angular impulse and angular momentum.",
                     r"Alternatively find \(\alpha(t)=\tau(t)/I\), then integrate twice.",
