@@ -15,6 +15,7 @@ DATA = ROOT / "data" / "managed-content.json"
 MARKER = "## Related Knowledge Expansion"
 STUDY_MARKER = "## Study Connections"
 ADVANCED_STUDY_MARKER = "## Advanced Study Notes"
+EXAM_LAB_MARKER = "## Exam Application Lab"
 WORKED_MARKERS = (
     "## Worked Example",
     "Worked Example & Deeper Points",
@@ -206,6 +207,111 @@ def add_wave3_formula_sheets(data: dict) -> int:
     return added
 
 
+def add_wave4_formula_sheets(data: dict) -> int:
+    path = ROOT / "scripts" / "_wave4_formula_sheets.py"
+    if not path.exists():
+        return 0
+    sheets = load_module(path, "wave4_sheets").WAVE4_FORMULA_SHEETS
+    formulas = data.setdefault("formulas", [])
+    existing_names = {
+        str(f.get("name", "")).strip().casefold() for f in formulas
+    }
+    existing_ids = {f.get("id") for f in formulas if f.get("id")}
+    added = 0
+    for sheet in sheets:
+        name = str(sheet.get("name", "")).strip()
+        if not name or name.casefold() in existing_names:
+            continue
+        formula_id = rid("m-formula")
+        while formula_id in existing_ids:
+            formula_id = rid("m-formula")
+        formulas.append(
+            {
+                "id": formula_id,
+                "subject": sheet["subject"],
+                "unit": sheet.get("unit") or "CED Formula Reference",
+                "name": name,
+                "expression": "",
+                "content": sheet["content"],
+                "variables": "",
+                "whenToUse": "Use while drilling related concepts and FRQ setups.",
+                "sourceNote": "Original AP-aligned reference; CED skills and equations, not exam questions.",
+            }
+        )
+        existing_names.add(name.casefold())
+        existing_ids.add(formula_id)
+        added += 1
+    return added
+
+
+def exam_lab_fallback(title: str, subject: str, formulas: list[dict]) -> str:
+    formula_lines = extract_formula_lines(formulas, subject)
+    parts = [
+        EXAM_LAB_MARKER,
+        "",
+        f"## 1. Typical AP prompt shapes for {title}",
+        f"Expect prompts that require you to apply **{title}** rather than define it. "
+        "Task verbs usually include explain, calculate, justify, compare, or evaluate.",
+        "",
+        "## 2. Setup sequence",
+        "- Restate what is asked in course vocabulary.",
+        "- List givens, unknowns, and the model or evidence type you will use.",
+        "- Write the governing relationship, claim, or method before substituting.",
+        "",
+        "## 3. Assumptions to state",
+        "Name the conditions that must hold (steady flow, independence, closed system, "
+        "audience/context, ceteris paribus, random sampling, etc.). If a condition fails, "
+        "say how the conclusion changes.",
+        "",
+        "## 4. Mini original scenario",
+        f"Invent a short original case for **{title}**. Walk through one calculation or "
+        "one evidence-to-claim chain, then interpret the result in rubric language.",
+        "",
+        "## 5. What earns the point",
+        "AP readers reward a named method, a correct intermediate step, and an "
+        "interpretation. A number or a quotation without commentary is incomplete.",
+        "",
+        "## 6. Transfer",
+        f"Connect **{title}** to one adjacent unit. Change one input and predict the "
+        "directional effect.",
+    ]
+    if formula_lines:
+        parts.extend(["", "### Formula / model anchors", ""] + formula_lines)
+    return "\n".join(parts)
+
+
+def richer_example(title: str, subject: str) -> str:
+    if "English Language" in subject:
+        return (
+            f"For {title}: quote one precise choice, explain its effect on a named audience, "
+            "and show how that effect advances purpose. Then qualify with one limitation."
+        )
+    if "English Literature" in subject:
+        return (
+            f"For {title}: identify one structural or figurative pattern, argue a theme statement "
+            "(not a topic word), and show how a second passage complicates the first."
+        )
+    if any(x in subject for x in ("History", "Geography")):
+        return (
+            f"For {title}: write a scoped thesis, support it with two named examples from "
+            "different regions or decades, and explain the causal or comparative link."
+        )
+    if "Physics" in subject or subject in {"AP Calculus AB/BC", "AP Chemistry", "AP Statistics"}:
+        return (
+            f"For {title}: list assumptions, write the governing equation in symbols, substitute "
+            "with units, check a limiting case, and interpret the result."
+        )
+    if "Economics" in subject:
+        return (
+            f"For {title}: draw the relevant graph, identify the initial equilibrium, apply one "
+            "shock, and explain short-run vs long-run outcomes."
+        )
+    return (
+        f"For {title}: state the model or claim, apply one concrete original case, then "
+        "interpret the outcome in AP rubric language (justify, compare, or evaluate)."
+    )
+
+
 def deepen_key_points(concept: dict, title: str, subject: str) -> list[str]:
     existing = [str(p) for p in (concept.get("keyPoints") or []) if p]
     extras: list[str] = []
@@ -301,10 +407,21 @@ def load_advanced_study_blocks() -> dict[tuple[str, str], str]:
     )
 
 
+def load_exam_lab_blocks() -> dict[tuple[str, str], str]:
+    return load_block_modules(
+        [
+            ("_wave4_physics_exam.py", "WAVE4_PHYSICS_EXAM"),
+            ("_wave4_hss_exam.py", "WAVE4_HSS_EXAM"),
+            ("_wave4_stem_exam.py", "WAVE4_STEM_EXAM"),
+        ]
+    )
+
+
 def expand(data: dict) -> dict[str, int]:
     blocks = load_all_blocks()
     study_blocks = load_study_blocks()
     advanced_study_blocks = load_advanced_study_blocks()
+    exam_lab_blocks = load_exam_lab_blocks()
     formulas = data.get("formulas", [])
     stats = {
         "related_inserted": 0,
@@ -312,13 +429,17 @@ def expand(data: dict) -> dict[str, int]:
         "study_inserted": 0,
         "study_fallback": 0,
         "advanced_study_inserted": 0,
+        "exam_lab_inserted": 0,
+        "exam_lab_fallback": 0,
         "key_points_expanded": 0,
         "mistakes_expanded": 0,
         "examples_expanded": 0,
         "formula_sheets_added": 0,
     }
 
-    stats["formula_sheets_added"] = add_wave3_formula_sheets(data)
+    stats["formula_sheets_added"] = add_wave3_formula_sheets(data) + add_wave4_formula_sheets(
+        data
+    )
     formulas = data.get("formulas", [])
 
     for concept in data.get("concepts", []):
@@ -371,6 +492,21 @@ def expand(data: dict) -> dict[str, int]:
                 stats["advanced_study_inserted"] += 1
                 changed = True
 
+        if EXAM_LAB_MARKER not in summary:
+            key = (subject, normalize_title(title))
+            lab = exam_lab_blocks.get(key) or exam_lab_blocks.get(
+                (subject, normalize_title(concept.get("title") or ""))
+            )
+            if lab:
+                summary = insert_before_worked(summary, lab)
+                stats["exam_lab_inserted"] += 1
+            else:
+                summary = insert_before_worked(
+                    summary, exam_lab_fallback(title, subject, formulas)
+                )
+                stats["exam_lab_fallback"] += 1
+            changed = True
+
         new_kp = deepen_key_points(concept, title, subject)
         if new_kp != (concept.get("keyPoints") or []):
             concept["keyPoints"] = new_kp
@@ -384,12 +520,8 @@ def expand(data: dict) -> dict[str, int]:
             changed = True
 
         example = str(concept.get("example") or "")
-        if len(example) < 80:
-            concept["example"] = (
-                f"For {title}: state the model or claim, apply one concrete case "
-                "(with formula, evidence, or textual detail), then interpret the "
-                "result in AP rubric language."
-            )
+        if len(example) < 160:
+            concept["example"] = richer_example(title, subject)
             stats["examples_expanded"] += 1
             changed = True
 
@@ -403,7 +535,7 @@ def main() -> None:
     data = json.loads(DATA.read_text(encoding="utf-8"))
     stats = expand(data)
     DATA.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print("Wave-3 concept expansion complete:")
+    print("Wave-4 concept expansion complete:")
     for key, value in stats.items():
         print(f"  {key}: {value}")
 
