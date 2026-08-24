@@ -19,6 +19,7 @@ EXAM_LAB_MARKER = "## Exam Application Lab"
 MASTERY_MARKER = "## Concept Mastery Path"
 FORMULA_WALK_MARKER = "## Formula Walkthrough"
 CROSS_SUBJECT_MARKER = "## Cross-Subject Connections"
+SYNTHESIS_MARKER = "## Unit Synthesis & Exam Day Notes"
 WORKED_MARKERS = (
     "## Worked Example",
     "Worked Example & Deeper Points",
@@ -480,6 +481,9 @@ def load_wave5_blocks() -> dict[str, dict[tuple[str, str], str]]:
             [("_wave5_formula_walkthrough.py", "WAVE5_FORMULA_WALK")]
         ),
         "cross": load_block_modules([("_wave5_cross_subject.py", "WAVE5_CROSS")]),
+        "synthesis": load_block_modules(
+            [("_wave6_unit_synthesis.py", "WAVE6_SYNTHESIS")]
+        ),
     }
 
 
@@ -527,6 +531,7 @@ def expand(data: dict) -> dict[str, int]:
         "formula_walk_inserted": 0,
         "formula_walk_fallback": 0,
         "cross_subject_inserted": 0,
+        "synthesis_inserted": 0,
         "key_points_expanded": 0,
         "mistakes_expanded": 0,
         "examples_expanded": 0,
@@ -628,6 +633,13 @@ def expand(data: dict) -> dict[str, int]:
             if cross:
                 summary = insert_before_worked(summary, cross)
                 stats["cross_subject_inserted"] += 1
+                changed = True
+
+        if SYNTHESIS_MARKER not in summary:
+            synthesis = lookup_block(wave5["synthesis"], subject, title, raw_title)
+            if synthesis:
+                summary = insert_before_worked(summary, synthesis)
+                stats["synthesis_inserted"] += 1
                 changed = True
 
         new_kp = ensure_five_key_points(concept, title, subject)
