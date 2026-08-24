@@ -16,6 +16,9 @@ MARKER = "## Related Knowledge Expansion"
 STUDY_MARKER = "## Study Connections"
 ADVANCED_STUDY_MARKER = "## Advanced Study Notes"
 EXAM_LAB_MARKER = "## Exam Application Lab"
+MASTERY_MARKER = "## Concept Mastery Path"
+FORMULA_WALK_MARKER = "## Formula Walkthrough"
+CROSS_SUBJECT_MARKER = "## Cross-Subject Connections"
 WORKED_MARKERS = (
     "## Worked Example",
     "Worked Example & Deeper Points",
@@ -280,6 +283,59 @@ def exam_lab_fallback(title: str, subject: str, formulas: list[dict]) -> str:
     return "\n".join(parts)
 
 
+def formula_walk_fallback(title: str, subject: str, formulas: list[dict]) -> str:
+    formula_lines = extract_formula_lines(formulas, subject)
+    if "English" in subject:
+        method = (
+            "Claim → evidence → commentary → qualification. "
+            "Each commentary sentence must explain *how* the evidence advances the claim."
+        )
+    elif any(x in subject for x in ("History", "Geography")):
+        method = (
+            "Thesis → named example A → explanation → named example B → "
+            "causal/comparative link → significance."
+        )
+    elif "Computer Science" in subject:
+        method = (
+            "Trace on paper → state pre/post conditions → check edge cases "
+            "(empty, single element, boundary index)."
+        )
+    elif subject == "AP Psychology":
+        method = (
+            "Operational definition → study design → IV/DV → confounds → "
+            "interpretation (correlation vs causation)."
+        )
+    else:
+        method = (
+            "Define terms → state model → apply to one case → interpret in context."
+        )
+    parts = [
+        FORMULA_WALK_MARKER,
+        "",
+        f"## 1. Method for {title}",
+        method,
+        "",
+        "## 2. When to use this structure",
+        "Use whenever an AP prompt asks you to explain, analyze, evaluate, or justify — "
+        "not when the task is only to identify or list.",
+        "",
+        "## 3. Step-by-step template",
+        "- Restate the prompt in your own words.",
+        "- Name the skill (causation, comparison, rhetorical analysis, tracing, etc.).",
+        "- Produce one concrete step with course-specific detail.",
+        "- Conclude in rubric language.",
+        "",
+        "## 4. Quality check",
+        "Remove any sentence that could apply to a different topic without editing.",
+        "",
+        "## 5. Common traps",
+        "Stopping at labels (device names, vocabulary lists) without explaining function.",
+    ]
+    if formula_lines:
+        parts.extend(["", "## Related formulas / models", ""] + formula_lines[:5])
+    return "\n".join(parts)
+
+
 def richer_example(title: str, subject: str) -> str:
     if "English Language" in subject:
         return (
@@ -417,11 +473,47 @@ def load_exam_lab_blocks() -> dict[tuple[str, str], str]:
     )
 
 
+def load_wave5_blocks() -> dict[str, dict[tuple[str, str], str]]:
+    return {
+        "mastery": load_block_modules([("_wave5_mastery_path.py", "WAVE5_MASTERY")]),
+        "formula": load_block_modules(
+            [("_wave5_formula_walkthrough.py", "WAVE5_FORMULA_WALK")]
+        ),
+        "cross": load_block_modules([("_wave5_cross_subject.py", "WAVE5_CROSS")]),
+    }
+
+
+def lookup_block(
+    blocks: dict[tuple[str, str], str], subject: str, title: str, raw_title: str
+) -> str | None:
+    key = (subject, normalize_title(title))
+    block = blocks.get(key)
+    if block:
+        return block
+    return blocks.get((subject, normalize_title(raw_title or "")))
+
+
+def ensure_five_key_points(concept: dict, title: str, subject: str) -> list[str]:
+    points = deepen_key_points(concept, title, subject)
+    if len(points) >= 5:
+        return points[:5]
+    extras = [
+        f"Connect {title} to at least one prior and one later unit idea.",
+        "Practice one original FRQ-style explanation without a formula sheet.",
+        "Teach the idea aloud in under 60 seconds using one example.",
+    ]
+    for item in extras:
+        if item not in points and len(points) < 5:
+            points.append(item)
+    return points[:5]
+
+
 def expand(data: dict) -> dict[str, int]:
     blocks = load_all_blocks()
     study_blocks = load_study_blocks()
     advanced_study_blocks = load_advanced_study_blocks()
     exam_lab_blocks = load_exam_lab_blocks()
+    wave5 = load_wave5_blocks()
     formulas = data.get("formulas", [])
     stats = {
         "related_inserted": 0,
@@ -431,6 +523,10 @@ def expand(data: dict) -> dict[str, int]:
         "advanced_study_inserted": 0,
         "exam_lab_inserted": 0,
         "exam_lab_fallback": 0,
+        "mastery_inserted": 0,
+        "formula_walk_inserted": 0,
+        "formula_walk_fallback": 0,
+        "cross_subject_inserted": 0,
         "key_points_expanded": 0,
         "mistakes_expanded": 0,
         "examples_expanded": 0,
@@ -507,7 +603,34 @@ def expand(data: dict) -> dict[str, int]:
                 stats["exam_lab_fallback"] += 1
             changed = True
 
-        new_kp = deepen_key_points(concept, title, subject)
+        raw_title = concept.get("title") or ""
+        if MASTERY_MARKER not in summary:
+            mastery = lookup_block(wave5["mastery"], subject, title, raw_title)
+            if mastery:
+                summary = insert_before_worked(summary, mastery)
+                stats["mastery_inserted"] += 1
+                changed = True
+
+        if FORMULA_WALK_MARKER not in summary:
+            walk = lookup_block(wave5["formula"], subject, title, raw_title)
+            if walk:
+                summary = insert_before_worked(summary, walk)
+                stats["formula_walk_inserted"] += 1
+            else:
+                summary = insert_before_worked(
+                    summary, formula_walk_fallback(title, subject, formulas)
+                )
+                stats["formula_walk_fallback"] += 1
+            changed = True
+
+        if CROSS_SUBJECT_MARKER not in summary:
+            cross = lookup_block(wave5["cross"], subject, title, raw_title)
+            if cross:
+                summary = insert_before_worked(summary, cross)
+                stats["cross_subject_inserted"] += 1
+                changed = True
+
+        new_kp = ensure_five_key_points(concept, title, subject)
         if new_kp != (concept.get("keyPoints") or []):
             concept["keyPoints"] = new_kp
             stats["key_points_expanded"] += 1
@@ -535,7 +658,7 @@ def main() -> None:
     data = json.loads(DATA.read_text(encoding="utf-8"))
     stats = expand(data)
     DATA.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print("Wave-4 concept expansion complete:")
+    print("Concept expansion complete:")
     for key, value in stats.items():
         print(f"  {key}: {value}")
 
