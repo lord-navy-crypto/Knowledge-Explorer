@@ -8,12 +8,16 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
+from _sat_english_batch2 import SAT_RW_BATCH2
 from _sat_english_rw_corpus import SAT_RW_DOCS
+from _sat_math_batch2 import SAT_MATH_BATCH2
 from _sat_math_corpus import SAT_MATH_DOCS
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTENT = ROOT / "data" / "managed-content.json"
 NOW = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+
+ALL_SAT_DOCS = [*SAT_MATH_DOCS, *SAT_RW_DOCS, *SAT_MATH_BATCH2, *SAT_RW_BATCH2]
 
 
 def main() -> None:
@@ -23,7 +27,7 @@ def main() -> None:
 
     added = 0
     by_space: dict[str, int] = {}
-    for item in [*SAT_MATH_DOCS, *SAT_RW_DOCS]:
+    for item in ALL_SAT_DOCS:
         key = (item["space"], item["title"])
         if key in existing:
             continue
