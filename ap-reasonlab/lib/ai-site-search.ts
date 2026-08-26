@@ -10,10 +10,62 @@ export type AiSiteSearchHit = {
   href?: string;
 };
 
+/** Soft ranking preference for AI site search (not a hard type-only filter). */
+export type AiSiteSearchPrefer = "formulas" | "language" | "code" | "nav";
+
 /** How many site hits to inject into AI prompts. */
 export const AI_SITE_SEARCH_LIMIT = 10;
 /** Longer excerpts so the model can actually use formulas/steps from KE articles. */
 export const AI_SITE_DETAIL_MAX = 1600;
+
+/**
+ * Map AI prefer mode → site-search ranking boosts.
+ * `type` is never used as a hard exclusive filter here — prefer is soft.
+ * When prefer is set we also bias the query with subject hints (see preferQueryBias).
+ */
+export function preferTypeBoosts(
+  prefer?: AiSiteSearchPrefer | null
+): Partial<Record<string, number>> | undefined {
+  if (!prefer) return undefined;
+  switch (prefer) {
+    case "formulas":
+      return { formula: 4.5, concept: 3.2, practice: 2.2, english: 0.35, code: 0.35, page: 0.25 };
+    case "language":
+      return { english: 4.5, guide: 2.2, learning: 2, formula: 0.25, code: 0.4, concept: 0.8 };
+    case "code":
+      return { code: 4.5, guide: 1.8, page: 0.8, formula: 0.2, english: 0.35, concept: 0.6 };
+    case "nav":
+      return { page: 4, guide: 3.5, subject: 2.2, learning: 1.8, checklist: 1.5, formula: 0.2, english: 0.6 };
+    default:
+      return undefined;
+  }
+}
+
+/** Query-prefix bias when ranking hooks alone are not enough. */
+export function preferQueryBias(prefer?: AiSiteSearchPrefer | null): string {
+  if (!prefer) return "";
+  switch (prefer) {
+    case "formulas":
+      return "formula equation definition";
+    case "language":
+      return "english vocabulary grammar writing";
+    case "code":
+      return "code programming snippet";
+    case "nav":
+      return "site guide how to use Knowledge Explorer navigation";
+    default:
+      return "";
+  }
+}
+
+export function applyPreferToQuery(query: string, prefer?: AiSiteSearchPrefer | null): string {
+  const bias = preferQueryBias(prefer);
+  if (!bias) return query;
+  const q = query.trim();
+  if (!q) return bias;
+  // Append softly so tokenize() still sees the student question first.
+  return `${q} ${bias}`;
+}
 
 /**
  * Search Knowledge Explorer built-in + managed study content.
@@ -22,11 +74,14 @@ export const AI_SITE_DETAIL_MAX = 1600;
 export function searchKnowledgeExplorerContent(
   query: string,
   managed?: Partial<ManagedContent> | null,
-  limit = AI_SITE_SEARCH_LIMIT
+  limit = AI_SITE_SEARCH_LIMIT,
+  prefer?: AiSiteSearchPrefer | null
 ): AiSiteSearchHit[] {
-  return searchSiteEngine(query, managed, {
+  const biased = applyPreferToQuery(query, prefer);
+  return searchSiteEngine(biased, managed, {
     limit: Math.max(1, Math.min(limit, AI_SITE_SEARCH_LIMIT)),
     detailMax: AI_SITE_DETAIL_MAX,
+    typeBoosts: preferTypeBoosts(prefer),
   }).map((hit: SiteSearchHit) => ({
     type: hit.type,
     title: hit.title,

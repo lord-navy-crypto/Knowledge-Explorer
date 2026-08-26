@@ -469,3 +469,37 @@ export function oneVarStats(values: number[]): OneVarStats {
 }
 
 export const MATH_CONSTANTS = CONSTANTS;
+
+/**
+ * Heuristic: does this plain / LaTeX expression look like a function of x
+ * suitable for the Grapher Y1 handoff?
+ */
+export function looksLikeFunctionOfX(expr: string): boolean {
+  const raw = expr.trim();
+  if (!raw || raw.length > 180) return false;
+  // Strip LaTeX commands so "\approx" / "\max" do not count as variable x.
+  const plain = raw
+    .replace(/\\[a-zA-Z]+\*?/g, " ")
+    .replace(/[{}^_]/g, " ")
+    .replace(/\s+/g, " ");
+  if (!/\bx\b/i.test(plain)) return false;
+  // Need some operator / known function — not just the letter x alone.
+  return /[+\-*/^=()]|sin|cos|tan|log|ln|exp|sqrt|abs|\d/i.test(plain);
+}
+
+/** Best-effort LaTeX → grapher-friendly ascii for simple f(x) plots. */
+export function latexToGrapherY1(latex: string): string | null {
+  if (!looksLikeFunctionOfX(latex)) return null;
+  let s = latex.trim();
+  s = s.replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, "($1)/($2)");
+  s = s.replace(/\\sqrt\{([^{}]+)\}/g, "sqrt($1)");
+  s = s.replace(/\\left|\\right/g, "");
+  s = s.replace(/\\(sin|cos|tan|ln|log|exp|abs)\b/gi, "$1");
+  s = s.replace(/\\cdot|\\times|\\,/g, "*");
+  s = s.replace(/\\pi\b/gi, "pi");
+  s = s.replace(/[{}]/g, "");
+  s = s.replace(/\s+/g, "");
+  if (/\\|[^ -\u007f]/.test(s)) return null;
+  if (!looksLikeFunctionOfX(s)) return null;
+  return s;
+}

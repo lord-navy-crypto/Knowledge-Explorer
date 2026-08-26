@@ -57,7 +57,8 @@ Return JSON with refused, reply, equations, formulas, quizPrompt, aiMayBeWrong.`
       const siteSearch = body.siteSearch !== false;
       const siteContext = await buildServerAiSiteContext(
         `${subject}\n${conceptTitle}\n${conceptSummary}\n${question}`,
-        siteSearch
+        siteSearch,
+        "formulas"
       );
       const userWithSite = appendAiSiteContext(user, siteContext);
 

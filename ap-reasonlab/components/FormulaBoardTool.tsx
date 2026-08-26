@@ -5,6 +5,8 @@ import Link from "next/link";
 import StudyToolShell from "@/components/StudyToolShell";
 import RichContent from "@/components/RichContent";
 import { FORMULA_BOARD } from "@/data/formula-board";
+import { openToolboxWithPrefill } from "@/lib/ai-toolbox-prefill";
+import { looksLikeFunctionOfX } from "@/lib/math-expr";
 
 export default function FormulaBoardTool() {
   const [sectionId, setSectionId] = useState(FORMULA_BOARD[0]?.id || "physics");
@@ -67,6 +69,22 @@ export default function FormulaBoardTool() {
     a.download = "formula-favorites.md";
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  function askAiAboutFormula(item: { name: string; latex: string; plain: string; note?: string }) {
+    openToolboxWithPrefill({
+      category: "ap",
+      apTask: "formula-derive",
+      prompt: [
+        `Explain and derive this formula: ${item.name}`,
+        `LaTeX: ${item.latex}`,
+        `Plain: ${item.plain}`,
+        item.note ? `Note: ${item.note}` : "",
+        "Show when it applies, what each symbol means, and a short worked example.",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    });
   }
 
   return (
@@ -143,33 +161,53 @@ export default function FormulaBoardTool() {
       )}
 
       <ul className="grid gap-3 sm:grid-cols-2">
-        {items.map((item) => (
-          <li key={item.id} className="card space-y-2">
-            <div className="flex items-start justify-between gap-2">
-              <h3 className="font-semibold text-slate-900">{item.name}</h3>
-              <button
-                type="button"
-                className="text-amber-600"
-                aria-label="Favorite"
-                onClick={() => toggleFav(item.id)}
-              >
-                {favorites.includes(item.id) ? "★" : "☆"}
-              </button>
-            </div>
-            <div className="overflow-x-auto text-slate-800">
-              <RichContent mode="math">{item.latex}</RichContent>
-            </div>
-            <p className="font-mono text-xs text-slate-500">{item.plain}</p>
-            {item.note ? <p className="text-xs text-slate-500">{item.note}</p> : null}
-            <button
-              type="button"
-              className="btn-secondary text-xs"
-              onClick={() => copyText(item.id, mode === "latex" ? item.latex : item.plain)}
-            >
-              {copied === item.id ? "Copied" : mode === "latex" ? "Copy LaTeX" : "Copy plain"}
-            </button>
-          </li>
-        ))}
+        {items.map((item) => {
+          const canGraph = looksLikeFunctionOfX(item.plain);
+          return (
+            <li key={item.id} className="card space-y-2">
+              <div className="flex items-start justify-between gap-2">
+                <h3 className="font-semibold text-slate-900">{item.name}</h3>
+                <button
+                  type="button"
+                  className="text-amber-600"
+                  aria-label="Favorite"
+                  onClick={() => toggleFav(item.id)}
+                >
+                  {favorites.includes(item.id) ? "★" : "☆"}
+                </button>
+              </div>
+              <div className="overflow-x-auto text-slate-800">
+                <RichContent mode="math">{item.latex}</RichContent>
+              </div>
+              <p className="font-mono text-xs text-slate-500">{item.plain}</p>
+              {item.note ? <p className="text-xs text-slate-500">{item.note}</p> : null}
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  className="btn-secondary text-xs"
+                  onClick={() => copyText(item.id, mode === "latex" ? item.latex : item.plain)}
+                >
+                  {copied === item.id ? "Copied" : mode === "latex" ? "Copy LaTeX" : "Copy plain"}
+                </button>
+                <button
+                  type="button"
+                  className="btn-secondary text-xs"
+                  onClick={() => askAiAboutFormula(item)}
+                >
+                  Ask AI
+                </button>
+                {canGraph ? (
+                  <Link
+                    href={`/hints?tool=grapher&y1=${encodeURIComponent(item.plain)}`}
+                    className="btn-secondary text-xs"
+                  >
+                    → Graph
+                  </Link>
+                ) : null}
+              </div>
+            </li>
+          );
+        })}
       </ul>
     </StudyToolShell>
   );

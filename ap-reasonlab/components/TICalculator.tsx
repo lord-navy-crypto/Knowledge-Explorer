@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { evalExpr, formatCalc, oneVarStats, type OneVarStats } from "@/lib/math-expr";
+import { openToolboxWithPrefill } from "@/lib/ai-toolbox-prefill";
 import {
   binomialCdf,
   binomialPmf,
@@ -279,6 +280,25 @@ export default function TICalculator() {
     const y1 = /\bx\b/i.test(source) ? source : `${source}+0*x`;
     return `/hints?tool=grapher&y1=${encodeURIComponent(y1)}`;
   }, [ans, expr]);
+
+  function askAiAboutCalc() {
+    const expression = (expr.trim() || display).replace(/\bans\b/gi, String(ans));
+    const ansText = formatCalc(ans, sci);
+    const looksFormula = /\bx\b/i.test(expression) || /[a-z]/i.test(expression);
+    openToolboxWithPrefill({
+      category: "ap",
+      apTask: looksFormula ? "formula-derive" : "advice",
+      prompt: [
+        "Help with this calculator expression.",
+        `Expression: ${expression}`,
+        `ANS (last answer): ${ansText}`,
+        `Display: ${display}`,
+        looksFormula
+          ? "Derive / explain the related formula and how to evaluate or simplify it."
+          : "Explain the result and suggest a careful next step.",
+      ].join("\n"),
+    });
+  }
 
   function evaluate(sourceRaw: string) {
     let source = sourceRaw.trim();
@@ -675,6 +695,14 @@ export default function TICalculator() {
                 <Link href={plotHref} className="ti-preset" title="Send expression to Grapher">
                   → Graph
                 </Link>
+                <button
+                  type="button"
+                  className="ti-preset"
+                  title="Open AI Toolbox with this expression"
+                  onClick={askAiAboutCalc}
+                >
+                  Ask AI
+                </button>
               </div>
 
               <div className="ti-presets" style={{ marginBottom: "0.5rem" }}>

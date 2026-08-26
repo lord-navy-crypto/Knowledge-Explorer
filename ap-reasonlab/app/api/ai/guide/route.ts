@@ -27,10 +27,12 @@ ${question}
 Return JSON with refused, reply, aiMayBeWrong.`;
 
     try {
-      // Site Guide already embeds SITE_GUIDE_FACTS — skip KE formula search to avoid ## Equations pressure.
+      // Site Guide: soft-prefer nav/language materials (not AP formula packs).
+      const siteContext = await buildServerAiSiteContext(question, true, "nav");
+      const userWithSite = appendAiSiteContext(user, siteContext);
       const result = await runChatJson({
         system: SITE_GUIDE_SYSTEM,
-        user,
+        user: userWithSite,
         maxTokens: 2048,
         userApiKey: userApiKey || undefined,
         provider,

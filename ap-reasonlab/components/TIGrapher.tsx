@@ -10,6 +10,7 @@ import {
   numericDerivative,
   numericIntegral,
 } from "@/lib/math-expr";
+import { openToolboxWithPrefill } from "@/lib/ai-toolbox-prefill";
 
 type Range = { xmin: number; xmax: number; ymin: number; ymax: number };
 type GraphMode = "function" | "parametric" | "polar";
@@ -656,6 +657,42 @@ export default function TIGrapher() {
   }
 
   /** Sample Y1 across the window, then locally refine extrema. */
+  function askAiAboutY1() {
+    const expr = y1.trim();
+    if (!expr) return;
+    openToolboxWithPrefill({
+      category: "ap",
+      apTask: "formula-derive",
+      prompt: [
+        "Analyze this grapher Y1 function.",
+        `Y1 = ${expr}`,
+        y2.trim() ? `Y2 = ${y2.trim()}` : "",
+        `Window: x∈[${range.xmin}, ${range.xmax}], y∈[${range.ymin}, ${range.ymax}]`,
+        "Derive / explain the formula, key features (zeros, extrema, asymptotes), and how to reason about the graph.",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    });
+  }
+
+  function askAiAboutAnalysis() {
+    if (!analysis.trim()) return;
+    openToolboxWithPrefill({
+      category: "ap",
+      apTask: "formula-derive",
+      prompt: [
+        "Interpret this grapher analysis result.",
+        `Y1 = ${y1.trim() || "(empty)"}`,
+        y2.trim() ? `Y2 = ${y2.trim()}` : "",
+        `Analysis: ${analysis}`,
+        "Explain what the zeros / max / min / intersections mean and how to verify them.",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    });
+  }
+
+  /** Sample Y1 across the window, then locally refine extrema. */
   function runMaxMin() {
     if (!y1.trim()) {
       setAnalysis("Need Y1 for max/min.");
@@ -778,6 +815,17 @@ export default function TIGrapher() {
                     />
                   </label>
                 ))}
+                <div className="ti-presets" style={{ marginTop: "0.25rem" }}>
+                  <button
+                    type="button"
+                    className="ti-preset"
+                    disabled={!y1.trim()}
+                    title="Open AI Toolbox about Y1"
+                    onClick={askAiAboutY1}
+                  >
+                    Ask AI about Y1
+                  </button>
+                </div>
               </>
             )}
 
@@ -998,7 +1046,26 @@ export default function TIGrapher() {
               </p>
             </div>
           )}
-          {analysis && <p className="ti-hint">{analysis}</p>}
+          {analysis && (
+            <div className="ti-presets" style={{ marginTop: "0.35rem" }}>
+              <p className="ti-hint" style={{ flex: "1 1 100%" }}>
+                {analysis}
+              </p>
+              {(analysis.includes("Zeros") ||
+                analysis.includes("max") ||
+                analysis.includes("min") ||
+                analysis.includes("∩")) && (
+                <button
+                  type="button"
+                  className="ti-preset"
+                  title="Ask AI about this analysis"
+                  onClick={askAiAboutAnalysis}
+                >
+                  Ask AI
+                </button>
+              )}
+            </div>
+          )}
           {error && <p className="ti-error">{error}</p>}
         </div>
 

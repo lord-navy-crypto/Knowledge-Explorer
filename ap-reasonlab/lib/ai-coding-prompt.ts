@@ -31,6 +31,8 @@ function codingModeCoach(focus: string): string {
       return `Focus write: clarify the goal → teaching steps → minimal runnable snippet → edge case / test idea. Prefer stubs for graded homework.`;
     case "explain":
       return `Focus explain: walk the code by block → what each part does → complexity note when useful → one comprehension check.`;
+    case "csa-frq":
+      return `Focus csa-frq (AP Computer Science A style): coach Java FRQ process — identify class/method signatures, plan helpers, write partial method stubs with clear comments, trace with a tiny example, and list edge cases. Prefer teaching stubs over full graded dumps. Mention ArrayList / String / inheritance patterns when relevant. Point students to the Code playground (/code, /code/java) to try snippets.`;
     default:
       return `Focus general coding coaching with steps + snippet + test idea.`;
   }
@@ -44,6 +46,7 @@ Focus modes (when provided):
 - debug: find likely bugs, show a failing case, and how to test.
 - write: help write code with teaching steps and a minimal runnable snippet.
 - explain: explain what code means by block, with complexity notes when useful.
+- csa-frq: AP CSA-style Java FRQ coaching with stubs, traces, and edge cases.
 
 Respond in JSON only:
 {
