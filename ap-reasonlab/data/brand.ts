@@ -6,7 +6,7 @@ export type Collaborator = {
   org?: string;
 };
 
-/** People on the Knowledge Explorer collaborator roster (GitHub-linked). */
+/** People on the Liji Explore collaborator roster (GitHub-linked). */
 export const trueJetMembers: Collaborator[] = [
   {
     name: "lord-navy-crypto",
@@ -64,9 +64,9 @@ export const collaborators = [
 ];
 
 export const brand = {
-  name: "Knowledge Explorer",
-  shortName: "KE",
-  tagline: "Explore knowledge — AP, tools, and reasoning",
+  name: "Liji Explore",
+  shortName: "LE",
+  tagline: "Explore knowledge — AP, English, tools, and reasoning",
   description:
-    "Knowledge Explorer is an academic platform. AP is one box inside it — with room for calculators, graphers, code resources, and more.",
+    "Liji Explore is an academic platform. AP is one box inside it — with room for English exams, calculators, graphers, code resources, and more.",
 };

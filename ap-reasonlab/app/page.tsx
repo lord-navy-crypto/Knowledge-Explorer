@@ -42,7 +42,7 @@ const boxes = [
   },
   {
     title: "Partners",
-    description: "Knowledge Explorer members with GitHub. Add anyone by name + GitHub username.",
+    description: "Liji Explore members with GitHub. Add anyone by name + GitHub username.",
     href: "/partners",
   },
 ];
@@ -133,13 +133,13 @@ export default function HomePage() {
 
       <section className="card space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="section-title">Knowledge Explorer members</h2>
+          <h2 className="section-title">Liji Explore members</h2>
           <Link href="/partners" className="text-sm font-medium text-brand-600 hover:underline">
             Full roster & join →
           </Link>
         </div>
         <p className="text-sm text-slate-600">
-          People on Knowledge Explorer with GitHub. Add anyone on Partners — free name + GitHub,
+          People on Liji Explore with GitHub. Add anyone on Partners — free name + GitHub,
           not a fixed single choice.
         </p>
         <HomeMembersRoster />

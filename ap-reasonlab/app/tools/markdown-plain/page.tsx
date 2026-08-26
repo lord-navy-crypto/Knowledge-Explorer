@@ -1,7 +1,7 @@
 import MarkdownPlainTool from "@/components/MarkdownPlainTool";
 
 export const metadata = {
-  title: "Markdown plain text — Knowledge Explorer",
+  title: "Markdown plain text — Liji Explore",
 };
 
 export default function Page() {

@@ -11,7 +11,7 @@ import {
 } from "@/data/study-tools";
 
 export const metadata = {
-  title: "Tools — Knowledge Explorer",
+  title: "Tools — Liji Explore",
   description:
     "One toolbox: Study desk, English helpers, STEM pads, File lab, classroom light tools, external connections, and AI — mostly local in your browser.",
 };

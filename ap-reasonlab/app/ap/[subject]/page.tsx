@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import FrqPackCard from "@/components/FrqPackCard";
+import OfficialResourceLinks from "@/components/OfficialResourceLinks";
 import RichContent from "@/components/RichContent";
 import UnifiedAddContent from "@/components/UnifiedAddContent";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
@@ -14,6 +15,7 @@ import { concepts } from "@/data/content";
 import { formulas } from "@/data/formulas";
 import { questionnaires } from "@/data/questionnaires";
 import { getSubjectBySlug } from "@/data/ap-catalog";
+import { getApSubjectOfficial } from "@/data/official-resources";
 import type { ManagedContent, ManagedContentItem } from "@/lib/managed-types";
 import { canonicalizeSubjectId, subjectIdsMatch } from "@/lib/managed-types";
 
@@ -184,6 +186,8 @@ function SubjectWorkspaceContent() {
           <p className="mt-2 text-slate-600">{subject.description}</p>
         </div>
       </section>
+
+      <OfficialResourceLinks block={getApSubjectOfficial(params.subject, subjectName)} />
 
       {isStatistics ? <FrqPackCard /> : null}
 

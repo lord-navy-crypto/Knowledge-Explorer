@@ -1,7 +1,7 @@
 import RandomGroupsTool from "@/components/RandomGroupsTool";
 
 export const metadata = {
-  title: "Random groups — Knowledge Explorer",
+  title: "Random groups — Liji Explore",
 };
 
 export default function Page() {

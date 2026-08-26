@@ -1,7 +1,7 @@
 import TextDiffTool from "@/components/TextDiffTool";
 
 export const metadata = {
-  title: "Text-to-text comparator — Knowledge Explorer",
+  title: "Text-to-text comparator — Liji Explore",
 };
 
 export default function Page() {

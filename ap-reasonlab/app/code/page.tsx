@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import OfficialResourceLinks from "@/components/OfficialResourceLinks";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import { howToEmbedEditors, standardSnippets } from "@/data/code-snippets";
+import { CODE_HUB_OFFICIAL } from "@/data/official-resources";
 
 const langs = [
   {
@@ -88,6 +90,8 @@ export default function CodePage() {
           .
         </p>
       </div>
+
+      <OfficialResourceLinks block={CODE_HUB_OFFICIAL} tone="slate" />
 
       <section className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white px-5 py-5 shadow-sm">
         <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800">

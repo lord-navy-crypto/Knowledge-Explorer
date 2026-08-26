@@ -58,7 +58,7 @@ export function buildGroundedFormulaPack(subject: string, maxItems = 8): string 
       `- ${item.name} | ${item.latex}${item.note ? ` | ${item.note}` : ""}`
   );
   return [
-    `Curated Knowledge Explorer formula pack (${section.title}) — prefer these when relevant:`,
+    `Curated Liji Explore formula pack (${section.title}) — prefer these when relevant:`,
     "Format reminder: name | latex | optional note  (latex has NO dollar signs)",
     ...lines,
     "Copy matching latex into your equations list. Do not invent a conflicting form.",

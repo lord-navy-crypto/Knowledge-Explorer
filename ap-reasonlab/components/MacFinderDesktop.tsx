@@ -296,7 +296,7 @@ function countInSection(data: Partial<ManagedContent>, section: SiteSectionFolde
 }
 
 /**
- * Knowledge Explorer · Macintosh HD
+ * Liji Explore · Macintosh HD
  * Full-site Finder: section → webpage → concepts / formulas / practice / files / images,
  * with preview, edit, delete, and Recycle Bin.
  */
@@ -612,7 +612,7 @@ export default function MacFinderDesktop({
 
   const titleBar =
     nav.kind === "desktop"
-      ? "Knowledge Explorer · Macintosh HD"
+      ? "Liji Explore · Macintosh HD"
       : nav.kind === "trash"
         ? "Recycle Bin · Macintosh HD"
         : nav.kind === "section"

@@ -1,7 +1,7 @@
 import MarkdownPdfTool from "@/components/MarkdownPdfTool";
 
 export const metadata = {
-  title: "Markdown → PDF — Knowledge Explorer",
+  title: "Markdown → PDF — Liji Explore",
 };
 
 export default function MarkdownPdfPage() {

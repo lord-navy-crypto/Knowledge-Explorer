@@ -1,7 +1,7 @@
 import DictationTool from "@/components/DictationTool";
 
 export const metadata = {
-  title: "Dictation — Knowledge Explorer",
+  title: "Dictation — Liji Explore",
 };
 
 export default function Page() {

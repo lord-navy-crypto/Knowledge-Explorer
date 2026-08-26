@@ -79,7 +79,7 @@ function remember(key: string, result: SiteContextResult): SiteContextResult {
 }
 
 /**
- * Client helper: fetch Knowledge Explorer site search context for Local AI prompts.
+ * Client helper: fetch Liji Explore site search context for Local AI prompts.
  * Always searches when a usable query exists.
  *
  * Local callers should pass `deadlineMs` so a slow network search never holds the
@@ -90,7 +90,7 @@ export async function fetchAiSiteContext(
   enabled = true,
   options?: { limit?: number; deadlineMs?: number }
 ): Promise<SiteContextResult> {
-  // Always search Knowledge Explorer — ignore legacy off switches from older clients.
+  // Always search Liji Explore — ignore legacy off switches from older clients.
   void enabled;
   const searchQuery = extractAiSearchQuery(query);
   if (searchQuery.length < 2) {

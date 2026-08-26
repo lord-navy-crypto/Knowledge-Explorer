@@ -1,7 +1,7 @@
 import PdfCompressTool from "@/components/PdfCompressTool";
 
 export const metadata = {
-  title: "PDF compress — Knowledge Explorer",
+  title: "PDF compress — Liji Explore",
 };
 
 export default function Page() {

@@ -37,7 +37,7 @@ export type LocalModelOption = {
 export const DEFAULT_LOCAL_MODEL_ID = "Qwen3.5-0.8B-q4f16_1-MLC";
 
 /**
- * Featured Local AI series for Knowledge Explorer.
+ * Featured Local AI series for Liji Explore.
  * Prefer Qwen3 / Qwen3.5; keep specialist Math/Coder and English options.
  */
 export const FEATURED_LOCAL_MODELS: LocalModelOption[] = [

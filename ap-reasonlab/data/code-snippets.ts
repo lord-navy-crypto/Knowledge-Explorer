@@ -56,7 +56,7 @@ System.out.println(sum);`,
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Knowledge Explorer demo</title>
+  <title>Liji Explore demo</title>
   <style>
     body { font-family: system-ui; margin: 2rem; }
     .card { border: 1px solid #ddd; padding: 1rem; border-radius: 12px; }

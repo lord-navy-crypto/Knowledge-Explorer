@@ -80,7 +80,7 @@ export default function ConceptAskAi({
           quizPrompt: "",
           aiMayBeWrong: "Local AI may be wrong — verify with your notes.",
           note: context
-            ? "Local · speaking… · with Knowledge Explorer site search"
+            ? "Local · speaking… · with Liji Explore site search"
             : "Local · speaking…",
         });
         const text = await localAI.complete(
@@ -119,7 +119,7 @@ export default function ConceptAskAi({
           equations: split.equations.length ? split.equations : undefined,
           quizPrompt: "",
           aiMayBeWrong: "Local AI may be wrong — verify with your notes.",
-          note: context ? "Local · with Knowledge Explorer site search" : "Local · processed in this browser",
+          note: context ? "Local · with Liji Explore site search" : "Local · processed in this browser",
         });
         return;
       }

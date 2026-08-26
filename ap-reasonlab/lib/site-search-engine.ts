@@ -1,5 +1,5 @@
 /**
- * Unified Knowledge Explorer search engine.
+ * Unified Liji Explore search engine.
  * Indexes built-in catalogs + live managed content for /search and AI site search.
  */
 import { AP_CATALOG } from "@/data/ap-catalog";
@@ -287,10 +287,10 @@ export function searchSiteEngine(
   }
 
   const staticPages = [
-    { id: "home", title: "Home", subject: "Site", detail: "Knowledge Explorer home", href: "/" },
+    { id: "home", title: "Home", subject: "Site", detail: "Liji Explore home", href: "/" },
     { id: "search", title: "Search", subject: "Site", detail: "Full-site search", href: "/search" },
-    { id: "about", title: "About", subject: "Site", detail: "About Knowledge Explorer", href: "/about" },
-    { id: "partners", title: "Partners", subject: "Site", detail: "Knowledge Explorer roster", href: "/partners" },
+    { id: "about", title: "About", subject: "Site", detail: "About Liji Explore", href: "/about" },
+    { id: "partners", title: "Partners", subject: "Site", detail: "Liji Explore roster", href: "/partners" },
     { id: "guide", title: "Site Guide", subject: "Tools", detail: "How to use the site", href: "/guide" },
     { id: "manage", title: "Manage", subject: "Admin", detail: "Manage content", href: "/manage" },
     { id: "hints", title: "AI Toolbox", subject: "Tools", detail: "Hints, AI for AP guides, calculator, grapher, Local AI", href: "/hints" },
@@ -624,7 +624,7 @@ export function searchSiteEngine(
       type: "member",
       title: member.name,
       subject: member.role,
-      detail: clip(member.org || "Knowledge Explorer"),
+      detail: clip(member.org || "Liji Explore"),
       href: "/partners",
       score: scoreFields(tokens, member.name, `${member.role} ${member.org || ""} ${member.github}`),
     });

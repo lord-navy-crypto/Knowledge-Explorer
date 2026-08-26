@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import OfficialResourceLinks from "@/components/OfficialResourceLinks";
+import { getCodeLangOfficial } from "@/data/official-resources";
 import MarkdownPlayground from "@/components/MarkdownPlayground";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import { markdownExamples } from "@/data/easy-code-langs";
 
 export default function CodeMarkdownPage() {
+  const official = getCodeLangOfficial("markdown");
   return (
     <div className="space-y-6">
       <Link href="/code" className="text-sm text-brand-600 hover:underline">
@@ -21,6 +24,8 @@ export default function CodeMarkdownPage() {
           .
         </p>
       </div>
+
+      {official ? <OfficialResourceLinks block={official} tone="slate" /> : null}
 
       <MarkdownPlayground examples={markdownExamples} />
 

@@ -1,7 +1,7 @@
 import ColorContrastTool from "@/components/ColorContrastTool";
 
 export const metadata = {
-  title: "Color & contrast — Knowledge Explorer",
+  title: "Color & contrast — Liji Explore",
 };
 
 export default function ColorContrastPage() {

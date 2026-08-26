@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import OfficialResourceLinks from "@/components/OfficialResourceLinks";
 import PythonPlayground from "@/components/PythonPlayground";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
+import { getCodeLangOfficial } from "@/data/official-resources";
 import { standardSnippets } from "@/data/code-snippets";
 
 export default function CodePythonPage() {
+  const official = getCodeLangOfficial("python");
   const snippets = standardSnippets.filter((s) => s.language === "python");
   return (
     <div className="space-y-6">
@@ -22,6 +25,8 @@ export default function CodePythonPage() {
           , or upload .py files with a change code.
         </p>
       </div>
+
+      {official ? <OfficialResourceLinks block={official} tone="slate" /> : null}
 
       <PythonPlayground
         examples={snippets.map((item) => ({

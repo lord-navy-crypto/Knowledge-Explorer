@@ -75,7 +75,7 @@ export default function EnglishAiTutor({ embedded = false, hideChannelUi = false
           practicePrompt: "",
           aiMayBeWrong: "Local AI language advice may be wrong — verify important points.",
           note: context
-            ? "Local AI · speaking… · with Knowledge Explorer site search"
+            ? "Local AI · speaking… · with Liji Explore site search"
             : "Local AI · speaking…",
         });
         const text = await localAI.complete(
@@ -107,7 +107,7 @@ export default function EnglishAiTutor({ embedded = false, hideChannelUi = false
           revisionExample: "",
           practicePrompt: "",
           aiMayBeWrong: "Local AI language advice may be wrong — verify important points.",
-          note: context ? "Local AI · with Knowledge Explorer site search" : "Local AI · processed in this browser",
+          note: context ? "Local AI · with Liji Explore site search" : "Local AI · processed in this browser",
         });
         return;
       }

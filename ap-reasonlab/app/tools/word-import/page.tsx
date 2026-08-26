@@ -1,7 +1,7 @@
 import WordImportTool from "@/components/WordImportTool";
 
 export const metadata = {
-  title: "Word → Markdown — Knowledge Explorer",
+  title: "Word → Markdown — Liji Explore",
 };
 
 export default function WordImportPage() {

@@ -32,7 +32,7 @@ const fontDisplay = Source_Serif_4({
 });
 
 export const metadata: Metadata = {
-  title: "Knowledge Explorer — Academic Box & Platform",
+  title: `${brand.name} — Academic Box & Platform`,
   description: brand.description,
   // Discourage Chrome auto-translate — it mutates the DOM and causes React
   // NotFoundError: Failed to execute 'insertBefore' on 'Node'.

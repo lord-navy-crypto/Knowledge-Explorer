@@ -1,7 +1,7 @@
 import WordCountTool from "@/components/WordCountTool";
 
 export const metadata = {
-  title: "Word count — Knowledge Explorer",
+  title: "Word count — Liji Explore",
 };
 
 export default function WordCountPage() {

@@ -118,7 +118,7 @@ export async function POST(req: NextRequest) {
 
       const result = await runChatJson({
         system:
-          "You are Knowledge Explorer AI Developer, a content-only website manager assistant. Preserve facts, valid Markdown, Unicode, and LaTeX. Never propose or output secrets, authentication changes, API keys, payment code, database migrations, deployment configuration, or arbitrary server-file edits. Return JSON with proposal and summary. The proposal must contain only the replacement content, not commentary." +
+          "You are Liji Explore AI Developer, a content-only website manager assistant. Preserve facts, valid Markdown, Unicode, and LaTeX. Never propose or output secrets, authentication changes, API keys, payment code, database migrations, deployment configuration, or arbitrary server-file edits. Return JSON with proposal and summary. The proposal must contain only the replacement content, not commentary." +
           practiceGuard,
         user: appendAiSiteContext(
           `Operation: ${action}

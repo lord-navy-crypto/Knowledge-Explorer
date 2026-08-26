@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import OfficialResourceLinks from "@/components/OfficialResourceLinks";
+import { getCodeLangOfficial } from "@/data/official-resources";
 import CsharpPlayground from "@/components/CsharpPlayground";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import { csharpExamples } from "@/data/csharp-examples";
 
 export default function CodeCsharpPage() {
+  const official = getCodeLangOfficial("csharp");
   return (
     <div className="space-y-6">
       <Link href="/code" className="text-sm text-brand-600 hover:underline">
@@ -24,6 +27,8 @@ export default function CodeCsharpPage() {
           .
         </p>
       </div>
+
+      {official ? <OfficialResourceLinks block={official} tone="slate" /> : null}
 
       <CsharpPlayground examples={csharpExamples} />
 

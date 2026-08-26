@@ -1,7 +1,7 @@
 import UnitsConstants from "@/components/UnitsConstants";
 
 export const metadata = {
-  title: "Units & constants — Knowledge Explorer",
+  title: "Units & constants — Liji Explore",
 };
 
 export default function UnitsPage() {

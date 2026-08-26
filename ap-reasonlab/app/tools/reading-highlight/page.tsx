@@ -1,7 +1,7 @@
 import ReadingHighlightTool from "@/components/ReadingHighlightTool";
 
 export const metadata = {
-  title: "Reading highlights — Knowledge Explorer",
+  title: "Reading highlights — Liji Explore",
 };
 
 export default function Page() {

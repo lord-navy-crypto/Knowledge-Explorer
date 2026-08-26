@@ -1,7 +1,7 @@
 import FlashcardTool from "@/components/FlashcardTool";
 
 export const metadata = {
-  title: "Flashcards — Knowledge Explorer",
+  title: "Flashcards — Liji Explore",
 };
 
 export default function FlashcardsPage() {

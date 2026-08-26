@@ -72,7 +72,7 @@ Return JSON with refused, reply, aiMayBeWrong.`;
       return NextResponse.json({
         refused: false,
         reply:
-          "Knowledge Explorer is an academic box & platform. Start at /ap for subjects, use Manage with a change code to edit, and open AI Toolbox (/hints) for Hint & Process, Concept Explainer, or this Site Guide. Configure GROQ_API_KEY for live answers.",
+          "Liji Explore is an academic box & platform. Start at /ap for subjects, use Manage with a change code to edit, and open AI Toolbox (/hints) for Hint & Process, Concept Explainer, or this Site Guide. Configure GROQ_API_KEY for live answers.",
         aiMayBeWrong: "Mock guide mode.",
         note: "Mock mode (no API key yet).",
       });

@@ -362,7 +362,7 @@ export default function ChangePanel({
         action = "add_member";
         const handle = githubUser.trim().replace(/^@/, "");
         const noteParts = [
-          memberNote.trim() || "Knowledge Explorer partner",
+          memberNote.trim() || "Liji Explore partner",
           handle ? `github:${handle}` : "",
         ].filter(Boolean);
         item = { name: title.trim(), note: noteParts.join(" · ") };

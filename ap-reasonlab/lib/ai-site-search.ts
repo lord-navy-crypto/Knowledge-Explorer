@@ -16,7 +16,7 @@ export const AI_SITE_SEARCH_LIMIT = 10;
 export const AI_SITE_DETAIL_MAX = 1600;
 
 /**
- * Search Knowledge Explorer built-in + managed study content.
+ * Search Liji Explore built-in + managed study content.
  * Uses the unified site search engine — not the open web. No LLM API cost.
  */
 export function searchKnowledgeExplorerContent(
@@ -44,7 +44,7 @@ export function formatAiSiteSearchContext(hits: AiSiteSearchHit[]): string {
       `${index + 1}. [${hit.type}] ${hit.title} (${hit.subject})${hit.href ? ` → ${hit.href}` : ""}\n${hit.detail}`
   );
   return [
-    "Knowledge Explorer site materials (author-curated). Treat these as primary study sources for this site:",
+    "Liji Explore site materials (author-curated). Treat these as primary study sources for this site:",
     "- Prefer formulas, definitions, and steps from these hits when they match the question.",
     "- Cite the hit title or href when you use them.",
     "- If a hit is off-topic, ignore it.",

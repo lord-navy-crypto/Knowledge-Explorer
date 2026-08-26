@@ -1,7 +1,7 @@
 import VocabBookTool from "@/components/VocabBookTool";
 
 export const metadata = {
-  title: "Vocab book — Knowledge Explorer",
+  title: "Vocab book — Liji Explore",
 };
 
 export default function Page() {

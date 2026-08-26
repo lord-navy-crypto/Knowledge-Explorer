@@ -1,4 +1,4 @@
-/** Curated off-site study links — complements built-in Knowledge Explorer tools. */
+/** Curated off-site study links — complements built-in Liji Explore tools. */
 
 export type ExternalToolCategory =
   | "exams"

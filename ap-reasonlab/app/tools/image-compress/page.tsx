@@ -1,7 +1,7 @@
 import ImageCompressTool from "@/components/ImageCompressTool";
 
 export const metadata = {
-  title: "Image compress — Knowledge Explorer",
+  title: "Image compress — Liji Explore",
 };
 
 export default function ImageCompressPage() {

@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import OfficialResourceLinks from "@/components/OfficialResourceLinks";
+import { getCodeLangOfficial } from "@/data/official-resources";
 import SqlPlayground from "@/components/SqlPlayground";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import { sqlExamples } from "@/data/easy-code-langs";
 
 export default function CodeSqlPage() {
+  const official = getCodeLangOfficial("sql");
   return (
     <div className="space-y-6">
       <Link href="/code" className="text-sm text-brand-600 hover:underline">
@@ -22,6 +25,8 @@ export default function CodeSqlPage() {
           .
         </p>
       </div>
+
+      {official ? <OfficialResourceLinks block={official} tone="slate" /> : null}
 
       <SqlPlayground examples={sqlExamples} />
 

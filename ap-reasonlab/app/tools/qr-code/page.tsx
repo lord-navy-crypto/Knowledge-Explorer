@@ -1,7 +1,7 @@
 import QrCodeTool from "@/components/QrCodeTool";
 
 export const metadata = {
-  title: "QR code — Knowledge Explorer",
+  title: "QR code — Liji Explore",
 };
 
 export default function QrCodePage() {
