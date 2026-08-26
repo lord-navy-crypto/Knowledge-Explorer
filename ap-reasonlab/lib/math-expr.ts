@@ -16,6 +16,16 @@ const CONSTANTS: Record<string, number> = {
   eps0: 8.8541878128e-12,
   mu0: 1.25663706212e-6,
   gconst: 6.6743e-11,
+  /** Elementary charge (C) */
+  qe: 1.602176634e-19,
+  /** Atomic mass unit (kg) */
+  u: 1.6605390666e-27,
+  /** Electron mass (kg) */
+  me: 9.1093837015e-31,
+  /** Proton mass (kg) */
+  mp: 1.67262192369e-27,
+  /** Avogadro alias */
+  n_a: 6.02214076e23,
 };
 
 function factorial(n: number): number {
@@ -50,9 +60,18 @@ const FUNCTIONS1: Record<string, (n: number) => number> = {
   asin: Math.asin,
   acos: Math.acos,
   atan: Math.atan,
+  arcsin: Math.asin,
+  arccos: Math.acos,
+  arctan: Math.atan,
   sinh: Math.sinh,
   cosh: Math.cosh,
   tanh: Math.tanh,
+  asinh: Math.asinh,
+  acosh: Math.acosh,
+  atanh: Math.atanh,
+  sec: (n) => 1 / Math.cos(n),
+  csc: (n) => 1 / Math.sin(n),
+  cot: (n) => 1 / Math.tan(n),
   ln: Math.log,
   log: Math.log10,
   log10: Math.log10,
@@ -65,6 +84,12 @@ const FUNCTIONS1: Record<string, (n: number) => number> = {
   round: Math.round,
   fact: factorial,
   sign: Math.sign,
+  int: Math.trunc,
+  frac: (n) => n - Math.trunc(n),
+  deg: (n) => (n * 180) / Math.PI,
+  rad: (n) => (n * Math.PI) / 180,
+  /** Percent as fraction of 100 */
+  percent: (n) => n / 100,
 };
 
 const FUNCTIONS2: Record<string, (a: number, b: number) => number> = {
@@ -76,6 +101,16 @@ const FUNCTIONS2: Record<string, (a: number, b: number) => number> = {
   hypot: Math.hypot,
   pow: Math.pow,
   logb: (a, b) => Math.log(a) / Math.log(b),
+  root: (a, b) => a ** (1 / b),
+  mod: (a, b) => ((a % b) + b) % b,
+  /** Polar → x: r,θ (radians) */
+  ptx: (r, th) => r * Math.cos(th),
+  /** Polar → y: r,θ (radians) */
+  pty: (r, th) => r * Math.sin(th),
+  /** Rectangular → r */
+  rtr: (x, y) => Math.hypot(x, y),
+  /** Rectangular → θ */
+  rtth: (x, y) => Math.atan2(y, x),
 };
 
 type Tok =
@@ -111,9 +146,9 @@ function tokenize(input: string): Tok[] {
       i = k;
       continue;
     }
-    if (/[A-Za-zπ_]/.test(ch)) {
+    if (/[A-Za-zπΠθΘ_]/.test(ch)) {
       let j = i + 1;
-      while (j < src.length && /[A-Za-z0-9π_]/.test(src[j]!)) j += 1;
+      while (j < src.length && /[A-Za-z0-9πΠθΘ_]/.test(src[j]!)) j += 1;
       out.push({ t: "id", v: src.slice(i, j).toLowerCase() });
       i = j;
       continue;
@@ -282,6 +317,155 @@ export function formatCalc(value: number, style: "auto" | "sci" | "fixed" = "aut
   if (abs !== 0 && (abs >= 1e10 || abs < 1e-6)) return value.toExponential(6);
   const rounded = Math.round(value * 1e10) / 1e10;
   return String(rounded);
+}
+
+/** Numeric derivative f'(x) via central difference. */
+export function numericDerivative(
+  expression: string,
+  x: number,
+  vars: Record<string, number> = {},
+  h = 1e-5
+): number {
+  const left = evalExpr(expression, { ...vars, x: x - h });
+  const right = evalExpr(expression, { ...vars, x: x + h });
+  return (right - left) / (2 * h);
+}
+
+/** Approximate definite integral ∫_a^b f(x) dx (Simpson / trapezoid hybrid). */
+export function numericIntegral(
+  expression: string,
+  a: number,
+  b: number,
+  vars: Record<string, number> = {},
+  slices = 200
+): number {
+  if (a === b) return 0;
+  const n = Math.max(2, slices - (slices % 2));
+  const h = (b - a) / n;
+  let sum = evalExpr(expression, { ...vars, x: a }) + evalExpr(expression, { ...vars, x: b });
+  for (let i = 1; i < n; i += 1) {
+    const x = a + i * h;
+    const y = evalExpr(expression, { ...vars, x });
+    sum += i % 2 === 0 ? 2 * y : 4 * y;
+  }
+  return (h / 3) * sum;
+}
+
+/** Find zeros of y=f(x) in [xmin,xmax] by sign-change bisection. */
+export function findZeros(
+  expression: string,
+  xmin: number,
+  xmax: number,
+  vars: Record<string, number> = {},
+  samples = 240
+): number[] {
+  const zeros: number[] = [];
+  const step = (xmax - xmin) / samples;
+  let prevX = xmin;
+  let prevY: number | null = null;
+  try {
+    prevY = evalExpr(expression, { ...vars, x: xmin });
+  } catch {
+    prevY = null;
+  }
+  for (let i = 1; i <= samples; i += 1) {
+    const x = xmin + i * step;
+    let y: number | null = null;
+    try {
+      y = evalExpr(expression, { ...vars, x });
+    } catch {
+      y = null;
+    }
+    if (prevY !== null && y !== null && Number.isFinite(prevY) && Number.isFinite(y)) {
+      if (prevY === 0) zeros.push(prevX);
+      else if (prevY * y < 0) {
+        let lo = prevX;
+        let hi = x;
+        let flo = prevY;
+        for (let k = 0; k < 40; k += 1) {
+          const mid = (lo + hi) / 2;
+          let fmid: number;
+          try {
+            fmid = evalExpr(expression, { ...vars, x: mid });
+          } catch {
+            break;
+          }
+          if (!Number.isFinite(fmid)) break;
+          if (flo * fmid <= 0) {
+            hi = mid;
+          } else {
+            lo = mid;
+            flo = fmid;
+          }
+        }
+        zeros.push((lo + hi) / 2);
+      }
+    }
+    prevX = x;
+    prevY = y;
+  }
+  return zeros.filter((z, i, arr) => i === 0 || Math.abs(z - arr[i - 1]!) > step * 0.4);
+}
+
+/** Find intersections of two y=f(x) curves in window. */
+export function findIntersections(
+  expr1: string,
+  expr2: string,
+  xmin: number,
+  xmax: number,
+  vars: Record<string, number> = {}
+): Array<{ x: number; y: number }> {
+  const diff = `(${expr1})-(${expr2})`;
+  return findZeros(diff, xmin, xmax, vars).map((x) => {
+    const y = evalExpr(expr1, { ...vars, x });
+    return { x, y };
+  });
+}
+
+export type OneVarStats = {
+  n: number;
+  mean: number;
+  sum: number;
+  sumSq: number;
+  sx: number;
+  sigma: number;
+  min: number;
+  max: number;
+  median: number;
+  q1: number;
+  q3: number;
+};
+
+export function oneVarStats(values: number[]): OneVarStats {
+  const xs = values.filter((v) => Number.isFinite(v));
+  if (!xs.length) throw new Error("List is empty");
+  const n = xs.length;
+  const sorted = [...xs].sort((a, b) => a - b);
+  const sum = xs.reduce((a, b) => a + b, 0);
+  const sumSq = xs.reduce((a, b) => a + b * b, 0);
+  const mean = sum / n;
+  const variancePop = sumSq / n - mean * mean;
+  const varianceSamp = n > 1 ? (sumSq - (sum * sum) / n) / (n - 1) : 0;
+  const percentile = (p: number) => {
+    const idx = (sorted.length - 1) * p;
+    const lo = Math.floor(idx);
+    const hi = Math.ceil(idx);
+    if (lo === hi) return sorted[lo]!;
+    return sorted[lo]! * (hi - idx) + sorted[hi]! * (idx - lo);
+  };
+  return {
+    n,
+    mean,
+    sum,
+    sumSq,
+    sx: Math.sqrt(Math.max(0, varianceSamp)),
+    sigma: Math.sqrt(Math.max(0, variancePop)),
+    min: sorted[0]!,
+    max: sorted[n - 1]!,
+    median: percentile(0.5),
+    q1: percentile(0.25),
+    q3: percentile(0.75),
+  };
 }
 
 export const MATH_CONSTANTS = CONSTANTS;

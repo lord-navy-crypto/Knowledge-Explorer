@@ -8,7 +8,7 @@ function countSigFigs(raw: string): number | null {
   if (!s || /[eE]/.test(s)) {
     const m = s.match(/^(\d*\.?\d+)[eE]/i);
     if (!m) return null;
-    return countSigFigs(m[1]);
+    return countSigFigs(m[1]!);
   }
   if (s.includes(".")) {
     const digits = s.replace(".", "").replace(/^0+/, "");
@@ -23,9 +23,20 @@ function toScientific(n: number, digits: number): string {
   return n.toExponential(Math.max(0, digits - 1));
 }
 
+function roundSig(n: number, sig: number): number {
+  if (!Number.isFinite(n) || n === 0) return n;
+  const d = Math.ceil(Math.log10(Math.abs(n)));
+  const power = sig - d;
+  const magnitude = 10 ** power;
+  return Math.round(n * magnitude) / magnitude;
+}
+
 export default function SciNotationTool() {
   const [input, setInput] = useState("0.003040");
   const [sigWanted, setSigWanted] = useState(3);
+  const [a, setA] = useState("1.20e3");
+  const [b, setB] = useState("4.0e-2");
+  const [op, setOp] = useState<"*" | "/">("*");
 
   const parsed = useMemo(() => {
     const n = Number(input.trim());
@@ -38,10 +49,26 @@ export default function SciNotationTool() {
     };
   }, [input, sigWanted]);
 
+  const product = useMemo(() => {
+    const na = Number(a);
+    const nb = Number(b);
+    if (!Number.isFinite(na) || !Number.isFinite(nb)) return null;
+    const raw = op === "*" ? na * nb : nb === 0 ? Number.NaN : na / nb;
+    const sa = countSigFigs(a) ?? sigWanted;
+    const sb = countSigFigs(b) ?? sigWanted;
+    const sig = Math.min(sa, sb);
+    return {
+      raw,
+      sig,
+      rounded: roundSig(raw, sig),
+      sci: toScientific(roundSig(raw, sig), sig),
+    };
+  }, [a, b, op, sigWanted]);
+
   return (
     <StudyToolShell
       title="Scientific notation & sig figs"
-      description="Convert numbers to scientific notation and estimate significant figures for lab and AP science work."
+      description="Convert numbers to scientific notation, estimate significant figures, and multiply/divide with sig-fig rounding for AP science labs."
       tip="Sig-fig counting follows common classroom rules (trailing zeros after a decimal count). Always match your teacher’s convention."
     >
       <div className="card grid gap-4 sm:grid-cols-2">
@@ -80,6 +107,35 @@ export default function SciNotationTool() {
       <div className="card">
         <p className="text-xs font-semibold uppercase text-slate-500">Rounded (toPrecision)</p>
         <p className="mt-2 font-mono text-lg font-bold">{parsed.fixed}</p>
+      </div>
+
+      <div className="card space-y-3">
+        <p className="text-sm font-semibold text-slate-800">Multiply / divide (min sig figs)</p>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <label className="block text-sm">
+            A
+            <input className="input mt-1 font-mono" value={a} onChange={(e) => setA(e.target.value)} />
+          </label>
+          <label className="block text-sm">
+            Op
+            <select className="input mt-1" value={op} onChange={(e) => setOp(e.target.value as "*" | "/")}>
+              <option value="*">A × B</option>
+              <option value="/">A ÷ B</option>
+            </select>
+          </label>
+          <label className="block text-sm">
+            B
+            <input className="input mt-1 font-mono" value={b} onChange={(e) => setB(e.target.value)} />
+          </label>
+        </div>
+        {product && Number.isFinite(product.raw) ? (
+          <p className="font-mono text-sm">
+            Raw = {product.raw} · sig≈{product.sig} · rounded ={" "}
+            <strong>{product.sci}</strong>
+          </p>
+        ) : (
+          <p className="text-sm text-slate-500">Enter finite A and B.</p>
+        )}
       </div>
     </StudyToolShell>
   );
