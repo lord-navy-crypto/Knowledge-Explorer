@@ -94,7 +94,8 @@ export const STUDY_TOOLS: StudyTool[] = [
     id: "calculator",
     href: "/hints?tool=calculator",
     title: "KE-84 Calculator",
-    blurb: "Open Calculator tab inside AI Toolbox (not a separate app).",
+    blurb:
+      "TI-style AP calculator: RAD/DEG, nCr/nPr, 1-Var Stats, STO vars, physics constants, polar↔rect, → Graph.",
     category: "ai",
     security: "safe",
   },
@@ -102,7 +103,8 @@ export const STUDY_TOOLS: StudyTool[] = [
     id: "grapher",
     href: "/hints?tool=grapher",
     title: "KE Graph",
-    blurb: "Open Grapher tab inside AI Toolbox — plot y = f(x).",
+    blurb:
+      "AP graphing: Y1–Y4, derivative & tangent, zeros/intersect, ∫ shade, parametric & polar, pan/zoom.",
     category: "ai",
     security: "safe",
   },

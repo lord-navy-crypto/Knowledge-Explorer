@@ -2,28 +2,71 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { evalExpr, formatCalc } from "@/lib/math-expr";
+import {
+  evalExpr,
+  findIntersections,
+  findZeros,
+  formatCalc,
+  numericDerivative,
+  numericIntegral,
+} from "@/lib/math-expr";
 
 type Range = { xmin: number; xmax: number; ymin: number; ymax: number };
+type GraphMode = "function" | "parametric" | "polar";
 
 const DEFAULT_RANGE: Range = { xmin: -10, xmax: 10, ymin: -10, ymax: 10 };
+const TRIG_RANGE: Range = {
+  xmin: -2 * Math.PI,
+  xmax: 2 * Math.PI,
+  ymin: -2,
+  ymax: 2,
+};
 
-const PRESETS = [
-  { label: "sin(x)", y1: "sin(x)", y2: "" },
+const PRESETS: Array<{
+  label: string;
+  mode?: GraphMode;
+  y1?: string;
+  y2?: string;
+  y3?: string;
+  xt?: string;
+  yt?: string;
+  r?: string;
+  range?: Range;
+}> = [
+  { label: "sin(x)", y1: "sin(x)", y2: "", range: TRIG_RANGE },
   { label: "x² − 4", y1: "x^2-4", y2: "" },
-  { label: "sin & cos", y1: "sin(x)", y2: "cos(x)" },
+  { label: "sin & cos", y1: "sin(x)", y2: "cos(x)", range: TRIG_RANGE },
   { label: "exp(-x²)", y1: "exp(-x^2)", y2: "" },
-  { label: "abs(x)", y1: "abs(x)", y2: "x" },
+  { label: "x³ − x", y1: "x^3-x", y2: "", y3: "3x^2-1" },
   { label: "1/x", y1: "1/x", y2: "" },
   { label: "ln|x|", y1: "ln(abs(x))", y2: "" },
-  { label: "x³ − x", y1: "x^3-x", y2: "" },
-  { label: "sqrt(x)", y1: "sqrt(x)", y2: "" },
+  { label: "abs", y1: "abs(x)", y2: "x" },
   { label: "e^x", y1: "exp(x)", y2: "" },
+  {
+    label: "circle (param)",
+    mode: "parametric",
+    xt: "5*cos(t)",
+    yt: "5*sin(t)",
+    range: { xmin: -6, xmax: 6, ymin: -6, ymax: 6 },
+  },
+  {
+    label: "rose (polar)",
+    mode: "polar",
+    r: "3*cos(2*θ)",
+    range: { xmin: -4, xmax: 4, ymin: -4, ymax: 4 },
+  },
+  {
+    label: "cardioid",
+    mode: "polar",
+    r: "2*(1+cos(θ))",
+    range: { xmin: -1, xmax: 5, ymin: -3.5, ymax: 3.5 },
+  },
 ];
 
 type Point = { x: number; y: number };
+const COLORS = ["#0b3d1a", "#1d4ed8", "#b45309", "#7c3aed"];
 
-function sampleCurve(
+function sampleY(
   expression: string,
   range: Range,
   steps: number
@@ -34,7 +77,7 @@ function sampleCurve(
     for (let i = 0; i <= steps; i += 1) {
       const x = range.xmin + ((range.xmax - range.xmin) * i) / steps;
       try {
-        const y = evalExpr(expression, { x, ans: 0 });
+        const y = evalExpr(expression, { x, t: x, θ: x, theta: x, ans: 0 });
         points.push({ x, y: Number.isFinite(y) ? y : Number.NaN });
       } catch {
         points.push({ x, y: Number.NaN });
@@ -46,11 +89,68 @@ function sampleCurve(
   }
 }
 
-function autoRangeFromCurves(curves: Point[][]): Range | null {
+function sampleParametric(
+  xt: string,
+  yt: string,
+  tmin: number,
+  tmax: number,
+  steps: number
+): { points: Point[]; error?: string } {
+  if (!xt.trim() || !yt.trim()) return { points: [] };
+  const points: Point[] = [];
+  try {
+    for (let i = 0; i <= steps; i += 1) {
+      const t = tmin + ((tmax - tmin) * i) / steps;
+      try {
+        const x = evalExpr(xt, { t, x: t, θ: t, theta: t, ans: 0 });
+        const y = evalExpr(yt, { t, x: t, θ: t, theta: t, ans: 0 });
+        points.push({
+          x: Number.isFinite(x) ? x : Number.NaN,
+          y: Number.isFinite(y) ? y : Number.NaN,
+        });
+      } catch {
+        points.push({ x: Number.NaN, y: Number.NaN });
+      }
+    }
+    return { points };
+  } catch (err) {
+    return { points: [], error: err instanceof Error ? err.message : "Plot error" };
+  }
+}
+
+function samplePolar(
+  rExpr: string,
+  steps: number
+): { points: Point[]; error?: string } {
+  if (!rExpr.trim()) return { points: [] };
+  const points: Point[] = [];
+  try {
+    for (let i = 0; i <= steps; i += 1) {
+      const th = (2 * Math.PI * i) / steps;
+      try {
+        const r = evalExpr(rExpr, { θ: th, theta: th, t: th, x: th, ans: 0 });
+        if (!Number.isFinite(r)) {
+          points.push({ x: Number.NaN, y: Number.NaN });
+          continue;
+        }
+        points.push({ x: r * Math.cos(th), y: r * Math.sin(th) });
+      } catch {
+        points.push({ x: Number.NaN, y: Number.NaN });
+      }
+    }
+    return { points };
+  } catch (err) {
+    return { points: [], error: err instanceof Error ? err.message : "Plot error" };
+  }
+}
+
+function autoRangeFromCurves(curves: Point[][], keepX?: Range): Range | null {
   const ys: number[] = [];
+  const xs: number[] = [];
   for (const curve of curves) {
     for (const point of curve) {
       if (Number.isFinite(point.y) && Math.abs(point.y) < 1e6) ys.push(point.y);
+      if (Number.isFinite(point.x) && Math.abs(point.x) < 1e6) xs.push(point.x);
     }
   }
   if (ys.length < 2) return null;
@@ -58,25 +158,57 @@ function autoRangeFromCurves(curves: Point[][]): Range | null {
   const lo = ys[Math.floor(ys.length * 0.05)]!;
   const hi = ys[Math.floor(ys.length * 0.95)]!;
   const pad = Math.max(0.5, (hi - lo) * 0.15);
-  return {
-    xmin: -10,
-    xmax: 10,
-    ymin: lo - pad,
-    ymax: hi + pad,
-  };
+  if (keepX) {
+    return { xmin: keepX.xmin, xmax: keepX.xmax, ymin: lo - pad, ymax: hi + pad };
+  }
+  if (xs.length < 2) {
+    return { xmin: -10, xmax: 10, ymin: lo - pad, ymax: hi + pad };
+  }
+  xs.sort((a, b) => a - b);
+  const xlo = xs[Math.floor(xs.length * 0.02)]!;
+  const xhi = xs[Math.floor(xs.length * 0.98)]!;
+  const xpad = Math.max(0.5, (xhi - xlo) * 0.1);
+  return { xmin: xlo - xpad, xmax: xhi + xpad, ymin: lo - pad, ymax: hi + pad };
+}
+
+function niceStep(span: number): number {
+  const raw = span / 8;
+  const pow = 10 ** Math.floor(Math.log10(Math.max(raw, 1e-9)));
+  const n = raw / pow;
+  if (n < 1.5) return pow;
+  if (n < 3.5) return 2 * pow;
+  if (n < 7.5) return 5 * pow;
+  return 10 * pow;
 }
 
 export default function TIGrapher() {
   const searchParams = useSearchParams();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const dragRef = useRef<{ x: number; y: number; range: Range } | null>(null);
+
+  const [mode, setMode] = useState<GraphMode>("function");
   const [y1, setY1] = useState(() => searchParams.get("y1") || "sin(x)");
   const [y2, setY2] = useState(() => searchParams.get("y2") || "");
+  const [y3, setY3] = useState("");
+  const [y4, setY4] = useState("");
+  const [xt, setXt] = useState("5*cos(t)");
+  const [yt, setYt] = useState("5*sin(t)");
+  const [rExpr, setRExpr] = useState("2*(1+cos(θ))");
+  const [tmin, setTmin] = useState(0);
+  const [tmax, setTmax] = useState(2 * Math.PI);
   const [range, setRange] = useState<Range>(DEFAULT_RANGE);
   const [error, setError] = useState("");
   const [traceX, setTraceX] = useState(0);
   const [shade, setShade] = useState(true);
+  const [showDeriv, setShowDeriv] = useState(false);
   const [showTable, setShowTable] = useState(true);
   const [hiRes, setHiRes] = useState(true);
+  const [showGrid, setShowGrid] = useState(true);
+  const [showTangent, setShowTangent] = useState(false);
+  const [intA, setIntA] = useState(-1);
+  const [intB, setIntB] = useState(1);
+  const [showIntegral, setShowIntegral] = useState(false);
+  const [analysis, setAnalysis] = useState("");
 
   useEffect(() => {
     const fromY1 = searchParams.get("y1");
@@ -86,46 +218,82 @@ export default function TIGrapher() {
   }, [searchParams]);
 
   const steps = hiRes ? 720 : 320;
-  const curve1 = useMemo(() => sampleCurve(y1, range, steps), [y1, range, steps]);
-  const curve2 = useMemo(() => sampleCurve(y2, range, steps), [y2, range, steps]);
+
+  const curves = useMemo(() => {
+    if (mode === "parametric") {
+      return [sampleParametric(xt, yt, tmin, tmax, steps)];
+    }
+    if (mode === "polar") {
+      return [samplePolar(rExpr, steps)];
+    }
+    return [y1, y2, y3, y4].map((expr) => sampleY(expr, range, steps));
+  }, [mode, xt, yt, tmin, tmax, rExpr, y1, y2, y3, y4, range, steps]);
+
+  const derivCurve = useMemo(() => {
+    if (mode !== "function" || !showDeriv || !y1.trim()) return { points: [] as Point[] };
+    const points: Point[] = [];
+    for (let i = 0; i <= steps; i += 1) {
+      const x = range.xmin + ((range.xmax - range.xmin) * i) / steps;
+      try {
+        const y = numericDerivative(y1, x);
+        points.push({ x, y: Number.isFinite(y) ? y : Number.NaN });
+      } catch {
+        points.push({ x, y: Number.NaN });
+      }
+    }
+    return { points };
+  }, [mode, showDeriv, y1, range, steps]);
 
   const tableRows = useMemo(() => {
-    const rows: Array<{ x: string; y1: string; y2: string }> = [];
+    if (mode !== "function") return [];
+    const rows: Array<{ x: string; y1: string; y2: string; y3: string }> = [];
     const count = 15;
     for (let i = 0; i < count; i += 1) {
       const x = range.xmin + ((range.xmax - range.xmin) * i) / (count - 1);
-      let v1 = "—";
-      let v2 = "—";
-      try {
-        if (y1.trim()) v1 = formatCalc(evalExpr(y1, { x, ans: 0 }));
-      } catch {
-        v1 = "ERR";
-      }
-      try {
-        if (y2.trim()) v2 = formatCalc(evalExpr(y2, { x, ans: 0 }));
-      } catch {
-        v2 = "ERR";
-      }
-      rows.push({ x: formatCalc(x), y1: v1, y2: v2 });
+      const cell = (expr: string) => {
+        if (!expr.trim()) return "—";
+        try {
+          return formatCalc(evalExpr(expr, { x, ans: 0 }));
+        } catch {
+          return "ERR";
+        }
+      };
+      rows.push({
+        x: formatCalc(x),
+        y1: cell(y1),
+        y2: cell(y2),
+        y3: cell(y3),
+      });
     }
     return rows;
-  }, [range, y1, y2]);
+  }, [mode, range, y1, y2, y3]);
 
   const traceY1 = useMemo(() => {
+    if (mode !== "function" || !y1.trim()) return Number.NaN;
     try {
-      return y1.trim() ? evalExpr(y1, { x: traceX, ans: 0 }) : Number.NaN;
+      return evalExpr(y1, { x: traceX, ans: 0 });
     } catch {
       return Number.NaN;
     }
-  }, [y1, traceX]);
+  }, [mode, y1, traceX]);
 
-  const traceY2 = useMemo(() => {
+  const traceDeriv = useMemo(() => {
+    if (mode !== "function" || !y1.trim()) return Number.NaN;
     try {
-      return y2.trim() ? evalExpr(y2, { x: traceX, ans: 0 }) : Number.NaN;
+      return numericDerivative(y1, traceX);
     } catch {
       return Number.NaN;
     }
-  }, [y2, traceX]);
+  }, [mode, y1, traceX]);
+
+  const integralValue = useMemo(() => {
+    if (!showIntegral || mode !== "function" || !y1.trim()) return Number.NaN;
+    try {
+      return numericIntegral(y1, intA, intB);
+    } catch {
+      return Number.NaN;
+    }
+  }, [showIntegral, mode, y1, intA, intB]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -147,25 +315,28 @@ export default function TIGrapher() {
     const sx = (x: number) => ((x - xmin) / (xmax - xmin)) * w;
     const sy = (y: number) => h - ((y - ymin) / (ymax - ymin)) * h;
 
-    const bg = getComputedStyle(document.documentElement).getPropertyValue("--ti-lcd").trim() || "#c5d4a1";
+    const bg =
+      getComputedStyle(document.documentElement).getPropertyValue("--ti-lcd").trim() || "#c5d4a1";
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, w, h);
 
-    ctx.strokeStyle = "rgba(40, 55, 20, 0.18)";
-    ctx.lineWidth = 1;
-    const xStep = niceStep(xmax - xmin);
-    const yStep = niceStep(ymax - ymin);
-    for (let gx = Math.ceil(xmin / xStep) * xStep; gx <= xmax; gx += xStep) {
-      ctx.beginPath();
-      ctx.moveTo(sx(gx), 0);
-      ctx.lineTo(sx(gx), h);
-      ctx.stroke();
-    }
-    for (let gy = Math.ceil(ymin / yStep) * yStep; gy <= ymax; gy += yStep) {
-      ctx.beginPath();
-      ctx.moveTo(0, sy(gy));
-      ctx.lineTo(w, sy(gy));
-      ctx.stroke();
+    if (showGrid) {
+      ctx.strokeStyle = "rgba(40, 55, 20, 0.18)";
+      ctx.lineWidth = 1;
+      const xStep = niceStep(xmax - xmin);
+      const yStep = niceStep(ymax - ymin);
+      for (let gx = Math.ceil(xmin / xStep) * xStep; gx <= xmax; gx += xStep) {
+        ctx.beginPath();
+        ctx.moveTo(sx(gx), 0);
+        ctx.lineTo(sx(gx), h);
+        ctx.stroke();
+      }
+      for (let gy = Math.ceil(ymin / yStep) * yStep; gy <= ymax; gy += yStep) {
+        ctx.beginPath();
+        ctx.moveTo(0, sy(gy));
+        ctx.lineTo(w, sy(gy));
+        ctx.stroke();
+      }
     }
 
     ctx.strokeStyle = "#1f2a12";
@@ -184,13 +355,20 @@ export default function TIGrapher() {
     ctx.fillText(formatCalc(ymax), Math.min(w - 40, Math.max(4, sx(0) + 4)), 12);
     ctx.fillText(formatCalc(ymin), Math.min(w - 40, Math.max(4, sx(0) + 4)), h - 6);
 
-    function drawCurve(points: Point[], color: string, fill: boolean) {
+    function drawCurve(points: Point[], color: string, fill: boolean, a?: number, b?: number) {
       if (fill && points.length > 1) {
         ctx.beginPath();
         let started = false;
         for (const point of points) {
           if (!Number.isFinite(point.y)) {
             started = false;
+            continue;
+          }
+          if (a !== undefined && b !== undefined && (point.x < a || point.x > b)) {
+            if (started) {
+              ctx.lineTo(sx(point.x), sy(0));
+              started = false;
+            }
             continue;
           }
           const px = sx(point.x);
@@ -203,10 +381,10 @@ export default function TIGrapher() {
             ctx.lineTo(px, py);
           }
         }
-        const last = points[points.length - 1];
-        if (last) ctx.lineTo(sx(last.x), sy(0));
+        const last = points.filter((p) => Number.isFinite(p.y)).at(-1);
+        if (last && started) ctx.lineTo(sx(last.x), sy(0));
         ctx.closePath();
-        if (color.startsWith("#")) ctx.fillStyle = `${color}33`;
+        ctx.fillStyle = `${color}33`;
         ctx.fill();
       }
 
@@ -215,7 +393,11 @@ export default function TIGrapher() {
       ctx.beginPath();
       let started = false;
       for (const point of points) {
-        if (!Number.isFinite(point.y) || point.y < ymin - 40 || point.y > ymax + 40) {
+        if (!Number.isFinite(point.y) || !Number.isFinite(point.x)) {
+          started = false;
+          continue;
+        }
+        if (point.y < ymin - 40 || point.y > ymax + 40) {
           started = false;
           continue;
         }
@@ -231,42 +413,78 @@ export default function TIGrapher() {
       ctx.stroke();
     }
 
-    const err = curve1.error || curve2.error || "";
+    const err = curves.map((c) => c.error).find(Boolean) || "";
     setError(err);
-    drawCurve(curve1.points, "#0b3d1a", shade && !!y1.trim());
-    if (y2.trim()) drawCurve(curve2.points, "#1d4ed8", false);
 
-    ctx.strokeStyle = "rgba(185, 28, 28, 0.55)";
-    ctx.setLineDash([4, 4]);
-    ctx.beginPath();
-    ctx.moveTo(sx(traceX), 0);
-    ctx.lineTo(sx(traceX), h);
-    ctx.stroke();
-    ctx.setLineDash([]);
+    if (mode === "function") {
+      const exprs = [y1, y2, y3, y4];
+      curves.forEach((curve, i) => {
+        if (!exprs[i]?.trim()) return;
+        const fill =
+          (shade && i === 0 && !showIntegral) ||
+          (showIntegral && i === 0);
+        drawCurve(
+          curve.points,
+          COLORS[i]!,
+          fill,
+          showIntegral && i === 0 ? Math.min(intA, intB) : undefined,
+          showIntegral && i === 0 ? Math.max(intA, intB) : undefined
+        );
+      });
+      if (showDeriv) drawCurve(derivCurve.points, "#be123c", false);
 
-    if (Number.isFinite(traceY1)) {
-      ctx.fillStyle = "#b91c1c";
+      if (showTangent && Number.isFinite(traceY1) && Number.isFinite(traceDeriv)) {
+        const m = traceDeriv;
+        const b = traceY1 - m * traceX;
+        const x0 = xmin;
+        const x1 = xmax;
+        ctx.strokeStyle = "rgba(185, 28, 28, 0.85)";
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        ctx.moveTo(sx(x0), sy(m * x0 + b));
+        ctx.lineTo(sx(x1), sy(m * x1 + b));
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      ctx.strokeStyle = "rgba(185, 28, 28, 0.55)";
+      ctx.setLineDash([4, 4]);
       ctx.beginPath();
-      ctx.arc(sx(traceX), sy(traceY1), 4.5, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    if (Number.isFinite(traceY2)) {
-      ctx.fillStyle = "#1d4ed8";
-      ctx.beginPath();
-      ctx.arc(sx(traceX), sy(traceY2), 4.5, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }, [curve1, curve2, range, shade, traceX, traceY1, traceY2, y1, y2]);
+      ctx.moveTo(sx(traceX), 0);
+      ctx.lineTo(sx(traceX), h);
+      ctx.stroke();
+      ctx.setLineDash([]);
 
-  function niceStep(span: number): number {
-    const raw = span / 8;
-    const pow = 10 ** Math.floor(Math.log10(Math.max(raw, 1e-9)));
-    const n = raw / pow;
-    if (n < 1.5) return pow;
-    if (n < 3.5) return 2 * pow;
-    if (n < 7.5) return 5 * pow;
-    return 10 * pow;
-  }
+      if (Number.isFinite(traceY1)) {
+        ctx.fillStyle = "#b91c1c";
+        ctx.beginPath();
+        ctx.arc(sx(traceX), sy(traceY1), 4.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    } else {
+      curves.forEach((curve, i) => drawCurve(curve.points, COLORS[i]!, false));
+    }
+  }, [
+    curves,
+    derivCurve,
+    range,
+    shade,
+    showDeriv,
+    showGrid,
+    showIntegral,
+    showTangent,
+    traceX,
+    traceY1,
+    traceDeriv,
+    intA,
+    intB,
+    mode,
+    y1,
+    y2,
+    y3,
+    y4,
+  ]);
 
   function zoom(factor: number) {
     setRange((prev) => {
@@ -279,8 +497,11 @@ export default function TIGrapher() {
   }
 
   function fitY() {
-    const next = autoRangeFromCurves([curve1.points, curve2.points]);
-    if (next) setRange((prev) => ({ ...prev, ymin: next.ymin, ymax: next.ymax }));
+    const next = autoRangeFromCurves(
+      [...curves.map((c) => c.points), ...(showDeriv ? [derivCurve.points] : [])],
+      mode === "function" ? range : undefined
+    );
+    if (next) setRange(next);
   }
 
   function exportPng() {
@@ -292,45 +513,180 @@ export default function TIGrapher() {
     link.click();
   }
 
-  function onCanvasClick(event: React.MouseEvent<HTMLCanvasElement>) {
+  function clientToWorld(clientX: number, clientY: number) {
+    const canvas = canvasRef.current;
+    if (!canvas) return null;
+    const rect = canvas.getBoundingClientRect();
+    const rx = (clientX - rect.left) / rect.width;
+    const ry = (clientY - rect.top) / rect.height;
+    return {
+      x: range.xmin + rx * (range.xmax - range.xmin),
+      y: range.ymax - ry * (range.ymax - range.ymin),
+    };
+  }
+
+  function onPointerDown(event: React.PointerEvent<HTMLCanvasElement>) {
+    dragRef.current = {
+      x: event.clientX,
+      y: event.clientY,
+      range: { ...range },
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function onPointerMove(event: React.PointerEvent<HTMLCanvasElement>) {
+    if (!dragRef.current) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
-    const ratio = (event.clientX - rect.left) / rect.width;
-    const x = range.xmin + ratio * (range.xmax - range.xmin);
-    setTraceX(Math.round(x * 1000) / 1000);
+    const base = dragRef.current.range;
+    const dxPx = event.clientX - dragRef.current.x;
+    const dyPx = event.clientY - dragRef.current.y;
+    const dx = (dxPx / rect.width) * (base.xmax - base.xmin);
+    const dy = (dyPx / rect.height) * (base.ymax - base.ymin);
+    setRange({
+      xmin: base.xmin - dx,
+      xmax: base.xmax - dx,
+      ymin: base.ymin + dy,
+      ymax: base.ymax + dy,
+    });
+  }
+
+  function onPointerUp(event: React.PointerEvent<HTMLCanvasElement>) {
+    if (dragRef.current && mode === "function") {
+      const moved =
+        Math.hypot(event.clientX - dragRef.current.x, event.clientY - dragRef.current.y) > 6;
+      if (!moved) {
+        const world = clientToWorld(event.clientX, event.clientY);
+        if (world) setTraceX(Math.round(world.x * 1000) / 1000);
+      }
+    }
+    dragRef.current = null;
+  }
+
+  function runZeros() {
+    if (!y1.trim()) return;
+    try {
+      const zs = findZeros(y1, range.xmin, range.xmax);
+      if (!zs.length) setAnalysis("No zeros found in window.");
+      else {
+        setAnalysis(`Zeros of Y1: ${zs.map((z) => formatCalc(z)).join(", ")}`);
+        setTraceX(zs[0]!);
+      }
+    } catch (err) {
+      setAnalysis(err instanceof Error ? err.message : "Zero finder error");
+    }
+  }
+
+  function runIntersect() {
+    if (!y1.trim() || !y2.trim()) {
+      setAnalysis("Need Y1 and Y2 for intersection.");
+      return;
+    }
+    try {
+      const pts = findIntersections(y1, y2, range.xmin, range.xmax);
+      if (!pts.length) setAnalysis("No intersections in window.");
+      else {
+        setAnalysis(
+          `Y1 ∩ Y2: ${pts.map((p) => `(${formatCalc(p.x)}, ${formatCalc(p.y)})`).join("; ")}`
+        );
+        setTraceX(pts[0]!.x);
+      }
+    } catch (err) {
+      setAnalysis(err instanceof Error ? err.message : "Intersect error");
+    }
   }
 
   return (
     <div className="ti-shell ti-shell--wide">
       <div className="ti-brand-row">
         <span className="ti-brand">KE Graph CE</span>
-        <span className="ti-sub">Function plotter · hi-res · fit · export</span>
+        <span className="ti-sub">
+          Function · parametric · polar · derivative · zeros · integral · pan
+        </span>
       </div>
       <div className="ti-layout">
         <div>
           <div className="ti-graph-controls">
-            <label className="ti-field">
-              Y1=
-              <input
-                className="ti-input"
-                value={y1}
-                onChange={(event) => setY1(event.target.value)}
-                spellCheck={false}
-                aria-label="First function of x"
-              />
-            </label>
-            <label className="ti-field">
-              Y2=
-              <input
-                className="ti-input"
-                value={y2}
-                onChange={(event) => setY2(event.target.value)}
-                spellCheck={false}
-                placeholder="optional second curve"
-                aria-label="Second function of x"
-              />
-            </label>
+            <div className="ti-presets" style={{ marginBottom: "0.4rem" }}>
+              {(
+                [
+                  ["function", "Y= f(x)"],
+                  ["parametric", "Parametric"],
+                  ["polar", "Polar"],
+                ] as const
+              ).map(([id, label]) => (
+                <button
+                  key={id}
+                  type="button"
+                  className={`ti-preset ${mode === id ? "ti-key-2nd-on" : ""}`}
+                  onClick={() => setMode(id)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {mode === "function" && (
+              <>
+                {(
+                  [
+                    ["Y1", y1, setY1],
+                    ["Y2", y2, setY2],
+                    ["Y3", y3, setY3],
+                    ["Y4", y4, setY4],
+                  ] as const
+                ).map(([label, value, setter]) => (
+                  <label key={label} className="ti-field">
+                    {label}=
+                    <input
+                      className="ti-input"
+                      value={value}
+                      onChange={(e) => setter(e.target.value)}
+                      spellCheck={false}
+                      placeholder={label === "Y1" ? "sin(x)" : "optional"}
+                    />
+                  </label>
+                ))}
+              </>
+            )}
+
+            {mode === "parametric" && (
+              <>
+                <label className="ti-field">
+                  X(t)=
+                  <input className="ti-input" value={xt} onChange={(e) => setXt(e.target.value)} spellCheck={false} />
+                </label>
+                <label className="ti-field">
+                  Y(t)=
+                  <input className="ti-input" value={yt} onChange={(e) => setYt(e.target.value)} spellCheck={false} />
+                </label>
+                <div className="ti-range-grid">
+                  <label className="ti-field">
+                    tmin
+                    <input className="ti-input" type="number" value={tmin} onChange={(e) => setTmin(Number(e.target.value))} />
+                  </label>
+                  <label className="ti-field">
+                    tmax
+                    <input className="ti-input" type="number" value={tmax} onChange={(e) => setTmax(Number(e.target.value))} />
+                  </label>
+                </div>
+              </>
+            )}
+
+            {mode === "polar" && (
+              <label className="ti-field">
+                r(θ)=
+                <input
+                  className="ti-input"
+                  value={rExpr}
+                  onChange={(e) => setRExpr(e.target.value)}
+                  spellCheck={false}
+                  placeholder="2*(1+cos(θ))"
+                />
+              </label>
+            )}
+
             <div className="ti-range-grid">
               {(["xmin", "xmax", "ymin", "ymax"] as const).map((key) => (
                 <label key={key} className="ti-field">
@@ -339,13 +695,12 @@ export default function TIGrapher() {
                     className="ti-input"
                     type="number"
                     value={range[key]}
-                    onChange={(event) =>
-                      setRange((prev) => ({ ...prev, [key]: Number(event.target.value) }))
-                    }
+                    onChange={(e) => setRange((prev) => ({ ...prev, [key]: Number(e.target.value) }))}
                   />
                 </label>
               ))}
             </div>
+
             <div className="ti-graph-actions">
               <button type="button" className="ti-key" onClick={() => zoom(0.7)}>
                 Zoom in
@@ -356,27 +711,68 @@ export default function TIGrapher() {
               <button type="button" className="ti-key" onClick={() => setRange(DEFAULT_RANGE)}>
                 ZStandard
               </button>
+              <button type="button" className="ti-key" onClick={() => setRange(TRIG_RANGE)}>
+                ZTrig
+              </button>
               <button type="button" className="ti-key" onClick={fitY}>
-                Fit Y
+                Fit
               </button>
               <button
                 type="button"
-                className={`ti-key ${shade ? "ti-key-2nd-on" : ""}`}
-                onClick={() => setShade((value) => !value)}
+                className={`ti-key ${showGrid ? "ti-key-2nd-on" : ""}`}
+                onClick={() => setShowGrid((v) => !v)}
               >
-                Shade Y1
+                Grid
               </button>
+              {mode === "function" && (
+                <>
+                  <button
+                    type="button"
+                    className={`ti-key ${shade ? "ti-key-2nd-on" : ""}`}
+                    onClick={() => setShade((v) => !v)}
+                  >
+                    Shade Y1
+                  </button>
+                  <button
+                    type="button"
+                    className={`ti-key ${showDeriv ? "ti-key-2nd-on" : ""}`}
+                    onClick={() => setShowDeriv((v) => !v)}
+                  >
+                    Y1′
+                  </button>
+                  <button
+                    type="button"
+                    className={`ti-key ${showTangent ? "ti-key-2nd-on" : ""}`}
+                    onClick={() => setShowTangent((v) => !v)}
+                  >
+                    Tangent
+                  </button>
+                  <button type="button" className="ti-key" onClick={runZeros}>
+                    Zeros
+                  </button>
+                  <button type="button" className="ti-key" onClick={runIntersect}>
+                    Intersect
+                  </button>
+                  <button
+                    type="button"
+                    className={`ti-key ${showIntegral ? "ti-key-2nd-on" : ""}`}
+                    onClick={() => setShowIntegral((v) => !v)}
+                  >
+                    ∫ Y1
+                  </button>
+                </>
+              )}
               <button
                 type="button"
                 className={`ti-key ${showTable ? "ti-key-2nd-on" : ""}`}
-                onClick={() => setShowTable((value) => !value)}
+                onClick={() => setShowTable((v) => !v)}
               >
                 Table
               </button>
               <button
                 type="button"
                 className={`ti-key ${hiRes ? "ti-key-2nd-on" : ""}`}
-                onClick={() => setHiRes((value) => !value)}
+                onClick={() => setHiRes((v) => !v)}
               >
                 Hi-res
               </button>
@@ -384,6 +780,23 @@ export default function TIGrapher() {
                 Export PNG
               </button>
             </div>
+
+            {mode === "function" && showIntegral && (
+              <div className="ti-range-grid">
+                <label className="ti-field">
+                  ∫ from a=
+                  <input className="ti-input" type="number" value={intA} onChange={(e) => setIntA(Number(e.target.value))} />
+                </label>
+                <label className="ti-field">
+                  to b=
+                  <input className="ti-input" type="number" value={intB} onChange={(e) => setIntB(Number(e.target.value))} />
+                </label>
+                <p className="ti-trace-readout">
+                  ∫ₐᵇ Y1 ≈ {Number.isFinite(integralValue) ? formatCalc(integralValue) : "—"}
+                </p>
+              </div>
+            )}
+
             <div className="ti-presets">
               {PRESETS.map((preset) => (
                 <button
@@ -391,8 +804,15 @@ export default function TIGrapher() {
                   type="button"
                   className="ti-preset"
                   onClick={() => {
-                    setY1(preset.y1);
-                    setY2(preset.y2);
+                    if (preset.mode) setMode(preset.mode);
+                    else setMode("function");
+                    if (preset.y1 !== undefined) setY1(preset.y1);
+                    if (preset.y2 !== undefined) setY2(preset.y2);
+                    if (preset.y3 !== undefined) setY3(preset.y3);
+                    if (preset.xt) setXt(preset.xt);
+                    if (preset.yt) setYt(preset.yt);
+                    if (preset.r) setRExpr(preset.r);
+                    if (preset.range) setRange(preset.range);
                   }}
                 >
                   {preset.label}
@@ -400,31 +820,43 @@ export default function TIGrapher() {
               ))}
             </div>
           </div>
+
           <canvas
             ref={canvasRef}
             className="ti-canvas ti-canvas--tall"
             aria-label="Function graph"
-            onClick={onCanvasClick}
+            style={{ touchAction: "none", cursor: "grab" }}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerCancel={onPointerUp}
           />
-          <div className="ti-trace">
-            <label className="ti-field">
-              Trace X=
-              <input
-                className="ti-input"
-                type="number"
-                step="0.1"
-                value={traceX}
-                onChange={(event) => setTraceX(Number(event.target.value))}
-              />
-            </label>
-            <p className="ti-trace-readout">
-              Y1= {Number.isFinite(traceY1) ? formatCalc(traceY1) : "—"}
-              {y2.trim() ? ` · Y2= ${Number.isFinite(traceY2) ? formatCalc(traceY2) : "—"}` : ""}
-            </p>
-          </div>
+
+          {mode === "function" && (
+            <div className="ti-trace">
+              <label className="ti-field">
+                Trace X=
+                <input
+                  className="ti-input"
+                  type="number"
+                  step="0.1"
+                  value={traceX}
+                  onChange={(e) => setTraceX(Number(e.target.value))}
+                />
+              </label>
+              <p className="ti-trace-readout">
+                Y1= {Number.isFinite(traceY1) ? formatCalc(traceY1) : "—"}
+                {showDeriv || showTangent
+                  ? ` · Y1′= ${Number.isFinite(traceDeriv) ? formatCalc(traceDeriv) : "—"}`
+                  : ""}
+              </p>
+            </div>
+          )}
+          {analysis && <p className="ti-hint">{analysis}</p>}
           {error && <p className="ti-error">{error}</p>}
         </div>
-        {showTable && (
+
+        {showTable && mode === "function" && (
           <aside className="ti-side">
             <h3 className="ti-side-title">Table</h3>
             <div className="ti-table-wrap">
@@ -434,6 +866,7 @@ export default function TIGrapher() {
                     <th>X</th>
                     <th>Y1</th>
                     <th>Y2</th>
+                    <th>Y3</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -450,18 +883,19 @@ export default function TIGrapher() {
                       </td>
                       <td>{row.y1}</td>
                       <td>{row.y2}</td>
+                      <td>{row.y3}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <p className="ti-hint">Click the graph or an X cell to move the trace.</p>
+            <p className="ti-hint">Drag graph to pan · click to trace · Zeros / Intersect / ∫ for Calc.</p>
           </aside>
         )}
       </div>
       <p className="ti-hint">
-        Plots functions of x (not AI images). Supports abs, ln, exp, 1/x, nCr-style constants from
-        the computer. Open from Calculator with → Graph.
+        AP Calculus: Y1′ (numeric derivative), tangent, zeros, intersect, definite integral shade.
+        Physics / Precalc: parametric & polar modes. Drag to pan the window.
       </p>
     </div>
   );
