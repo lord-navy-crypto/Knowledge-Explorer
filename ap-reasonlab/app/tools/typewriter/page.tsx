@@ -1,7 +1,7 @@
 import TypewriterMode from "@/components/TypewriterMode";
 
 export const metadata = {
-  title: "Typewriter mode — Liji Explore",
+  title: "Typewriter mode — NauWiki Explorer",
 };
 
 export default function TypewriterPage() {

@@ -261,7 +261,7 @@ async function callOpenRouterJson(
     provider: "openrouter",
     extraHeaders: {
       "HTTP-Referer": process.env.OPENROUTER_SITE_URL || "https://results-academic.vercel.app",
-      "X-Title": process.env.OPENROUTER_APP_NAME || "Liji Explore",
+      "X-Title": process.env.OPENROUTER_APP_NAME || "NauWiki Explorer",
     },
     note: `Powered by OpenRouter (${model}).`,
   });

@@ -1,7 +1,7 @@
 import ColorContrastTool from "@/components/ColorContrastTool";
 
 export const metadata = {
-  title: "Color & contrast — Liji Explore",
+  title: "Color & contrast — NauWiki Explorer",
 };
 
 export default function ColorContrastPage() {

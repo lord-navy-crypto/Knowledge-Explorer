@@ -1,7 +1,7 @@
 import RandomGroupsTool from "@/components/RandomGroupsTool";
 
 export const metadata = {
-  title: "Random groups — Liji Explore",
+  title: "Random groups — NauWiki Explorer",
 };
 
 export default function Page() {

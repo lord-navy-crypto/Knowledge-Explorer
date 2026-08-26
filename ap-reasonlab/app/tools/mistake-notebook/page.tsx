@@ -1,7 +1,7 @@
 import MistakeNotebookTool from "@/components/MistakeNotebookTool";
 
 export const metadata = {
-  title: "Mistake notebook — Liji Explore",
+  title: "Mistake notebook — NauWiki Explorer",
 };
 
 export default function Page() {

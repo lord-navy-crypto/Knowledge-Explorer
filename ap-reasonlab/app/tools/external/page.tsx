@@ -7,7 +7,7 @@ import {
 } from "@/data/external-tools";
 
 export const metadata = {
-  title: "External connections & tools — Liji Explore",
+  title: "External connections & tools — NauWiki Explorer",
   description:
     "Curated off-site study links: official exams, math calculators, science sims, dictionaries, coding docs, and more.",
 };
@@ -35,7 +35,7 @@ export default function ExternalToolsPage() {
           External connections &amp; tools
         </h1>
         <p className="relative mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">
-          Curated outside links that complement Liji Explore — official exam hubs, graphing
+          Curated outside links that complement NauWiki Explorer — official exam hubs, graphing
           calculators, science simulations, dictionaries, coding docs, and writing helpers. Links
           open in a new tab. Follow your school’s rules on calculators and AI for graded work.
         </p>
@@ -105,7 +105,7 @@ export default function ExternalToolsPage() {
       })}
 
       <p className="rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3 text-sm text-amber-950">
-        Liji Explore is not affiliated with these sites. Prefer built-in tools when they
+        NauWiki Explorer is not affiliated with these sites. Prefer built-in tools when they
         cover your need; use external links as optional complements.
       </p>
     </div>

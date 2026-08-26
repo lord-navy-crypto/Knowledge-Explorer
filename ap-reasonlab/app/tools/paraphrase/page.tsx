@@ -1,7 +1,7 @@
 import ParaphraseCompareTool from "@/components/ParaphraseCompareTool";
 
 export const metadata = {
-  title: "Paraphrase compare — Liji Explore",
+  title: "Paraphrase compare — NauWiki Explorer",
 };
 
 export default function Page() {

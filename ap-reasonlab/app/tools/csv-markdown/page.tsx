@@ -1,7 +1,7 @@
 import CsvMarkdownTool from "@/components/CsvMarkdownTool";
 
 export const metadata = {
-  title: "CSV → Markdown — Liji Explore",
+  title: "CSV → Markdown — NauWiki Explorer",
 };
 
 export default function CsvMarkdownPage() {

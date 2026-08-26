@@ -1,5 +1,5 @@
 /**
- * Unified Liji Explore search engine.
+ * Unified NauWiki Explorer search engine.
  * Indexes built-in catalogs + live managed content for /search and AI site search.
  */
 import { AP_CATALOG } from "@/data/ap-catalog";
@@ -287,10 +287,13 @@ export function searchSiteEngine(
   }
 
   const staticPages = [
-    { id: "home", title: "Home", subject: "Site", detail: "Liji Explore home", href: "/" },
+    { id: "home", title: "Home · Knowledge Explorer", subject: "Site", detail: "NauWiki Explorer · Knowledge Explorer portal", href: "/" },
+    { id: "explore-ap-english", title: "AP & English", subject: "Site", detail: "Knowledge Explorer box — AP subjects and English", href: "/explore/ap-english" },
+    { id: "explore-tools-code", title: "Convenient Tools & Code", subject: "Site", detail: "Knowledge Explorer box — tools and coding", href: "/explore/tools-code" },
+    { id: "explore-coming-soon", title: "正在准备", subject: "Site", detail: "Reserved Knowledge Explorer box", href: "/explore/coming-soon" },
     { id: "search", title: "Search", subject: "Site", detail: "Full-site search", href: "/search" },
-    { id: "about", title: "About", subject: "Site", detail: "About Liji Explore", href: "/about" },
-    { id: "partners", title: "Partners", subject: "Site", detail: "Liji Explore roster", href: "/partners" },
+    { id: "about", title: "About", subject: "Site", detail: "About NauWiki Explorer", href: "/about" },
+    { id: "partners", title: "Partners", subject: "Site", detail: "NauWiki Explorer roster", href: "/partners" },
     { id: "guide", title: "Site Guide", subject: "Tools", detail: "How to use the site", href: "/guide" },
     { id: "manage", title: "Manage", subject: "Admin", detail: "Manage content", href: "/manage" },
     { id: "hints", title: "AI Toolbox", subject: "Tools", detail: "Hints, AI for AP guides, calculator, grapher, Local AI", href: "/hints" },
@@ -306,7 +309,7 @@ export function searchSiteEngine(
     { id: "forum-box", title: "My box", subject: "Community", detail: "Private notes and pictures in Forum", href: "/forum?tab=box" },
     { id: "learning-box", title: "My box (Private Learning Box)", subject: "Community", detail: "Private notes and pictures", href: "/forum?tab=box" },
     { id: "code", title: "Code Resource", subject: "Code", detail: "Python, Java, web folders", href: "/code" },
-    { id: "tools", title: "Tools", subject: "Tools", detail: "One toolbox hub — AI, files, images, utilities", href: "/tools" },
+    { id: "tools", title: "Convenient Tools", subject: "Tools", detail: "Everyday study utilities hub", href: "/tools" },
     { id: "word-pdf", title: "Word → PDF", subject: "Tools", detail: "Convert docx and save as PDF", href: "/tools/word-pdf" },
     { id: "image-compress", title: "Image compress", subject: "Tools", detail: "Compress and convert images", href: "/tools/image-compress" },
     { id: "image-crop", title: "Image crop & annotate", subject: "Tools", detail: "Crop and mark images", href: "/tools/image-crop" },
@@ -624,7 +627,7 @@ export function searchSiteEngine(
       type: "member",
       title: member.name,
       subject: member.role,
-      detail: clip(member.org || "Liji Explore"),
+      detail: clip(member.org || "NauWiki Explorer"),
       href: "/partners",
       score: scoreFields(tokens, member.name, `${member.role} ${member.org || ""} ${member.github}`),
     });

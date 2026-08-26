@@ -7,17 +7,25 @@ import { useEditorMode } from "@/components/EditorModeProvider";
 
 const moreGroups = [
   {
-    label: "Explore",
+    label: "Knowledge Explorer boxes",
     links: [
       { href: "/", label: "Home" },
-      { href: "/code", label: "Code" },
-      { href: "/tools", label: "Tools" },
-      { href: "/hints?tool=calculator", label: "Calculator" },
-      { href: "/hints?tool=grapher", label: "Grapher" },
-      { href: "/english/ai", label: "English AI" },
-      { href: "/search", label: "Search" },
-      { href: "/hints", label: "AI Toolbox" },
+      { href: "/explore/ap-english", label: "AP & English" },
+      { href: "/explore/tools-code", label: "Convenient Tools & Code" },
+      { href: "/explore/coming-soon", label: "正在准备" },
       { href: "/forum", label: "Forum" },
+    ],
+  },
+  {
+    label: "Quick links",
+    links: [
+      { href: "/ap", label: "AP" },
+      { href: "/english", label: "English" },
+      { href: "/tools", label: "Convenient Tools" },
+      { href: "/code", label: "Code" },
+      { href: "/search", label: "Search" },
+      { href: "/about", label: "About" },
+      { href: "/partners", label: "Partners" },
     ],
   },
   {
@@ -25,8 +33,7 @@ const moreGroups = [
     links: [
       { href: "/manage", label: "Manage content" },
       { href: "/admin", label: "Admin guide" },
-      { href: "/partners", label: "Partners" },
-      { href: "/about", label: "About" },
+      { href: "/login", label: "Editor login" },
     ],
   },
 ] as const;
@@ -48,6 +55,7 @@ export default function MobileActionBar() {
       (link) => pathname === link.href || (link.href !== "/" && pathname.startsWith(`${link.href}/`))
     )
   );
+  const hintsActive = pathname === "/hints" || pathname.startsWith("/hints/");
 
   useEffect(() => {
     setMoreOpen(false);
@@ -117,26 +125,28 @@ export default function MobileActionBar() {
         className="fixed inset-x-3 z-50 grid grid-cols-3 rounded-2xl border border-slate-200 bg-white/95 p-1.5 shadow-xl backdrop-blur md:hidden"
         style={{ bottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
       >
-        {[
-          { href: "/ap", label: "AP" },
-          { href: "/english", label: "English" },
-        ].map((item) => {
-          const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={
-                active
-                  ? "rounded-xl bg-brand-600 px-3 py-2 text-center text-xs font-semibold text-white"
-                  : "rounded-xl px-3 py-2 text-center text-xs font-semibold text-slate-700"
-              }
-              aria-current={active ? "page" : undefined}
-            >
-              {item.label}
-            </Link>
-          );
-        })}
+        <Link
+          href="/"
+          className={
+            pathname === "/"
+              ? "rounded-xl bg-brand-600 px-3 py-2 text-center text-xs font-semibold text-white"
+              : "rounded-xl px-3 py-2 text-center text-xs font-semibold text-slate-700"
+          }
+          aria-current={pathname === "/" ? "page" : undefined}
+        >
+          Home
+        </Link>
+        <Link
+          href="/hints"
+          className={
+            hintsActive
+              ? "rounded-xl bg-brand-600 px-3 py-2 text-center text-xs font-semibold text-white"
+              : "rounded-xl px-3 py-2 text-center text-xs font-semibold text-slate-700"
+          }
+          aria-current={hintsActive ? "page" : undefined}
+        >
+          AI Toolbox
+        </Link>
         <button
           type="button"
           className={

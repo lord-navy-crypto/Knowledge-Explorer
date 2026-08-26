@@ -90,7 +90,7 @@ export default function PartnersPage() {
       }
       const handle = githubUser.trim().replace(/^@/, "");
       const noteParts = [
-        roleNote.trim() || "Liji Explore partner",
+        roleNote.trim() || "NauWiki Explorer partner",
         handle ? `github:${handle}` : "",
       ].filter(Boolean);
       const res = await fetch("/api/edit", {
@@ -155,13 +155,13 @@ export default function PartnersPage() {
         </span>
         <h1 className="mt-3 text-3xl font-bold">Partners & members</h1>
         <p className="mt-2 max-w-2xl text-brand-100">
-          Everyone on Liji Explore with their GitHub. Add new people with a name + GitHub
+          Everyone on NauWiki Explorer with their GitHub. Add new people with a name + GitHub
           username — not a single fixed choice.
         </p>
       </section>
 
       <section className="space-y-3">
-        <h2 className="section-title">Liji Explore roster</h2>
+        <h2 className="section-title">NauWiki Explorer roster</h2>
         <p className="text-sm text-slate-600">
           Core collaborators plus anyone you add below. GitHub links open in a new tab.
         </p>
@@ -193,7 +193,7 @@ export default function PartnersPage() {
                 )}
                 {person.source === "truejet" && (
                   <span className="mt-2 inline-block text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                    Liji Explore
+                    NauWiki Explorer
                   </span>
                 )}
                 {editMode && person.source === "managed" && (
@@ -242,7 +242,7 @@ export default function PartnersPage() {
               className="input mt-1"
               value={roleNote}
               onChange={(e) => setRoleNote(e.target.value)}
-              placeholder="e.g. Liji Explore partner · content editor"
+              placeholder="e.g. NauWiki Explorer partner · content editor"
             />
           </label>
           {showCodeField ? (

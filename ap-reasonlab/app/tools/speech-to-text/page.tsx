@@ -1,7 +1,7 @@
 import SpeakSttTool from "@/components/SpeakSttTool";
 
 export const metadata = {
-  title: "Speech to text — Liji Explore",
+  title: "Speech to text — NauWiki Explorer",
   description:
     "Pure English speech to text: live mic, record a clip, or upload an audio file.",
 };

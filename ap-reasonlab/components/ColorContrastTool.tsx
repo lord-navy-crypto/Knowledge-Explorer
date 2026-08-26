@@ -98,7 +98,7 @@ export default function ColorContrastTool() {
         className="rounded-2xl border border-slate-200 px-6 py-10 text-center shadow-sm"
         style={{ background: bg, color: fg }}
       >
-        <p className="text-3xl font-bold">Liji Explore</p>
+        <p className="text-3xl font-bold">NauWiki Explorer</p>
         <p className="mt-2 text-base">The quick brown fox jumps over the lazy dog. 0123456789</p>
         <p className="mt-1 text-sm opacity-90">Sample body text for contrast checking.</p>
       </div>

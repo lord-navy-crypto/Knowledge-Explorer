@@ -1,5 +1,5 @@
 /**
- * Clean the user turn before Liji Explore search.
+ * Clean the user turn before NauWiki Explorer search.
  * Chat history / mode labels pollute the 32-token search budget.
  */
 

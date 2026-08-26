@@ -1,7 +1,7 @@
 import PdfToolsTool from "@/components/PdfToolsTool";
 
 export const metadata = {
-  title: "PDF merge & split — Liji Explore",
+  title: "PDF merge & split — NauWiki Explorer",
 };
 
 export default function PdfToolsPage() {

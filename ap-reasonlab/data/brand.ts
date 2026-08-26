@@ -6,7 +6,7 @@ export type Collaborator = {
   org?: string;
 };
 
-/** People on the Liji Explore collaborator roster (GitHub-linked). */
+/** People on the NauWiki Explorer collaborator roster (GitHub-linked). */
 export const trueJetMembers: Collaborator[] = [
   {
     name: "lord-navy-crypto",
@@ -64,9 +64,11 @@ export const collaborators = [
 ];
 
 export const brand = {
-  name: "Liji Explore",
-  shortName: "LE",
+  name: "NauWiki Explorer",
+  shortName: "NW",
+  /** Portal title shown on the home hero (not the legal/site name). */
+  portalName: "Knowledge Explorer",
   tagline: "Explore knowledge — AP, English, tools, and reasoning",
   description:
-    "Liji Explore is an academic platform. AP is one box inside it — with room for English exams, calculators, graphers, code resources, and more.",
+    "NauWiki Explorer hosts Knowledge Explorer — an academic portal with AP, English, convenient tools, code, forum, and AI Toolbox.",
 };

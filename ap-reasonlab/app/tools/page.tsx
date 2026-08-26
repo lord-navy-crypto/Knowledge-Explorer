@@ -11,9 +11,9 @@ import {
 } from "@/data/study-tools";
 
 export const metadata = {
-  title: "Tools — Liji Explore",
+  title: "Convenient Tools — NauWiki Explorer",
   description:
-    "One toolbox: Study desk, English helpers, STEM pads, File lab, classroom light tools, external connections, and AI — mostly local in your browser.",
+    "Convenient tools: Study desk, English helpers, STEM pads, File lab, classroom light tools, external connections, and AI — mostly local in your browser.",
 };
 
 function SecurityBadge({ level }: { level?: ToolSecurity }) {
@@ -34,7 +34,7 @@ export default function ToolsPage() {
 
   return (
     <div className="space-y-10">
-      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Tools" }]} />
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Convenient Tools" }]} />
 
       <section className="relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-sky-50 px-5 py-7 sm:px-8">
         <div
@@ -42,10 +42,10 @@ export default function ToolsPage() {
           aria-hidden
         />
         <p className="relative text-xs font-semibold uppercase tracking-[0.18em] text-brand-600">
-          One toolbox
+          Convenient tools
         </p>
         <h1 className="relative mt-2 font-display text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-          Online tools
+          Convenient Tools
         </h1>
         <p className="relative mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">
           AI helpers live in the{" "}

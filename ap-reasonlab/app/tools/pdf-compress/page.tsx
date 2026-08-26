@@ -1,7 +1,7 @@
 import PdfCompressTool from "@/components/PdfCompressTool";
 
 export const metadata = {
-  title: "PDF compress — Liji Explore",
+  title: "PDF compress — NauWiki Explorer",
 };
 
 export default function Page() {

@@ -6,28 +6,30 @@ import { usePathname } from "next/navigation";
 import { brand } from "@/data/brand";
 import { useEditorMode } from "@/components/EditorModeProvider";
 
-const primaryLinks = [
-  { href: "/ap", label: "AP" },
-  { href: "/english", label: "English" },
-  { href: "/tools", label: "Tools" },
-  { href: "/code", label: "Code" },
-  { href: "/hints", label: "AI Toolbox" },
-  { href: "/forum", label: "Forum" },
-];
+/** Slim top bar: AI Toolbox always visible; everything else under More. */
+const primaryLinks = [{ href: "/hints", label: "AI Toolbox" }];
 
 const moreGroups = [
   {
-    label: "General",
+    label: "Knowledge Explorer boxes",
     links: [
       { href: "/", label: "Home" },
-      { href: "/about", label: "About" },
-      { href: "/tools/draft", label: "Black draft paper" },
-      { href: "/tools/dual", label: "Dual-column editor" },
-      { href: "/hints?tool=calculator", label: "Calculator (AI Toolbox)" },
-      { href: "/hints?tool=grapher", label: "Grapher (AI Toolbox)" },
-      { href: "/english/ai", label: "English AI" },
-      { href: "/hints?section=ai-for-ap", label: "AI for AP" },
+      { href: "/explore/ap-english", label: "AP & English" },
+      { href: "/explore/tools-code", label: "Convenient Tools & Code" },
+      { href: "/explore/coming-soon", label: "正在准备" },
+      { href: "/forum", label: "Forum" },
+    ],
+  },
+  {
+    label: "Quick links",
+    links: [
+      { href: "/ap", label: "AP subjects" },
+      { href: "/english", label: "English" },
+      { href: "/tools", label: "Convenient Tools" },
+      { href: "/code", label: "Code" },
       { href: "/search", label: "Search" },
+      { href: "/about", label: "About" },
+      { href: "/partners", label: "Partners" },
     ],
   },
   {
@@ -36,7 +38,6 @@ const moreGroups = [
       { href: "/login", label: "Editor login" },
       { href: "/manage", label: "Manage content" },
       { href: "/admin", label: "Admin guide" },
-      { href: "/partners", label: "Partners" },
     ],
   },
 ] as const;

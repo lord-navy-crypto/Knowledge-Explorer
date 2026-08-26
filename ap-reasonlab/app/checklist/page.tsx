@@ -22,7 +22,7 @@ export default function ChecklistPage() {
         <h1 className="text-3xl font-bold">Project Checklist</h1>
         <p className="mt-2 text-slate-600">
           What is live, what we are building, and what you still need to do to
-          grow Liji Explore.
+          grow NauWiki Explorer.
         </p>
       </div>
 

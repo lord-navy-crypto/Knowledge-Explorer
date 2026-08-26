@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 export const metadata = {
-  title: "Study timer — Liji Explore",
+  title: "Study timer — NauWiki Explorer",
 };
 
 /** Study timer merged into Tomato focus desk — keep bookmark-safe redirect. */

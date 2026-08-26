@@ -1,4 +1,4 @@
-/** Curated off-site study links — complements built-in Liji Explore tools. */
+/** Curated off-site study links — complements built-in NauWiki Explorer tools. */
 
 export type ExternalToolCategory =
   | "exams"

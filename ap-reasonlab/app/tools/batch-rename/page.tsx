@@ -1,7 +1,7 @@
 import BatchRenameTool from "@/components/BatchRenameTool";
 
 export const metadata = {
-  title: "Batch rename — Liji Explore",
+  title: "Batch rename — NauWiki Explorer",
 };
 
 export default function Page() {
