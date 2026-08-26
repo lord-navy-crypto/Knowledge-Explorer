@@ -24,12 +24,42 @@ export default function BlackDraftPaper() {
   const wrapRef = useRef<HTMLDivElement>(null);
   const drawing = useRef(false);
   const last = useRef<{ x: number; y: number } | null>(null);
+  const history = useRef<string[]>([]);
+  const historyIdx = useRef(-1);
   const [notes, setNotes] = useState("");
   const [brush, setBrush] = useState(3);
   const [color, setColor] = useState(COLORS[0]!);
-  const [ink, setInk] = useState("pen");
+  const [ink, setInk] = useState<"pen" | "eraser" | "highlighter">("pen");
   const [savedHint, setSavedHint] = useState("");
   const [showPreview, setShowPreview] = useState(true);
+  const [showGrid, setShowGrid] = useState(true);
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
+
+  const pushHistory = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const snap = canvas.toDataURL("image/png");
+    history.current = history.current.slice(0, historyIdx.current + 1);
+    history.current.push(snap);
+    if (history.current.length > 40) history.current.shift();
+    historyIdx.current = history.current.length - 1;
+    setCanUndo(historyIdx.current > 0);
+    setCanRedo(false);
+  }, []);
+
+  const restoreSnapshot = useCallback((dataUrl: string) => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx) return;
+    const rect = canvas.getBoundingClientRect();
+    const img = new Image();
+    img.onload = () => {
+      ctx.clearRect(0, 0, rect.width, rect.height);
+      ctx.drawImage(img, 0, 0, rect.width, rect.height);
+    };
+    img.src = dataUrl;
+  }, []);
 
   const resizeCanvas = useCallback(() => {
     const canvas = canvasRef.current;
@@ -49,7 +79,6 @@ export default function BlackDraftPaper() {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
-    // Restore previous strokes after resize when possible
     const img = new Image();
     img.onload = () => {
       ctx.drawImage(img, 0, 0, w, h);
@@ -65,7 +94,9 @@ export default function BlackDraftPaper() {
         if (parsed.notes) setNotes(parsed.notes);
         if (parsed.brush) setBrush(parsed.brush);
         if (parsed.color) setColor(parsed.color);
-        if (parsed.ink) setInk(parsed.ink);
+        if (parsed.ink === "eraser" || parsed.ink === "highlighter" || parsed.ink === "pen") {
+          setInk(parsed.ink);
+        }
         if (parsed.image) {
           requestAnimationFrame(() => {
             resizeCanvas();
@@ -76,6 +107,7 @@ export default function BlackDraftPaper() {
             img.onload = () => {
               const rect = canvas.getBoundingClientRect();
               ctx.drawImage(img, 0, 0, rect.width, rect.height);
+              pushHistory();
             };
             img.src = String(parsed.image);
           });
@@ -85,14 +117,40 @@ export default function BlackDraftPaper() {
     } catch {
       /* ignore */
     }
-    requestAnimationFrame(resizeCanvas);
-  }, [resizeCanvas]);
+    requestAnimationFrame(() => {
+      resizeCanvas();
+      pushHistory();
+    });
+  }, [resizeCanvas, pushHistory]);
 
   useEffect(() => {
     const onResize = () => resizeCanvas();
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, [resizeCanvas]);
+
+  // Light auto-save of notes + canvas every few seconds while editing
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      const canvas = canvasRef.current;
+      try {
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({
+            notes,
+            brush,
+            color,
+            ink,
+            image: canvas?.toDataURL("image/png") || "",
+            savedAt: Date.now(),
+          })
+        );
+      } catch {
+        /* ignore quota */
+      }
+    }, 8000);
+    return () => window.clearInterval(id);
+  }, [notes, brush, color, ink]);
 
   function pointFromEvent(event: React.PointerEvent<HTMLCanvasElement>) {
     const canvas = canvasRef.current;
@@ -121,10 +179,19 @@ export default function BlackDraftPaper() {
     const ctx = canvas?.getContext("2d");
     const p = pointFromEvent(event);
     if (!ctx || !p || !last.current) return;
-    const width = ink === "eraser" ? brush * 4 : brush * (0.55 + p.pressure);
-    ctx.globalCompositeOperation = ink === "eraser" ? "destination-out" : "source-over";
-    ctx.strokeStyle = color;
-    ctx.lineWidth = width;
+    if (ink === "eraser") {
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.lineWidth = brush * 4;
+      ctx.strokeStyle = "#000";
+    } else if (ink === "highlighter") {
+      ctx.globalCompositeOperation = "source-over";
+      ctx.strokeStyle = color.length === 7 ? `${color}55` : color;
+      ctx.lineWidth = brush * 3.2;
+    } else {
+      ctx.globalCompositeOperation = "source-over";
+      ctx.strokeStyle = color;
+      ctx.lineWidth = brush * (0.55 + p.pressure);
+    }
     ctx.beginPath();
     ctx.moveTo(last.current.x, last.current.y);
     ctx.lineTo(p.x, p.y);
@@ -133,6 +200,7 @@ export default function BlackDraftPaper() {
   }
 
   function endDraw(event: React.PointerEvent<HTMLCanvasElement>) {
+    if (drawing.current) pushHistory();
     drawing.current = false;
     last.current = null;
     try {
@@ -148,6 +216,23 @@ export default function BlackDraftPaper() {
     if (!canvas || !ctx) return;
     const rect = canvas.getBoundingClientRect();
     ctx.clearRect(0, 0, rect.width, rect.height);
+    pushHistory();
+  }
+
+  function undo() {
+    if (historyIdx.current <= 0) return;
+    historyIdx.current -= 1;
+    restoreSnapshot(history.current[historyIdx.current]!);
+    setCanUndo(historyIdx.current > 0);
+    setCanRedo(historyIdx.current < history.current.length - 1);
+  }
+
+  function redo() {
+    if (historyIdx.current >= history.current.length - 1) return;
+    historyIdx.current += 1;
+    restoreSnapshot(history.current[historyIdx.current]!);
+    setCanUndo(historyIdx.current > 0);
+    setCanRedo(historyIdx.current < history.current.length - 1);
   }
 
   function saveDraft() {
@@ -174,10 +259,45 @@ export default function BlackDraftPaper() {
     link.click();
   }
 
+  function exportNotes() {
+    const blob = new Blob([notes], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `ke-draft-notes-${Date.now()}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function exportCombined() {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const out = document.createElement("canvas");
+    const pad = 24;
+    const noteH = Math.min(280, 40 + notes.split("\n").length * 18);
+    out.width = canvas.width;
+    out.height = canvas.height + Math.round(noteH * (window.devicePixelRatio || 1));
+    const ctx = out.getContext("2d");
+    if (!ctx) return;
+    ctx.fillStyle = "#020617";
+    ctx.fillRect(0, 0, out.width, out.height);
+    ctx.fillStyle = "#e2e8f0";
+    ctx.font = `${14 * (window.devicePixelRatio || 1)}px ui-monospace, monospace`;
+    const lines = notes.split("\n").slice(0, 14);
+    lines.forEach((line, i) => {
+      ctx.fillText(line.slice(0, 90), pad, pad + i * 18 * (window.devicePixelRatio || 1));
+    });
+    ctx.drawImage(canvas, 0, Math.round(noteH * (window.devicePixelRatio || 1)));
+    const link = document.createElement("a");
+    link.download = `ke-draft-combined-${Date.now()}.png`;
+    link.href = out.toDataURL("image/png");
+    link.click();
+  }
+
   return (
     <StudyToolShell
       title="Black draft paper"
-      description="Dual-blended dark desk: type Markdown notes on the left, draw with mouse or stylus on the right. Optimized for high-DPI screens and pen pressure."
+      description="Dual-blended dark desk: type Markdown notes on the left, draw with mouse or stylus on the right. Undo, highlighter, and auto-save included."
       tip="Tip: use a stylus on Chromebook / Surface / iPad (Safari). Pressure thickens strokes. Everything stays in this browser until you export."
     >
       <div className="flex flex-wrap items-center gap-2">
@@ -187,15 +307,26 @@ export default function BlackDraftPaper() {
         <button type="button" className="btn-secondary" onClick={exportPng}>
           Export drawing PNG
         </button>
+        <button type="button" className="btn-secondary" onClick={exportNotes} disabled={!notes.trim()}>
+          Export notes .md
+        </button>
+        <button type="button" className="btn-secondary" onClick={exportCombined}>
+          Export combined PNG
+        </button>
+        <button type="button" className="btn-ghost" onClick={undo} disabled={!canUndo}>
+          Undo
+        </button>
+        <button type="button" className="btn-ghost" onClick={redo} disabled={!canRedo}>
+          Redo
+        </button>
         <button type="button" className="btn-ghost" onClick={clearCanvas}>
           Clear drawing
         </button>
-        <button
-          type="button"
-          className="btn-ghost"
-          onClick={() => setShowPreview((v) => !v)}
-        >
+        <button type="button" className="btn-ghost" onClick={() => setShowPreview((v) => !v)}>
           {showPreview ? "Hide note preview" : "Show note preview"}
+        </button>
+        <button type="button" className="btn-ghost" onClick={() => setShowGrid((v) => !v)}>
+          {showGrid ? "Hide grid" : "Show grid"}
         </button>
         {savedHint ? <span className="text-xs text-emerald-700">{savedHint}</span> : null}
       </div>
@@ -254,6 +385,17 @@ export default function BlackDraftPaper() {
             </div>
             <button
               type="button"
+              onClick={() => setInk("highlighter")}
+              className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${
+                ink === "highlighter"
+                  ? "bg-amber-200 text-amber-950"
+                  : "bg-slate-800 text-slate-200 hover:bg-slate-700"
+              }`}
+            >
+              Highlighter
+            </button>
+            <button
+              type="button"
               onClick={() => setInk("eraser")}
               className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${
                 ink === "eraser"
@@ -269,15 +411,17 @@ export default function BlackDraftPaper() {
             ref={wrapRef}
             className="relative min-h-[28rem] overflow-hidden rounded-2xl border border-slate-700 bg-[radial-gradient(circle_at_20%_20%,#1e293b_0%,#020617_55%,#000_100%)] shadow-inner"
           >
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 opacity-[0.08]"
-              style={{
-                backgroundImage:
-                  "linear-gradient(to right, #94a3b8 1px, transparent 1px), linear-gradient(to bottom, #94a3b8 1px, transparent 1px)",
-                backgroundSize: "28px 28px",
-              }}
-            />
+            {showGrid ? (
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 opacity-[0.08]"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(to right, #94a3b8 1px, transparent 1px), linear-gradient(to bottom, #94a3b8 1px, transparent 1px)",
+                  backgroundSize: "28px 28px",
+                }}
+              />
+            ) : null}
             <canvas
               ref={canvasRef}
               className="absolute inset-0 h-full w-full touch-none cursor-crosshair"
@@ -290,7 +434,7 @@ export default function BlackDraftPaper() {
           </div>
           <p className="text-xs text-slate-500">
             Drawing uses devicePixelRatio scaling (capped at 2.5×) for sharper lines on retina /
-            high-DPI displays without overloading weak GPUs.
+            high-DPI displays without overloading weak GPUs. Auto-saves every few seconds.
           </p>
         </div>
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import StudyToolShell from "@/components/StudyToolShell";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
@@ -11,6 +11,18 @@ export default function WordImportTool() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [fileName, setFileName] = useState("");
+  const [compactBlank, setCompactBlank] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const exportText = useMemo(() => {
+    if (!compactBlank) return markdown;
+    return markdown.replace(/\n{3,}/g, "\n\n").trim();
+  }, [markdown, compactBlank]);
+
+  const stats = useMemo(() => {
+    const words = exportText.trim().split(/\s+/).filter(Boolean).length;
+    return { words, chars: exportText.length, lines: exportText ? exportText.split(/\r?\n/).length : 0 };
+  }, [exportText]);
 
   async function onFile(file: File | null) {
     if (!file) return;
@@ -37,7 +49,25 @@ export default function WordImportTool() {
   }
 
   function copyMarkdown() {
-    void navigator.clipboard.writeText(markdown);
+    void navigator.clipboard.writeText(exportText).then(() => {
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    });
+  }
+
+  function downloadMd() {
+    const base = fileName.replace(/\.docx$/i, "") || "word-import";
+    const blob = new Blob([exportText], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${base}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function applyCompact() {
+    setMarkdown((m) => m.replace(/\n{3,}/g, "\n\n").trim());
   }
 
   return (
@@ -61,23 +91,42 @@ export default function WordImportTool() {
         <button
           type="button"
           className="btn-secondary"
-          disabled={!markdown}
+          disabled={!exportText}
           onClick={copyMarkdown}
         >
-          Copy Markdown
+          {copied ? "Copied" : "Copy Markdown"}
+        </button>
+        <button type="button" className="btn-secondary" disabled={!exportText} onClick={downloadMd}>
+          Download .md
         </button>
         <button
           type="button"
           className="btn-primary"
-          disabled={!markdown.trim()}
+          disabled={!exportText.trim()}
           onClick={() => window.print()}
         >
           Print / Save as PDF
+        </button>
+        <label className="flex items-center gap-2 text-sm text-slate-700">
+          <input
+            type="checkbox"
+            checked={compactBlank}
+            onChange={(e) => setCompactBlank(e.target.checked)}
+          />
+          Compact on copy/download
+        </label>
+        <button type="button" className="btn-ghost text-sm" disabled={!markdown} onClick={applyCompact}>
+          Compact in editor
         </button>
         <Link href="/tools/word-pdf" className="text-sm text-brand-600 hover:underline">
           Open Word → PDF tool →
         </Link>
       </div>
+      {exportText.trim() ? (
+        <p className="no-print text-xs tabular-nums text-slate-500">
+          {stats.words} words · {stats.chars} chars · {stats.lines} lines
+        </p>
+      ) : null}
       {error ? <p className="text-sm text-amber-700">{error}</p> : null}
 
       <div className="no-print grid gap-4 lg:grid-cols-2">
@@ -102,7 +151,7 @@ export default function WordImportTool() {
       </div>
 
       <article className="hidden print:block">
-        <RichContent>{markdown}</RichContent>
+        <RichContent>{exportText}</RichContent>
       </article>
     </StudyToolShell>
   );

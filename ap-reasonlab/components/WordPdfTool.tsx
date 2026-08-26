@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import StudyToolShell from "@/components/StudyToolShell";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
@@ -16,6 +16,13 @@ export default function WordPdfTool() {
   const [error, setError] = useState("");
   const [fileName, setFileName] = useState("");
   const [warnings, setWarnings] = useState("");
+  const [docTitle, setDocTitle] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  const stats = useMemo(() => {
+    const words = markdown.trim().split(/\s+/).filter(Boolean).length;
+    return { words, chars: markdown.length };
+  }, [markdown]);
 
   async function onFile(file: File | null) {
     if (!file) return;
@@ -27,6 +34,7 @@ export default function WordPdfTool() {
     setError("");
     setWarnings("");
     setFileName(file.name);
+    setDocTitle(file.name.replace(/\.docx$/i, ""));
     try {
       const mammoth = await import("mammoth");
       const buffer = await file.arrayBuffer();
@@ -42,6 +50,22 @@ export default function WordPdfTool() {
     } finally {
       setBusy(false);
     }
+  }
+
+  function downloadMd() {
+    const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${(docTitle || fileName || "word-export").replace(/\s+/g, "-")}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function copyMd() {
+    await navigator.clipboard.writeText(markdown);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1500);
   }
 
   return (
@@ -70,6 +94,12 @@ export default function WordPdfTool() {
         >
           Print / Save as PDF
         </button>
+        <button type="button" className="btn-secondary" disabled={!markdown.trim()} onClick={() => void copyMd()}>
+          {copied ? "Copied" : "Copy Markdown"}
+        </button>
+        <button type="button" className="btn-secondary" disabled={!markdown.trim()} onClick={downloadMd}>
+          Download .md
+        </button>
         <Link href="/tools/word-import" className="btn-secondary text-sm">
           Edit as Markdown →
         </Link>
@@ -77,6 +107,23 @@ export default function WordPdfTool() {
           Markdown → PDF
         </Link>
       </div>
+
+      {markdown.trim() ? (
+        <div className="no-print flex flex-wrap items-end gap-3">
+          <label className="block text-sm">
+            <span className="font-medium text-slate-700">Print title</span>
+            <input
+              className="input mt-1 min-w-[14rem]"
+              value={docTitle}
+              onChange={(e) => setDocTitle(e.target.value)}
+              placeholder="Optional heading on PDF"
+            />
+          </label>
+          <p className="pb-2 text-xs tabular-nums text-slate-500">
+            {stats.words} words · {stats.chars} chars
+          </p>
+        </div>
+      ) : null}
 
       {error ? <p className="no-print text-sm text-red-700">{error}</p> : null}
       {warnings ? <p className="no-print text-sm text-amber-700">{warnings}</p> : null}
@@ -95,7 +142,12 @@ export default function WordPdfTool() {
             PDF preview
           </p>
           {markdown.trim() ? (
-            <RichContent className="text-sm">{markdown}</RichContent>
+            <>
+              {docTitle.trim() ? (
+                <h1 className="mb-4 text-xl font-bold text-slate-900">{docTitle.trim()}</h1>
+              ) : null}
+              <RichContent className="text-sm">{markdown}</RichContent>
+            </>
           ) : (
             <p className="text-sm text-slate-500">Nothing extracted yet.</p>
           )}
@@ -103,6 +155,7 @@ export default function WordPdfTool() {
       </div>
 
       <article className="hidden print:block">
+        {docTitle.trim() ? <h1>{docTitle.trim()}</h1> : null}
         <RichContent>{markdown}</RichContent>
       </article>
     </StudyToolShell>

@@ -25,11 +25,14 @@ export default function ImageCompressTool() {
   const [origBytes, setOrigBytes] = useState(0);
   const [outBytes, setOutBytes] = useState(0);
   const [maxWidth, setMaxWidth] = useState(1600);
+  const [maxHeight, setMaxHeight] = useState(1600);
   const [quality, setQuality] = useState(0.82);
   const [format, setFormat] = useState<Format>("image/jpeg");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [rawFile, setRawFile] = useState<File | null>(null);
+  const [dims, setDims] = useState({ ow: 0, oh: 0, w: 0, h: 0 });
+  const [copied, setCopied] = useState(false);
 
   const savedPct = useMemo(() => {
     if (!origBytes || !outBytes) return null;
@@ -37,14 +40,21 @@ export default function ImageCompressTool() {
     return pct;
   }, [origBytes, outBytes]);
 
-  async function processFile(file: File, nextMax: number, nextQ: number, nextFmt: Format) {
+  async function processFile(
+    file: File,
+    nextMaxW: number,
+    nextMaxH: number,
+    nextQ: number,
+    nextFmt: Format
+  ) {
     setBusy(true);
     setError("");
     try {
       const bitmap = await createImageBitmap(file);
-      const scale = Math.min(1, nextMax / Math.max(bitmap.width, 1));
+      const scale = Math.min(1, nextMaxW / Math.max(bitmap.width, 1), nextMaxH / Math.max(bitmap.height, 1));
       const w = Math.max(1, Math.round(bitmap.width * scale));
       const h = Math.max(1, Math.round(bitmap.height * scale));
+      setDims({ ow: bitmap.width, oh: bitmap.height, w, h });
       const canvas = document.createElement("canvas");
       canvas.width = w;
       canvas.height = h;
@@ -87,12 +97,17 @@ export default function ImageCompressTool() {
     setFileName(file.name);
     setOrigBytes(file.size);
     setOutBytes(0);
-    await processFile(file, maxWidth, quality, format);
+    await processFile(file, maxWidth, maxHeight, quality, format);
   }
 
-  async function reprocess(nextMax = maxWidth, nextQ = quality, nextFmt = format) {
+  async function reprocess(
+    nextMaxW = maxWidth,
+    nextMaxH = maxHeight,
+    nextQ = quality,
+    nextFmt = format
+  ) {
     if (!rawFile) return;
-    await processFile(rawFile, nextMax, nextQ, nextFmt);
+    await processFile(rawFile, nextMaxW, nextMaxH, nextQ, nextFmt);
   }
 
   function download() {
@@ -104,10 +119,28 @@ export default function ImageCompressTool() {
     a.click();
   }
 
+  async function copyImage() {
+    if (!outUrl) return;
+    try {
+      const res = await fetch(outUrl);
+      const blob = await res.blob();
+      // ClipboardItem may not support all mime types in every browser
+      if (typeof ClipboardItem !== "undefined" && navigator.clipboard?.write) {
+        await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+        setCopied(true);
+        window.setTimeout(() => setCopied(false), 1500);
+      } else {
+        setError("Clipboard image copy not supported in this browser — download instead.");
+      }
+    } catch {
+      setError("Could not copy image to clipboard.");
+    }
+  }
+
   return (
     <StudyToolShell
       title="Image compress & convert"
-      description="Shrink images, cap width, and export JPEG, WebP, or PNG. Files never leave this browser."
+      description="Shrink images, cap width/height, and export JPEG, WebP, or PNG. Files never leave this browser."
       tip="WebP usually wins on size. PNG ignores the quality slider (lossless)."
     >
       <div className="flex flex-wrap items-center gap-3">
@@ -124,9 +157,17 @@ export default function ImageCompressTool() {
         <button type="button" className="btn-primary" disabled={!outUrl || busy} onClick={download}>
           Download
         </button>
+        <button type="button" className="btn-secondary" disabled={!outUrl || busy} onClick={() => void copyImage()}>
+          {copied ? "Copied" : "Copy image"}
+        </button>
+        {dims.w ? (
+          <span className="text-xs tabular-nums text-slate-500">
+            {dims.ow}×{dims.oh} → {dims.w}×{dims.h}
+          </span>
+        ) : null}
       </div>
 
-      <div className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-4 sm:grid-cols-3">
+      <div className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-4">
         <label className="block text-sm">
           <span className="font-medium text-slate-700">Max width (px)</span>
           <input
@@ -139,10 +180,27 @@ export default function ImageCompressTool() {
             onChange={(e) => {
               const v = Number(e.target.value);
               setMaxWidth(v);
-              void reprocess(v, quality, format);
+              void reprocess(v, maxHeight, quality, format);
             }}
           />
           <span className="text-xs text-slate-500">{maxWidth}px</span>
+        </label>
+        <label className="block text-sm">
+          <span className="font-medium text-slate-700">Max height (px)</span>
+          <input
+            type="range"
+            min={400}
+            max={4000}
+            step={50}
+            value={maxHeight}
+            className="mt-2 w-full"
+            onChange={(e) => {
+              const v = Number(e.target.value);
+              setMaxHeight(v);
+              void reprocess(maxWidth, v, quality, format);
+            }}
+          />
+          <span className="text-xs text-slate-500">{maxHeight}px</span>
         </label>
         <label className="block text-sm">
           <span className="font-medium text-slate-700">Quality</span>
@@ -157,7 +215,7 @@ export default function ImageCompressTool() {
             onChange={(e) => {
               const v = Number(e.target.value);
               setQuality(v);
-              void reprocess(maxWidth, v, format);
+              void reprocess(maxWidth, maxHeight, v, format);
             }}
           />
           <span className="text-xs text-slate-500">
@@ -172,7 +230,7 @@ export default function ImageCompressTool() {
             onChange={(e) => {
               const v = e.target.value as Format;
               setFormat(v);
-              void reprocess(maxWidth, quality, v);
+              void reprocess(maxWidth, maxHeight, quality, v);
             }}
           >
             <option value="image/jpeg">JPEG</option>

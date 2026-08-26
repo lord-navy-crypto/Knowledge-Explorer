@@ -93,9 +93,9 @@ export const STUDY_TOOLS: StudyTool[] = [
   {
     id: "calculator",
     href: "/hints?tool=calculator",
-    title: "KE-84 Calculator",
+    title: "KE ClassWiz Calculator",
     blurb:
-      "TI-style AP calculator: RAD/DEG, nCr/nPr, 1-Var Stats, STO vars, physics constants, polar↔rect, → Graph.",
+      "Casio ClassWiz-class: COMP, COMPLEX, MATRIX, EQN, 1-/2-Var STAT, BASE-N, DIST, ENG — AP STEM ready.",
     category: "ai",
     security: "safe",
   },
@@ -104,7 +104,7 @@ export const STUDY_TOOLS: StudyTool[] = [
     href: "/hints?tool=grapher",
     title: "KE Graph",
     blurb:
-      "AP graphing: Y1–Y4, derivative & tangent, zeros/intersect, ∫ shade, parametric & polar, pan/zoom.",
+      "Y1–Y4, derivative/tangent, zeros/max-min/intersect, ∫, shade Y1≥Y2, parametric & polar, pan/zoom.",
     category: "ai",
     security: "safe",
   },
