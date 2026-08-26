@@ -1,7 +1,7 @@
 import LatexChecker from "@/components/LatexChecker";
 
 export const metadata = {
-  title: "LaTeX checker — NauWiki Explorer",
+  title: "LaTeX checker — Knowledge Explorer",
 };
 
 export default function LatexPage() {

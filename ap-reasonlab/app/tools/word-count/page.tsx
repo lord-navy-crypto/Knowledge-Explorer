@@ -1,7 +1,7 @@
 import WordCountTool from "@/components/WordCountTool";
 
 export const metadata = {
-  title: "Word count — NauWiki Explorer",
+  title: "Word count — Knowledge Explorer",
 };
 
 export default function WordCountPage() {

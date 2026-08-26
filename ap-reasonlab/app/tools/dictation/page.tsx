@@ -1,7 +1,7 @@
 import DictationTool from "@/components/DictationTool";
 
 export const metadata = {
-  title: "Dictation — NauWiki Explorer",
+  title: "Dictation — Knowledge Explorer",
 };
 
 export default function Page() {

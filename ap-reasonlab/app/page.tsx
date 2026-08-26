@@ -14,11 +14,8 @@ export default function HomePage() {
     <div className="space-y-12">
       <section className="hero-gradient relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 min-h-[min(58vh,28rem)] px-6 py-14 text-white md:px-16 md:py-20">
         <div className="mx-auto max-w-6xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#f7f4ee]/70">
+          <h1 className="font-display text-5xl font-semibold tracking-tight text-[#f7f4ee] md:text-6xl">
             {brand.name}
-          </p>
-          <h1 className="mt-3 font-display text-5xl font-semibold tracking-tight text-[#f7f4ee] md:text-6xl">
-            Knowledge Explorer
           </h1>
           <p className="mt-4 max-w-xl font-display text-xl font-medium leading-snug text-[#f7f4ee]/90 md:text-2xl">
             Four doors into study — pick a box, then open what you need.

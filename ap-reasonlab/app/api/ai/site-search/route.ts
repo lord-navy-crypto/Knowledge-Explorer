@@ -4,7 +4,7 @@ import { AI_SITE_SEARCH_LIMIT } from "@/lib/ai-site-search";
 import { runServerAiSiteSearch } from "@/lib/ai-site-context-server";
 
 /**
- * Search NauWiki Explorer study content for AI context.
+ * Search Knowledge Explorer study content for AI context.
  * Free of LLM token cost — only reads site data (45s managed-content cache).
  */
 export async function POST(req: NextRequest) {
@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => ({}));
     const rawQuery = String(body.query || body.q || "").trim();
     const query = extractAiSearchQuery(rawQuery);
-    // Always search NauWiki Explorer — ignore legacy enabled:false from older clients.
+    // Always search Knowledge Explorer — ignore legacy enabled:false from older clients.
     const limit = Math.min(
       AI_SITE_SEARCH_LIMIT,
       Math.max(1, Number(body.limit) || AI_SITE_SEARCH_LIMIT)

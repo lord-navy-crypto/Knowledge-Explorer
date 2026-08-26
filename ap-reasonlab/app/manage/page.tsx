@@ -384,7 +384,7 @@ export default function ManagePage() {
         <section id="macintosh-hd" className="scroll-mt-24 space-y-3">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="section-title">NauWiki Explorer · Macintosh HD</h2>
+              <h2 className="section-title">Knowledge Explorer · Macintosh HD</h2>
               <p className="mt-1 text-sm text-slate-600">
                 Full-site editing desk (MachineTools HD). Open a section → webpage folder to add
                 concepts, formulas, practice, documents, images, and files. The gold{" "}

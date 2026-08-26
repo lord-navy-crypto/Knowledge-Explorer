@@ -11,7 +11,7 @@ import {
 } from "@/data/study-tools";
 
 export const metadata = {
-  title: "Convenient Tools — NauWiki Explorer",
+  title: "Convenient Tools — Knowledge Explorer",
   description:
     "Convenient tools: Study desk, English helpers, STEM pads, File lab, classroom light tools, external connections, and AI — mostly local in your browser.",
 };

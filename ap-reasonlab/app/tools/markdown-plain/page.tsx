@@ -1,7 +1,7 @@
 import MarkdownPlainTool from "@/components/MarkdownPlainTool";
 
 export const metadata = {
-  title: "Markdown plain text — NauWiki Explorer",
+  title: "Markdown plain text — Knowledge Explorer",
 };
 
 export default function Page() {

@@ -75,12 +75,12 @@ export async function runServerAiSiteSearch(
     searchQuery,
     note:
       hits.length > 0
-        ? `Found ${hits.length} NauWiki Explorer match(es) — AI will use these site materials.`
+        ? `Found ${hits.length} Knowledge Explorer match(es) — AI will use these site materials.`
         : "No matching site content for this question.",
   };
 }
 
-/** Server-side NauWiki Explorer search for AI prompts. No LLM API cost.
+/** Server-side Knowledge Explorer search for AI prompts. No LLM API cost.
  * Always searches when a usable query exists — site materials stay primary.
  */
 export async function buildServerAiSiteContext(query: string, _enabled = true): Promise<string> {

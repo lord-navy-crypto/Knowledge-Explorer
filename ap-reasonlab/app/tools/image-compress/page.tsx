@@ -1,7 +1,7 @@
 import ImageCompressTool from "@/components/ImageCompressTool";
 
 export const metadata = {
-  title: "Image compress — NauWiki Explorer",
+  title: "Image compress — Knowledge Explorer",
 };
 
 export default function ImageCompressPage() {

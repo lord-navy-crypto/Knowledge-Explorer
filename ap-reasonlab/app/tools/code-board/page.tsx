@@ -1,7 +1,7 @@
 import CodeBoardTool from "@/components/CodeBoardTool";
 
 export const metadata = {
-  title: "Long code block adder — NauWiki Explorer",
+  title: "Long code block adder — Knowledge Explorer",
 };
 
 export default function CodeBoardPage() {

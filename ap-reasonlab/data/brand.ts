@@ -6,7 +6,7 @@ export type Collaborator = {
   org?: string;
 };
 
-/** People on the NauWiki Explorer collaborator roster (GitHub-linked). */
+/** People on the Knowledge Explorer collaborator roster (GitHub-linked). */
 export const trueJetMembers: Collaborator[] = [
   {
     name: "lord-navy-crypto",
@@ -64,11 +64,9 @@ export const collaborators = [
 ];
 
 export const brand = {
-  name: "NauWiki Explorer",
-  shortName: "NW",
-  /** Portal title shown on the home hero (not the legal/site name). */
-  portalName: "Knowledge Explorer",
+  name: "Knowledge Explorer",
+  shortName: "KE",
   tagline: "Explore knowledge — AP, English, tools, and reasoning",
   description:
-    "NauWiki Explorer hosts Knowledge Explorer — an academic portal with AP, English, convenient tools, code, forum, and AI Toolbox.",
+    "Knowledge Explorer is an academic platform. Open a box for AP & English, Convenient Tools & Code, Forum, and more — with AI Toolbox always in the top bar.",
 };

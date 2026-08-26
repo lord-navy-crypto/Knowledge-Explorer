@@ -1,4 +1,4 @@
-/** Curated off-site study links — complements built-in NauWiki Explorer tools. */
+/** Curated off-site study links — complements built-in Knowledge Explorer tools. */
 
 export type ExternalToolCategory =
   | "exams"

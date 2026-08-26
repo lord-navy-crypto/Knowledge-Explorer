@@ -5,8 +5,8 @@ import { getContentEditorLevel } from "@/lib/auth";
 import { canEditContent } from "@/lib/change-codes";
 
 export const metadata: Metadata = {
-  title: "AI Developer — NauWiki Explorer",
-  description: "Local and cloud AI tools for managed NauWiki Explorer website content.",
+  title: "AI Developer — Knowledge Explorer",
+  description: "Local and cloud AI tools for managed Knowledge Explorer website content.",
 };
 
 export default async function AIDeveloperPage() {

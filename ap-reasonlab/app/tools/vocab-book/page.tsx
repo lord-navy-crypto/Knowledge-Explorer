@@ -1,7 +1,7 @@
 import VocabBookTool from "@/components/VocabBookTool";
 
 export const metadata = {
-  title: "Vocab book — NauWiki Explorer",
+  title: "Vocab book — Knowledge Explorer",
 };
 
 export default function Page() {

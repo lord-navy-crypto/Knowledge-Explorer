@@ -80,7 +80,7 @@ type LocalAIContextValue = {
   setProvider: (provider: AiProvider) => void;
   userKey: string;
   setUserKey: (key: string) => void;
-  /** When true, AI tools search NauWiki Explorer content before answering. */
+  /** When true, AI tools search Knowledge Explorer content before answering. */
   siteSearchEnabled: boolean;
   setSiteSearchEnabled: (enabled: boolean) => void;
   /** Payload fields for /api/ai/* cloud calls from the shared settings. */
@@ -241,7 +241,7 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
         setProviderState(savedProvider);
       }
       const savedSiteSearch = localStorage.getItem(SITE_SEARCH_KEY);
-      // Always search NauWiki Explorer — migrate any old "off" preference to on.
+      // Always search Knowledge Explorer — migrate any old "off" preference to on.
       if (savedSiteSearch === "0" || savedSiteSearch === "1" || !savedSiteSearch) {
         localStorage.setItem(SITE_SEARCH_KEY, "1");
       }
@@ -267,7 +267,7 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const setSiteSearchEnabled = useCallback((_enabled: boolean) => {
-    // Always-on: NauWiki Explorer site search cannot be disabled.
+    // Always-on: Knowledge Explorer site search cannot be disabled.
     localStorage.setItem(SITE_SEARCH_KEY, "1");
   }, []);
 
@@ -778,7 +778,7 @@ export function LocalAIProvider({ children }: { children: React.ReactNode }) {
         userApiKey: mode === "byok" ? userKey.trim() || undefined : undefined,
         provider,
         siteModel: mode === "site" ? siteModel : "auto",
-        // Always search NauWiki Explorer before answering.
+        // Always search Knowledge Explorer before answering.
         siteSearch: true,
       },
       models,

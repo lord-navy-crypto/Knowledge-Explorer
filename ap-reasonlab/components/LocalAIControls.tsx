@@ -173,12 +173,12 @@ export default function LocalAIControls({ embedded = false }: Props) {
           </span>
           <span>
             <span className="font-semibold text-emerald-950">
-              Always search NauWiki Explorer
+              Always search Knowledge Explorer
             </span>
             <span className="mt-0.5 block text-xs text-emerald-900/85">
               On for every AI path (Local, Website API, Your own API). Before answering, the tutor
               looks up matching concepts / formulas / practice / documents on this site and teaches
-              from those materials. Not Google / open-web search — NauWiki Explorer only.
+              from those materials. Not Google / open-web search — Knowledge Explorer only.
             </span>
           </span>
         </div>

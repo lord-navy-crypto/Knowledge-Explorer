@@ -1,7 +1,7 @@
 import ColorContrastTool from "@/components/ColorContrastTool";
 
 export const metadata = {
-  title: "Color & contrast — NauWiki Explorer",
+  title: "Color & contrast — Knowledge Explorer",
 };
 
 export default function ColorContrastPage() {

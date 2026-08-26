@@ -1,7 +1,7 @@
 import ShortCodeTool from "@/components/ShortCodeTool";
 
 export const metadata = {
-  title: "Short codes — NauWiki Explorer",
+  title: "Short codes — Knowledge Explorer",
 };
 
 export default function Page() {

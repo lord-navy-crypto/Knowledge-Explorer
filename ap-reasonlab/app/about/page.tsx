@@ -59,7 +59,7 @@ export default function AboutPage() {
       </section>
 
       <section className="card space-y-3">
-        <h2 className="text-lg font-semibold">NauWiki Explorer members</h2>
+        <h2 className="text-lg font-semibold">Knowledge Explorer members</h2>
         <ul className="space-y-2 text-sm text-slate-700">
           {trueJetMembers.map((c) => (
             <li key={c.name}>

@@ -1,7 +1,7 @@
 import ParaphraseCompareTool from "@/components/ParaphraseCompareTool";
 
 export const metadata = {
-  title: "Paraphrase compare — NauWiki Explorer",
+  title: "Paraphrase compare — Knowledge Explorer",
 };
 
 export default function Page() {

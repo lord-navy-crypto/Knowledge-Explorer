@@ -1,7 +1,7 @@
 import FlashcardTool from "@/components/FlashcardTool";
 
 export const metadata = {
-  title: "Flashcards — NauWiki Explorer",
+  title: "Flashcards — Knowledge Explorer",
 };
 
 export default function FlashcardsPage() {

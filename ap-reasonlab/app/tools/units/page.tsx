@@ -1,7 +1,7 @@
 import UnitsConstants from "@/components/UnitsConstants";
 
 export const metadata = {
-  title: "Units & constants — NauWiki Explorer",
+  title: "Units & constants — Knowledge Explorer",
 };
 
 export default function UnitsPage() {

@@ -446,15 +446,15 @@ export default function UnifiedAiPanel({
     );
     setSiteHits(hits);
     setSiteSearchNote(
-      note || (hitCount ? `Using ${hitCount} NauWiki Explorer hit(s).` : "No site matches.")
+      note || (hitCount ? `Using ${hitCount} Knowledge Explorer hit(s).` : "No site matches.")
     );
     const sitePrefer = completeOptions?.sitePrefer || "formulas";
     const siteHint =
       sitePrefer === "language"
-        ? "When NauWiki Explorer site materials are appended below, prefer useful English language snippets (vocab, phrases, example sentences) and cite the hit titles. Ignore AP science / formula hits. Follow the same English teaching rules as the cloud tutor."
+        ? "When Knowledge Explorer site materials are appended below, prefer useful English language snippets (vocab, phrases, example sentences) and cite the hit titles. Ignore AP science / formula hits. Follow the same English teaching rules as the cloud tutor."
         : sitePrefer === "code"
-          ? "When NauWiki Explorer site materials are appended below, prefer coding playgrounds, snippets, and programming docs. Cite hit titles. Ignore off-topic AP formula sheets. Follow the coding teaching rules."
-          : "When NauWiki Explorer site materials are appended below, prefer their formulas/definitions and cite the hit titles. Ignore off-topic hits. Follow the same teaching rules as the cloud teacher for this tool.";
+          ? "When Knowledge Explorer site materials are appended below, prefer coding playgrounds, snippets, and programming docs. Cite hit titles. Ignore off-topic AP formula sheets. Follow the coding teaching rules."
+          : "When Knowledge Explorer site materials are appended below, prefer their formulas/definitions and cite the hit titles. Ignore off-topic hits. Follow the same teaching rules as the cloud teacher for this tool.";
     // AP/science Local: compact accuracy protocol + short formula pack (keep ~4k context free).
     const groundedSystem =
       sitePrefer === "formulas"
@@ -957,7 +957,7 @@ export default function UnifiedAiPanel({
         <p className="mt-1 text-sm text-slate-600">
           Choose Local / Website API / Your own API, pick a task, then chat in the dialogue box.
           Follow-up questions stay in the same conversation.{" "}
-          <strong>Always search NauWiki Explorer</strong> is on — AI teaches from site materials.
+          <strong>Always search Knowledge Explorer</strong> is on — AI teaches from site materials.
         </p>
         {siteSearchNote ? (
           <div className="mt-2 space-y-1">

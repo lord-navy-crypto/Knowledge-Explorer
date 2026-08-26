@@ -1,5 +1,5 @@
 /**
- * Unified NauWiki Explorer search engine.
+ * Unified Knowledge Explorer search engine.
  * Indexes built-in catalogs + live managed content for /search and AI site search.
  */
 import { AP_CATALOG } from "@/data/ap-catalog";
@@ -287,13 +287,13 @@ export function searchSiteEngine(
   }
 
   const staticPages = [
-    { id: "home", title: "Home · Knowledge Explorer", subject: "Site", detail: "NauWiki Explorer · Knowledge Explorer portal", href: "/" },
+    { id: "home", title: "Home · Knowledge Explorer", subject: "Site", detail: "Knowledge Explorer · Knowledge Explorer portal", href: "/" },
     { id: "explore-ap-english", title: "AP & English", subject: "Site", detail: "Knowledge Explorer box — AP subjects and English", href: "/explore/ap-english" },
     { id: "explore-tools-code", title: "Convenient Tools & Code", subject: "Site", detail: "Knowledge Explorer box — tools and coding", href: "/explore/tools-code" },
     { id: "explore-coming-soon", title: "正在准备", subject: "Site", detail: "Reserved Knowledge Explorer box", href: "/explore/coming-soon" },
     { id: "search", title: "Search", subject: "Site", detail: "Full-site search", href: "/search" },
-    { id: "about", title: "About", subject: "Site", detail: "About NauWiki Explorer", href: "/about" },
-    { id: "partners", title: "Partners", subject: "Site", detail: "NauWiki Explorer roster", href: "/partners" },
+    { id: "about", title: "About", subject: "Site", detail: "About Knowledge Explorer", href: "/about" },
+    { id: "partners", title: "Partners", subject: "Site", detail: "Knowledge Explorer roster", href: "/partners" },
     { id: "guide", title: "Site Guide", subject: "Tools", detail: "How to use the site", href: "/guide" },
     { id: "manage", title: "Manage", subject: "Admin", detail: "Manage content", href: "/manage" },
     { id: "hints", title: "AI Toolbox", subject: "Tools", detail: "Hints, AI for AP guides, calculator, grapher, Local AI", href: "/hints" },
@@ -627,7 +627,7 @@ export function searchSiteEngine(
       type: "member",
       title: member.name,
       subject: member.role,
-      detail: clip(member.org || "NauWiki Explorer"),
+      detail: clip(member.org || "Knowledge Explorer"),
       href: "/partners",
       score: scoreFields(tokens, member.name, `${member.role} ${member.org || ""} ${member.github}`),
     });
