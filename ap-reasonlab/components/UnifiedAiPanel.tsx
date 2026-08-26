@@ -7,6 +7,7 @@ import LocalAIControls from "@/components/LocalAIControls";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
 import AiEquationCards from "@/components/AiEquationCards";
 import AiToolboxRelatedStrip from "@/components/AiToolboxRelatedStrip";
+import AiSpecialFeatures from "@/components/AiSpecialFeatures";
 import RichContent from "@/components/RichContent";
 import VoiceInputButton from "@/components/VoiceInputButton";
 import SaveGeneratedPractice from "@/components/SaveGeneratedPractice";
@@ -39,7 +40,7 @@ import {
   type ToolboxCategory,
 } from "@/lib/ai-toolbox-prefs";
 import { takeToolboxPrefill } from "@/lib/ai-toolbox-prefill";
-import { migrateEnglishTask } from "@/lib/ai-toolbox-url";
+import { migrateEnglishTask, toolboxHref } from "@/lib/ai-toolbox-url";
 import {
   LOCAL_CODING_RETRY_NUDGE,
   LOCAL_ENGLISH_RETRY_NUDGE,
@@ -69,6 +70,12 @@ import {
 } from "@/lib/ai-context-budget";
 import { parsePracticeItems } from "@/lib/ai-practice-queue";
 import { fetchJsonWithAbort, revealTextProgressively } from "@/lib/ai-stream-reveal";
+import { guidePromptsForSubject } from "@/lib/ai-guide-specials";
+import {
+  encodeSpecialPrompt,
+  type SpecialFeature,
+} from "@/lib/ai-special-features";
+import { speakEnglish } from "@/lib/english-tts";
 
 const ENGLISH_INPUT_MAX = 16_000;
 
@@ -203,6 +210,8 @@ type Props = {
   defaultApTask?: string;
   defaultEnglishTask?: string;
   defaultCodingTask?: string;
+  /** From URL `sf=` (decoded) or other deep-link prompt body */
+  defaultPrefillPrompt?: string;
 };
 
 type ChatMessage = {
@@ -309,6 +318,7 @@ export default function UnifiedAiPanel({
   defaultApTask,
   defaultEnglishTask,
   defaultCodingTask,
+  defaultPrefillPrompt,
 }: Props) {
   const localAI = useLocalAI();
   const savedPrefs = useMemo(() => loadToolboxPanelPrefs(), []);
@@ -356,6 +366,8 @@ export default function UnifiedAiPanel({
   const [budgetMode, setBudgetMode] = useState<ContextBudgetMode>("complete");
   const [practiceQueue, setPracticeQueue] = useState<string[]>([]);
   const [practiceIndex, setPracticeIndex] = useState(0);
+  const [runResult, setRunResult] = useState("");
+  const [shareNote, setShareNote] = useState("");
   const chatRef = useRef<HTMLDivElement>(null);
   /** When true, new tokens pin the dialogue to the bottom. Scroll up to unlock. */
   const stickToBottomRef = useRef(true);
@@ -401,13 +413,18 @@ export default function UnifiedAiPanel({
   }, [defaultCodingTask]);
 
   useEffect(() => {
-    const prefill = takeToolboxPrefill();
+    const prefill = takeToolboxPrefill() || defaultPrefillPrompt || "";
     if (prefill) setInput(prefill);
-  }, []);
+  }, [defaultPrefillPrompt]);
 
   useEffect(() => {
     void listAiThreads().then(setThreads);
   }, []);
+
+  const guidePrompts = useMemo(
+    () => (category === "ap" ? guidePromptsForSubject(subject) : []),
+    [category, subject]
+  );
 
   // Warm site-search cache while typing so Local does not wait on submit.
   useEffect(() => {
@@ -514,6 +531,7 @@ export default function UnifiedAiPanel({
     setInput("");
     setCode("");
     setNotes("");
+    setRunResult("");
     setPracticeQueue([]);
     setPracticeIndex(0);
     setThreadId(newThreadId());
@@ -600,6 +618,47 @@ export default function UnifiedAiPanel({
     } else {
       setInput(item);
     }
+  }
+
+  function applySpecialFeature(feature: SpecialFeature) {
+    if (feature.category !== category) setCategory(feature.category);
+    if (feature.category === "ap" && feature.apTask) setApTask(feature.apTask as ApTask);
+    if (feature.category === "english" && feature.englishTask) {
+      setEnglishTask(feature.englishTask as EnglishTask);
+    }
+    if (feature.category === "coding" && feature.codingTask) {
+      setCodingTask(feature.codingTask as CodingTask);
+      if (feature.codingTask === "csa-frq") setLanguage("Java");
+    }
+    setInput(feature.prompt);
+    if (feature.notes !== undefined) setNotes(feature.notes);
+    if (feature.code !== undefined) setCode(feature.code);
+    stickToBottomRef.current = true;
+  }
+
+  async function copyShareLink() {
+    const prompt = input.trim();
+    if (!prompt) {
+      setShareNote("Type or apply a special feature first.");
+      return;
+    }
+    const href = toolboxHref({
+      category,
+      apTask: category === "ap" ? apTask : undefined,
+      englishTask: category === "english" ? englishTask : undefined,
+      codingTask: category === "coding" ? codingTask : undefined,
+      subject: category === "ap" ? subject : undefined,
+      promptEncoded: encodeSpecialPrompt(prompt),
+    });
+    const absolute =
+      typeof window !== "undefined" ? `${window.location.origin}${href}` : href;
+    try {
+      await navigator.clipboard.writeText(absolute);
+      setShareNote("Share link copied.");
+    } catch {
+      setShareNote(absolute);
+    }
+    window.setTimeout(() => setShareNote(""), 3200);
   }
 
   async function ensureLocalReady() {
@@ -987,6 +1046,9 @@ export default function UnifiedAiPanel({
           : codingTask === "csa-frq"
             ? `AP CSA FRQ coaching (Java process, stubs, traces):\n${userText}`
             : `Debug / find bugs:\n${userText}`;
+    const runBlock = runResult.trim()
+      ? `\nPlayground / run result to interpret:\n${runResult.trim()}`
+      : "";
     const wantLocalCoding = localAI.usesLocal && localAI.ready;
     if (localAI.usesLocal && !localAI.ready) {
       setSiteSearchNote(
@@ -997,7 +1059,7 @@ export default function UnifiedAiPanel({
       const modelId = localAI.selectedModelId || "";
       const text = await runLocal(
         codingAiLocal(codingTask),
-        `Language: ${language}\nFocus: ${codingTask}\nTask: ${taskText}\nCode:\n${codePaste || "(none)"}`,
+        `Language: ${language}\nFocus: ${codingTask}\nTask: ${taskText}\nCode:\n${codePaste || "(none)"}${runBlock}`,
         history,
         onToken,
         {
@@ -1019,7 +1081,7 @@ export default function UnifiedAiPanel({
       {
         language,
         focus: codingTask,
-        task: `${historyPrefix}Latest student message:\n${taskText}`,
+        task: `${historyPrefix}Latest student message:\n${taskText}${runBlock}`,
         code: codePaste,
         ...localAI.cloudRequestFields,
       },
@@ -1156,7 +1218,10 @@ export default function UnifiedAiPanel({
       );
       if (assistant.saveAsPractice) applyPracticeQueueFromText(assistant.text);
       await persistThread([...historyBefore, userMessage, merged]);
-      if (category === "coding") setCode("");
+      if (category === "coding") {
+        setCode("");
+        setRunResult("");
+      }
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") {
         setError("Stopped.");
@@ -1211,6 +1276,18 @@ export default function UnifiedAiPanel({
       <div className="space-y-5 p-4 md:p-5">
         <LocalAIControls embedded />
         <AiToolboxRelatedStrip />
+        <AiSpecialFeatures
+          category={category}
+          apTask={apTask}
+          englishTask={englishTask}
+          codingTask={codingTask}
+          subject={subject}
+          guidePrompts={guidePrompts}
+          currentPrompt={input}
+          currentNotes={notes}
+          currentCode={code}
+          onApply={applySpecialFeature}
+        />
 
         <div className="grid gap-2 sm:grid-cols-3">
           {(
@@ -1225,7 +1302,8 @@ export default function UnifiedAiPanel({
               type="button"
               onClick={() => {
                 setCategory(item.id);
-                clearDialogue();
+                setError("");
+                // Keep dialogue — switch lanes without wiping the thread.
               }}
               className={`rounded-xl border px-3 py-3 text-left transition ${
                 category === item.id
@@ -1500,8 +1578,8 @@ export default function UnifiedAiPanel({
             >
               {messages.length === 0 ? (
                 <p className="m-auto max-w-md text-center text-sm text-slate-500">
-                  Start the conversation below. After the first reply, keep asking follow-up questions
-                  in the same dialogue box.
+                  Pick a <strong>特殊功能</strong> above, or type below. After the first reply, keep
+                  asking follow-ups in the same dialogue box.
                 </p>
               ) : (
                 messages.map((message, index) => {
@@ -1553,6 +1631,22 @@ export default function UnifiedAiPanel({
                       defaultSubject={subject}
                       suggestedTitle={`${subject} practice · ${new Date().toISOString().slice(0, 10)}`}
                     />
+                  ) : null}
+                  {message.role === "assistant" &&
+                  category === "english" &&
+                  englishTask === "speaking-practice" &&
+                  message.text.trim() ? (
+                    <button
+                      type="button"
+                      className="mt-2 text-xs font-medium text-brand-700 hover:underline"
+                      onClick={() => {
+                        if (!speakEnglish(message.text.slice(0, 1200), { rate: 0.92 })) {
+                          window.alert("Speech synthesis unavailable in this browser.");
+                        }
+                      }}
+                    >
+                      Listen (TTS read-aloud)
+                    </button>
                   ) : null}
                   {message.role === "assistant" && category === "coding" && message.snippet ? (
                     <Link
@@ -1664,19 +1758,42 @@ export default function UnifiedAiPanel({
             ) : null}
 
             {category === "coding" ? (
-              <label className="block text-sm font-medium text-slate-700">
-                Code (optional)
-                <textarea
-                  className="input mt-1 font-mono text-xs"
-                  rows={5}
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  placeholder="Paste code here…"
-                />
-              </label>
+              <>
+                <label className="block text-sm font-medium text-slate-700">
+                  Code (optional)
+                  <textarea
+                    className="input mt-1 font-mono text-xs"
+                    rows={5}
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    placeholder="Paste code here…"
+                  />
+                </label>
+                <label className="block text-sm font-medium text-slate-700">
+                  Playground run result (optional)
+                  <textarea
+                    className="input mt-1 font-mono text-xs"
+                    rows={3}
+                    value={runResult}
+                    onChange={(e) => setRunResult(e.target.value)}
+                    placeholder="Paste output / error from /code after you try the stub…"
+                  />
+                  <span className="mt-1 block text-xs font-normal text-slate-500">
+                    Try snippets in{" "}
+                    <Link
+                      href={language === "Java" ? "/code/java" : "/code"}
+                      className="text-brand-700 hover:underline"
+                    >
+                      Code playground
+                    </Link>
+                    , then paste the result here for coaching.
+                  </span>
+                </label>
+              </>
             ) : null}
 
             {error ? <p className="text-sm text-red-600">{error}</p> : null}
+            {shareNote ? <p className="text-xs text-emerald-800">{shareNote}</p> : null}
 
             <div className="flex flex-wrap gap-2">
               <button type="submit" className="btn-primary" disabled={loading}>
@@ -1693,6 +1810,14 @@ export default function UnifiedAiPanel({
                   Stop
                 </button>
               ) : null}
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => void copyShareLink()}
+                disabled={loading || !input.trim()}
+              >
+                Copy special-feature link
+              </button>
               {messages.length > 0 ? (
                 <button
                   type="button"
