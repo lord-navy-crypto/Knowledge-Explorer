@@ -42,10 +42,13 @@ function normalizeEntry(raw: Partial<Entry> & { target?: string; code?: string }
 export default function ShortCodeTool() {
   const [target, setTarget] = useState("https://ap-webside.vercel.app/english/toefl/speaking");
   const [title, setTitle] = useState("TOEFL Speaking lane");
+  const [customCode, setCustomCode] = useState("");
   const [showWindow, setShowWindow] = useState(true);
   const [entries, setEntries] = useState<Entry[]>([]);
   const [mounted, setMounted] = useState(false);
   const [lookup, setLookup] = useState("");
+  const [filter, setFilter] = useState("");
+  const [hint, setHint] = useState("");
 
   useEffect(() => {
     setMounted(true);
@@ -73,11 +76,26 @@ export default function ShortCodeTool() {
     [entries, lookup]
   );
 
+  const filtered = useMemo(() => {
+    const q = filter.trim().toLowerCase();
+    if (!q) return entries;
+    return entries.filter(
+      (e) =>
+        e.code.toLowerCase().includes(q) ||
+        e.title.toLowerCase().includes(q) ||
+        e.target.toLowerCase().includes(q)
+    );
+  }, [entries, filter]);
+
   function createCode() {
     const t = target.trim();
     if (!t) return;
-    let code = makeCode();
-    while (entries.some((e) => e.code === code)) code = makeCode();
+    let code = customCode.trim().toLowerCase().replace(/[^a-z0-9-]/g, "") || makeCode();
+    if (!code) code = makeCode();
+    if (entries.some((e) => e.code === code)) {
+      setHint(`Code “${code}” already exists — pick another or clear custom code.`);
+      return;
+    }
     setEntries((prev) =>
       [
         {
@@ -90,12 +108,43 @@ export default function ShortCodeTool() {
         ...prev,
       ].slice(0, 80)
     );
+    setCustomCode("");
+    setHint(`Saved preset ${code}`);
+    window.setTimeout(() => setHint(""), 2000);
+  }
+
+  function exportJson() {
+    const blob = new Blob([JSON.stringify(entries, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "ke-short-codes.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function importJson(file: File | null) {
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text) as Array<Partial<Entry>>;
+      const next = parsed.map(normalizeEntry).filter(Boolean) as Entry[];
+      setEntries((prev) => {
+        const map = new Map(prev.map((e) => [e.code, e]));
+        for (const e of next) map.set(e.code, e);
+        return [...map.values()].slice(0, 80);
+      });
+      setHint(`Imported ${next.length} preset${next.length === 1 ? "" : "s"}.`);
+      window.setTimeout(() => setHint(""), 2000);
+    } catch {
+      setHint("Could not import JSON.");
+    }
   }
 
   return (
     <StudyToolShell
       title="Short codes · saved presets"
-      description="Create a short code that opens a saved link — and optionally an embed window — on this device. Generate once, reuse anytime."
+      description="Create a short code that opens a saved link — and optionally an embed window — on this device. Generate once, reuse anytime. Export/import JSON to move presets between browsers."
       tip="Not a public short-link service — presets live in this browser only. Class tip: “Tools → Short codes → enter ab3k2q”."
     >
       <div className="card space-y-3">
@@ -120,6 +169,15 @@ export default function ShortCodeTool() {
             placeholder="https://… or a short classroom note"
           />
         </label>
+        <label className="block text-sm">
+          Custom code (optional)
+          <input
+            className="input mt-1 font-mono"
+            value={customCode}
+            onChange={(e) => setCustomCode(e.target.value)}
+            placeholder="leave blank to auto-generate"
+          />
+        </label>
         <label className="flex items-center gap-2 text-sm text-slate-700">
           <input
             type="checkbox"
@@ -129,9 +187,24 @@ export default function ShortCodeTool() {
           />
           Also open an embed window for this link (http/https only)
         </label>
-        <button type="button" className="btn-primary" onClick={createCode}>
-          Generate &amp; save preset
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className="btn-primary" onClick={createCode}>
+            Generate &amp; save preset
+          </button>
+          <button type="button" className="btn-secondary" onClick={exportJson} disabled={!entries.length}>
+            Export JSON
+          </button>
+          <label className="btn-secondary cursor-pointer">
+            Import JSON
+            <input
+              type="file"
+              accept="application/json,.json"
+              className="sr-only"
+              onChange={(e) => void importJson(e.target.files?.[0] || null)}
+            />
+          </label>
+        </div>
+        {hint ? <p className="text-xs text-emerald-700">{hint}</p> : null}
       </div>
 
       <div className="card space-y-3">
@@ -189,8 +262,23 @@ export default function ShortCodeTool() {
         ) : null}
       </div>
 
+      <div className="flex flex-wrap items-center gap-2">
+        <label className="block min-w-[12rem] flex-1 text-sm">
+          Filter saved presets
+          <input
+            className="input mt-1"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            placeholder="Search code, title, or link…"
+          />
+        </label>
+        <span className="pt-5 text-xs tabular-nums text-slate-500">
+          {filtered.length}/{entries.length}
+        </span>
+      </div>
+
       <ul className="space-y-2">
-        {entries.map((e) => (
+        {filtered.map((e) => (
           <li key={e.code} className="card flex flex-wrap items-center justify-between gap-2 text-sm">
             <div className="min-w-0">
               <p className="font-mono font-bold text-brand-700">{e.code}</p>

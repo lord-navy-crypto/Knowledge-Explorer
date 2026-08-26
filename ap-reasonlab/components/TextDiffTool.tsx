@@ -6,6 +6,13 @@ import StudyToolShell from "@/components/StudyToolShell";
 type DiffLine = { type: "same" | "add" | "del"; text: string };
 type DiffToken = { type: "same" | "add" | "del"; text: string };
 
+function normalizeText(s: string, ignoreWs: boolean, ignoreCase: boolean): string {
+  let out = s;
+  if (ignoreCase) out = out.toLowerCase();
+  if (ignoreWs) out = out.replace(/[ \t]+/g, " ").replace(/ *\r?\n */g, "\n").trim();
+  return out;
+}
+
 function diffLines(a: string, b: string): DiffLine[] {
   const left = a.split(/\r?\n/);
   const right = b.split(/\r?\n/);
@@ -85,7 +92,6 @@ function charOverlapRatio(a: string, b: string): number {
   const n = left.length;
   const m = right.length;
   if (n * m > 400_000) {
-    // Fallback for huge pastes: line-level similarity
     const lines = diffLines(a, b);
     const same = lines.filter((l) => l.type === "same").reduce((s, l) => s + l.text.length, 0);
     return same / Math.max(a.length, b.length);
@@ -129,6 +135,16 @@ function pairChangedLines(lines: DiffLine[]): Array<{ left?: string; right?: str
   return pairs;
 }
 
+function toUnifiedDiff(lines: DiffLine[]): string {
+  return lines
+    .map((l) => {
+      if (l.type === "same") return ` ${l.text}`;
+      if (l.type === "del") return `-${l.text}`;
+      return `+${l.text}`;
+    })
+    .join("\n");
+}
+
 export default function TextDiffTool() {
   const [left, setLeft] = useState(
     "Force is mass times acceleration.\nDraw the FBD first."
@@ -136,21 +152,28 @@ export default function TextDiffTool() {
   const [right, setRight] = useState(
     "Net force is mass times acceleration.\nDraw the FBD first.\nCheck units."
   );
+  const [ignoreWs, setIgnoreWs] = useState(false);
+  const [ignoreCase, setIgnoreCase] = useState(false);
+  const [onlyChanged, setOnlyChanged] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const analysis = useMemo(() => {
-    const identical = left === right;
-    const lines = diffLines(left, right);
+    const leftN = normalizeText(left, ignoreWs, ignoreCase);
+    const rightN = normalizeText(right, ignoreWs, ignoreCase);
+    const identical = leftN === rightN;
+    const lines = diffLines(leftN, rightN);
     const added = lines.filter((l) => l.type === "add");
     const removed = lines.filter((l) => l.type === "del");
     const same = lines.filter((l) => l.type === "same");
     const charsAdded = added.reduce((s, l) => s + l.text.length, 0);
     const charsRemoved = removed.reduce((s, l) => s + l.text.length, 0);
-    const similarity = Math.round(charOverlapRatio(left, right) * 100);
+    const similarity = Math.round(charOverlapRatio(leftN, rightN) * 100);
     const changedPct = identical ? 0 : Math.max(0, Math.min(100, 100 - similarity));
+    const pairs = pairChangedLines(lines);
     return {
       identical,
       lines,
-      pairs: pairChangedLines(lines),
+      pairs: onlyChanged ? pairs.filter((p) => p.same === undefined) : pairs,
       addedLines: added.length,
       removedLines: removed.length,
       sameLines: same.length,
@@ -162,8 +185,9 @@ export default function TextDiffTool() {
       rightChars: right.length,
       leftEmpty: !left.trim(),
       rightEmpty: !right.trim(),
+      unified: toUnifiedDiff(lines),
     };
-  }, [left, right]);
+  }, [left, right, ignoreWs, ignoreCase, onlyChanged]);
 
   function swapSides() {
     setLeft(right);
@@ -188,6 +212,31 @@ export default function TextDiffTool() {
         <button type="button" className="btn-ghost text-sm" onClick={clearBoth}>
           Clear both
         </button>
+        <button
+          type="button"
+          className="btn-secondary text-sm"
+          disabled={analysis.identical || (analysis.leftEmpty && analysis.rightEmpty)}
+          onClick={() => {
+            void navigator.clipboard.writeText(analysis.unified).then(() => {
+              setCopied(true);
+              window.setTimeout(() => setCopied(false), 1500);
+            });
+          }}
+        >
+          {copied ? "Copied" : "Copy unified diff"}
+        </button>
+        <label className="flex items-center gap-1.5 text-sm text-slate-700">
+          <input type="checkbox" checked={ignoreWs} onChange={(e) => setIgnoreWs(e.target.checked)} />
+          Ignore whitespace
+        </label>
+        <label className="flex items-center gap-1.5 text-sm text-slate-700">
+          <input type="checkbox" checked={ignoreCase} onChange={(e) => setIgnoreCase(e.target.checked)} />
+          Ignore case
+        </label>
+        <label className="flex items-center gap-1.5 text-sm text-slate-700">
+          <input type="checkbox" checked={onlyChanged} onChange={(e) => setOnlyChanged(e.target.checked)} />
+          Only changed lines
+        </label>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -227,7 +276,8 @@ export default function TextDiffTool() {
         <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-5 text-center">
           <p className="text-lg font-semibold text-emerald-900">Perfect match</p>
           <p className="mt-1 text-sm text-emerald-800">
-            The left and right texts are identical — nothing changed.
+            The left and right texts are identical
+            {ignoreWs || ignoreCase ? " under the current normalize options" : ""} — nothing changed.
           </p>
         </div>
       ) : (
@@ -277,7 +327,7 @@ export default function TextDiffTool() {
           <div className="overflow-hidden rounded-xl border border-slate-200">
             <div className="border-b border-slate-200 bg-slate-50 px-3 py-2">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Differences
+                Differences{onlyChanged ? " (changed only)" : ""}
               </p>
             </div>
             <div className="divide-y divide-slate-100 font-mono text-xs">

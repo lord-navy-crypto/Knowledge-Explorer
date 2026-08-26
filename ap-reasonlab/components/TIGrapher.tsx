@@ -43,6 +43,24 @@ const PRESETS: Array<{
   { label: "abs", y1: "abs(x)", y2: "x" },
   { label: "e^x", y1: "exp(x)", y2: "" },
   {
+    label: "logistic",
+    y1: "1/(1+exp(-x))",
+    y2: "",
+    range: { xmin: -8, xmax: 8, ymin: -0.2, ymax: 1.2 },
+  },
+  {
+    label: "sin(x)/x",
+    y1: "sin(x)/x",
+    y2: "",
+    range: { xmin: -4 * Math.PI, xmax: 4 * Math.PI, ymin: -0.4, ymax: 1.2 },
+  },
+  {
+    label: "projectile",
+    y1: "-0.5*x^2+4*x",
+    y2: "",
+    range: { xmin: -1, xmax: 9, ymin: -2, ymax: 10 },
+  },
+  {
     label: "circle (param)",
     mode: "parametric",
     xt: "5*cos(t)",
@@ -200,6 +218,7 @@ export default function TIGrapher() {
   const [error, setError] = useState("");
   const [traceX, setTraceX] = useState(0);
   const [shade, setShade] = useState(true);
+  const [shadeBetween, setShadeBetween] = useState(false);
   const [showDeriv, setShowDeriv] = useState(false);
   const [showTable, setShowTable] = useState(true);
   const [hiRes, setHiRes] = useState(true);
@@ -413,15 +432,53 @@ export default function TIGrapher() {
       ctx.stroke();
     }
 
+    /** Shade region where Y1 ≥ Y2 between the two sampled curves. */
+    function drawShadeBetween(upper: Point[], lower: Point[], color: string) {
+      if (upper.length < 2 || lower.length < 2) return;
+      const n = Math.min(upper.length, lower.length);
+      let band: Array<{ x: number; y1: number; y2: number }> = [];
+      const flush = () => {
+        if (band.length < 2) {
+          band = [];
+          return;
+        }
+        ctx.beginPath();
+        ctx.moveTo(sx(band[0]!.x), sy(band[0]!.y1));
+        for (let i = 1; i < band.length; i += 1) {
+          ctx.lineTo(sx(band[i]!.x), sy(band[i]!.y1));
+        }
+        for (let i = band.length - 1; i >= 0; i -= 1) {
+          ctx.lineTo(sx(band[i]!.x), sy(band[i]!.y2));
+        }
+        ctx.closePath();
+        ctx.fillStyle = `${color}44`;
+        ctx.fill();
+        band = [];
+      };
+      for (let i = 0; i < n; i += 1) {
+        const a = upper[i]!;
+        const b = lower[i]!;
+        if (!Number.isFinite(a.y) || !Number.isFinite(b.y) || a.y < b.y) {
+          flush();
+          continue;
+        }
+        band.push({ x: a.x, y1: a.y, y2: b.y });
+      }
+      flush();
+    }
+
     const err = curves.map((c) => c.error).find(Boolean) || "";
     setError(err);
 
     if (mode === "function") {
       const exprs = [y1, y2, y3, y4];
+      if (shadeBetween && y1.trim() && y2.trim() && curves[0] && curves[1]) {
+        drawShadeBetween(curves[0].points, curves[1].points, COLORS[0]!);
+      }
       curves.forEach((curve, i) => {
         if (!exprs[i]?.trim()) return;
         const fill =
-          (shade && i === 0 && !showIntegral) ||
+          (shade && !shadeBetween && i === 0 && !showIntegral) ||
           (showIntegral && i === 0);
         drawCurve(
           curve.points,
@@ -470,6 +527,7 @@ export default function TIGrapher() {
     derivCurve,
     range,
     shade,
+    shadeBetween,
     showDeriv,
     showGrid,
     showIntegral,
@@ -597,12 +655,84 @@ export default function TIGrapher() {
     }
   }
 
+  /** Sample Y1 across the window, then locally refine extrema. */
+  function runMaxMin() {
+    if (!y1.trim()) {
+      setAnalysis("Need Y1 for max/min.");
+      return;
+    }
+    try {
+      const samples = 320;
+      const step = (range.xmax - range.xmin) / samples;
+      let maxX = range.xmin;
+      let minX = range.xmin;
+      let maxY = -Infinity;
+      let minY = Infinity;
+      const ys: Array<{ x: number; y: number }> = [];
+      for (let i = 0; i <= samples; i += 1) {
+        const x = range.xmin + i * step;
+        try {
+          const y = evalExpr(y1, { x, ans: 0 });
+          if (!Number.isFinite(y)) continue;
+          ys.push({ x, y });
+          if (y > maxY) {
+            maxY = y;
+            maxX = x;
+          }
+          if (y < minY) {
+            minY = y;
+            minX = x;
+          }
+        } catch {
+          /* skip */
+        }
+      }
+      if (!ys.length) {
+        setAnalysis("No finite Y1 values in window.");
+        return;
+      }
+
+      function refine(seedX: number, wantMax: boolean): { x: number; y: number } {
+        let bestX = seedX;
+        let bestY = evalExpr(y1, { x: seedX, ans: 0 });
+        let h = step;
+        for (let pass = 0; pass < 8; pass += 1) {
+          const candidates = [bestX - h, bestX, bestX + h];
+          for (const x of candidates) {
+            if (x < range.xmin || x > range.xmax) continue;
+            try {
+              const y = evalExpr(y1, { x, ans: 0 });
+              if (!Number.isFinite(y)) continue;
+              if (wantMax ? y > bestY : y < bestY) {
+                bestY = y;
+                bestX = x;
+              }
+            } catch {
+              /* skip */
+            }
+          }
+          h *= 0.4;
+        }
+        return { x: bestX, y: bestY };
+      }
+
+      const mx = refine(maxX, true);
+      const mn = refine(minX, false);
+      setAnalysis(
+        `Y1 max ≈ (${formatCalc(mx.x)}, ${formatCalc(mx.y)}) · min ≈ (${formatCalc(mn.x)}, ${formatCalc(mn.y)})`
+      );
+      setTraceX(mx.x);
+    } catch (err) {
+      setAnalysis(err instanceof Error ? err.message : "Max/Min error");
+    }
+  }
+
   return (
     <div className="ti-shell ti-shell--wide">
       <div className="ti-brand-row">
         <span className="ti-brand">KE Graph CE</span>
         <span className="ti-sub">
-          Function · parametric · polar · derivative · zeros · integral · pan
+          Function · parametric · polar · max/min · shade Y1≥Y2 · zeros · integral
         </span>
       </div>
       <div className="ti-layout">
@@ -729,9 +859,22 @@ export default function TIGrapher() {
                   <button
                     type="button"
                     className={`ti-key ${shade ? "ti-key-2nd-on" : ""}`}
-                    onClick={() => setShade((v) => !v)}
+                    onClick={() => {
+                      setShade((v) => !v);
+                      if (!shade) setShadeBetween(false);
+                    }}
                   >
                     Shade Y1
+                  </button>
+                  <button
+                    type="button"
+                    className={`ti-key ${shadeBetween ? "ti-key-2nd-on" : ""}`}
+                    onClick={() => {
+                      setShadeBetween((v) => !v);
+                      if (!shadeBetween) setShade(false);
+                    }}
+                  >
+                    Shade Y1≥Y2
                   </button>
                   <button
                     type="button"
@@ -749,6 +892,9 @@ export default function TIGrapher() {
                   </button>
                   <button type="button" className="ti-key" onClick={runZeros}>
                     Zeros
+                  </button>
+                  <button type="button" className="ti-key" onClick={runMaxMin}>
+                    Max/Min
                   </button>
                   <button type="button" className="ti-key" onClick={runIntersect}>
                     Intersect
@@ -894,8 +1040,9 @@ export default function TIGrapher() {
         )}
       </div>
       <p className="ti-hint">
-        AP Calculus: Y1′ (numeric derivative), tangent, zeros, intersect, definite integral shade.
-        Physics / Precalc: parametric & polar modes. Drag to pan the window.
+        AP Calculus: Y1′ (numeric derivative), tangent, zeros, max/min, intersect, definite integral
+        shade, Shade Y1≥Y2. Physics / Precalc: parametric & polar · logistic / sinc / projectile
+        presets. Drag to pan the window.
       </p>
     </div>
   );
