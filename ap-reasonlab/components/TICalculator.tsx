@@ -281,21 +281,28 @@ export default function TICalculator() {
     return `/hints?tool=grapher&y1=${encodeURIComponent(y1)}`;
   }, [ans, expr]);
 
-  function askAiAboutCalc() {
+  function askAiAboutCalc(mode: "explain" | "check" | "units" = "explain") {
     const expression = (expr.trim() || display).replace(/\bans\b/gi, String(ans));
     const ansText = formatCalc(ans, sci);
     const looksFormula = /\bx\b/i.test(expression) || /[a-z]/i.test(expression);
+    const focus =
+      mode === "check"
+        ? "Check my calculator setup for mistakes (order of operations, degrees/radians, stored vars). Do not just restate the number — coach the process."
+        : mode === "units"
+          ? "Discuss units / dimensional sense for this calculation and what a reasonable magnitude would look like. No graded final-answer dump."
+          : looksFormula
+            ? "Derive / explain the related formula and how to evaluate or simplify it."
+            : "Explain the result and suggest a careful next step.";
     openToolboxWithPrefill({
       category: "ap",
-      apTask: looksFormula ? "formula-derive" : "advice",
+      apTask: mode === "check" ? "advice" : looksFormula || mode === "units" ? "formula-derive" : "advice",
       prompt: [
-        "Help with this calculator expression.",
+        "Help with this calculator expression (special feature from KE ClassWiz).",
+        `Focus: ${mode}`,
         `Expression: ${expression}`,
         `ANS (last answer): ${ansText}`,
         `Display: ${display}`,
-        looksFormula
-          ? "Derive / explain the related formula and how to evaluate or simplify it."
-          : "Explain the result and suggest a careful next step.",
+        focus,
       ].join("\n"),
     });
   }
@@ -698,10 +705,26 @@ export default function TICalculator() {
                 <button
                   type="button"
                   className="ti-preset"
-                  title="Open AI Toolbox with this expression"
-                  onClick={askAiAboutCalc}
+                  title="Ask AI to explain / derive"
+                  onClick={() => askAiAboutCalc("explain")}
                 >
                   Ask AI
+                </button>
+                <button
+                  type="button"
+                  className="ti-preset"
+                  title="Ask AI to check your setup"
+                  onClick={() => askAiAboutCalc("check")}
+                >
+                  AI check
+                </button>
+                <button
+                  type="button"
+                  className="ti-preset"
+                  title="Ask AI about units / magnitude"
+                  onClick={() => askAiAboutCalc("units")}
+                >
+                  AI units
                 </button>
               </div>
 

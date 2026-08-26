@@ -14,6 +14,7 @@ function apTaskForGuide(guideId: string) {
     return "generate-questions";
   }
   if (guideId === "guide-ai-explain") return "concept";
+  if (guideId === "guide-ai-concept-extension") return "concept-extension";
   return "advice";
 }
 

@@ -60,6 +60,8 @@ export function toolboxHref(params: {
   codingTask?: "debug" | "write" | "explain" | "csa-frq";
   subject?: string;
   tool?: "calculator" | "grapher";
+  /** Encoded special-feature prompt (from encodeSpecialPrompt) */
+  promptEncoded?: string;
 }): string {
   const q = new URLSearchParams();
   if (params.tool) {
@@ -73,6 +75,7 @@ export function toolboxHref(params: {
   if (params.englishTask) q.set("englishTask", params.englishTask);
   if (params.codingTask) q.set("codingTask", params.codingTask);
   if (params.subject) q.set("subject", params.subject);
+  if (params.promptEncoded) q.set("sf", params.promptEncoded);
   const query = q.toString();
   return query ? `/hints?${query}` : "/hints";
 }

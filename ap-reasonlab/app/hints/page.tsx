@@ -16,6 +16,7 @@ import {
   type ToolboxExtraTool,
 } from "@/lib/ai-toolbox-prefs";
 import { legacyToolToApTask, migrateEnglishTask } from "@/lib/ai-toolbox-url";
+import { decodeSpecialPrompt } from "@/lib/ai-special-features";
 
 type ExtraTool = ToolboxExtraTool;
 
@@ -84,6 +85,7 @@ function ToolboxContent() {
   const apTask = resolveApTask(searchParams, tool);
   const englishTask = resolveEnglishTask(searchParams);
   const codingTask = resolveCodingTask(searchParams);
+  const prefillPrompt = decodeSpecialPrompt(searchParams.get("sf"));
 
   useEffect(() => {
     if (searchParams.get("section") === "ai-for-ap") {
@@ -185,6 +187,7 @@ function ToolboxContent() {
           defaultApTask={apTask}
           defaultEnglishTask={englishTask}
           defaultCodingTask={codingTask}
+          defaultPrefillPrompt={prefillPrompt || undefined}
         />
       ) : null}
       {extra === "calculator" ? <TICalculator /> : null}

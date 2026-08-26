@@ -657,18 +657,25 @@ export default function TIGrapher() {
   }
 
   /** Sample Y1 across the window, then locally refine extrema. */
-  function askAiAboutY1() {
+  function askAiAboutY1(focus: "features" | "zeros" | "integral" = "features") {
     const expr = y1.trim();
     if (!expr) return;
+    const focusLine =
+      focus === "zeros"
+        ? "Focus on zeros / roots: how to find and verify them from the formula and graph."
+        : focus === "integral"
+          ? "Focus on definite-integral reasoning over the visible window (setup + meaning). Do not dump a graded numeric answer unless I already computed one to check."
+          : "Derive / explain the formula, key features (zeros, extrema, asymptotes), and how to reason about the graph.";
     openToolboxWithPrefill({
       category: "ap",
       apTask: "formula-derive",
       prompt: [
-        "Analyze this grapher Y1 function.",
+        "Analyze this grapher Y1 function (special feature from KE Grapher).",
+        `Focus: ${focus}`,
         `Y1 = ${expr}`,
         y2.trim() ? `Y2 = ${y2.trim()}` : "",
         `Window: x∈[${range.xmin}, ${range.xmax}], y∈[${range.ymin}, ${range.ymax}]`,
-        "Derive / explain the formula, key features (zeros, extrema, asymptotes), and how to reason about the graph.",
+        focusLine,
       ]
         .filter(Boolean)
         .join("\n"),
@@ -681,7 +688,7 @@ export default function TIGrapher() {
       category: "ap",
       apTask: "formula-derive",
       prompt: [
-        "Interpret this grapher analysis result.",
+        "Interpret this grapher analysis result (special feature).",
         `Y1 = ${y1.trim() || "(empty)"}`,
         y2.trim() ? `Y2 = ${y2.trim()}` : "",
         `Analysis: ${analysis}`,
@@ -820,10 +827,28 @@ export default function TIGrapher() {
                     type="button"
                     className="ti-preset"
                     disabled={!y1.trim()}
-                    title="Open AI Toolbox about Y1"
-                    onClick={askAiAboutY1}
+                    title="Ask AI about Y1 features"
+                    onClick={() => askAiAboutY1("features")}
                   >
-                    Ask AI about Y1
+                    Ask AI · Y1
+                  </button>
+                  <button
+                    type="button"
+                    className="ti-preset"
+                    disabled={!y1.trim()}
+                    title="Ask AI about zeros"
+                    onClick={() => askAiAboutY1("zeros")}
+                  >
+                    AI zeros
+                  </button>
+                  <button
+                    type="button"
+                    className="ti-preset"
+                    disabled={!y1.trim()}
+                    title="Ask AI about integral setup"
+                    onClick={() => askAiAboutY1("integral")}
+                  >
+                    AI ∫
                   </button>
                 </div>
               </>
