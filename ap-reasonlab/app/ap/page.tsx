@@ -3,9 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import FrqPackCard from "@/components/FrqPackCard";
+import OfficialResourceLinks from "@/components/OfficialResourceLinks";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import { AP_CATALOG, type SubjectDefinition, type SubjectGroup } from "@/data/ap-catalog";
 import { AP_SUBJECTS } from "@/data/ap-expanded";
+import { AP_PROGRAM_OFFICIAL } from "@/data/official-resources";
 import type { ManagedContent } from "@/lib/managed-types";
 
 const groups: Array<"All" | SubjectGroup> = ["All", "STEM", "Social Science", "Humanities"];
@@ -124,6 +126,8 @@ export default function ApHubPage() {
           </p>
         </div>
       </section>
+
+      <OfficialResourceLinks block={AP_PROGRAM_OFFICIAL} />
 
       {catalog.some((s) => s.slug === "statistics") ? (
         <section className="space-y-2">

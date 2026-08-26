@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import OfficialResourceLinks from "@/components/OfficialResourceLinks";
 import HtmlPlayground from "@/components/HtmlPlayground";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
+import { getCodeLangOfficial } from "@/data/official-resources";
 import { standardSnippets } from "@/data/code-snippets";
 
 export default function CodeWebPage() {
+  const official = getCodeLangOfficial("web");
   const snippets = standardSnippets.filter((s) => s.language === "html");
   return (
     <div className="space-y-6">
@@ -22,6 +25,8 @@ export default function CodeWebPage() {
           , or upload files with a change code.
         </p>
       </div>
+
+      {official ? <OfficialResourceLinks block={official} tone="slate" /> : null}
 
       <HtmlPlayground
         examples={snippets.map((item) => ({

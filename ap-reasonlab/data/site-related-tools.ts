@@ -135,6 +135,7 @@ export function relatedPackForPath(pathname: string): SiteRelatedPack {
   const p = pathname.replace(/\/$/, "") || "/";
 
   if (p === "/") return SITE_RELATED_PACKS.home;
+  if (p.startsWith("/explore")) return SITE_RELATED_PACKS.home;
 
   if (p.startsWith("/english/toefl/reading")) return SITE_RELATED_PACKS["english-toefl-reading"];
   if (p.startsWith("/english/toefl/listening")) return SITE_RELATED_PACKS["english-toefl-listening"];

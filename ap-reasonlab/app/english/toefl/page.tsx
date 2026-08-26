@@ -1,5 +1,6 @@
 import EnglishExamHub from "@/components/EnglishExamHub";
 import { getExamConfig } from "@/data/english-exam-sections";
+import { TOEFL_HUB_OFFICIAL } from "@/data/official-resources";
 
 export default function ToeflPage() {
   return (
@@ -7,17 +8,8 @@ export default function ToeflPage() {
       exam={getExamConfig("toefl")}
       title="TOEFL iBT"
       description="Daily English practice with TOEFL-shaped materials — not a question bank. Reading = articles; Writing = prompts + 范文; Listening = upload + machine replay; Speaking = dialogue shadowing."
-      officialNote="Use ETS for current format and official preparation. Knowledge Explorer is not affiliated with ETS. Our lanes focus on materials and follow-along practice in everyday study time."
-      officialLinks={[
-        {
-          href: "https://www.ets.org/toefl/test-takers/ibt/about/content.html",
-          label: "ETS test content",
-        },
-        {
-          href: "https://www.ets.org/toefl/test-takers/ibt/prepare.html",
-          label: "ETS preparation",
-        },
-      ]}
+      officialNote={TOEFL_HUB_OFFICIAL.note}
+      officialLinks={TOEFL_HUB_OFFICIAL.links}
     />
   );
 }

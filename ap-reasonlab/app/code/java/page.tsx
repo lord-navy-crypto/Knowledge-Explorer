@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import OfficialResourceLinks from "@/components/OfficialResourceLinks";
+import { getCodeLangOfficial } from "@/data/official-resources";
 import JavaPlayground from "@/components/JavaPlayground";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import { javaExamples } from "@/data/java-examples";
 
 export default function CodeJavaPage() {
+  const official = getCodeLangOfficial("java");
   return (
     <div className="space-y-6">
       <Link href="/code" className="text-sm text-brand-600 hover:underline">
@@ -24,6 +27,8 @@ export default function CodeJavaPage() {
           .
         </p>
       </div>
+
+      {official ? <OfficialResourceLinks block={official} tone="slate" /> : null}
 
       <JavaPlayground examples={javaExamples} />
 

@@ -1,10 +1,12 @@
 import Link from "next/link";
 import EnglishPageHeader from "@/components/EnglishPageHeader";
 import EnglishResourcePanel from "@/components/EnglishResourcePanel";
+import OfficialResourceLinks from "@/components/OfficialResourceLinks";
 import ToeflListenReplay from "@/components/ToeflListenReplay";
 import ToeflSpeakShadow from "@/components/ToeflSpeakShadow";
 import ToeflWritingTimers from "@/components/ToeflWritingTimers";
 import type { EnglishExamConfig, EnglishExamSection } from "@/data/english-exam-sections";
+import { getExamSectionOfficial } from "@/data/official-resources";
 
 type LaneCopy = {
   eyebrow: string;
@@ -76,6 +78,7 @@ export default function EnglishExamSectionView({
 }) {
   const isToefl = exam.id === "toefl";
   const lane = isToefl ? toeflLaneCopy(section.id) : null;
+  const official = getExamSectionOfficial(exam.id, section.id);
 
   return (
     <div className="space-y-8">
@@ -134,6 +137,10 @@ export default function EnglishExamSectionView({
           </p>
         </section>
       )}
+
+      {official ? (
+        <OfficialResourceLinks block={official} tone={isToefl ? "emerald" : "rose"} />
+      ) : null}
 
       {/* Reading / Writing / Listening: upload slot first. Speaking: shadow tool first. */}
       {isToefl && section.id === "speaking" ? <ToeflSpeakShadow /> : null}

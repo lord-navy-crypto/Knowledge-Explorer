@@ -287,7 +287,10 @@ export function searchSiteEngine(
   }
 
   const staticPages = [
-    { id: "home", title: "Home", subject: "Site", detail: "Knowledge Explorer home", href: "/" },
+    { id: "home", title: "Home · Knowledge Explorer", subject: "Site", detail: "Knowledge Explorer · Knowledge Explorer portal", href: "/" },
+    { id: "explore-ap-english", title: "AP & English", subject: "Site", detail: "Knowledge Explorer box — AP subjects and English", href: "/explore/ap-english" },
+    { id: "explore-tools-code", title: "Convenient Tools & Code", subject: "Site", detail: "Knowledge Explorer box — tools and coding", href: "/explore/tools-code" },
+    { id: "explore-coming-soon", title: "正在准备", subject: "Site", detail: "Reserved Knowledge Explorer box", href: "/explore/coming-soon" },
     { id: "search", title: "Search", subject: "Site", detail: "Full-site search", href: "/search" },
     { id: "about", title: "About", subject: "Site", detail: "About Knowledge Explorer", href: "/about" },
     { id: "partners", title: "Partners", subject: "Site", detail: "Knowledge Explorer roster", href: "/partners" },
@@ -306,7 +309,7 @@ export function searchSiteEngine(
     { id: "forum-box", title: "My box", subject: "Community", detail: "Private notes and pictures in Forum", href: "/forum?tab=box" },
     { id: "learning-box", title: "My box (Private Learning Box)", subject: "Community", detail: "Private notes and pictures", href: "/forum?tab=box" },
     { id: "code", title: "Code Resource", subject: "Code", detail: "Python, Java, web folders", href: "/code" },
-    { id: "tools", title: "Tools", subject: "Tools", detail: "One toolbox hub — AI, files, images, utilities", href: "/tools" },
+    { id: "tools", title: "Convenient Tools", subject: "Tools", detail: "Everyday study utilities hub", href: "/tools" },
     { id: "word-pdf", title: "Word → PDF", subject: "Tools", detail: "Convert docx and save as PDF", href: "/tools/word-pdf" },
     { id: "image-compress", title: "Image compress", subject: "Tools", detail: "Compress and convert images", href: "/tools/image-compress" },
     { id: "image-crop", title: "Image crop & annotate", subject: "Tools", detail: "Crop and mark images", href: "/tools/image-crop" },

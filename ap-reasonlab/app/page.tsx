@@ -7,72 +7,62 @@ import {
 } from "@/lib/ai-local-recommendation";
 import HomeMembersRoster from "@/components/HomeMembersRoster";
 import { brand } from "@/data/brand";
-
-const boxes = [
-  {
-    title: "AP",
-    description: "Concepts, formulas, practice — folders first. + to add with a change code.",
-    href: "/ap",
-  },
-  {
-    title: "English Learning",
-    description: "Exams (practice questions) · Skills (vocab/grammar/writing) · English AI Tutor.",
-    href: "/english",
-  },
-  {
-    title: "AI Toolbox",
-    description:
-      "本地 AI 优先（作者亲测更聪明）— hints、concepts、Site Guide、calculator、grapher、English AI。",
-    href: "/hints",
-  },
-  {
-    title: "AI Toolbox · AI for AP",
-    description: "Local AI, hints, generate practice, and safe AI-for-AP workflows in one place.",
-    href: "/hints?section=ai-for-ap",
-  },
-  {
-    title: "Code Resource",
-    description: "Python, Java, and web folders. + to upload files.",
-    href: "/code",
-  },
-  {
-    title: "Forum",
-    description: "Discussions, shared materials library, and private My box.",
-    href: "/forum",
-  },
-  {
-    title: "Partners",
-    description: "Knowledge Explorer members with GitHub. Add anyone by name + GitHub username.",
-    href: "/partners",
-  },
-];
+import { HOME_GATEWAYS } from "@/data/home-gateways";
 
 export default function HomePage() {
   return (
     <div className="space-y-12">
-      <section className="hero-gradient relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 min-h-[min(72vh,36rem)] px-6 py-14 text-white md:px-16 md:py-20">
+      <section className="hero-gradient relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 min-h-[min(58vh,28rem)] px-6 py-14 text-white md:px-16 md:py-20">
         <div className="mx-auto max-w-6xl">
-          <p className="font-display text-5xl font-semibold tracking-tight text-[#f7f4ee] md:text-6xl">
+          <h1 className="font-display text-5xl font-semibold tracking-tight text-[#f7f4ee] md:text-6xl">
             {brand.name}
-          </p>
-          <h1 className="mt-5 max-w-xl font-display text-2xl font-medium leading-snug text-[#f7f4ee]/90 md:text-3xl">
-            {brand.tagline}
           </h1>
-          <p className="mt-4 max-w-lg text-base leading-relaxed text-[#f7f4ee]/75">{brand.description}</p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href="/ap"
-              className="rounded-lg bg-[#f7f4ee] px-5 py-2.5 text-sm font-semibold text-[#152a45] shadow transition hover:bg-white"
-            >
-              Open AP box
-            </Link>
-            <Link
-              href="/hints"
-              className="rounded-lg border border-[#f7f4ee]/35 px-5 py-2.5 text-sm font-semibold text-[#f7f4ee] transition hover:bg-white/10"
-            >
-              AI Toolbox
-            </Link>
-          </div>
+          <p className="mt-4 max-w-xl font-display text-xl font-medium leading-snug text-[#f7f4ee]/90 md:text-2xl">
+            Four doors into study — pick a box, then open what you need.
+          </p>
+          <p className="mt-3 max-w-lg text-base leading-relaxed text-[#f7f4ee]/75">
+            AI Toolbox stays in the top bar. AP, English, tools, code, and forum live inside the
+            boxes below.
+          </p>
+        </div>
+      </section>
+
+      <section className="space-y-5">
+        <div>
+          <h2 className="section-title">Main boxes</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Click a box to enter that area. AI Toolbox is always available from the top bar.
+          </p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {HOME_GATEWAYS.map((box, index) => {
+            const mark = String(index + 1).padStart(2, "0");
+            return (
+              <Link
+                key={box.id}
+                href={box.href}
+                className="group relative overflow-hidden rounded-2xl border border-[var(--ke-border)] bg-[var(--ke-surface)] px-5 py-6 shadow-sm transition hover:border-brand-300 hover:shadow-md"
+              >
+                <div
+                  className="pointer-events-none absolute inset-0 bg-gradient-to-br from-brand-50/80 via-transparent to-sky-50/40 opacity-0 transition group-hover:opacity-100"
+                  aria-hidden
+                />
+                <div className="relative">
+                  <p className="font-display text-xs font-semibold tracking-[0.18em] text-brand-600">
+                    BOX {mark}
+                    {box.comingSoon ? " · SOON" : ""}
+                  </p>
+                  <h3 className="mt-2 font-display text-2xl font-semibold text-[var(--ke-ink)] group-hover:text-brand-900">
+                    {box.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">{box.description}</p>
+                  <p className="mt-4 text-sm font-semibold text-brand-700">
+                    {box.comingSoon ? "View placeholder →" : "Enter →"}
+                  </p>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </section>
 
@@ -106,41 +96,16 @@ export default function HomePage() {
 
       <EthicsBanner />
 
-      <section className="space-y-4">
-        <h2 className="section-title">Main boxes</h2>
-        <div className="grid gap-1 sm:grid-cols-2">
-          {boxes.map((b) => (
-            <Link key={b.href} href={b.href} className="directory-link relative">
-              <span
-                className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded border border-[var(--ke-border)] bg-[var(--ke-surface)] font-display text-xs font-semibold text-[var(--ke-navy)]"
-                aria-hidden
-              >
-                {b.title.slice(0, 2).toUpperCase()}
-              </span>
-              <div>
-                <h3 className="font-display text-lg font-semibold text-[var(--ke-ink)] group-hover:text-[var(--ke-navy)]">
-                  {b.title}
-                </h3>
-                <p className="mt-1 text-sm text-slate-600">{b.description}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-        <p className="text-sm text-slate-500">
-          Coming later: A-Level box and IB box — same folder pattern, separate from AP.
-        </p>
-      </section>
-
       <section className="card space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="section-title">Knowledge Explorer members</h2>
+          <h2 className="section-title">{brand.name} members</h2>
           <Link href="/partners" className="text-sm font-medium text-brand-600 hover:underline">
             Full roster & join →
           </Link>
         </div>
         <p className="text-sm text-slate-600">
-          People on Knowledge Explorer with GitHub. Add anyone on Partners — free name + GitHub,
-          not a fixed single choice.
+          People on {brand.name} with GitHub. Add anyone on Partners — free name + GitHub, not a
+          fixed single choice.
         </p>
         <HomeMembersRoster />
       </section>

@@ -1,7 +1,13 @@
 /** Shared teaching core + cloud JSON systems + Local markdown systems (same rules, different output shape). */
 
 export const SITE_GUIDE_FACTS = `
-Site name: Knowledge Explorer — academic box & platform (tutor, not solver).
+Site name: Knowledge Explorer — academic platform (tutor, not solver).
+Home: four gateway boxes on / ; AI Toolbox stays in the top bar.
+Main boxes:
+- Box 1 AP & English (/explore/ap-english) → /ap and /english
+- Box 2 Convenient Tools & Code (/explore/tools-code) → /tools and /code
+- Box 3 正在准备 (/explore/coming-soon) — reserved for future content
+- Box 4 Forum (/forum) — discussions, shared library, My box
 Purpose: Learn by reasoning with concrete formulas, data, and half-process guidance.
 Main areas:
 - AP (/ap): subject-first workspace → concepts, formulas, practice, AI Toolbox. Documents/files live in the page storage panel.
@@ -10,10 +16,10 @@ Main areas:
 - Forum (/forum): community hub with three tabs — Discussions (public threads; choose a display name only — no change code; can attach images/files/documents), Shared library (/forum?tab=shared — public uploads, no change code to add; delete needs a change code), My box (/forum?tab=box — private to this browser only; IndexedDB notes/pictures/Random Draw). Academic Platform was removed; /academic redirects to Forum. Legacy /academic/materials and /learning-box also redirect into Forum.
 - Partners (/partners): Knowledge Explorer roster with GitHub links; add any person by display name + GitHub username (content change code / edit circle).
 - Manage (/manage): no-code content manager (editors; needs change code or content-login session).
-- Tools (/tools): One toolbox hub with suites — AI Toolbox; Study desk; English; Math & science; Write & draft; Draw; File lab; Images; Classroom light (incl. Short codes · presets with link + embed window); Quick utilities; External connections. Almost all built-ins process locally in the browser. Every content page also shows a bottom “Toolbox for this page” strip (route-matched built-in + external links; Short codes · presets always included).
+- Convenient Tools (/tools): One toolbox hub with suites — AI Toolbox; Study desk; English; Math & science; Write & draft; Draw; File lab; Images; Classroom light (incl. Short codes · presets with link + embed window); Quick utilities; External connections. Almost all built-ins process locally in the browser. Every content page also shows a bottom “Toolbox for this page” strip (route-matched built-in + external links; Short codes · presets always included).
 - Search (/search): find concepts, formulas, practice across subjects.
 - About (/about): brand, ethics, how change codes work (codes themselves are not published on the page — ask an admin).
-- AI Toolbox (/hints): One unified AI panel — prefer Local AI when WebGPU is available; also Website API or Your own API. Then pick AP / English / Coding tasks. Always search Knowledge Explorer before answering. Extra tools: Calculator (computer) and Grapher (function plotter).
+- AI Toolbox (/hints): Always in the top nav. One unified AI panel — prefer Local AI when WebGPU is available; also Website API or Your own API. Then pick AP / English / Coding tasks. Always search Knowledge Explorer before answering. Extra tools: Calculator (computer) and Grapher (function plotter).
 Editing: Browse freely. Click the edit circle (bottom-right) on any page or open /login, enter the content change code once, then edit without re-typing. Content code also unlocks AI Developer and History & Undo from the edit circle / top edit bar. Master code still works for the same edits. Manage → gold Add content opens Macintosh HD (MachineTools HD) file desk.
 Style window: floating Style control opens a window frame to switch visual spectrum looks — AP Classic, Cyberpunk Red, Luxury Gold & Silver, Pastel Pink & Purple, 红霞 Crimson Glow, 翠绿 Emerald Green, 紫晶 Deep Violet, 橙晖 Amber Orange, or 银霜 Pure Silver (saved in the browser).
 Publishing: GITHUB_TOKEN on Vercel lets Manage/+ saves publish to GitHub. CONTENT_GITHUB_TOKEN is for GitHub Models AI only — not for Save.
