@@ -106,7 +106,7 @@ ${input}
 Return the required English Tutor JSON.`;
     try {
       const siteSearch = body.siteSearch !== false;
-      const siteContext = await buildServerAiSiteContext(`${mode}\n${target}\n${input}`, siteSearch);
+      const siteContext = await buildServerAiSiteContext(`${mode}\n${target}\n${input}`, siteSearch, "language");
       const userWithSite = appendAiSiteContext(user, siteContext);
       const result = await runChatJson({
         system: englishTutorSystem(mode),

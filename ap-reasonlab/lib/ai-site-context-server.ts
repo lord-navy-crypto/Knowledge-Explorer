@@ -5,10 +5,12 @@ import {
   AI_SITE_SEARCH_LIMIT,
   formatAiSiteSearchContext,
   searchKnowledgeExplorerContent,
+  type AiSiteSearchPrefer,
 } from "@/lib/ai-site-search";
 import { loadManagedContent, normalizeManagedContent, type ManagedContent } from "@/lib/managed-store";
 
 export { appendAiSiteContext };
+export type { AiSiteSearchPrefer };
 
 /** Drop base64 payloads — search only needs metadata/text. */
 function slimManagedForSearch(content: ManagedContent): ManagedContent {
@@ -48,14 +50,25 @@ export type ServerAiSiteSearchResult = {
   hitCount: number;
   searchQuery: string;
   note: string;
+  prefer?: AiSiteSearchPrefer;
 };
+
+function parsePrefer(raw: unknown): AiSiteSearchPrefer | undefined {
+  const value = String(raw || "").trim();
+  if (value === "formulas" || value === "language" || value === "code" || value === "nav") {
+    return value;
+  }
+  return undefined;
+}
 
 /** Shared cached search used by cloud AI routes and `/api/ai/site-search`. */
 export async function runServerAiSiteSearch(
   query: string,
-  limit = AI_SITE_SEARCH_LIMIT
+  limit = AI_SITE_SEARCH_LIMIT,
+  prefer?: AiSiteSearchPrefer | null
 ): Promise<ServerAiSiteSearchResult> {
   const searchQuery = extractAiSearchQuery(query);
+  const preferMode = prefer ?? undefined;
   if (searchQuery.length < 2) {
     return {
       hits: [],
@@ -63,16 +76,18 @@ export async function runServerAiSiteSearch(
       hitCount: 0,
       searchQuery,
       note: "Query too short.",
+      prefer: preferMode,
     };
   }
   const managed = await loadSlimManagedCached();
   const capped = Math.max(1, Math.min(limit, AI_SITE_SEARCH_LIMIT));
-  const hits = searchKnowledgeExplorerContent(searchQuery, managed, capped);
+  const hits = searchKnowledgeExplorerContent(searchQuery, managed, capped, preferMode);
   return {
     hits,
     context: formatAiSiteSearchContext(hits),
     hitCount: hits.length,
     searchQuery,
+    prefer: preferMode,
     note:
       hits.length > 0
         ? `Found ${hits.length} Knowledge Explorer match(es) — AI will use these site materials.`
@@ -83,10 +98,14 @@ export async function runServerAiSiteSearch(
 /** Server-side Knowledge Explorer search for AI prompts. No LLM API cost.
  * Always searches when a usable query exists — site materials stay primary.
  */
-export async function buildServerAiSiteContext(query: string, _enabled = true): Promise<string> {
+export async function buildServerAiSiteContext(
+  query: string,
+  _enabled = true,
+  prefer?: AiSiteSearchPrefer | null
+): Promise<string> {
   void _enabled;
   try {
-    return (await runServerAiSiteSearch(query, AI_SITE_SEARCH_LIMIT)).context;
+    return (await runServerAiSiteSearch(query, AI_SITE_SEARCH_LIMIT, prefer)).context;
   } catch {
     return "";
   }
@@ -96,3 +115,5 @@ export async function buildServerAiSiteContext(query: string, _enabled = true): 
 export function invalidateAiSiteSearchCache() {
   searchCache = null;
 }
+
+export { parsePrefer as parseAiSiteSearchPrefer };

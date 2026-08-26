@@ -62,6 +62,7 @@ export default function LocalAIControls({ embedded = false }: Props) {
   const [showDownloads, setShowDownloads] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [showSuitabilityGuide, setShowSuitabilityGuide] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const selected = localAI.models.find((model) => model.id === localAI.selectedModelId);
   const loaded = localAI.models.find((model) => model.id === localAI.loadedModelId);
   const target = localAI.models.find(
@@ -208,397 +209,472 @@ export default function LocalAIControls({ embedded = false }: Props) {
         />
       )}
 
-      {localAI.mode === "local" && (
-        <>
-          {modeNeedsModel && (
-            <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-              <strong>Local is selected, but no model is loaded yet.</strong>
-              <p className="mt-1">
-                Press <strong>Enable local AI</strong> to download/load a model in this browser, or
-                switch to Website API / Your own API.
-              </p>
-              <p className="mt-2 text-xs text-amber-900/90">
-                Local keeps only <strong>thinking mode off</strong>. There is{" "}
-                <strong>no generation time limit</strong> — answers stream live and may be long.
-                Sampling is tuned by model size for stronger teaching while staying stable. Prefer
-                Starter/Light on weak GPUs; Heavy needs a strong GPU. If an answer stops mid-sentence,
-                Local hit the ~4096-token context wall — use <strong>New chat</strong> or a shorter
-                paste so more room remains for the reply.
-              </p>
-            </div>
-          )}
-
-          <div className="rounded-xl border border-slate-200 bg-white p-4">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <h2 className="font-semibold text-slate-900">Local model series</h2>
-                <p className="mt-1 max-w-2xl text-sm text-slate-600">
-                  Curated study picks (Qwen3.5 / Qwen3, Math, Coder, English). Enable stays on this
-                  device. Turn on the full library for every official WebLLM q4f16 model.
-                </p>
-              </div>
-              <span
-                className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                  localAI.ready
-                    ? "bg-emerald-100 text-emerald-800"
-                    : localAI.webGPUSupported === false
-                      ? "bg-red-100 text-red-700"
-                      : localAI.status === "loading"
-                        ? "bg-amber-100 text-amber-800"
-                        : "bg-slate-100 text-slate-600"
-                }`}
-              >
-                {localAI.ready
-                  ? `Enabled · ${loaded?.parameterSize || "model"}`
+      <div className="rounded-xl border border-slate-200 bg-white p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Quick start</p>
+            <p className="mt-1 text-sm text-slate-600">
+              Enable Local AI in this browser. If Local is unavailable or not ready,{" "}
+              <strong>Website API</strong> is the automatic fallback for answers.
+            </p>
+          </div>
+          <span
+            className={`rounded-full px-3 py-1 text-xs font-semibold ${
+              localAI.ready
+                ? "bg-emerald-100 text-emerald-800"
+                : localAI.webGPUSupported === false
+                  ? "bg-red-100 text-red-700"
                   : localAI.status === "loading"
-                    ? "Enabling…"
-                    : localAI.webGPUSupported === false
-                      ? "WebGPU unavailable"
-                      : "Not enabled"}
-              </span>
+                    ? "bg-amber-100 text-amber-800"
+                    : "bg-slate-100 text-slate-600"
+            }`}
+          >
+            {localAI.ready
+              ? `Enabled · ${loaded?.parameterSize || "model"}`
+              : localAI.status === "loading"
+                ? "Enabling…"
+                : localAI.webGPUSupported === false
+                  ? "WebGPU unavailable"
+                  : "Not enabled"}
+          </span>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          {!localAI.ready ? (
+            <button
+              type="button"
+              className="btn-primary"
+              disabled={busy || !localAI.selectedModelId || localAI.webGPUSupported === false}
+              onClick={() => {
+                if (localAI.mode !== "local") localAI.setMode("local");
+                openLoadConfirmation();
+              }}
+            >
+              {localAI.status === "loading"
+                ? "Enabling…"
+                : selected?.cached
+                  ? "Enable Local"
+                  : "Enable Local / download"}
+            </button>
+          ) : (
+            <button type="button" className="btn-secondary" onClick={() => void localAI.stop()}>
+              Stop local AI
+            </button>
+          )}
+          {localAI.ready && loaded ? (
+            <p className="text-xs text-slate-500">
+              Active: {loaded.label} · {loaded.series}
+            </p>
+          ) : null}
+        </div>
+        {localAI.status === "loading" && (
+          <div className="mt-3" aria-live="polite">
+            <div className="mb-1 flex justify-between text-xs text-slate-600">
+              <span>{localAI.statusText}</span>
+              <span>{Math.round(localAI.progress * 100)}%</span>
             </div>
+            <progress className="h-2 w-full accent-slate-800" max={1} value={localAI.progress} />
+          </div>
+        )}
+        {(localAI.error || loadError) && (
+          <p className="mt-2 whitespace-pre-wrap text-sm text-red-700" role="alert">
+            {loadError || localAI.error}
+          </p>
+        )}
+      </div>
 
-            <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-700">
-              <input
-                type="checkbox"
-                className="mt-1"
-                checked={localAI.showFullLibrary}
-                onChange={(event) => localAI.setShowFullLibrary(event.target.checked)}
-              />
-              <span>
-                <span className="font-semibold text-slate-900">
-                  Show full WebLLM model library
-                </span>
-                <span className="mt-0.5 block text-xs text-slate-500">
-                  Off = curated study series ({featuredCount} models) with flash points. On = also
-                  list official WebLLM q4f16 instruct models
-                  {localAI.showFullLibrary && extendedCount
-                    ? ` (+${extendedCount} extra)`
-                    : " (large list)"}
-                  — DeepSeek-R1 Distill stays excluded (thinking lag). Heavier models need more GPU
-                  memory; prefer Light/Medium on laptops.
-                </span>
-              </span>
-            </label>
+      <div className="rounded-xl border border-slate-200 bg-white">
+        <button
+          type="button"
+          className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+          aria-expanded={showAdvanced}
+          onClick={() => setShowAdvanced((open) => !open)}
+        >
+          <span>
+            <span className="text-sm font-semibold text-slate-900">Advanced</span>
+            <span className="mt-0.5 block text-xs text-slate-500">
+              Model library, path details, downloads, and suitability guide
+            </span>
+          </span>
+          <span className="text-xs font-medium text-brand-700">
+            {showAdvanced ? "Hide" : "Show"}
+          </span>
+        </button>
 
-            <div className="mt-4 grid gap-3 md:grid-cols-[1fr_auto]">
-              <div>
-                <label className="mb-1 block text-sm font-medium">Choose local model</label>
-                <select
-                  className="input"
-                  value={localAI.selectedModelId}
-                  onChange={(event) => requestModel(event.target.value)}
-                  disabled={busy}
-                >
-                  {MODEL_GROUPS.map((group) => {
-                    const featured = localAI.models.filter(
-                      (model) => model.group === group.value && !model.extended
-                    );
-                    const extended = localAI.models.filter(
-                      (model) => model.group === group.value && model.extended
-                    );
-                    if (!featured.length && !extended.length) return null;
-                    return (
-                      <optgroup key={group.value} label={group.label}>
-                        {featured.map((model) => (
-                          <option key={model.id} value={model.id}>
-                            {model.series} · {model.label} · {model.parameterSize} · ~
-                            {model.vramMB} MB
-                            {model.tags.length
-                              ? ` · ${formatLocalModelTags(model.tags)}`
-                              : ""}
-                            {model.recommended ? " · recommended" : ""}
-                            {model.cached ? " · downloaded" : ""}
-                            {model.id === localAI.loadedModelId ? " · active" : ""}
-                          </option>
-                        ))}
-                        {extended.map((model) => (
-                          <option key={model.id} value={model.id}>
-                            Full library · {model.series} · {model.label} · {model.parameterSize} · ~
-                            {model.vramMB} MB
-                            {model.cached ? " · downloaded" : ""}
-                            {model.id === localAI.loadedModelId ? " · active" : ""}
-                          </option>
-                        ))}
-                      </optgroup>
-                    );
-                  })}
-                </select>
-              </div>
-              <div className="flex flex-wrap items-end gap-2">
-                {!localAI.ready ? (
-                  <button
-                    type="button"
-                    className="btn-primary"
-                    disabled={busy || !localAI.selectedModelId || localAI.webGPUSupported === false}
-                    onClick={() => openLoadConfirmation()}
-                  >
-                    {localAI.status === "loading"
-                      ? "Enabling…"
-                      : selected?.cached
-                        ? "Enable local AI"
-                        : "Enable / download"}
-                  </button>
-                ) : (
-                  <button type="button" className="btn-secondary" onClick={() => void localAI.stop()}>
-                    Stop local AI
-                  </button>
-                )}
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  disabled={busy || localAI.cacheScanning}
-                  onClick={() => void openDownloads()}
-                >
-                  {localAI.cacheScanning
-                    ? "Checking…"
-                    : showDownloads
-                      ? "Hide downloads"
-                      : "Manage downloads"}
-                </button>
-              </div>
-            </div>
-
-            <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50">
-              <button
-                type="button"
-                className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left text-sm font-semibold text-slate-900"
-                aria-expanded={showSuitabilityGuide}
-                onClick={() => setShowSuitabilityGuide((open) => !open)}
-              >
-                <span>What each Local AI is suitable for</span>
-                <span className="text-xs font-medium text-brand-700">
-                  {showSuitabilityGuide ? "Hide" : "Show guide"}
-                </span>
-              </button>
-              {showSuitabilityGuide ? (
-                <div className="space-y-4 border-t border-slate-200 px-3 py-3 text-sm">
-                  <p className="text-xs leading-relaxed text-slate-600">
-                    Curated study picks only (not the full WebLLM library). Pick by task, then Enable
-                    above. Heavier models need more GPU memory.
-                  </p>
-
-                  <div className="space-y-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                      Quick picks by task
-                    </p>
-                    {LOCAL_MODEL_USE_CASES.map((useCase) => {
-                      const picks = modelsForUseCase(localAI.models, useCase, 3);
-                      if (!picks.length) return null;
-                      return (
-                        <div key={useCase.id} className="rounded-lg bg-white px-3 py-2.5 ring-1 ring-slate-200">
-                          <p className="font-semibold text-slate-900">{useCase.title}</p>
-                          <p className="mt-0.5 text-xs text-slate-500">{useCase.detail}</p>
-                          <ul className="mt-2 space-y-1.5">
-                            {picks.map((model) => (
-                              <li key={`${useCase.id}-${model.id}`}>
-                                <button
-                                  type="button"
-                                  className="w-full rounded-md px-1.5 py-1 text-left hover:bg-slate-50"
-                                  disabled={busy}
-                                  onClick={() => requestModel(model.id)}
-                                >
-                                  <span className="font-medium text-brand-800">{model.label}</span>
-                                  <span className="text-xs text-slate-500">
-                                    {" "}
-                                    · {model.parameterSize} · ~{model.vramMB} MB
-                                    {model.recommended ? " · recommended" : ""}
-                                  </span>
-                                  <span className="mt-0.5 block text-xs text-slate-600">
-                                    Suitable for: {model.bestFor}
-                                  </span>
-                                </button>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <div className="space-y-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                      Full curated list by size
-                    </p>
-                    {LOCAL_MODEL_GROUP_ORDER.map((group) => {
-                      const rows = localAI.models.filter(
-                        (model) => model.group === group && !model.extended
-                      );
-                      if (!rows.length) return null;
-                      return (
-                        <div key={group}>
-                          <p className="mb-1.5 text-xs font-semibold text-slate-800">
-                            {LOCAL_MODEL_GROUP_LABELS[group]}
-                          </p>
-                          <ul className="space-y-1">
-                            {rows.map((model) => (
-                              <li key={model.id}>
-                                <button
-                                  type="button"
-                                  className={`w-full rounded-md px-2 py-1.5 text-left ring-1 ${
-                                    model.id === localAI.selectedModelId
-                                      ? "bg-brand-50 ring-brand-300"
-                                      : "bg-white ring-slate-200 hover:bg-slate-50"
-                                  }`}
-                                  disabled={busy}
-                                  onClick={() => requestModel(model.id)}
-                                >
-                                  <span className="flex flex-wrap items-center gap-1.5">
-                                    <span className="text-sm font-medium text-slate-900">
-                                      {model.label}
-                                    </span>
-                                    <span className="text-[11px] text-slate-500">
-                                      {model.series} · {model.parameterSize} · ~{model.vramMB} MB
-                                    </span>
-                                    {model.recommended ? (
-                                      <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-800">
-                                        Recommended
-                                      </span>
-                                    ) : null}
-                                  </span>
-                                  <span className="mt-0.5 block text-xs text-slate-600">
-                                    {model.summary}
-                                  </span>
-                                  <span className="mt-0.5 block text-xs font-medium text-slate-700">
-                                    Suitable for: {model.bestFor}
-                                  </span>
-                                  {model.tags.length ? (
-                                    <span className="mt-0.5 block text-[11px] text-slate-500">
-                                      {formatLocalModelTags(model.tags)}
-                                    </span>
-                                  ) : null}
-                                </button>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ) : null}
-            </div>
-
-            {selected && !localAI.ready && (
-              <div className="mt-4 rounded-xl bg-slate-50 p-3 text-sm">
-                <div className="flex flex-wrap items-center gap-2">
-                  <strong className="text-slate-900">{selected.label}</strong>
-                  <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-slate-600 ring-1 ring-slate-200">
-                    {selected.series}
-                  </span>
-                  {selected.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className={
-                        tag === "Recommended" || tag === "New"
-                          ? "rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800"
-                          : tag === "Coding"
-                            ? "rounded-full bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-800"
-                            : tag === "Math"
-                              ? "rounded-full bg-violet-100 px-2 py-0.5 text-xs font-semibold text-violet-800"
-                              : "rounded-full bg-slate-200 px-2 py-0.5 text-xs font-semibold text-slate-700"
-                      }
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                  {selected.cached && (
-                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">
-                      Downloaded
-                    </span>
-                  )}
-                </div>
-                <p className="mt-1 text-slate-600">{selected.summary}</p>
-                <p className="mt-1 text-xs text-slate-500">
-                  Best for: {selected.bestFor}. Estimated device memory: {selected.vramMB} MB.
+        {showAdvanced ? (
+          <div className="space-y-4 border-t border-slate-200 px-4 py-4">
+            {localAI.mode === "local" && modeNeedsModel && (
+              <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+                <strong>Local is selected, but no model is loaded yet.</strong>
+                <p className="mt-1">
+                  Press <strong>Enable Local</strong> above to download/load a model in this browser, or
+                  switch to Website API / Your own API.
+                </p>
+                <p className="mt-2 text-xs text-amber-900/90">
+                  Local keeps only <strong>thinking mode off</strong>. There is{" "}
+                  <strong>no generation time limit</strong> — answers stream live and may be long.
+                  Sampling is tuned by model size for stronger teaching while staying stable. Prefer
+                  Starter/Light on weak GPUs; Heavy needs a strong GPU. If an answer stops mid-sentence,
+                  Local hit the ~4096-token context wall — use <strong>New chat</strong> or a shorter
+                  paste so more room remains for the reply.
                 </p>
               </div>
             )}
 
-            {localAI.ready && loaded && (
-              <div className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-950">
-                <strong>
-                  Active: {loaded.label} · {loaded.series}
-                </strong>
-                <p className="mt-1">{loaded.bestFor}.</p>
-                {loaded.tags.length ? (
-                  <p className="mt-1 text-xs text-emerald-900/80">
-                    Flash points: {formatLocalModelTags(loaded.tags)}
+            {localAI.mode === "local" && (
+              <>
+                <div>
+                  <h2 className="font-semibold text-slate-900">Local model series</h2>
+                  <p className="mt-1 max-w-2xl text-sm text-slate-600">
+                    Curated study picks (Qwen3.5 / Qwen3, Math, Coder, English). Enable stays on this
+                    device. Turn on the full library for every official WebLLM q4f16 model.
                   </p>
-                ) : null}
-              </div>
-            )}
-
-            {localAI.status === "loading" && (
-              <div className="mt-4" aria-live="polite">
-                <div className="mb-1 flex justify-between text-xs text-slate-600">
-                  <span>{localAI.statusText}</span>
-                  <span>{Math.round(localAI.progress * 100)}%</span>
                 </div>
-                <progress className="h-2 w-full accent-slate-800" max={1} value={localAI.progress} />
-              </div>
-            )}
-            {localAI.status !== "loading" && (
-              <p className="mt-3 text-xs text-slate-500" aria-live="polite">
-                {localAI.statusText}
-              </p>
-            )}
-            {(localAI.error || loadError) && (
-              <p className="mt-2 whitespace-pre-wrap text-sm text-red-700" role="alert">
-                {loadError || localAI.error}
-              </p>
-            )}
 
-            {showDownloads && (
-              <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
+                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    className="mt-1"
+                    checked={localAI.showFullLibrary}
+                    onChange={(event) => localAI.setShowFullLibrary(event.target.checked)}
+                  />
+                  <span>
+                    <span className="font-semibold text-slate-900">
+                      Show full WebLLM model library
+                    </span>
+                    <span className="mt-0.5 block text-xs text-slate-500">
+                      Off = curated study series ({featuredCount} models) with flash points. On = also
+                      list official WebLLM q4f16 instruct models
+                      {localAI.showFullLibrary && extendedCount
+                        ? ` (+${extendedCount} extra)`
+                        : " (large list)"}
+                      — DeepSeek-R1 Distill stays excluded (thinking lag). Heavier models need more GPU
+                      memory; prefer Light/Medium on laptops.
+                    </span>
+                  </span>
+                </label>
+
+                <div className="grid gap-3 md:grid-cols-[1fr_auto]">
                   <div>
-                    <h3 className="text-sm font-semibold text-slate-900">Downloaded model files</h3>
-                    <p className="text-xs text-slate-500">
-                      Cache belongs to this browser profile on this device.
-                    </p>
+                    <label className="mb-1 block text-sm font-medium">Choose local model</label>
+                    <select
+                      className="input"
+                      value={localAI.selectedModelId}
+                      onChange={(event) => requestModel(event.target.value)}
+                      disabled={busy}
+                    >
+                      {MODEL_GROUPS.map((group) => {
+                        const featured = localAI.models.filter(
+                          (model) => model.group === group.value && !model.extended
+                        );
+                        const extended = localAI.models.filter(
+                          (model) => model.group === group.value && model.extended
+                        );
+                        if (!featured.length && !extended.length) return null;
+                        return (
+                          <optgroup key={group.value} label={group.label}>
+                            {featured.map((model) => (
+                              <option key={model.id} value={model.id}>
+                                {model.series} · {model.label} · {model.parameterSize} · ~
+                                {model.vramMB} MB
+                                {model.tags.length
+                                  ? ` · ${formatLocalModelTags(model.tags)}`
+                                  : ""}
+                                {model.recommended ? " · recommended" : ""}
+                                {model.cached ? " · downloaded" : ""}
+                                {model.id === localAI.loadedModelId ? " · active" : ""}
+                              </option>
+                            ))}
+                            {extended.map((model) => (
+                              <option key={model.id} value={model.id}>
+                                Full library · {model.series} · {model.label} · {model.parameterSize}{" "}
+                                · ~{model.vramMB} MB
+                                {model.cached ? " · downloaded" : ""}
+                                {model.id === localAI.loadedModelId ? " · active" : ""}
+                              </option>
+                            ))}
+                          </optgroup>
+                        );
+                      })}
+                    </select>
                   </div>
+                  <div className="flex flex-wrap items-end gap-2">
+                    {!localAI.ready ? (
+                      <button
+                        type="button"
+                        className="btn-primary"
+                        disabled={
+                          busy || !localAI.selectedModelId || localAI.webGPUSupported === false
+                        }
+                        onClick={() => openLoadConfirmation()}
+                      >
+                        {localAI.status === "loading"
+                          ? "Enabling…"
+                          : selected?.cached
+                            ? "Enable local AI"
+                            : "Enable / download"}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="btn-secondary"
+                        onClick={() => void localAI.stop()}
+                      >
+                        Stop local AI
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      disabled={busy || localAI.cacheScanning}
+                      onClick={() => void openDownloads()}
+                    >
+                      {localAI.cacheScanning
+                        ? "Checking…"
+                        : showDownloads
+                          ? "Hide downloads"
+                          : "Manage downloads"}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-slate-200 bg-slate-50">
                   <button
                     type="button"
-                    className="text-xs font-medium text-slate-700 hover:underline"
-                    disabled={localAI.cacheScanning}
-                    onClick={() => void localAI.refreshCacheStatus()}
+                    className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left text-sm font-semibold text-slate-900"
+                    aria-expanded={showSuitabilityGuide}
+                    onClick={() => setShowSuitabilityGuide((open) => !open)}
                   >
-                    Check again
+                    <span>What each Local AI is suitable for</span>
+                    <span className="text-xs font-medium text-brand-700">
+                      {showSuitabilityGuide ? "Hide" : "Show guide"}
+                    </span>
                   </button>
+                  {showSuitabilityGuide ? (
+                    <div className="space-y-4 border-t border-slate-200 px-3 py-3 text-sm">
+                      <p className="text-xs leading-relaxed text-slate-600">
+                        Curated study picks only (not the full WebLLM library). Pick by task, then Enable
+                        above. Heavier models need more GPU memory.
+                      </p>
+
+                      <div className="space-y-3">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                          Quick picks by task
+                        </p>
+                        {LOCAL_MODEL_USE_CASES.map((useCase) => {
+                          const picks = modelsForUseCase(localAI.models, useCase, 3);
+                          if (!picks.length) return null;
+                          return (
+                            <div
+                              key={useCase.id}
+                              className="rounded-lg bg-white px-3 py-2.5 ring-1 ring-slate-200"
+                            >
+                              <p className="font-semibold text-slate-900">{useCase.title}</p>
+                              <p className="mt-0.5 text-xs text-slate-500">{useCase.detail}</p>
+                              <ul className="mt-2 space-y-1.5">
+                                {picks.map((model) => (
+                                  <li key={`${useCase.id}-${model.id}`}>
+                                    <button
+                                      type="button"
+                                      className="w-full rounded-md px-1.5 py-1 text-left hover:bg-slate-50"
+                                      disabled={busy}
+                                      onClick={() => requestModel(model.id)}
+                                    >
+                                      <span className="font-medium text-brand-800">{model.label}</span>
+                                      <span className="text-xs text-slate-500">
+                                        {" "}
+                                        · {model.parameterSize} · ~{model.vramMB} MB
+                                        {model.recommended ? " · recommended" : ""}
+                                      </span>
+                                      <span className="mt-0.5 block text-xs text-slate-600">
+                                        Suitable for: {model.bestFor}
+                                      </span>
+                                    </button>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <div className="space-y-3">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                          Full curated list by size
+                        </p>
+                        {LOCAL_MODEL_GROUP_ORDER.map((group) => {
+                          const rows = localAI.models.filter(
+                            (model) => model.group === group && !model.extended
+                          );
+                          if (!rows.length) return null;
+                          return (
+                            <div key={group}>
+                              <p className="mb-1.5 text-xs font-semibold text-slate-800">
+                                {LOCAL_MODEL_GROUP_LABELS[group]}
+                              </p>
+                              <ul className="space-y-1">
+                                {rows.map((model) => (
+                                  <li key={model.id}>
+                                    <button
+                                      type="button"
+                                      className={`w-full rounded-md px-2 py-1.5 text-left ring-1 ${
+                                        model.id === localAI.selectedModelId
+                                          ? "bg-brand-50 ring-brand-300"
+                                          : "bg-white ring-slate-200 hover:bg-slate-50"
+                                      }`}
+                                      disabled={busy}
+                                      onClick={() => requestModel(model.id)}
+                                    >
+                                      <span className="flex flex-wrap items-center gap-1.5">
+                                        <span className="text-sm font-medium text-slate-900">
+                                          {model.label}
+                                        </span>
+                                        <span className="text-[11px] text-slate-500">
+                                          {model.series} · {model.parameterSize} · ~{model.vramMB} MB
+                                        </span>
+                                        {model.recommended ? (
+                                          <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-800">
+                                            Recommended
+                                          </span>
+                                        ) : null}
+                                      </span>
+                                      <span className="mt-0.5 block text-xs text-slate-600">
+                                        {model.summary}
+                                      </span>
+                                      <span className="mt-0.5 block text-xs font-medium text-slate-700">
+                                        Suitable for: {model.bestFor}
+                                      </span>
+                                      {model.tags.length ? (
+                                        <span className="mt-0.5 block text-[11px] text-slate-500">
+                                          {formatLocalModelTags(model.tags)}
+                                        </span>
+                                      ) : null}
+                                    </button>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
-                {cacheChecked && cachedModels.length === 0 && (
-                  <p className="mt-3 text-sm text-slate-500">No downloaded models were found.</p>
+
+                {selected && !localAI.ready && (
+                  <div className="rounded-xl bg-slate-50 p-3 text-sm">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <strong className="text-slate-900">{selected.label}</strong>
+                      <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-slate-600 ring-1 ring-slate-200">
+                        {selected.series}
+                      </span>
+                      {selected.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className={
+                            tag === "Recommended" || tag === "New"
+                              ? "rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800"
+                              : tag === "Coding"
+                                ? "rounded-full bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-800"
+                                : tag === "Math"
+                                  ? "rounded-full bg-violet-100 px-2 py-0.5 text-xs font-semibold text-violet-800"
+                                  : "rounded-full bg-slate-200 px-2 py-0.5 text-xs font-semibold text-slate-700"
+                          }
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                      {selected.cached && (
+                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">
+                          Downloaded
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1 text-slate-600">{selected.summary}</p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      Best for: {selected.bestFor}. Estimated device memory: {selected.vramMB} MB.
+                    </p>
+                  </div>
                 )}
-                <div className="mt-3 space-y-2">
-                  {cachedModels.map((model) => (
-                    <div
-                      key={model.id}
-                      className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-white px-3 py-2"
-                    >
+
+                {localAI.ready && loaded && (
+                  <div className="rounded-xl bg-emerald-50 p-3 text-sm text-emerald-950">
+                    <strong>
+                      Active: {loaded.label} · {loaded.series}
+                    </strong>
+                    <p className="mt-1">{loaded.bestFor}.</p>
+                    {loaded.tags.length ? (
+                      <p className="mt-1 text-xs text-emerald-900/80">
+                        Flash points: {formatLocalModelTags(loaded.tags)}
+                      </p>
+                    ) : null}
+                  </div>
+                )}
+
+                {localAI.status !== "loading" && (
+                  <p className="text-xs text-slate-500" aria-live="polite">
+                    {localAI.statusText}
+                  </p>
+                )}
+
+                {showDownloads && (
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                       <div>
-                        <p className="text-sm font-medium text-slate-800">{model.label}</p>
+                        <h3 className="text-sm font-semibold text-slate-900">Downloaded model files</h3>
                         <p className="text-xs text-slate-500">
-                          {model.parameterSize} · about {model.vramMB} MB device memory
-                          {model.id === localAI.loadedModelId ? " · active" : ""}
+                          Cache belongs to this browser profile on this device.
                         </p>
                       </div>
                       <button
                         type="button"
-                        className="text-xs font-medium text-red-600 hover:underline"
-                        disabled={busy}
-                        onClick={() => setConfirmRemoveId(model.id)}
+                        className="text-xs font-medium text-slate-700 hover:underline"
+                        disabled={localAI.cacheScanning}
+                        onClick={() => void localAI.refreshCacheStatus()}
                       >
-                        Remove
+                        Check again
                       </button>
                     </div>
-                  ))}
-                </div>
-              </div>
+                    {cacheChecked && cachedModels.length === 0 && (
+                      <p className="mt-3 text-sm text-slate-500">No downloaded models were found.</p>
+                    )}
+                    <div className="mt-3 space-y-2">
+                      {cachedModels.map((model) => (
+                        <div
+                          key={model.id}
+                          className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-white px-3 py-2"
+                        >
+                          <div>
+                            <p className="text-sm font-medium text-slate-800">{model.label}</p>
+                            <p className="text-xs text-slate-500">
+                              {model.parameterSize} · about {model.vramMB} MB device memory
+                              {model.id === localAI.loadedModelId ? " · active" : ""}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            className="text-xs font-medium text-red-600 hover:underline"
+                            disabled={busy}
+                            onClick={() => setConfirmRemoveId(model.id)}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            {localAI.mode !== "local" && (
+              <p className="text-sm text-slate-600">
+                Switch the path above to <strong>Local</strong> to browse the model library. Website API
+                / Your own API settings appear when those paths are selected.
+              </p>
             )}
           </div>
-        </>
-      )}
+        ) : null}
+      </div>
 
       {confirmLoad && target && (
         <div

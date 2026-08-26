@@ -15,7 +15,8 @@ export type ToolboxEnglishTask =
   | "writing-feedback"
   | "language-materials"
   | "test-strategy"
-  | "practice-generator";
+  | "practice-generator"
+  | "speaking-practice";
 
 export const TOOLBOX_ENGLISH_TASKS: ToolboxEnglishTask[] = [
   "grammar-explanation",
@@ -24,6 +25,7 @@ export const TOOLBOX_ENGLISH_TASKS: ToolboxEnglishTask[] = [
   "language-materials",
   "test-strategy",
   "practice-generator",
+  "speaking-practice",
 ];
 
 /** Map legacy English task ids → consolidated ones. */
@@ -55,7 +57,7 @@ export function toolboxHref(params: {
   category?: "ap" | "english" | "coding";
   apTask?: ToolboxApTask;
   englishTask?: ToolboxEnglishTask;
-  codingTask?: "debug" | "write" | "explain";
+  codingTask?: "debug" | "write" | "explain" | "csa-frq";
   subject?: string;
   tool?: "calculator" | "grapher";
 }): string {

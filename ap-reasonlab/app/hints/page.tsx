@@ -27,7 +27,7 @@ const AP_TASKS = new Set([
   "generate-questions",
   "concept-extension",
 ]);
-const CODING_TASKS = new Set(["debug", "write", "explain"]);
+const CODING_TASKS = new Set(["debug", "write", "explain", "csa-frq"]);
 
 function resolveSubject(raw: string | null): string | undefined {
   if (!raw?.trim()) return undefined;
@@ -115,17 +115,26 @@ function ToolboxContent() {
 
   return (
     <div className="space-y-8">
-      <section className="hero-gradient rounded-3xl px-6 py-9 text-white shadow-lg md:px-9">
+      <section className="hero-gradient rounded-3xl px-5 py-6 text-white shadow-lg md:px-9 md:py-9">
         <span className="inline-block rounded-full bg-white/20 px-3 py-1 text-xs font-semibold">
           AI TOOLBOX · AI FOR AP
         </span>
-        <h1 className="mt-3 text-3xl font-bold md:text-4xl">One AI panel for study help</h1>
-        <p className="mt-2 max-w-2xl text-blue-100">
+        <h1 className="mt-3 text-2xl font-bold md:text-4xl">One AI panel for study help</h1>
+        <p className="mt-2 hidden max-w-2xl text-blue-100 sm:block">
           Choose Local, Website API, or Your own API — then pick AP, English, or Coding tasks.
           Includes AI for AP workflows and guides below. Extra tools: Calculator and Grapher. Your
           path and last tab are remembered in this browser.
         </p>
+        <p className="mt-2 text-sm text-blue-100 sm:hidden">
+          Local / Website API / Your key · AP · English · Coding · Calculator · Grapher
+        </p>
         <div className="mt-4 flex flex-wrap gap-2">
+          <a
+            href="#unified-ai-chat"
+            className="rounded-lg border border-white/35 bg-white px-4 py-2 text-sm font-semibold text-brand-800 hover:bg-white/90 sm:hidden"
+          >
+            Jump to chat
+          </a>
           <a
             href="#ai-for-ap"
             className="rounded-lg border border-white/35 bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20"
@@ -138,7 +147,7 @@ function ToolboxContent() {
 
       <EthicsBanner />
 
-      <div className="flex flex-wrap gap-2">
+      <div className="sticky top-0 z-20 -mx-1 flex flex-wrap gap-2 bg-slate-50/95 px-1 py-2 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80 md:static md:bg-transparent md:p-0 md:backdrop-blur-none">
         {(
           [
             { id: "ai", label: "Unified AI" },
@@ -159,6 +168,14 @@ function ToolboxContent() {
             {item.label}
           </button>
         ))}
+        {extra === "ai" ? (
+          <a
+            href="#unified-ai-chat"
+            className="rounded-full border border-brand-200 bg-white px-3 py-1.5 text-sm font-medium text-brand-800 hover:bg-brand-50 md:hidden"
+          >
+            ↓ Chat
+          </a>
+        ) : null}
       </div>
 
       {extra === "ai" ? (

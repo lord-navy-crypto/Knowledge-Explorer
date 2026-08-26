@@ -130,7 +130,8 @@ ${source}
 Return {"proposal":"...","summary":"one short description of the proposed change"}.`,
           await buildServerAiSiteContext(
             `${action}\n${instruction}\n${source.slice(0, 2_000)}`,
-            body.siteSearch !== false
+            body.siteSearch !== false,
+            "code"
           )
         ),
         maxTokens: 4096,

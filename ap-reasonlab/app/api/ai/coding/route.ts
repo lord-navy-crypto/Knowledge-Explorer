@@ -51,7 +51,7 @@ Return Coding AI JSON.`;
 
     try {
       const siteSearch = body.siteSearch !== false;
-      const siteContext = await buildServerAiSiteContext(`${language}\n${task}\n${code}`, siteSearch);
+      const siteContext = await buildServerAiSiteContext(`${language}\n${task}\n${code}`, siteSearch, "code");
       const userWithSite = appendAiSiteContext(user, siteContext);
       const result = await runChatJson({
         system: codingAiSystem(focus),

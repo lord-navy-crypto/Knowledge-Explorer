@@ -1,4 +1,5 @@
 import { extractAiSearchQuery } from "@/lib/ai-site-query";
+import type { AiSiteSearchPrefer } from "@/lib/ai-site-search";
 
 /** Keep in sync with lib/ai-site-search.ts — duplicated so clients never import the search engine. */
 export const AI_SITE_SEARCH_LIMIT = 10;
@@ -10,6 +11,8 @@ export const AI_SITE_SEARCH_LIMIT_LOCAL = 5;
 
 /** Soft wait for Local AI — do not block first token on a slow site-search round-trip. */
 export const AI_SITE_SEARCH_LOCAL_DEADLINE_MS = 280;
+
+export type { AiSiteSearchPrefer };
 
 type SiteContextResult = {
   context: string;
@@ -38,18 +41,19 @@ export function appendAiSiteContext(userPrompt: string, context: string): string
   return `${userPrompt}\n\n${trimmed}`;
 }
 
-function cacheKey(searchQuery: string, limit: number): string {
-  return `${limit}:${searchQuery.toLowerCase()}`;
+function cacheKey(searchQuery: string, limit: number, prefer?: AiSiteSearchPrefer): string {
+  return `${limit}:${prefer || "none"}:${searchQuery.toLowerCase()}`;
 }
 
 async function fetchSiteSearchNetwork(
   searchQuery: string,
-  limit: number
+  limit: number,
+  prefer?: AiSiteSearchPrefer
 ): Promise<SiteContextResult> {
   const response = await fetch("/api/ai/site-search", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query: searchQuery, enabled: true, limit }),
+    body: JSON.stringify({ query: searchQuery, enabled: true, limit, prefer }),
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
@@ -82,13 +86,15 @@ function remember(key: string, result: SiteContextResult): SiteContextResult {
  * Client helper: fetch Knowledge Explorer site search context for Local AI prompts.
  * Always searches when a usable query exists.
  *
+ * Optional `prefer` soft-ranks formulas / language / code / nav hits (see `/api/ai/site-search`).
+ *
  * Local callers should pass `deadlineMs` so a slow network search never holds the
  * first streamed token — warm cache / prefetch usually makes this instant.
  */
 export async function fetchAiSiteContext(
   query: string,
   enabled = true,
-  options?: { limit?: number; deadlineMs?: number }
+  options?: { limit?: number; deadlineMs?: number; prefer?: AiSiteSearchPrefer }
 ): Promise<SiteContextResult> {
   // Always search Knowledge Explorer — ignore legacy off switches from older clients.
   void enabled;
@@ -97,7 +103,8 @@ export async function fetchAiSiteContext(
     return { ...EMPTY, note: "Query too short for site search." };
   }
   const limit = Math.max(1, Math.min(12, options?.limit ?? AI_SITE_SEARCH_LIMIT));
-  const key = cacheKey(searchQuery, limit);
+  const prefer = options?.prefer;
+  const key = cacheKey(searchQuery, limit, prefer);
   const now = Date.now();
   const cached = clientCache.get(key);
   if (cached && now - cached.at < CLIENT_CACHE_TTL_MS) {
@@ -106,7 +113,7 @@ export async function fetchAiSiteContext(
 
   let pending = inflight.get(key);
   if (!pending) {
-    pending = fetchSiteSearchNetwork(searchQuery, limit)
+    pending = fetchSiteSearchNetwork(searchQuery, limit, prefer)
       .then((result) => remember(key, result))
       .catch(() => ({ ...EMPTY, note: "Site search unavailable." }))
       .finally(() => {
@@ -150,11 +157,12 @@ export async function fetchAiSiteContext(
 /** Warm the client site-search cache while the student types (Local path). */
 export function prefetchAiSiteContext(
   query: string,
-  options?: { limit?: number }
+  options?: { limit?: number; prefer?: AiSiteSearchPrefer }
 ): void {
   const searchQuery = extractAiSearchQuery(query);
   if (searchQuery.length < 8) return;
   void fetchAiSiteContext(searchQuery, true, {
     limit: options?.limit ?? AI_SITE_SEARCH_LIMIT_LOCAL,
+    prefer: options?.prefer,
   });
 }

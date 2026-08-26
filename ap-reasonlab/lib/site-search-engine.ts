@@ -257,7 +257,13 @@ function subjectHref(subjectId: string, subjects: ManagedContent["subjects"] | u
 export function searchSiteEngine(
   query: string,
   managed?: Partial<ManagedContent> | null,
-  options?: { type?: string; limit?: number; detailMax?: number }
+  options?: {
+    type?: string;
+    limit?: number;
+    detailMax?: number;
+    /** Soft per-type score multipliers (merged over TYPE_BOOST). */
+    typeBoosts?: Partial<Record<string, number>>;
+  }
 ): SiteSearchHit[] {
   const tokens = tokenize(query);
   if (tokens.length === 0) return [];
@@ -265,6 +271,7 @@ export function searchSiteEngine(
   const typeFilter = options?.type && options.type !== "all" ? options.type : null;
   const limit = Math.max(1, Math.min(options?.limit ?? 80, 200));
   const detailMax = Math.max(120, Math.min(options?.detailMax ?? 220, 2400));
+  const boosts = { ...TYPE_BOOST, ...(options?.typeBoosts || {}) };
   const bag = new Map<string, SiteSearchHit>();
   const subjects = managed?.subjects || [];
   const excerpt = (text: string) => bestClip(text, tokens, detailMax);
@@ -739,7 +746,7 @@ export function searchSiteEngine(
   let hits = Array.from(bag.values())
     .map((hit) => ({
       ...hit,
-      score: hit.score * (TYPE_BOOST[hit.type] ?? 1),
+      score: hit.score * (boosts[hit.type] ?? 1),
     }))
     .sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;

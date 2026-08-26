@@ -263,6 +263,11 @@ function englishModeCoach(mode: string): string {
       return `Mode writing-feedback: strengths → top 2 priorities → revised snippet → next practice prompt.`;
     case "test-strategy":
       return `Mode test-strategy: exam-section tactics with one worked micro-example (no AP science solving).`;
+    case "speaking-practice":
+      return `Mode speaking-practice: the student pastes (or dictates) spoken English transcript.
+- Coach fluency, clarity, pronunciation-friendly wording, and discourse markers — not AP science.
+- Give: (1) brief diagnosis, (2) a cleaner spoken rewrite they can read aloud, (3) 2–3 target phrases, (4) one timed speaking drill.
+- Encourage short turns (30–60s). Stay supportive and concrete.`;
     case "practice-generator":
     case "corpus-find":
     case "corpus-generate":
@@ -325,7 +330,7 @@ export const ENGLISH_TUTOR_SYSTEM = `${ENGLISH_SHARED_CORE}
 
 ${ENGLISH_TEACHER_RULES}
 
-Modes may include: grammar-explanation, translator, writing-feedback, language-materials, test-strategy, practice-generator (legacy aliases still accepted).
+Modes may include: grammar-explanation, translator, writing-feedback, language-materials, test-strategy, practice-generator, speaking-practice (legacy aliases still accepted).
 
 Respond in JSON only:
 {
