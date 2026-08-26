@@ -157,7 +157,7 @@ export default function FormulaBoardTool() {
               </button>
             </div>
             <div className="overflow-x-auto text-slate-800">
-              <RichContent content={`$${item.latex}$`} />
+              <RichContent mode="math">{item.latex}</RichContent>
             </div>
             <p className="font-mono text-xs text-slate-500">{item.plain}</p>
             {item.note ? <p className="text-xs text-slate-500">{item.note}</p> : null}
