@@ -55,11 +55,22 @@ export const HOME_GATEWAYS: HomeGateway[] = [
     ],
   },
   {
-    id: "coming-soon",
-    title: "正在准备",
-    description: "Reserved for upcoming study boxes. Content will land here later.",
-    href: "/explore/coming-soon",
-    comingSoon: true,
+    id: "workshops",
+    title: "Simulation & Research",
+    description: "Hands-on Simulation Workshop and Research Workshop for experiments, models, and inquiry.",
+    href: "/explore/workshops",
+    links: [
+      {
+        href: "/explore/simulation-workshop",
+        title: "Simulation Workshop",
+        description: "Run models, chance processes, and interactive science / stats simulations.",
+      },
+      {
+        href: "/explore/research-workshop",
+        title: "Research Workshop",
+        description: "Plan inquiry, collect sources, and organize research notes and drafts.",
+      },
+    ],
   },
   {
     id: "forum",

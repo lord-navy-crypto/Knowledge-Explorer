@@ -21,8 +21,8 @@ export default function HomePage() {
             Four doors into study — pick a box, then open what you need.
           </p>
           <p className="mt-3 max-w-lg text-base leading-relaxed text-[#f7f4ee]/75">
-            AI Toolbox stays in the top bar. AP, English, tools, code, and forum live inside the
-            boxes below.
+            AI Toolbox stays in the top bar. AP, English, tools, code, workshops, and forum live
+            inside the boxes below.
           </p>
         </div>
       </section>

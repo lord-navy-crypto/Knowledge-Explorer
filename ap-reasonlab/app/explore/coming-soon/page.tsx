@@ -1,9 +1,6 @@
-import { notFound } from "next/navigation";
-import ExploreGatewayHub from "@/components/ExploreGatewayHub";
-import { getGatewayById } from "@/data/home-gateways";
+import { redirect } from "next/navigation";
 
-export default function ExploreComingSoonPage() {
-  const gateway = getGatewayById("coming-soon");
-  if (!gateway) notFound();
-  return <ExploreGatewayHub gateway={gateway} />;
+/** Old “正在准备” URL → Simulation & Research workshops hub. */
+export default function ExploreComingSoonRedirect() {
+  redirect("/explore/workshops");
 }
