@@ -55,11 +55,24 @@ export const HOME_GATEWAYS: HomeGateway[] = [
     ],
   },
   {
-    id: "coming-soon",
-    title: "正在准备",
-    description: "Reserved for upcoming study boxes. Content will land here later.",
-    href: "/explore/coming-soon",
-    comingSoon: true,
+    id: "workshops",
+    title: "Simulation & Download",
+    description:
+      "Simulation Workshop (research labs on GitHub) and Download (macOS Shell builders / installers, including VAMPIRE).",
+    href: "/explore/workshops",
+    links: [
+      {
+        href: "/explore/simulation-workshop",
+        title: "Simulation Workshop",
+        description: "Monte Carlo, oscillators, chaos, Ising, RADIA labs — open on GitHub.",
+      },
+      {
+        href: "/explore/download",
+        title: "Download",
+        description:
+          "Chrono Modal, RADIA Universal2, and VAMPIRE Apple Silicon builders — GitHub download links.",
+      },
+    ],
   },
   {
     id: "forum",

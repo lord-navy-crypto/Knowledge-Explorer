@@ -24,7 +24,7 @@ export default function ExploreGatewayHub({ gateway }: { gateway: HomeGateway })
 
       {gateway.comingSoon ? (
         <section className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center">
-          <p className="font-display text-xl font-semibold text-slate-800">正在准备</p>
+          <p className="font-display text-xl font-semibold text-slate-800">Coming soon</p>
           <p className="mx-auto mt-2 max-w-md text-sm text-slate-600">
             This box is reserved for future uploads and study areas. Check back later — AI Toolbox
             stays available from the top bar anytime.
