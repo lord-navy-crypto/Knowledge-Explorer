@@ -6,7 +6,7 @@ Home: four gateway boxes on / ; AI Toolbox stays in the top bar.
 Main boxes:
 - Box 1 AP & English (/explore/ap-english) → /ap and /english
 - Box 2 Convenient Tools & Code (/explore/tools-code) → /tools and /code
-- Box 3 Simulation & Research (/explore/workshops) — Simulation Workshop + Research Workshop
+- Box 3 Simulation & Download (/explore/workshops) — Simulation Workshop + Download
 - Box 4 Forum (/forum) — discussions, shared library, My box
 Purpose: Learn by reasoning with concrete formulas, data, and half-process guidance.
 Main areas:

@@ -14,7 +14,7 @@ export default function SimulationWorkshopPage() {
       <Breadcrumbs
         items={[
           { label: "Home", href: "/" },
-          { label: "Simulation & Research", href: "/explore/workshops" },
+          { label: "Simulation & Download", href: "/explore/workshops" },
           { label: "Simulation Workshop" },
         ]}
       />
@@ -60,8 +60,8 @@ export default function SimulationWorkshopPage() {
 
       <p className="text-sm text-slate-500">
         Also see{" "}
-        <Link href="/explore/research-workshop" className="font-medium text-brand-700 hover:underline">
-          Research Workshop
+        <Link href="/explore/download" className="font-medium text-brand-700 hover:underline">
+          Download
         </Link>
         .
       </p>

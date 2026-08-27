@@ -56,8 +56,8 @@ export const HOME_GATEWAYS: HomeGateway[] = [
   },
   {
     id: "workshops",
-    title: "Simulation & Research",
-    description: "Hands-on Simulation Workshop and Research Workshop for experiments, models, and inquiry.",
+    title: "Simulation & Download",
+    description: "Simulation Workshop for models and experiments, plus Download for files and packs.",
     href: "/explore/workshops",
     links: [
       {
@@ -66,9 +66,9 @@ export const HOME_GATEWAYS: HomeGateway[] = [
         description: "Run models, chance processes, and interactive science / stats simulations.",
       },
       {
-        href: "/explore/research-workshop",
-        title: "Research Workshop",
-        description: "Plan inquiry, collect sources, and organize research notes and drafts.",
+        href: "/explore/download",
+        title: "Download",
+        description: "Get study packs, shared files, and downloadable materials.",
       },
     ],
   },
