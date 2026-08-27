@@ -58,7 +58,7 @@ export const HOME_GATEWAYS: HomeGateway[] = [
     id: "workshops",
     title: "Simulation & Download",
     description:
-      "Simulation Workshop (research labs on GitHub) and Download (macOS Shell builders / installers).",
+      "Simulation Workshop (research labs on GitHub) and Download (macOS Shell builders / installers, including VAMPIRE).",
     href: "/explore/workshops",
     links: [
       {
@@ -69,7 +69,8 @@ export const HOME_GATEWAYS: HomeGateway[] = [
       {
         href: "/explore/download",
         title: "Download",
-        description: "Chrono Modal builder and RADIA Universal2 installer — GitHub download links.",
+        description:
+          "Chrono Modal, RADIA Universal2, and VAMPIRE Apple Silicon builders — GitHub download links.",
       },
     ],
   },

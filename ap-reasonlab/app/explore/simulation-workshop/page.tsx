@@ -1,49 +1,8 @@
 import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import { LORD_NAVY_GITHUB, reposForLane } from "@/data/lord-navy-github";
 
-/** Simulation / research labs on github.com/lord-navy-crypto — open on GitHub only. */
-const REPOS = [
-  {
-    href: "https://github.com/lord-navy-crypto/Random_Walk_Monte_Carlo_Studio",
-    title: "Random Walk & Monte Carlo Studio",
-    detail: "Random walks, Monte Carlo integration, uncertainty, and reproducible numerical experiments.",
-  },
-  {
-    href: "https://github.com/lord-navy-crypto/numerical-methods",
-    title: "Numerical Error Analysis Studio",
-    detail: "Taylor evaluation, floating-point error, cancellation, and false-convergence diagnostics.",
-  },
-  {
-    href: "https://github.com/lord-navy-crypto/OSCILLATION_NUMERICAL_INTEGRATION_LAB",
-    title: "Oscillation & Numerical Integration Lab",
-    detail: "Linear / damped / driven / nonlinear oscillators and the integrators behind them.",
-  },
-  {
-    href: "https://github.com/lord-navy-crypto/NONLINEAR_DYNAMICS_CHAOS_LAB_",
-    title: "Nonlinear Dynamics & Chaos Lab",
-    detail: "Driven pendula, Kapitza, double pendulum, Lyapunov estimates, and reliability checks.",
-  },
-  {
-    href: "https://github.com/lord-navy-crypto/Ising-Monte-Carlo-Lab",
-    title: "Ising Monte Carlo Lab",
-    detail: "1D/2D Ising models, Monte Carlo sampling, finite-size effects, and analytic references.",
-  },
-  {
-    href: "https://github.com/lord-navy-crypto/radia-magnet-studio",
-    title: "RADIA Magnet Studio",
-    detail: "RADIA-based insertion-device modelling, presets, and sensitivity / Monte Carlo analysis.",
-  },
-  {
-    href: "https://github.com/lord-navy-crypto/simulator-radiation-planfotm",
-    title: "RADIA Radiation Studio",
-    detail: "Unified magnet → trajectory → radiation scan workflow (Streamlit research platform).",
-  },
-  {
-    href: "https://github.com/lord-navy-crypto/radiaition-study",
-    title: "Radiation study",
-    detail: "Related radiation / RADIA study repository.",
-  },
-];
+const REPOS = reposForLane("simulation");
 
 export default function SimulationWorkshopPage() {
   return (
@@ -66,7 +25,7 @@ export default function SimulationWorkshopPage() {
         <p className="max-w-2xl text-slate-600">
           Research and simulation labs from{" "}
           <a
-            href="https://github.com/lord-navy-crypto"
+            href={LORD_NAVY_GITHUB}
             className="font-medium text-brand-700 hover:underline"
             target="_blank"
             rel="noopener noreferrer"
@@ -75,18 +34,24 @@ export default function SimulationWorkshopPage() {
           </a>
           . Each card opens the GitHub repository — run them locally from the repo README.
         </p>
+        <p className="text-xs text-slate-500">{REPOS.length} repositories · GitHub links only</p>
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2">
         {REPOS.map((item) => (
           <a
-            key={item.href}
+            key={item.id}
             href={item.href}
             target="_blank"
             rel="noopener noreferrer"
             className="group rounded-2xl border border-slate-200 bg-white px-5 py-5 shadow-sm transition hover:border-brand-300 hover:shadow-md"
           >
-            <h2 className="font-display text-lg font-semibold text-slate-900 group-hover:text-brand-800">
+            {item.badge ? (
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                {item.badge}
+              </p>
+            ) : null}
+            <h2 className="mt-1 font-display text-lg font-semibold text-slate-900 group-hover:text-brand-800">
               {item.title}
             </h2>
             <p className="mt-2 text-sm text-slate-600">{item.detail}</p>

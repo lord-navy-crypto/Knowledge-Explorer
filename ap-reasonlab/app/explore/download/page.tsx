@@ -1,26 +1,8 @@
 import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import { LORD_NAVY_GITHUB, reposForLane } from "@/data/lord-navy-github";
 
-/**
- * Downloadable special-component Shell builders / installers
- * from github.com/lord-navy-crypto — GitHub links only.
- */
-const DOWNLOADS = [
-  {
-    href: "https://github.com/lord-navy-crypto/chrono-modal-macos-universal2-builder",
-    title: "Chrono::Modal macOS Universal2 Builder",
-    detail:
-      "Shell builder package: build Project Chrono Modal as Universal2 (arm64 + x86_64). Use Code → Download ZIP or clone, then run START_CHRONO_MODAL_BUILDER.command.",
-    language: "Shell",
-  },
-  {
-    href: "https://github.com/lord-navy-crypto/lord-navy-crypto-radia-universal2-macos-installer",
-    title: "RADIA macOS Universal2 Installer",
-    detail:
-      "Shell installer scripts to compile the official RADIA Python extension as a Universal2 binary. Run RUN_RADIA_UNIVERSAL2_SAFE.command from Terminal.",
-    language: "Shell",
-  },
-];
+const DOWNLOADS = reposForLane("download");
 
 export default function DownloadPage() {
   return (
@@ -43,7 +25,7 @@ export default function DownloadPage() {
         <p className="max-w-2xl text-slate-600">
           Special-component builders and installers (Shell) from{" "}
           <a
-            href="https://github.com/lord-navy-crypto"
+            href={LORD_NAVY_GITHUB}
             className="font-medium text-brand-700 hover:underline"
             target="_blank"
             rel="noopener noreferrer"
@@ -52,6 +34,7 @@ export default function DownloadPage() {
           </a>
           . Open GitHub to download ZIP or clone — nothing is hosted on this site.
         </p>
+        <p className="text-xs text-slate-500">{DOWNLOADS.length} packages · GitHub links only</p>
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-emerald-50/70 via-white to-slate-50 px-5 py-6">
@@ -62,22 +45,27 @@ export default function DownloadPage() {
             Use <strong>Code → Download ZIP</strong>, or <code className="text-xs">git clone</code>{" "}
             the URL.
           </li>
-          <li>Follow that repo’s README / <code className="text-xs">.command</code> launcher on your Mac.</li>
+          <li>
+            Follow that repo’s README / <code className="text-xs">.command</code> launcher on your
+            Mac.
+          </li>
         </ol>
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2">
         {DOWNLOADS.map((item) => (
           <a
-            key={item.href}
+            key={item.id}
             href={item.href}
             target="_blank"
             rel="noopener noreferrer"
             className="group rounded-2xl border border-slate-200 bg-white px-5 py-5 shadow-sm transition hover:border-brand-300 hover:shadow-md"
           >
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-              {item.language}
-            </p>
+            {item.badge ? (
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                {item.badge}
+              </p>
+            ) : null}
             <h2 className="mt-1 font-display text-lg font-semibold text-slate-900 group-hover:text-brand-800">
               {item.title}
             </h2>
