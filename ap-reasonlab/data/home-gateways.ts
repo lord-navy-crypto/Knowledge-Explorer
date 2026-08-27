@@ -57,18 +57,19 @@ export const HOME_GATEWAYS: HomeGateway[] = [
   {
     id: "workshops",
     title: "Simulation & Download",
-    description: "Simulation Workshop for models and experiments, plus Download for files and packs.",
+    description:
+      "Simulation Workshop (research labs on GitHub) and Download (macOS Shell builders / installers).",
     href: "/explore/workshops",
     links: [
       {
         href: "/explore/simulation-workshop",
         title: "Simulation Workshop",
-        description: "Run models, chance processes, and interactive science / stats simulations.",
+        description: "Monte Carlo, oscillators, chaos, Ising, RADIA labs — open on GitHub.",
       },
       {
         href: "/explore/download",
         title: "Download",
-        description: "Get study packs, shared files, and downloadable materials.",
+        description: "Chrono Modal builder and RADIA Universal2 installer — GitHub download links.",
       },
     ],
   },
