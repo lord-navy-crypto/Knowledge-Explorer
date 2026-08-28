@@ -11,7 +11,12 @@ export default function AdminRedirectPage() {
         <p>
           Prefer unlocking once at <Link href="/login" className="font-medium text-brand-700 underline">/login</Link>, then use +
           buttons on each page. The full console is at{" "}
-          <Link href="/manage" className="font-medium text-brand-700 underline">/manage</Link>.
+          <Link href="/manage" className="font-medium text-brand-700 underline">/manage</Link>. For a
+          complete editor walkthrough, open the{" "}
+          <Link href="/manage-guide" className="font-medium text-brand-700 underline">
+            Manage Guide
+          </Link>{" "}
+          after unlock.
         </p>
         <ol className="list-decimal space-y-2 pl-5">
           <li>
@@ -60,6 +65,12 @@ export default function AdminRedirectPage() {
         </Link>
         <Link href="/manage" className="btn-secondary">
           Manage console
+        </Link>
+        <Link href="/manage-guide" className="btn-secondary">
+          Manage Guide
+        </Link>
+        <Link href="/user-guide" className="btn-ghost">
+          User Guide (public)
         </Link>
         <Link href="/practice?subject=AP%20Statistics" className="btn-secondary">
           AP Statistics practice
