@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import { appendToCodeBoard } from "@/lib/code-board-store";
 import { extractForumCodeBlocks } from "@/lib/forum-code-blocks";
-import { resolveForumPostCategory } from "@/lib/forum-api";
+import { extractForumOfficialLinks } from "@/lib/forum-official-links";
+import { encodeBase64, decodeBase64, encodeUriComponent, decodeUriComponent } from "@/lib/encode-decode";
+import { preloadWriteToolDraft, consumeWriteToolHandoff } from "@/lib/write-tool-handoff";
 
 describe("code-board-store", () => {
   it("appends a block id", () => {
@@ -37,5 +39,53 @@ describe("tool clusters", () => {
     const { TOOL_CLUSTERS } = await import("@/data/tool-clusters");
     const code = TOOL_CLUSTERS.find((c) => c.id === "code-workbench");
     expect(code?.toolIds).toContain("json-formatter");
+    expect(code?.toolIds).toContain("encode-decode");
+  });
+
+  it("includes write-convert wizard in write cluster", async () => {
+    const { TOOL_CLUSTERS } = await import("@/data/tool-clusters");
+    const write = TOOL_CLUSTERS.find((c) => c.id === "write-convert");
+    expect(write?.toolIds[0]).toBe("write-convert");
+  });
+});
+
+describe("encode-decode", () => {
+  it("round-trips base64 utf-8", () => {
+    const raw = "Hello 🎓";
+    expect(decodeBase64(encodeBase64(raw))).toBe(raw);
+  });
+
+  it("encodes url components", () => {
+    expect(decodeUriComponent(encodeUriComponent("a b&c"))).toBe("a b&c");
+  });
+});
+
+describe("write-tool-handoff", () => {
+  it("stores and consumes handoff once", () => {
+    const store = new Map<string, string>();
+    vi.stubGlobal("window", {});
+    vi.stubGlobal("sessionStorage", {
+      getItem: (k: string) => store.get(k) ?? null,
+      setItem: (k: string, v: string) => store.set(k, v),
+      removeItem: (k: string) => store.delete(k),
+    });
+    preloadWriteToolDraft("dual", "Draft text", "Title");
+    const got = consumeWriteToolHandoff("dual");
+    expect(got?.text).toBe("Draft text");
+    expect(consumeWriteToolHandoff("dual")).toBeNull();
+  });
+});
+
+describe("forum-official-links", () => {
+  it("suggests python docs for python threads", () => {
+    const links = extractForumOfficialLinks("How do I use python lists?");
+    expect(links.some((l) => l.href.includes("python.org") || l.href.includes("docs.python"))).toBe(
+      true
+    );
+  });
+
+  it("links code blocks to official docs", () => {
+    const links = extractForumOfficialLinks("```python\nprint(1)\n```");
+    expect(links.some((l) => l.kind === "code-lang")).toBe(true);
   });
 });

@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import StudyToolShell from "@/components/StudyToolShell";
+import { consumeWriteToolHandoff } from "@/lib/write-tool-handoff";
 
 function mdToPlain(md: string, keepLinks: boolean): string {
   return md
@@ -41,6 +42,15 @@ export default function MarkdownPlainTool() {
   const [input, setInput] = useState("# Title\n\nHello **world** and a [link](https://example.com).");
   const [keepLinks, setKeepLinks] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [handoffNote, setHandoffNote] = useState("");
+
+  useEffect(() => {
+    const handoff = consumeWriteToolHandoff("markdown-plain");
+    if (handoff?.text) {
+      setInput(handoff.text);
+      setHandoffNote("Loaded from write & convert wizard.");
+    }
+  }, []);
 
   const output = useMemo(
     () => (mode === "md2plain" ? mdToPlain(input, keepLinks) : plainToMd(input)),
@@ -127,6 +137,7 @@ export default function MarkdownPlainTool() {
         <span className="self-center text-xs tabular-nums text-slate-500">
           {stats.inWords} → {stats.outWords} words · {stats.inChars} → {stats.outChars} chars
         </span>
+        {handoffNote ? <span className="text-xs text-emerald-700">{handoffNote}</span> : null}
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
         <label className="block text-sm">

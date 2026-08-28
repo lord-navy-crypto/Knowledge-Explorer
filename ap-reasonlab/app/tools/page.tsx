@@ -41,6 +41,10 @@ export default function ToolsPage() {
         </h1>
         <p className="relative mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">
           {tools.length} browser utilities — search below, or jump to{" "}
+          <Link href="/tools/write-convert" className="font-medium text-brand-700 underline">
+            Write & convert wizard
+          </Link>
+          ,{" "}
           <Link href="/code" className="font-medium text-brand-700 underline">
             Code playgrounds
           </Link>{" "}

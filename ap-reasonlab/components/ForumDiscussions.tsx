@@ -16,6 +16,8 @@ import {
 } from "@/lib/forum-api";
 import { extractForumCodeBlocks } from "@/lib/forum-code-blocks";
 import { preloadPlaygroundDraft } from "@/lib/code-draft-bridge";
+import { getCodeLangOfficial } from "@/data/official-resources";
+import ForumOfficialLinks from "@/components/ForumOfficialLinks";
 import {
   readForumDisplayName,
   writeForumDisplayName,
@@ -90,20 +92,23 @@ function ForumCodeLaunchers({ body }: { body: string }) {
   const blocks = useMemo(() => extractForumCodeBlocks(body), [body]);
   if (!blocks.length) return null;
   return (
-    <div className="flex flex-wrap gap-2">
-      {blocks.map((block, index) => (
-        <button
-          key={`${block.language}-${index}`}
-          type="button"
-          className="rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-900 hover:bg-emerald-100"
-          onClick={() => {
-            const href = preloadPlaygroundDraft(block.language, block.code);
-            if (href) router.push(href);
-          }}
-        >
-          Run {block.label} in playground
-        </button>
-      ))}
+    <div className="space-y-2">
+      <div className="flex flex-wrap gap-2">
+        {blocks.map((block, index) => (
+          <button
+            key={`${block.language}-${index}`}
+            type="button"
+            className="rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-900 hover:bg-emerald-100"
+            onClick={() => {
+              const href = preloadPlaygroundDraft(block.language, block.code);
+              if (href) router.push(href);
+            }}
+          >
+            Run {block.label} in playground
+          </button>
+        ))}
+      </div>
+      <ForumOfficialLinks body={body} />
     </div>
   );
 }
@@ -815,6 +820,9 @@ export function ForumDiscussions({
                     </div>
                     <RichContent className="text-sm text-slate-700">{post.body}</RichContent>
                     <ForumCodeLaunchers body={post.body} />
+                    {!extractForumCodeBlocks(post.body).length ? (
+                      <ForumOfficialLinks body={post.body} />
+                    ) : null}
                     <AttachmentList items={post.attachments} />
                     <div className="flex flex-wrap gap-3 text-xs">
                       <button
@@ -874,6 +882,9 @@ export function ForumDiscussions({
                               </div>
                               <RichContent className="mt-2 text-sm text-slate-700">{reply.body}</RichContent>
                               <ForumCodeLaunchers body={reply.body} />
+                              {!extractForumCodeBlocks(reply.body).length ? (
+                                <ForumOfficialLinks body={reply.body} />
+                              ) : null}
                               <button
                                 type="button"
                                 className="mt-2 text-[11px] text-brand-600 hover:underline"

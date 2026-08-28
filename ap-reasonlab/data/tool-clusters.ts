@@ -14,14 +14,14 @@ export const TOOL_CLUSTERS: ToolCluster[] = [
     id: "code-workbench",
     title: "Code workbench",
     blurb: "Save blocks, compare text, format JSON, and jump to browser playgrounds.",
-    toolIds: ["code-board", "text-comparator", "short-code", "json-formatter"],
+    toolIds: ["code-board", "text-comparator", "short-code", "json-formatter", "encode-decode"],
     codeHrefs: ["/code", "/code/python", "/code/javascript"],
   },
   {
     id: "write-convert",
     title: "Write & convert",
     blurb: "Draft essays, count words, and move between Markdown, Word, and PDF.",
-    toolIds: ["dual", "draft", "typewriter", "word-count", "markdown-plain", "markdown-pdf", "word-pdf", "word-import"],
+    toolIds: ["write-convert", "dual", "draft", "typewriter", "word-count", "markdown-plain", "markdown-pdf", "word-pdf", "word-import"],
   },
   {
     id: "file-lab",
