@@ -157,7 +157,7 @@ export default function ManagePage() {
     { id: "subjects", label: "Subjects", count: subjects.length },
     { id: "units", label: "Units", count: data.units?.length || 0 },
     { id: "files", label: "Files", count: (data.files?.length || 0) + (data.documents?.length || 0) },
-    { id: "trash", label: "垃圾桶 Recycle Bin", count: recycleTotal },
+    { id: "trash", label: "Recycle Bin", count: recycleTotal },
     { id: "settings", label: "Settings" },
     { id: "ai", label: "AI Developer" },
     { id: "history", label: "History & Undo" },
@@ -441,7 +441,7 @@ export default function ManagePage() {
                   if (!recycleTotal) return;
                   const ok = await confirm({
                     title: "Empty recycle bin?",
-                    message: `将永久删除全部 ${recycleTotal} 项，无法恢复。`,
+                    message: `Permanently delete all ${recycleTotal} item(s) in the recycle bin. This cannot be undone.`,
                     confirmLabel: "Empty bin",
                     danger: true,
                   });

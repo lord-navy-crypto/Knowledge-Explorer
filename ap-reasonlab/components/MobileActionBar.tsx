@@ -4,17 +4,17 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEditorMode } from "@/components/EditorModeProvider";
+import { useQuickSearch } from "@/components/QuickSearchModal";
 
 const moreGroups = [
   {
     label: "Knowledge Explorer boxes",
     links: [
       { href: "/", label: "Home" },
+      { href: "/explore", label: "Explore hub" },
       { href: "/explore/ap-english", label: "AP & English" },
-      { href: "/explore/tools-code", label: "Convenient Tools & Code" },
+      { href: "/explore/tools-code", label: "Tools & Code" },
       { href: "/explore/workshops", label: "Simulation & Download" },
-      { href: "/explore/simulation-workshop", label: "Simulation Workshop" },
-      { href: "/explore/download", label: "Download" },
       { href: "/forum", label: "Forum" },
     ],
   },
@@ -23,9 +23,8 @@ const moreGroups = [
     links: [
       { href: "/ap", label: "AP" },
       { href: "/english", label: "English" },
-      { href: "/tools", label: "Convenient Tools" },
+      { href: "/tools", label: "Tools" },
       { href: "/code", label: "Code" },
-      { href: "/search", label: "Search" },
       { href: "/user-guide", label: "User Guide" },
       { href: "/about", label: "About" },
       { href: "/partners", label: "Partners" },
@@ -45,6 +44,7 @@ const moreGroups = [
 export default function MobileActionBar() {
   const pathname = usePathname();
   const { editor } = useEditorMode();
+  const { open: openQuickSearch } = useQuickSearch();
   const [moreOpen, setMoreOpen] = useState(false);
   const visibleMoreGroups = moreGroups
     .map((group) => {
@@ -68,6 +68,7 @@ export default function MobileActionBar() {
     )
   );
   const hintsActive = pathname === "/hints" || pathname.startsWith("/hints/");
+  const exploreActive = pathname === "/explore" || pathname.startsWith("/explore/");
 
   useEffect(() => {
     setMoreOpen(false);
@@ -98,8 +99,18 @@ export default function MobileActionBar() {
             className="fixed inset-x-3 z-50 rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl md:hidden"
             style={{ bottom: "calc(env(safe-area-inset-bottom) + 4.75rem)" }}
           >
-            <div className="mb-3 flex items-center justify-between">
+            <div className="mb-3 flex items-center justify-between gap-2">
               <h2 className="font-semibold text-slate-900">More</h2>
+              <button
+                type="button"
+                className="rounded-lg border border-slate-200 px-2 py-1 text-xs font-medium text-brand-700"
+                onClick={() => {
+                  setMoreOpen(false);
+                  openQuickSearch();
+                }}
+              >
+                Quick search ⌘K
+              </button>
               <button
                 type="button"
                 className="rounded-lg px-2 py-1 text-sm text-slate-500 hover:bg-slate-100"
@@ -134,48 +145,60 @@ export default function MobileActionBar() {
 
       <nav
         aria-label="Mobile shortcuts"
-        className="fixed inset-x-3 z-50 grid grid-cols-4 rounded-2xl border border-slate-200 bg-white/95 p-1.5 shadow-xl backdrop-blur md:hidden"
+        className="fixed inset-x-3 z-50 grid grid-cols-5 rounded-2xl border border-slate-200 bg-white/95 p-1.5 shadow-xl backdrop-blur md:hidden"
         style={{ bottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
       >
         <Link
           href="/"
           className={
             pathname === "/"
-              ? "rounded-xl bg-brand-600 px-2 py-2 text-center text-[11px] font-semibold text-white"
-              : "rounded-xl px-2 py-2 text-center text-[11px] font-semibold text-slate-700"
+              ? "rounded-xl bg-brand-600 px-1 py-2 text-center text-[10px] font-semibold text-white"
+              : "rounded-xl px-1 py-2 text-center text-[10px] font-semibold text-slate-700"
           }
           aria-current={pathname === "/" ? "page" : undefined}
         >
           Home
         </Link>
         <Link
-          href="/search"
+          href="/explore"
+          className={
+            exploreActive
+              ? "rounded-xl bg-brand-600 px-1 py-2 text-center text-[10px] font-semibold text-white"
+              : "rounded-xl px-1 py-2 text-center text-[10px] font-semibold text-slate-700"
+          }
+          aria-current={exploreActive ? "page" : undefined}
+        >
+          Explore
+        </Link>
+        <button
+          type="button"
           className={
             pathname === "/search"
-              ? "rounded-xl bg-brand-600 px-2 py-2 text-center text-[11px] font-semibold text-white"
-              : "rounded-xl px-2 py-2 text-center text-[11px] font-semibold text-slate-700"
+              ? "rounded-xl bg-brand-600 px-1 py-2 text-center text-[10px] font-semibold text-white"
+              : "rounded-xl px-1 py-2 text-center text-[10px] font-semibold text-slate-700"
           }
-          aria-current={pathname === "/search" ? "page" : undefined}
+          onClick={openQuickSearch}
+          aria-label="Quick search"
         >
           Search
-        </Link>
+        </button>
         <Link
           href="/hints"
           className={
             hintsActive
-              ? "rounded-xl bg-brand-600 px-2 py-2 text-center text-[11px] font-semibold text-white"
-              : "rounded-xl px-2 py-2 text-center text-[11px] font-semibold text-slate-700"
+              ? "rounded-xl bg-brand-600 px-1 py-2 text-center text-[10px] font-semibold text-white"
+              : "rounded-xl px-1 py-2 text-center text-[10px] font-semibold text-slate-700"
           }
           aria-current={hintsActive ? "page" : undefined}
         >
-          AI Toolbox
+          AI
         </Link>
         <button
           type="button"
           className={
             moreOpen || moreActive
-              ? "rounded-xl bg-brand-600 px-2 py-2 text-center text-[11px] font-semibold text-white"
-              : "rounded-xl px-2 py-2 text-center text-[11px] font-semibold text-slate-700"
+              ? "rounded-xl bg-brand-600 px-1 py-2 text-center text-[10px] font-semibold text-white"
+              : "rounded-xl px-1 py-2 text-center text-[10px] font-semibold text-slate-700"
           }
           aria-expanded={moreOpen}
           aria-controls="mobile-more-menu"

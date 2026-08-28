@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { brand } from "@/data/brand";
 import { useEditorMode } from "@/components/EditorModeProvider";
+import { useQuickSearch } from "@/components/QuickSearchModal";
 
 /** Slim top bar: AI Toolbox + Search always visible; everything else under More. */
 const primaryLinks = [
@@ -17,6 +18,7 @@ const moreGroups = [
     label: "Knowledge Explorer boxes",
     links: [
       { href: "/", label: "Home" },
+      { href: "/explore", label: "Explore" },
       { href: "/explore/ap-english", label: "AP & English" },
       { href: "/explore/tools-code", label: "Convenient Tools & Code" },
       { href: "/explore/workshops", label: "Simulation & Download" },
@@ -57,6 +59,7 @@ function linkIsActive(pathname: string, href: string) {
 export default function Nav() {
   const pathname = usePathname();
   const { editor } = useEditorMode();
+  const { open: openQuickSearch } = useQuickSearch();
   const [moreOpen, setMoreOpen] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
 
@@ -115,6 +118,19 @@ export default function Nav() {
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex" aria-label="Primary">
+          <button
+            type="button"
+            className="btn-ghost hidden px-3 sm:inline-flex"
+            onClick={openQuickSearch}
+            aria-label="Open quick search (Ctrl+K or Cmd+K)"
+          >
+            <span className="flex items-center gap-2">
+              Quick search
+              <kbd className="rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-medium text-slate-500">
+                ⌘K
+              </kbd>
+            </span>
+          </button>
           {primaryLinks.map((link) => {
             const active = linkIsActive(pathname, link.href);
             return (

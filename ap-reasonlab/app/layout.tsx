@@ -5,6 +5,7 @@ import "katex/dist/katex.min.css";
 import "./globals.css";
 import Nav from "@/components/Nav";
 import MobileActionBar from "@/components/MobileActionBar";
+import { QuickSearchProvider } from "@/components/QuickSearchModal";
 import RandomPageButton from "@/components/RandomPageButton";
 import EditModeButton from "@/components/EditModeButton";
 import EditorToolsChrome from "@/components/EditorToolsChrome";
@@ -96,6 +97,7 @@ export default function RootLayout({
           <ToastProvider>
             <EditorModeProvider>
               <LocalAIProvider>
+                <QuickSearchProvider>
                 <SiteStructuredData />
                 <div className="academic-print" aria-hidden="true" />
               <Nav />
@@ -110,6 +112,7 @@ export default function RootLayout({
               <EditModeButton />
               <MobileActionBar />
               <SiteFooter />
+                </QuickSearchProvider>
             </LocalAIProvider>
           </EditorModeProvider>
           </ToastProvider>

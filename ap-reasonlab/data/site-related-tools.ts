@@ -105,6 +105,16 @@ export const SITE_RELATED_PACKS = {
     toolIds: ["ai", "focus-desk", "exam-countdown", "flashcards"],
     externalIds: ["ap-central"],
   }),
+  explore: withShortCode({
+    title: "Explore · related tools",
+    toolIds: ["ai", "focus-desk", "exam-countdown", "external-hub"],
+    externalIds: ["ap-central", "desmos", "ets-toefl"],
+  }),
+  "writing-frameworks": withShortCode({
+    title: "Writing frameworks · related",
+    toolIds: ["ai", "reading-highlight", "draft", "word-count", "paraphrase"],
+    externalIds: ["ap-central"],
+  }),
   default: withShortCode({
     title: "Related toolbox links",
     toolIds: ["ai", "focus-desk", "qr-code"],
@@ -135,7 +145,8 @@ export function relatedPackForPath(pathname: string): SiteRelatedPack {
   const p = pathname.replace(/\/$/, "") || "/";
 
   if (p === "/") return SITE_RELATED_PACKS.home;
-  if (p.startsWith("/explore")) return SITE_RELATED_PACKS.home;
+  if (p.startsWith("/explore")) return SITE_RELATED_PACKS.explore;
+  if (p.includes("writing-frameworks")) return SITE_RELATED_PACKS["writing-frameworks"];
 
   if (p.startsWith("/english/toefl/reading")) return SITE_RELATED_PACKS["english-toefl-reading"];
   if (p.startsWith("/english/toefl/listening")) return SITE_RELATED_PACKS["english-toefl-listening"];

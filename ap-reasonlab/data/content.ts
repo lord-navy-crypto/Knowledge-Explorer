@@ -3,6 +3,7 @@ import { macroConcepts } from "@/data/ap-macro";
 import { microConcepts } from "@/data/ap-micro";
 import { physics2Concepts } from "@/data/ap-physics2";
 import { expandedApConcepts } from "@/data/ap-expanded";
+import { chemBioConcepts } from "@/data/ap-chem-bio-expansion";
 import { statsConcepts } from "@/data/ap-stats";
 import managed from "@/data/managed-content.json";
 
@@ -236,6 +237,7 @@ const builtInConcepts: Concept[] = [
   ...macroConcepts,
   ...physics2Concepts,
   ...expandedApConcepts,
+  ...chemBioConcepts,
   ...statsConcepts,
 ];
 
