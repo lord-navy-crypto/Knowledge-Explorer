@@ -1,15 +1,12 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import LocalAiRecommendation from "@/components/LocalAiRecommendation";
 import RecommendedStudyTools from "@/components/RecommendedStudyTools";
-import ToolsCategoryJump from "@/components/ToolsCategoryJump";
+import ToolClusters from "@/components/ToolClusters";
+import ToolsCatalog from "@/components/ToolsCatalog";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
-import {
-  STUDY_TOOL_CATEGORIES,
-  TOOL_SECURITY_LABELS,
-  listedStudyTools,
-  type ToolSecurity,
-} from "@/data/study-tools";
+import { TOOL_SECURITY_LABELS, listedStudyTools, type ToolSecurity } from "@/data/study-tools";
 
 export const metadata = {
   title: "Convenient Tools — Knowledge Explorer",
@@ -17,30 +14,19 @@ export const metadata = {
     "Convenient tools: Study desk, English helpers, STEM pads, File lab, classroom light tools, external connections, and AI — mostly local in your browser.",
 };
 
-function SecurityBadge({ level }: { level?: ToolSecurity }) {
-  const key = level || "safe";
-  const meta = TOOL_SECURITY_LABELS[key];
-  return (
-    <span
-      className={`shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${meta.className}`}
-      title={meta.detail}
-    >
-      {meta.label}
-    </span>
-  );
-}
-
 export default function ToolsPage() {
   const tools = listedStudyTools();
 
   return (
     <div className="space-y-10">
-      <Breadcrumbs items={[
-        { label: "Home", href: "/" },
-        { label: "Explore", href: "/explore" },
-        { label: "Tools & Code", href: "/explore/tools-code" },
-        { label: "Convenient Tools" },
-      ]} />
+      <Breadcrumbs
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Explore", href: "/explore" },
+          { label: "Tools & Code", href: "/explore/tools-code" },
+          { label: "Convenient Tools" },
+        ]}
+      />
 
       <section className="relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-sky-50 px-5 py-7 sm:px-8">
         <div
@@ -54,15 +40,24 @@ export default function ToolsPage() {
           Convenient Tools
         </h1>
         <p className="relative mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">
-          AI helpers live in the{" "}
+          {tools.length} browser utilities — search below, or jump to{" "}
+          <Link href="/tools/write-convert" className="font-medium text-brand-700 underline">
+            Write & convert wizard
+          </Link>
+          ,{" "}
+          <Link href="/code" className="font-medium text-brand-700 underline">
+            Code playgrounds
+          </Link>{" "}
+          and{" "}
+          <Link href="/tools/code-board" className="font-medium text-brand-700 underline">
+            code block adder
+          </Link>
+          . AI lives in{" "}
           <Link href="/hints" className="font-medium text-brand-700 underline">
             AI Toolbox
           </Link>
-          . {tools.length} tools in {STUDY_TOOL_CATEGORIES.length} categories — use the chips below
-          on mobile to jump. Security badges mark permission level (file upload, API keys, local
-          data).
+          .
         </p>
-        <ToolsCategoryJump />
         <LocalAiRecommendation className="relative mt-4 max-w-2xl" />
         <div className="relative mt-4 flex flex-wrap gap-2 text-[11px] text-slate-600">
           {(Object.keys(TOOL_SECURITY_LABELS) as ToolSecurity[]).map((key) => {
@@ -80,40 +75,11 @@ export default function ToolsPage() {
         </div>
       </section>
 
-      {STUDY_TOOL_CATEGORIES.map((category) => {
-        const items = tools.filter((tool) => tool.category === category.id);
-        if (!items.length) return null;
-        return (
-          <section key={category.id} id={`tools-${category.id}`} className="scroll-mt-28 space-y-3">
-            <div className="flex items-end justify-between gap-3 border-b border-slate-200 pb-2">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                {category.label}
-              </h2>
-              <span className="text-[11px] tabular-nums text-slate-400">{items.length}</span>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {items.map((tool) => (
-                <Link
-                  key={tool.id}
-                  href={tool.href}
-                  className="card-hover group flex min-h-[7.5rem] flex-col touch-manipulation active:scale-[0.99]"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="text-base font-bold text-slate-900 group-hover:text-brand-700">
-                      {tool.title}
-                    </h3>
-                    <SecurityBadge level={tool.security} />
-                  </div>
-                  <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-600">{tool.blurb}</p>
-                  <p className="mt-2 text-[11px] text-slate-400">
-                    {TOOL_SECURITY_LABELS[tool.security || "safe"].detail}
-                  </p>
-                </Link>
-              ))}
-            </div>
-          </section>
-        );
-      })}
+      <Suspense fallback={<div className="card text-sm text-slate-500">Loading catalog…</div>}>
+        <ToolsCatalog tools={tools} />
+      </Suspense>
+
+      <ToolClusters />
 
       <RecommendedStudyTools context="tools" />
 
@@ -130,7 +96,7 @@ export default function ToolsPage() {
         folderArea="tools"
         spaceKey="_root"
         alsoShow={["document", "folder"]}
-        collapsedByDefault={false}
+        collapsedByDefault
       />
     </div>
   );

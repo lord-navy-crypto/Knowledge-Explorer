@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import StudyToolShell from "@/components/StudyToolShell";
+import { consumeWriteToolHandoff } from "@/lib/write-tool-handoff";
 
 type Tab = "count" | "keywords" | "goals";
 
@@ -139,6 +140,11 @@ export default function WordCountTool() {
 
   useEffect(() => {
     setMounted(true);
+    const handoff = consumeWriteToolHandoff("word-count");
+    if (handoff?.text) {
+      setText(handoff.text);
+      return;
+    }
     try {
       const draft = localStorage.getItem(DRAFT_KEY);
       if (draft) setText(draft);

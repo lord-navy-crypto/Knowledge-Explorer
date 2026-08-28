@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import TrackToolboxVisit from "@/components/TrackToolboxVisit";
 
 type Props = {
   title: string;
@@ -13,6 +14,7 @@ type Props = {
 export default function StudyToolShell({ title, description, children, tip }: Props) {
   return (
     <div className="space-y-6">
+      <TrackToolboxVisit title={title} />
       <Breadcrumbs
         items={[
           { label: "Home", href: "/" },

@@ -62,7 +62,7 @@ export const SITE_RELATED_PACKS = {
   }),
   code: withShortCode({
     title: "Code · related tools",
-    toolIds: ["ai", "code-board", "text-diff", "markdown-plain"],
+    toolIds: ["ai", "code-board", "text-comparator", "json-formatter", "markdown-plain"],
     externalIds: ["mdn", "python-docs", "stackoverflow"],
   }),
   tools: withShortCode({
@@ -92,7 +92,7 @@ export const SITE_RELATED_PACKS = {
   }),
   forum: withShortCode({
     title: "Forum · related tools",
-    toolIds: ["ai", "qr-code", "text-comparator", "random-groups"],
+    toolIds: ["ai", "code-board", "qr-code", "text-comparator", "random-groups", "focus-desk"],
     externalIds: [],
   }),
   academic: withShortCode({

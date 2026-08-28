@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import PlaygroundExtras from "@/components/PlaygroundExtras";
+import CodeLangOfficialStrip from "@/components/CodeLangOfficialStrip";
+import { usePlaygroundHandoffNotice } from "@/lib/use-playground-handoff";
+import { usePlaygroundShortcuts } from "@/lib/use-playground-shortcuts";
+import { copySource } from "@/lib/playground-export";
 
 type Example = { id: string; title: string; code: string };
 
@@ -69,6 +74,15 @@ export default function JsPlayground({
   const [srcDoc, setSrcDoc] = useState("");
   const runId = useRef(0);
 
+  usePlaygroundHandoffNotice((msg) => setNote(msg));
+
+  usePlaygroundShortcuts({
+    onRun: () => run(),
+    onCopy: () => {
+      void copySource(code).then((ok) => setNote(ok ? "Source copied." : "Copy failed."));
+    },
+  });
+
   useEffect(() => {
     const stored = localStorage.getItem(storageKey);
     if (stored) {
@@ -125,6 +139,7 @@ export default function JsPlayground({
 
   return (
     <section className="card space-y-4">
+      <CodeLangOfficialStrip langId="javascript" compact />
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-brand-600">
@@ -151,6 +166,7 @@ export default function JsPlayground({
           <button type="button" className="btn-secondary self-end" onClick={resetStarter}>
             Reset
           </button>
+          <PlaygroundExtras code={code} language="javascript" filename="playground.js" onNote={setNote} />
           <button type="button" className="btn-primary self-end" onClick={run} disabled={running}>
             {running ? "Running…" : "Run"}
           </button>

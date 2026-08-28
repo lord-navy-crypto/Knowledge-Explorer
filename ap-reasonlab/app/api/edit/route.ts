@@ -360,7 +360,7 @@ export async function POST(req: NextRequest) {
       if (!validated.ok) {
         return NextResponse.json({ error: validated.error }, { status: 400 });
       }
-      const { author, title, body: postBody } = validated;
+      const { author, title, body: postBody, category } = validated;
       const attachments = sanitizeForumAttachments(item.attachments, 4);
       if (attachments.error) {
         return NextResponse.json({ error: attachments.error }, { status: 400 });
@@ -373,6 +373,7 @@ export async function POST(req: NextRequest) {
         createdAt: Date.now(),
         replies: [],
         attachments: persistForumAttachments(current, attachments.items),
+        ...(category ? { category } : {}),
       });
     } else if (action === "add_forum_reply") {
       const validated = validateForumReplyInput(item);

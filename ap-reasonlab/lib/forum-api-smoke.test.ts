@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
 import { POST } from "@/app/api/edit/route";
-import { validateForumPostInput, validateForumReplyInput } from "@/lib/forum-api";
+import { validateForumPostInput, validateForumReplyInput, forumPostMatchesCategory } from "@/lib/forum-api";
 
 function jsonPost(body: unknown, clientId: string) {
   return new NextRequest("http://localhost/api/edit", {
@@ -28,6 +28,29 @@ describe("forum validation helpers", () => {
     expect(validateForumReplyInput({ author: "Alex", body: "Reply", postId: "" }).ok).toBe(false);
     expect(
       validateForumReplyInput({ author: "Alex", body: "Reply", postId: "forum-post-1" }).ok
+    ).toBe(true);
+  });
+
+  it("accepts explicit forum categories", () => {
+    const result = validateForumPostInput({
+      author: "Alex",
+      title: "Share notes",
+      body: "Here is a link",
+      category: "resources",
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.category).toBe("resources");
+  });
+
+  it("matches legacy posts by heuristics when category is missing", () => {
+    expect(
+      forumPostMatchesCategory({ title: "Help?", body: "How do I use SQL?" }, "questions")
+    ).toBe(true);
+    expect(
+      forumPostMatchesCategory(
+        { title: "Beta", body: "Found a bug", category: "beta-feedback" },
+        "beta-feedback"
+      )
     ).toBe(true);
   });
 });

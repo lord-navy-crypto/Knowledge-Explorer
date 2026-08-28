@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import StudyToolShell from "@/components/StudyToolShell";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
 import RichContent from "@/components/RichContent";
+import { consumeWriteToolHandoff } from "@/lib/write-tool-handoff";
 
 const STORAGE_KEY = "ke-markdown-pdf-v1";
 
@@ -29,6 +30,13 @@ export default function MarkdownPdfTool() {
 
   useEffect(() => {
     setMounted(true);
+    const handoff = consumeWriteToolHandoff("markdown-pdf");
+    if (handoff?.text) {
+      setValue(handoff.text);
+      if (handoff.title) setTitle(handoff.title);
+      setHint("Loaded from write & convert wizard.");
+      return;
+    }
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return;

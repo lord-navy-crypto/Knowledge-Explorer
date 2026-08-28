@@ -112,6 +112,8 @@ export type ManagedForumReply = {
   attachments?: ManagedForumAttachment[];
 };
 
+export type ForumPostCategory = "questions" | "resources" | "announcements" | "beta-feedback";
+
 export type ManagedForumPost = {
   id: string;
   title: string;
@@ -120,6 +122,8 @@ export type ManagedForumPost = {
   createdAt: number;
   replies: ManagedForumReply[];
   attachments?: ManagedForumAttachment[];
+  /** Explicit tag chosen at post time; older posts rely on title/body heuristics. */
+  category?: ForumPostCategory;
 };
 
 /** Site-wide knobs controlled from Manage (persisted in managed-content.json). */

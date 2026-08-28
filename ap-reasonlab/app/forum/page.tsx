@@ -74,6 +74,14 @@ function ForumHub() {
     router.replace(qs ? `/forum?${qs}` : "/forum", { scroll: false });
   }
 
+  function setBoxView(view: LearningBoxView) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", "box");
+    if (view === "library") params.delete("view");
+    else params.set("view", view);
+    router.replace(`/forum?${params.toString()}`, { scroll: false });
+  }
+
   return (
     <div className="space-y-6">
       <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Forum" }]} />
@@ -94,7 +102,15 @@ function ForumHub() {
         </h1>
         <p className="relative mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">
           Discussions (post with a display name — no change code), a public Shared library, and My
-          box (private to this browser only).
+          box (private to this browser only). Also see{" "}
+          <Link href="/tools" className="font-medium text-brand-700 underline">
+            Convenient Tools
+          </Link>{" "}
+          and{" "}
+          <Link href="/code" className="font-medium text-brand-700 underline">
+            Code playgrounds
+          </Link>
+          .
         </p>
       </header>
 
@@ -161,7 +177,7 @@ function ForumHub() {
         </section>
       ) : (
         <section className="space-y-4">
-          <PrivateLearningBoxPanel embedded initialView={boxView} />
+          <PrivateLearningBoxPanel embedded initialView={boxView} onViewChange={setBoxView} />
           <p className="text-xs text-slate-500">
             Want to share a file with everyone?{" "}
             <button type="button" className="text-brand-600 hover:underline" onClick={() => setTab("shared")}>

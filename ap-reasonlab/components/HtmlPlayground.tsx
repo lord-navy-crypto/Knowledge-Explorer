@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import PlaygroundExtras from "@/components/PlaygroundExtras";
+import CodeLangOfficialStrip from "@/components/CodeLangOfficialStrip";
+import { usePlaygroundHandoffNotice } from "@/lib/use-playground-handoff";
+import { usePlaygroundShortcuts } from "@/lib/use-playground-shortcuts";
+import { copySource } from "@/lib/playground-export";
 
 type Example = { id: string; title: string; code: string };
 
@@ -41,6 +46,15 @@ export default function HtmlPlayground({
   const [preview, setPreview] = useState(starter);
   const [selected, setSelected] = useState(examples[0]?.id || "default");
   const [savedNote, setSavedNote] = useState("");
+
+  usePlaygroundHandoffNotice((msg) => setSavedNote(msg));
+
+  usePlaygroundShortcuts({
+    onRun: () => run(),
+    onCopy: () => {
+      void copySource(code).then((ok) => setSavedNote(ok ? "Source copied." : "Copy failed."));
+    },
+  });
 
   useEffect(() => {
     const stored = localStorage.getItem(storageKey);
@@ -84,6 +98,7 @@ export default function HtmlPlayground({
 
   return (
     <section className="card space-y-4">
+      <CodeLangOfficialStrip langId="web" compact />
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-brand-600">
@@ -112,6 +127,7 @@ export default function HtmlPlayground({
           <button type="button" className="btn-secondary self-end" onClick={resetStarter}>
             Reset
           </button>
+          <PlaygroundExtras code={code} language="html" filename="playground.html" onNote={setSavedNote} />
           <button type="button" className="btn-primary self-end" onClick={run}>
             Run preview
           </button>

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import StudyToolShell from "@/components/StudyToolShell";
+import RelatedToolboxLinks from "@/components/RelatedToolboxLinks";
 
 type DiffLine = { type: "same" | "add" | "del"; text: string };
 type DiffToken = { type: "same" | "add" | "del"; text: string };
@@ -402,6 +403,7 @@ export default function TextDiffTool() {
           </div>
         </>
       )}
+      <RelatedToolboxLinks clusterId="code-workbench" currentToolId="text-comparator" className="pt-2" />
     </StudyToolShell>
   );
 }

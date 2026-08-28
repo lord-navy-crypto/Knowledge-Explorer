@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import CodeLangOfficialStrip from "@/components/CodeLangOfficialStrip";
+import { appendToCodeBoard } from "@/lib/code-board-store";
+import { usePlaygroundHandoffNotice } from "@/lib/use-playground-handoff";
+import { usePlaygroundShortcuts } from "@/lib/use-playground-shortcuts";
 import { javaDownloadFilename, normalizeJavaSource } from "@/lib/java-source";
 import {
   runJavaPracticeJs,
@@ -44,6 +49,13 @@ export default function JavaPlayground({
   const [note, setNote] = useState("");
   const [status, setStatus] = useState<"idle" | "running">("idle");
   const [copied, setCopied] = useState(false);
+
+  usePlaygroundHandoffNotice((msg) => setNote(msg));
+
+  usePlaygroundShortcuts({
+    onRun: () => practiceRun(),
+    onCopy: () => void copyCode(),
+  });
 
   useEffect(() => {
     const stored = localStorage.getItem(storageKey);
@@ -163,6 +175,7 @@ export default function JavaPlayground({
 
   return (
     <section className="card space-y-4">
+      <CodeLangOfficialStrip langId="java" compact />
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-brand-600">
@@ -200,6 +213,24 @@ export default function JavaPlayground({
           <button type="button" className="btn-secondary self-end" onClick={downloadJava}>
             Download .java
           </button>
+          <button
+            type="button"
+            className="btn-secondary self-end"
+            onClick={() => {
+              appendToCodeBoard({
+                language: "java",
+                title: downloadName.replace(/\.java$/, ""),
+                code,
+                comment: "Saved from Java playground",
+              });
+              setNote("Saved to code block adder.");
+            }}
+          >
+            Save to code board
+          </button>
+          <Link href="/tools/code-board" className="self-end text-xs text-brand-600 hover:underline">
+            Open adder →
+          </Link>
           <button
             type="button"
             className="btn-primary self-end"

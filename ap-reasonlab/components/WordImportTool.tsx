@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import StudyToolShell from "@/components/StudyToolShell";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
 import RichContent from "@/components/RichContent";
+import { consumeWriteToolHandoff } from "@/lib/write-tool-handoff";
 
 export default function WordImportTool() {
   const [markdown, setMarkdown] = useState("");
@@ -13,6 +14,16 @@ export default function WordImportTool() {
   const [fileName, setFileName] = useState("");
   const [compactBlank, setCompactBlank] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [handoffNote, setHandoffNote] = useState("");
+
+  useEffect(() => {
+    const handoff = consumeWriteToolHandoff("word-import");
+    if (handoff?.text) {
+      setMarkdown(handoff.text);
+      if (handoff.title) setFileName(handoff.title);
+      setHandoffNote("Loaded from write & convert wizard.");
+    }
+  }, []);
 
   const exportText = useMemo(() => {
     if (!compactBlank) return markdown;

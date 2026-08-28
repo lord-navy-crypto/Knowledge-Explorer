@@ -2,6 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import RichContent from "@/components/RichContent";
+import PlaygroundExtras from "@/components/PlaygroundExtras";
+import CodeLangOfficialStrip from "@/components/CodeLangOfficialStrip";
+import { usePlaygroundHandoffNotice } from "@/lib/use-playground-handoff";
+import { usePlaygroundShortcuts } from "@/lib/use-playground-shortcuts";
+import { copySource } from "@/lib/playground-export";
 
 type Example = { id: string; title: string; code: string };
 
@@ -23,6 +28,14 @@ export default function MarkdownPlayground({
   const [code, setCode] = useState(starter);
   const [selected, setSelected] = useState(examples[0]?.id || "default");
   const [note, setNote] = useState("");
+
+  usePlaygroundHandoffNotice((msg) => setNote(msg));
+
+  usePlaygroundShortcuts({
+    onCopy: () => {
+      void copySource(code).then((ok) => setNote(ok ? "Source copied." : "Copy failed."));
+    },
+  });
 
   useEffect(() => {
     const stored = localStorage.getItem(storageKey);
@@ -58,6 +71,7 @@ export default function MarkdownPlayground({
 
   return (
     <section className="card space-y-4">
+      <CodeLangOfficialStrip langId="markdown" compact />
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-brand-600">
@@ -86,6 +100,7 @@ export default function MarkdownPlayground({
           <button type="button" className="btn-secondary self-end" onClick={resetStarter}>
             Reset
           </button>
+          <PlaygroundExtras code={code} language="markdown" filename="playground.md" onNote={setNote} />
         </div>
       </div>
 
