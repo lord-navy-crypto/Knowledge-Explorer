@@ -9,6 +9,7 @@ export type GuideSection = {
   id: string;
   title: string;
   preview: string;
+  conversation?: Array<{ speaker: "you" | "guide"; text: string }>;
   body?: string;
   steps?: string[];
   links: GuideLink[];
@@ -25,6 +26,36 @@ type Props = {
   locked?: boolean;
   lockMessage?: React.ReactNode;
 };
+
+function ConversationBlock({
+  lines,
+}: {
+  lines: Array<{ speaker: "you" | "guide"; text: string }>;
+}) {
+  return (
+    <div className="mt-4 space-y-2 rounded-xl border border-slate-100 bg-slate-50/80 p-3">
+      {lines.map((line, index) => (
+        <div
+          key={`${line.speaker}-${index}`}
+          className={`flex gap-2 text-sm leading-relaxed ${
+            line.speaker === "guide" ? "text-slate-700" : "text-slate-600"
+          }`}
+        >
+          <span
+            className={`shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+              line.speaker === "guide"
+                ? "bg-brand-100 text-brand-800"
+                : "bg-white text-slate-500 ring-1 ring-slate-200"
+            }`}
+          >
+            {line.speaker === "guide" ? "Guide" : "You"}
+          </span>
+          <p className="min-w-0 pt-0.5">{line.text}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 function LinkGrid({ links }: { links: GuideLink[] }) {
   if (!links.length) return null;
@@ -156,6 +187,9 @@ export default function GuidePageLayout({
                 {section.title}
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-slate-700">{section.preview}</p>
+              {section.conversation?.length ? (
+                <ConversationBlock lines={section.conversation} />
+              ) : null}
               {section.body ? (
                 <p className="mt-2 text-sm leading-relaxed text-slate-600">{section.body}</p>
               ) : null}
