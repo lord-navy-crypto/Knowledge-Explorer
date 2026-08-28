@@ -6,7 +6,7 @@ import {
   speakEnglish,
   whenVoicesReady,
 } from "@/lib/english-tts";
-import InlineNotice from "@/components/InlineNotice";
+import { useToast } from "@/components/ToastProvider";
 
 function splitChunks(text: string): string[] {
   return text
@@ -25,6 +25,7 @@ function splitChunks(text: string): string[] {
 
 /** Paste / load a listening script → browser TTS with a fixed natural English voice. */
 export default function ToeflListenReplay() {
+  const { warning } = useToast();
   const [script, setScript] = useState(
     "Professor: Today we’ll look at how coral reefs respond to rising ocean temperatures.\nStudent: Does bleaching always kill the coral?\nProfessor: Not always — recovery is possible if the stress ends soon enough."
   );
@@ -34,7 +35,6 @@ export default function ToeflListenReplay() {
   const [hideText, setHideText] = useState(false);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [voiceName, setVoiceName] = useState("");
-  const [notice, setNotice] = useState("");
 
   const chunks = useMemo(() => splitChunks(script), [script]);
   const current = chunks[Math.min(index, Math.max(chunks.length - 1, 0))] || "";
@@ -63,7 +63,7 @@ export default function ToeflListenReplay() {
       },
       onError: () => setSpeaking(false),
     });
-    if (!ok) setNotice("Speech synthesis is not available in this browser.");
+    if (!ok) warning("Speech synthesis is not available in this browser.");
   }
 
   function playAllFrom(start: number) {
@@ -85,7 +85,6 @@ export default function ToeflListenReplay() {
 
   return (
     <section className="space-y-4 rounded-2xl border border-sky-200 bg-sky-50/50 p-5">
-      <InlineNotice message={notice} onDismiss={() => setNotice("")} />
       <div>
         <h2 className="text-lg font-semibold text-sky-950">Listen · machine replay</h2>
         <p className="mt-1 text-sm leading-6 text-sky-900/80">

@@ -10,7 +10,7 @@ import AiToolboxRelatedStrip from "@/components/AiToolboxRelatedStrip";
 import AiSpecialFeatures from "@/components/AiSpecialFeatures";
 import RichContent from "@/components/RichContent";
 import VoiceInputButton from "@/components/VoiceInputButton";
-import InlineNotice from "@/components/InlineNotice";
+import { useToast } from "@/components/ToastProvider";
 import SaveGeneratedPractice from "@/components/SaveGeneratedPractice";
 import { useLocalAI } from "@/components/LocalAIProvider";
 import { codingAiLocal } from "@/lib/ai-coding-prompt";
@@ -340,7 +340,7 @@ export default function UnifiedAiPanel({
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [ttsNotice, setTtsNotice] = useState("");
+  const { warning: toastWarning } = useToast();
   const [siteSearchNote, setSiteSearchNote] = useState("");
   const [siteHits, setSiteHits] = useState<Array<{ title: string; href: string; subject?: string }>>(
     []
@@ -1351,10 +1351,12 @@ export default function UnifiedAiPanel({
           </label>
 
           {category === "ap" ? (
-            <label className="block text-sm font-medium text-slate-700">
-              Subject
+            <label className="block text-sm font-medium text-slate-700" htmlFor="ai-toolbox-subject">
+              AP subject
               <select
+                id="ai-toolbox-subject"
                 className="input mt-1"
+                aria-label="Choose an AP subject for context"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
               >
@@ -1368,10 +1370,13 @@ export default function UnifiedAiPanel({
           ) : null}
 
           {category === "english" ? (
-            <label className="block text-sm font-medium text-slate-700">
+            <label className="block text-sm font-medium text-slate-700" htmlFor="ai-toolbox-english-target">
               Exam / track
               <select
+                id="ai-toolbox-english-target"
                 className="input mt-1"
+                aria-label="Choose an English exam or study track"
+                aria-describedby="ai-toolbox-english-target-hint"
                 value={englishTarget}
                 onChange={(e) => setEnglishTarget(e.target.value)}
               >
@@ -1386,14 +1391,20 @@ export default function UnifiedAiPanel({
                   </option>
                 ))}
               </select>
+              <span id="ai-toolbox-english-target-hint" className="mt-1 block text-xs font-normal text-slate-500">
+                Shapes tone and feedback style for TOEFL, SAT, or general academic English.
+              </span>
             </label>
           ) : null}
 
           {category === "coding" ? (
-            <label className="block text-sm font-medium text-slate-700">
+            <label className="block text-sm font-medium text-slate-700" htmlFor="ai-toolbox-language">
               Language
               <select
+                id="ai-toolbox-language"
                 className="input mt-1"
+                aria-label="Choose a programming language"
+                aria-describedby="ai-toolbox-language-hint"
                 value={language}
                 onChange={(e) => setLanguage(e.target.value as (typeof LANGUAGES)[number])}
               >
@@ -1403,7 +1414,7 @@ export default function UnifiedAiPanel({
                   </option>
                 ))}
               </select>
-              <span className="mt-1 block text-xs font-normal text-slate-500">
+              <span id="ai-toolbox-language-hint" className="mt-1 block text-xs font-normal text-slate-500">
                 Try snippets in the{" "}
                 <Link href={language === "Java" ? "/code/java" : "/code"} className="text-brand-700 hover:underline">
                   Code playground
@@ -1649,7 +1660,7 @@ export default function UnifiedAiPanel({
                       className="mt-2 text-xs font-medium text-brand-700 hover:underline"
                       onClick={() => {
                         if (!speakEnglish(message.text.slice(0, 1200), { rate: 0.92 })) {
-                          setTtsNotice("Speech synthesis unavailable in this browser.");
+                          toastWarning("Speech synthesis unavailable in this browser.");
                         }
                       }}
                     >
@@ -1801,7 +1812,6 @@ export default function UnifiedAiPanel({
             ) : null}
 
             {error ? <p className="text-sm text-red-600">{error}</p> : null}
-            <InlineNotice message={ttsNotice} onDismiss={() => setTtsNotice("")} />
             {shareNote ? <p className="text-xs text-emerald-800">{shareNote}</p> : null}
 
             <div className="flex flex-wrap gap-2">

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import StudyToolShell from "@/components/StudyToolShell";
-import InlineNotice from "@/components/InlineNotice";
+import { useToast } from "@/components/ToastProvider";
 
 type Note = { id: string; color: string; text: string; note: string; tag: string };
 
@@ -21,6 +21,7 @@ function normalizeNote(n: Note & { tag?: string }): Note {
 }
 
 export default function ReadingHighlightTool() {
+  const { warning } = useToast();
   const [tab, setTab] = useState<Tab>("read");
   const [passage, setPassage] = useState(
     "Climate models suggest that rising greenhouse gas concentrations trap more heat in the atmosphere. This enhanced greenhouse effect is linked to higher average global temperatures, shifting precipitation patterns, and more frequent extreme weather events."
@@ -34,7 +35,6 @@ export default function ReadingHighlightTool() {
   const [noteQuery, setNoteQuery] = useState("");
   const [mounted, setMounted] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [notice, setNotice] = useState("");
   const renderRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -110,7 +110,7 @@ export default function ReadingHighlightTool() {
   function addHighlight() {
     const text = selection.trim();
     if (!text || !passage.includes(text)) {
-      setNotice("Select text that appears in the passage (copy from the left box or select in the preview).");
+      warning("Select text that appears in the passage (copy from the left box or select in the preview).");
       return;
     }
     setNotes((prev) => [
@@ -159,7 +159,6 @@ export default function ReadingHighlightTool() {
       description="Paste a passage, select phrases in the preview, color-code with tags, filter notes, and export markdown — all local to this browser."
       tip="Select text in the highlighted preview (mouseup) to fill the selection field, or paste from the passage box."
     >
-      <InlineNotice message={notice} onDismiss={() => setNotice("")} />
       <div className="flex flex-wrap gap-2">
         {(
           [

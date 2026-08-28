@@ -11,6 +11,7 @@ import UnifiedAddContent from "@/components/UnifiedAddContent";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import ResourceEditor from "@/components/ResourceEditor";
 import { useEditorMode } from "@/components/EditorModeProvider";
+import { useSiteDialog } from "@/components/SiteDialog";
 import { concepts } from "@/data/content";
 import { formulas } from "@/data/formulas";
 import { questionnaires } from "@/data/questionnaires";
@@ -28,6 +29,7 @@ const sectionConfig = [
 
 function SubjectWorkspaceContent() {
   const { active: editMode } = useEditorMode();
+  const { confirm, dialog } = useSiteDialog();
   const params = useParams<{ subject: string }>();
   const searchParams = useSearchParams();
   const builtIn = getSubjectBySlug(params.subject);
@@ -120,7 +122,13 @@ function SubjectWorkspaceContent() {
   }, [items, query, type]);
 
   async function deleteContentItem(item: ManagedContentItem) {
-    if (!window.confirm(`Delete “${item.title}”? It can be restored from Manage → Recycle Bin.`)) return;
+    const ok = await confirm({
+      title: "Delete content?",
+      message: `Delete “${item.title}”? It can be restored from Manage → Recycle Bin.`,
+      confirmLabel: "Delete",
+      danger: true,
+    });
+    if (!ok) return;
     setActionError("");
     try {
       const response = await fetch("/api/edit", {
@@ -317,6 +325,7 @@ function SubjectWorkspaceContent() {
           onSaved={refresh}
         />
       </section>
+      {dialog}
     </div>
   );
 }

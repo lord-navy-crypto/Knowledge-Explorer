@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import StudyToolShell from "@/components/StudyToolShell";
-import InlineNotice from "@/components/InlineNotice";
+import { useToast } from "@/components/ToastProvider";
 import { speakEnglish } from "@/lib/english-tts";
 
 type Card = {
@@ -41,6 +41,7 @@ function schedule(mastery: number): number {
 }
 
 export default function VocabBookTool() {
+  const { warning } = useToast();
   const [tab, setTab] = useState<Tab>("book");
   const [cards, setCards] = useState<Card[]>([]);
   const [word, setWord] = useState("");
@@ -56,7 +57,6 @@ export default function VocabBookTool() {
   const [quizFlipped, setQuizFlipped] = useState(false);
   const [quizScore, setQuizScore] = useState({ right: 0, wrong: 0 });
   const [copied, setCopied] = useState(false);
-  const [notice, setNotice] = useState("");
 
   useEffect(() => {
     setMounted(true);
@@ -172,7 +172,6 @@ export default function VocabBookTool() {
       description="Save English words with tags, spaced review, quiz mode, and bulk import. Stored in this browser only."
       tip="Bulk format: `word | meaning | example | tag`. Pair with Dictation for listening practice."
     >
-      <InlineNotice message={notice} onDismiss={() => setNotice("")} />
       <div className="flex flex-wrap gap-2">
         {(
           [
@@ -290,7 +289,7 @@ export default function VocabBookTool() {
                       className="rounded-md border border-slate-200 bg-white px-2 py-1 text-[10px] font-semibold text-slate-700"
                       onClick={() => {
                         if (!speakEnglish(card.word, { rate: 0.95 })) {
-                          setNotice("Speech synthesis is unavailable in this browser.");
+                          warning("Speech synthesis is unavailable in this browser.");
                         }
                       }}
                     >

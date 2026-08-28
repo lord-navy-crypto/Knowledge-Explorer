@@ -119,6 +119,7 @@ export default function ApHubPage() {
       <Breadcrumbs
         items={[
           { label: "Home", href: "/" },
+          { label: "Explore", href: "/explore" },
           { label: "AP & English", href: "/explore/ap-english" },
           { label: "AP subjects" },
         ]}
@@ -128,6 +129,11 @@ export default function ApHubPage() {
           <span className="inline-block rounded-full bg-white/20 px-3 py-1 text-xs font-semibold">AP SUBJECT LIBRARY</span>
           <h1 className="mt-3 text-3xl font-bold md:text-4xl">Choose your AP subject first</h1>
           <p className="mt-2 max-w-2xl text-blue-100">Then open concepts, formulas, practice &amp; exam, or the AI Toolbox inside that subject.</p>
+          <p className="mt-3">
+            <Link href="/ap/writing-frameworks" className="text-sm font-semibold text-white underline decoration-white/50 hover:decoration-white">
+              DBQ / LEQ writing frameworks →
+            </Link>
+          </p>
           <p className="mt-4 max-w-2xl text-xs leading-relaxed text-blue-100/85">
             AP® and College Board® are trademarks of the College Board. This site is not affiliated
             with or endorsed by the College Board. Unofficial study aid — content may contain errors.

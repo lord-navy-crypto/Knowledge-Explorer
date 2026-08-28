@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useEditorMode } from "@/components/EditorModeProvider";
+import { useToast } from "@/components/ToastProvider";
 import { saveLearningItem } from "@/lib/storage";
 import RichContent from "@/components/RichContent";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
@@ -161,24 +162,10 @@ function AttachmentPicker({
 
 function AttachmentList({ items }: { items?: ManagedForumAttachment[] }) {
   const list = items || [];
-  const [downloadError, setDownloadError] = useState("");
+  const { error: toastError } = useToast();
   if (!list.length) return null;
   return (
     <ul className="mt-3 space-y-2">
-      {downloadError ? (
-        <li>
-          <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800">
-            {downloadError}
-            <button
-              type="button"
-              className="ml-2 font-semibold underline"
-              onClick={() => setDownloadError("")}
-            >
-              Dismiss
-            </button>
-          </p>
-        </li>
-      ) : null}
       {list.map((att) => (
         <li key={att.id}>
           {att.mime.startsWith("image/") ? (
@@ -200,7 +187,7 @@ function AttachmentList({ items }: { items?: ManagedForumAttachment[] }) {
                   a.download = att.name || data.file.name || "download";
                   a.click();
                 } catch (err) {
-                  setDownloadError(err instanceof Error ? err.message : "Download failed");
+                  toastError(err instanceof Error ? err.message : "Download failed");
                 }
               }}
             >

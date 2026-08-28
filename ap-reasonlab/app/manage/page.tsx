@@ -427,9 +427,10 @@ export default function ManagePage() {
           <div className="rounded-2xl border-2 border-red-300 bg-red-50 p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 className="text-xl font-bold text-red-950">垃圾桶 · Recycle Bin</h2>
+                <h2 className="text-xl font-bold text-red-950">Recycle Bin</h2>
                 <p className="mt-1 text-sm text-red-900/80">
-                  共 {recycleTotal} 项。点右边红色按钮可一键清空（不可恢复）。
+                  {recycleTotal} item{recycleTotal === 1 ? "" : "s"} stored. Use the red button to
+                  empty the bin permanently — this cannot be undone.
                 </p>
               </div>
               <button
@@ -448,7 +449,7 @@ export default function ManagePage() {
                   void mutate("empty_recycle", {});
                 }}
               >
-                一键清空垃圾桶{recycleTotal ? ` (${recycleTotal})` : ""}
+                Empty recycle bin{recycleTotal ? ` (${recycleTotal})` : ""}
               </button>
             </div>
           </div>

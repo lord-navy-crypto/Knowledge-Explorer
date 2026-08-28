@@ -34,7 +34,12 @@ export default function ToolsPage() {
 
   return (
     <div className="space-y-10">
-      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Convenient Tools" }]} />
+      <Breadcrumbs items={[
+        { label: "Home", href: "/" },
+        { label: "Explore", href: "/explore" },
+        { label: "Tools & Code", href: "/explore/tools-code" },
+        { label: "Convenient Tools" },
+      ]} />
 
       <section className="relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-sky-50 px-5 py-7 sm:px-8">
         <div
