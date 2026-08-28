@@ -7,6 +7,7 @@ import { canEditContent } from "@/lib/change-codes";
 export const metadata: Metadata = {
   title: "AI Developer — Knowledge Explorer",
   description: "Local and cloud AI tools for managed Knowledge Explorer website content.",
+  robots: { index: false, follow: false },
 };
 
 export default async function AIDeveloperPage() {

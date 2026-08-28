@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import FrqPackCard from "@/components/FrqPackCard";
 import OfficialResourceLinks from "@/components/OfficialResourceLinks";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
@@ -115,6 +116,13 @@ export default function ApHubPage() {
 
   return (
     <div className="space-y-8">
+      <Breadcrumbs
+        items={[
+          { label: "Home", href: "/" },
+          { label: "AP & English", href: "/explore/ap-english" },
+          { label: "AP subjects" },
+        ]}
+      />
       <section className="hero-gradient rounded-3xl px-6 py-9 text-white shadow-lg md:px-9">
         <div>
           <span className="inline-block rounded-full bg-white/20 px-3 py-1 text-xs font-semibold">AP SUBJECT LIBRARY</span>

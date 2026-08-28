@@ -3,22 +3,7 @@
  * Indexes built-in catalogs + live managed content for /search and AI site search.
  */
 import { AP_CATALOG } from "@/data/ap-catalog";
-import { concepts, practiceQuestions } from "@/data/content";
-import { formulas } from "@/data/formulas";
-import { questionnaires } from "@/data/questionnaires";
-import { keyConceptGuides } from "@/data/key-concepts";
-import {
-  academicVocabulary,
-  englishAreas,
-  satQuestions,
-  sentencePatterns,
-  toeflQuestions,
-} from "@/data/english-content";
-import { standardSnippets } from "@/data/code-snippets";
-import { starterLearningMaterials } from "@/data/starter-learning";
-import { checklistItems } from "@/data/checklist";
-import { trueJetMembers } from "@/data/brand";
-import { SITE_SECTION_FOLDERS } from "@/lib/site-media-map";
+import { getStaticSearchCorpus } from "@/lib/site-search-static-corpus";
 import type { ManagedContent } from "@/lib/managed-types";
 
 export type SiteSearchType =
@@ -276,141 +261,20 @@ export function searchSiteEngine(
   const subjects = managed?.subjects || [];
   const excerpt = (text: string) => bestClip(text, tokens, detailMax);
 
-  // —— Site pages / sections ——
-  for (const section of SITE_SECTION_FOLDERS) {
-    for (const page of section.pages) {
-      const title = page.label;
-      const body = `${section.label} ${page.href} ${page.area} ${page.space}`;
-      pushHit(bag, {
-        id: `${section.id}-${page.area}-${page.space}`,
-        type: "page",
-        title,
-        subject: section.label,
-        detail: clip(`Open ${page.href}`),
-        href: page.href,
-        score: scoreFields(tokens, title, body),
-      });
-    }
-  }
-
-  const staticPages = [
-    { id: "home", title: "Home · Knowledge Explorer", subject: "Site", detail: "Knowledge Explorer · Knowledge Explorer portal", href: "/" },
-    { id: "explore-ap-english", title: "AP & English", subject: "Site", detail: "Knowledge Explorer box — AP subjects and English", href: "/explore/ap-english" },
-    { id: "explore-tools-code", title: "Convenient Tools & Code", subject: "Site", detail: "Knowledge Explorer box — tools and coding", href: "/explore/tools-code" },
-    { id: "explore-workshops", title: "Simulation & Download", subject: "Site", detail: "Simulation Workshop and Download (GitHub)", href: "/explore/workshops" },
-    { id: "explore-simulation", title: "Simulation Workshop", subject: "Site", detail: "Research simulation labs on GitHub", href: "/explore/simulation-workshop" },
-    { id: "explore-download", title: "Download", subject: "Site", detail: "Chrono, RADIA, VAMPIRE Shell builders on GitHub", href: "/explore/download" },
-    { id: "gh-vampire", title: "VAMPIRE Apple Silicon Builder", subject: "Download", detail: "Native arm64 VAMPIRE builder", href: "https://github.com/lord-navy-crypto/VAMPIRE-Apple-Silicon-Builder" },
-    { id: "gh-chrono", title: "Chrono Modal Universal2 Builder", subject: "Download", detail: "macOS Shell builder for Chrono Modal", href: "https://github.com/lord-navy-crypto/chrono-modal-macos-universal2-builder" },
-    { id: "gh-radia-install", title: "RADIA Universal2 Installer", subject: "Download", detail: "macOS Shell installer for RADIA", href: "https://github.com/lord-navy-crypto/lord-navy-crypto-radia-universal2-macos-installer" },
-    { id: "gh-monte-carlo", title: "Random Walk Monte Carlo Studio", subject: "Simulation", detail: "Random walk and Monte Carlo lab", href: "https://github.com/lord-navy-crypto/Random_Walk_Monte_Carlo_Studio" },
-    { id: "gh-ising", title: "Ising Monte Carlo Lab", subject: "Simulation", detail: "Ising model Monte Carlo workbench", href: "https://github.com/lord-navy-crypto/Ising-Monte-Carlo-Lab" },
-    { id: "gh-radia-magnet", title: "RADIA Magnet Studio", subject: "Simulation", detail: "RADIA insertion-device modelling", href: "https://github.com/lord-navy-crypto/radia-magnet-studio" },
-    { id: "gh-radia-radiation", title: "RADIA Radiation Studio", subject: "Simulation", detail: "Trajectory and radiation scans", href: "https://github.com/lord-navy-crypto/simulator-radiation-planfotm" },
-    { id: "gh-chaos", title: "Nonlinear Dynamics Chaos Lab", subject: "Simulation", detail: "Driven pendula and chaos lab", href: "https://github.com/lord-navy-crypto/NONLINEAR_DYNAMICS_CHAOS_LAB_" },
-    { id: "gh-oscillation", title: "Oscillation Numerical Integration Lab", subject: "Simulation", detail: "Oscillators and integrators", href: "https://github.com/lord-navy-crypto/OSCILLATION_NUMERICAL_INTEGRATION_LAB" },
-    { id: "gh-numerical", title: "Numerical Error Analysis Studio", subject: "Simulation", detail: "Floating-point and Taylor error lab", href: "https://github.com/lord-navy-crypto/numerical-methods" },
-    { id: "search", title: "Search", subject: "Site", detail: "Full-site search", href: "/search" },
-    { id: "about", title: "About", subject: "Site", detail: "About Knowledge Explorer", href: "/about" },
-    { id: "partners", title: "Partners", subject: "Site", detail: "Knowledge Explorer roster", href: "/partners" },
-    { id: "guide", title: "Site Guide", subject: "Tools", detail: "Developer deploy and setup guide", href: "/guide" },
-    {
-      id: "user-guide",
-      title: "User Guide",
-      subject: "Help",
-      detail: "Walkthrough of AP, English, AI Toolbox, tools, workshops, and forum",
-      href: "/user-guide",
-    },
-    {
-      id: "manage-guide",
-      title: "Manage Guide",
-      subject: "Admin",
-      detail: "Editor workflow — unlock, Manage, uploads, publish (locked until login)",
-      href: "/manage-guide",
-    },
-    { id: "manage", title: "Manage", subject: "Admin", detail: "Manage content", href: "/manage" },
-    { id: "hints", title: "AI Toolbox", subject: "Tools", detail: "Hints, AI for AP guides, calculator, grapher, Local AI", href: "/hints" },
-    {
-      id: "ai-for-ap",
-      title: "AI for AP (in Toolbox)",
-      subject: "Study Skills",
-      detail: "Safe AI tutor workflows, guides, generate practice",
-      href: "/hints?section=ai-for-ap",
-    },
-    { id: "forum", title: "Forum", subject: "Community", detail: "Discussions, shared library, My box", href: "/forum" },
-    { id: "forum-shared", title: "Shared library", subject: "Community", detail: "Public materials in Forum", href: "/forum?tab=shared" },
-    { id: "forum-box", title: "My box", subject: "Community", detail: "Private notes and pictures in Forum", href: "/forum?tab=box" },
-    { id: "learning-box", title: "My box (Private Learning Box)", subject: "Community", detail: "Private notes and pictures", href: "/forum?tab=box" },
-    { id: "code", title: "Code Resource", subject: "Code", detail: "Python, Java, web folders", href: "/code" },
-    { id: "tools", title: "Convenient Tools", subject: "Tools", detail: "Everyday study utilities hub", href: "/tools" },
-    { id: "word-pdf", title: "Word → PDF", subject: "Tools", detail: "Convert docx and save as PDF", href: "/tools/word-pdf" },
-    { id: "image-compress", title: "Image compress", subject: "Tools", detail: "Compress and convert images", href: "/tools/image-compress" },
-    { id: "image-crop", title: "Image crop & annotate", subject: "Tools", detail: "Crop and mark images", href: "/tools/image-crop" },
-    { id: "pdf-tools", title: "PDF merge & split", subject: "Tools", detail: "Combine or extract PDF pages", href: "/tools/pdf-tools" },
-    { id: "pdf-compress", title: "PDF compress", subject: "Tools", detail: "Light PDF rebuild shrink", href: "/tools/pdf-compress" },
-    { id: "csv-markdown", title: "CSV → Markdown", subject: "Tools", detail: "CSV to Markdown table", href: "/tools/csv-markdown" },
-    { id: "markdown-plain", title: "Markdown plain text", subject: "Tools", detail: "Markdown and plain text convert", href: "/tools/markdown-plain" },
-    { id: "batch-rename", title: "Batch rename", subject: "Tools", detail: "Rename file copies locally", href: "/tools/batch-rename" },
-    { id: "word-count", title: "Word count", subject: "Tools", detail: "Words characters reading time", href: "/tools/word-count" },
-    { id: "focus-desk", title: "Tomato focus desk", subject: "Tools", detail: "Pomodoro with white pink brown soft rain noise beds", href: "/tools/focus-desk" },
-    { id: "mistake-notebook", title: "Mistake notebook", subject: "Tools", detail: "Log wrong answers locally", href: "/tools/mistake-notebook" },
-    { id: "exam-countdown", title: "Exam countdown", subject: "Tools", detail: "Days until exams", href: "/tools/exam-countdown" },
-    { id: "formula-board", title: "Formula board", subject: "Tools", detail: "Copy common STEM formulas", href: "/tools/formula-board" },
-    { id: "code-board", title: "Long code block adder", subject: "Tools", detail: "Common long code blocks with comments", href: "/tools/code-board" },
-    { id: "code-hub", title: "Code Resource", subject: "Code", detail: "Python JS TS Web SQL Markdown Java C# playgrounds", href: "/code" },
-    { id: "code-csharp", title: "C# practice editor", subject: "Code", detail: "C# training Practice Run in browser", href: "/code/csharp" },
-    { id: "code-java", title: "Java practice editor", subject: "Code", detail: "Java training Practice Run in browser", href: "/code/java" },
-    { id: "code-js", title: "JavaScript playground", subject: "Code", detail: "Run JavaScript in the browser", href: "/code/javascript" },
-    { id: "code-ts", title: "TypeScript playground", subject: "Code", detail: "Transpile and run TypeScript", href: "/code/typescript" },
-    { id: "code-sql", title: "SQL playground", subject: "Code", detail: "SQLite sql.js in the browser", href: "/code/sql" },
-    { id: "code-md", title: "Markdown playground", subject: "Code", detail: "Live Markdown and math preview", href: "/code/markdown" },
-    { id: "sci-notation", title: "Scientific notation", subject: "Tools", detail: "Sig figs and scientific form", href: "/tools/sci-notation" },
-    { id: "vector-resolve", title: "Vector components", subject: "Tools", detail: "Resolve 2D vectors", href: "/tools/vector-resolve" },
-    { id: "vocab-book", title: "Vocab book", subject: "Tools", detail: "English vocabulary flash cards", href: "/tools/vocab-book" },
-    { id: "speech-to-text", title: "Speech to text", subject: "Tools", detail: "Mic, record, or upload audio to English text", href: "/tools/speech-to-text" },
-    { id: "dictation", title: "Dictation", subject: "Tools", detail: "Listen and type practice", href: "/tools/dictation" },
-    { id: "paraphrase", title: "Paraphrase compare", subject: "Tools", detail: "Compare rewrite overlap", href: "/tools/paraphrase" },
-    { id: "reading-highlight", title: "Reading highlights", subject: "Tools", detail: "Highlight passages with notes", href: "/tools/reading-highlight" },
-    { id: "text-comparator", title: "Text-to-text comparator", subject: "Tools", detail: "Left vs right paste — match or highlight differences", href: "/tools/text-comparator" },
-    { id: "text-diff", title: "Text diff", subject: "Tools", detail: "Compare two text drafts", href: "/tools/text-diff" },
-    { id: "random-groups", title: "Random groups", subject: "Tools", detail: "Pick names or make groups", href: "/tools/random-groups" },
-    { id: "short-code", title: "Short codes", subject: "Tools", detail: "Local short codes for links", href: "/tools/short-code" },
-    { id: "color-contrast", title: "Color & contrast", subject: "Tools", detail: "WCAG contrast checker", href: "/tools/color-contrast" },
-    { id: "qr-code", title: "QR code", subject: "Tools", detail: "Generate downloadable QR", href: "/tools/qr-code" },
-    { id: "external-tools", title: "External connections & tools", subject: "Tools", detail: "Off-site AP, math, science, English, coding links", href: "/tools/external" },
-    { id: "word-import", title: "Word → Markdown", subject: "Tools", detail: "Extract Markdown from docx", href: "/tools/word-import" },
-    { id: "markdown-pdf", title: "Markdown → PDF", subject: "Tools", detail: "Print Markdown as PDF", href: "/tools/markdown-pdf" },
-    { id: "english", title: "English Learning", subject: "English", detail: "TOEFL SAT vocabulary writing", href: "/english" },
-    { id: "ap", title: "AP Subject Library", subject: "AP", detail: "Choose an AP subject", href: "/ap" },
-    { id: "concepts", title: "Concepts", subject: "AP", detail: "Topic and concept library", href: "/concepts" },
-    { id: "formulas", title: "Formulas", subject: "AP", detail: "Formula sheets by subject", href: "/formulas" },
-    { id: "practice", title: "Practice", subject: "AP", detail: "Practice and questionnaires", href: "/practice" },
-    { id: "key-concepts", title: "Key Concepts", subject: "AP", detail: "Guides and concept checks", href: "/key-concepts" },
-  ];
-  for (const page of staticPages) {
+  // —— Built-in catalogs (cached corpus, scored per query) ——
+  for (const entry of getStaticSearchCorpus()) {
     pushHit(bag, {
-      ...page,
-      type: "page",
-      score: scoreFields(tokens, page.title, `${page.subject} ${page.detail} ${page.href}`),
+      id: entry.id,
+      type: entry.type,
+      title: entry.title,
+      subject: entry.subject,
+      detail: excerpt(entry.body) || entry.detail,
+      href: entry.href,
+      score: scoreFields(tokens, entry.title, entry.body),
     });
   }
 
-  // —— AP subjects ——
-  for (const subject of AP_CATALOG) {
-    pushHit(bag, {
-      id: subject.id,
-      type: "subject",
-      title: subject.name,
-      subject: subject.group,
-      detail: clip(subject.description),
-      href: `/ap/${subject.slug}`,
-      score: scoreFields(
-        tokens,
-        `${subject.name} ${subject.shortName}`,
-        `${subject.group} ${subject.description}`
-      ),
-    });
-  }
+  // —— Managed AP subjects ——
   for (const subject of subjects) {
     if (!subject.enabled) continue;
     pushHit(bag, {
@@ -428,22 +292,7 @@ export function searchSiteEngine(
     });
   }
 
-  // —— Concepts ——
-  for (const item of concepts) {
-    pushHit(bag, {
-      id: item.id,
-      type: "concept",
-      title: item.title,
-      subject: item.subject,
-      detail: excerpt(item.summary),
-      href: `/concepts/${item.id}`,
-      score: scoreFields(
-        tokens,
-        item.title,
-        `${item.subject} ${item.summary} ${(item.keyPoints || []).join(" ")}`
-      ),
-    });
-  }
+  // —— Managed concepts ——
   for (const item of managed?.concepts || []) {
     const keyPoints = Array.isArray((item as { keyPoints?: string[] }).keyPoints)
       ? (item as { keyPoints?: string[] }).keyPoints!.join(" ")
@@ -463,22 +312,7 @@ export function searchSiteEngine(
     });
   }
 
-  // —— Formulas ——
-  for (const item of formulas) {
-    pushHit(bag, {
-      id: item.id,
-      type: "formula",
-      title: item.name,
-      subject: item.subject,
-      detail: excerpt(item.content || `${item.expression} · ${item.unit || ""}`),
-      href: `/formulas?subject=${encodeURIComponent(item.subject)}`,
-      score: scoreFields(
-        tokens,
-        item.name,
-        `${item.subject} ${item.expression || ""} ${item.content || ""} ${item.unit || ""} ${item.variables || ""}`
-      ),
-    });
-  }
+  // —— Managed formulas ——
   for (const item of managed?.formulas || []) {
     pushHit(bag, {
       id: item.id,
@@ -495,21 +329,7 @@ export function searchSiteEngine(
     });
   }
 
-  // —— Practice / questionnaires / drills ——
-  for (const item of questionnaires) {
-    const itemsText = (item.items || [])
-      .map((q) => `${q.prompt || ""} ${(q.hints || []).join(" ")}`)
-      .join(" ");
-    pushHit(bag, {
-      id: item.id,
-      type: "practice",
-      title: item.title,
-      subject: item.subject,
-      detail: excerpt(item.description || itemsText),
-      href: `/questionnaires/${item.id}`,
-      score: scoreFields(tokens, item.title, `${item.subject} ${item.description || ""} ${itemsText}`),
-    });
-  }
+  // —— Managed practice / questionnaires ——
   for (const item of managed?.questionnaires || []) {
     const itemsText = (item.items || [])
       .map((q) => `${q.prompt || ""} ${(q.hints || []).join(" ")}`)
@@ -528,143 +348,8 @@ export function searchSiteEngine(
       ),
     });
   }
-  for (const item of practiceQuestions) {
-    pushHit(bag, {
-      id: item.id,
-      type: "practice",
-      title: item.question.slice(0, 80),
-      subject: item.subject,
-      detail: excerpt(item.question),
-      href: `/practice?subject=${encodeURIComponent(item.subject)}`,
-      score: scoreFields(
-        tokens,
-        item.question,
-        `${item.subject} ${item.topic} ${(item.hints || []).join(" ")}`
-      ),
-    });
-  }
 
-  // —— Key concept guides ——
-  for (const item of keyConceptGuides) {
-    const qText = (item.conceptQuestions || []).map((q) => q.prompt).join(" ");
-    pushHit(bag, {
-      id: item.id,
-      type: "guide",
-      title: item.title,
-      subject: item.subject,
-      detail: excerpt(item.introduction),
-      href: `/key-concepts?subject=${encodeURIComponent(item.subject)}`,
-      score: scoreFields(
-        tokens,
-        item.title,
-        `${item.subject} ${item.introduction} ${(item.howToUseAI || []).join(" ")} ${qText}`
-      ),
-    });
-  }
-
-  // —— English ——
-  for (const area of englishAreas) {
-    pushHit(bag, {
-      id: area.href,
-      type: "english",
-      title: area.title,
-      subject: "English",
-      detail: clip(area.description),
-      href: area.href,
-      score: scoreFields(tokens, area.title, area.description),
-    });
-  }
-  for (const word of academicVocabulary) {
-    pushHit(bag, {
-      id: `vocab-${word.word}`,
-      type: "english",
-      title: word.word,
-      subject: "Vocabulary",
-      detail: clip(`${word.meaning} · ${word.example}`),
-      href: "/english/vocabulary",
-      score: scoreFields(
-        tokens,
-        word.word,
-        `${word.family} ${word.meaning} ${word.collocation} ${word.example}`
-      ),
-    });
-  }
-  for (const pattern of sentencePatterns) {
-    pushHit(bag, {
-      id: `pattern-${pattern.title}`,
-      type: "english",
-      title: pattern.title,
-      subject: "Grammar",
-      detail: clip(`${pattern.pattern} ${pattern.example}`),
-      href: "/english/grammar",
-      score: scoreFields(tokens, pattern.title, `${pattern.pattern} ${pattern.example}`),
-    });
-  }
-  for (const q of [...toeflQuestions, ...satQuestions]) {
-    pushHit(bag, {
-      id: q.id,
-      type: "english",
-      title: `${q.skill}: ${q.prompt.slice(0, 60)}…`,
-      subject: "English practice",
-      detail: clip(q.explanation),
-      href: q.id.startsWith("toefl") ? "/english/toefl" : "/english/sat",
-      score: scoreFields(
-        tokens,
-        q.skill,
-        `${q.prompt} ${q.choices.join(" ")} ${q.explanation}`
-      ),
-    });
-  }
-
-  // —— Code ——
-  for (const snip of standardSnippets) {
-    pushHit(bag, {
-      id: snip.id,
-      type: "code",
-      title: snip.title,
-      subject: snip.language,
-      detail: clip(snip.description),
-      href: "/code",
-      score: scoreFields(tokens, snip.title, `${snip.language} ${snip.description} ${snip.code}`),
-    });
-  }
-
-  // —— Learning starters / checklist ——
-  starterLearningMaterials.forEach((item, index) => {
-    pushHit(bag, {
-      id: `learning-${index}`,
-      type: "learning",
-      title: item.title,
-      subject: item.category,
-      detail: clip(item.content),
-      href: "/forum?tab=box",
-      score: scoreFields(tokens, item.title, `${item.category} ${item.content}`),
-    });
-  });
-  for (const item of checklistItems) {
-    pushHit(bag, {
-      id: item.id,
-      type: "checklist",
-      title: item.title,
-      subject: "Checklist",
-      detail: clip(item.description || ""),
-      href: item.link?.startsWith("/") ? item.link : "/checklist",
-      score: scoreFields(tokens, item.title, item.description || ""),
-    });
-  }
-
-  // —— Members ——
-  for (const member of trueJetMembers) {
-    pushHit(bag, {
-      id: member.github,
-      type: "member",
-      title: member.name,
-      subject: member.role,
-      detail: clip(member.org || "Knowledge Explorer"),
-      href: "/partners",
-      score: scoreFields(tokens, member.name, `${member.role} ${member.org || ""} ${member.github}`),
-    });
-  }
+  // —— Managed members ——
   for (const member of managed?.members || []) {
     pushHit(bag, {
       id: member.id,

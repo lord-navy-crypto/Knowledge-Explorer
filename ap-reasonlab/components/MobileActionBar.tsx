@@ -46,14 +46,22 @@ export default function MobileActionBar() {
   const pathname = usePathname();
   const { editor } = useEditorMode();
   const [moreOpen, setMoreOpen] = useState(false);
-  const visibleMoreGroups = moreGroups.map((group) =>
-    group.label === "Admin & developer" && editor
-      ? {
+  const visibleMoreGroups = moreGroups
+    .map((group) => {
+      if (group.label === "Admin & developer") {
+        if (!editor) {
+          return {
+            label: "Editors",
+            links: [{ href: "/login", label: "Editor login" }],
+          };
+        }
+        return {
           ...group,
           links: [...group.links, { href: "/ai-developer", label: "AI Developer" }],
-        }
-      : group
-  );
+        };
+      }
+      return group;
+    });
   const moreActive = visibleMoreGroups.some((group) =>
     group.links.some(
       (link) => pathname === link.href || (link.href !== "/" && pathname.startsWith(`${link.href}/`))
@@ -126,26 +134,37 @@ export default function MobileActionBar() {
 
       <nav
         aria-label="Mobile shortcuts"
-        className="fixed inset-x-3 z-50 grid grid-cols-3 rounded-2xl border border-slate-200 bg-white/95 p-1.5 shadow-xl backdrop-blur md:hidden"
+        className="fixed inset-x-3 z-50 grid grid-cols-4 rounded-2xl border border-slate-200 bg-white/95 p-1.5 shadow-xl backdrop-blur md:hidden"
         style={{ bottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
       >
         <Link
           href="/"
           className={
             pathname === "/"
-              ? "rounded-xl bg-brand-600 px-3 py-2 text-center text-xs font-semibold text-white"
-              : "rounded-xl px-3 py-2 text-center text-xs font-semibold text-slate-700"
+              ? "rounded-xl bg-brand-600 px-2 py-2 text-center text-[11px] font-semibold text-white"
+              : "rounded-xl px-2 py-2 text-center text-[11px] font-semibold text-slate-700"
           }
           aria-current={pathname === "/" ? "page" : undefined}
         >
           Home
         </Link>
         <Link
+          href="/search"
+          className={
+            pathname === "/search"
+              ? "rounded-xl bg-brand-600 px-2 py-2 text-center text-[11px] font-semibold text-white"
+              : "rounded-xl px-2 py-2 text-center text-[11px] font-semibold text-slate-700"
+          }
+          aria-current={pathname === "/search" ? "page" : undefined}
+        >
+          Search
+        </Link>
+        <Link
           href="/hints"
           className={
             hintsActive
-              ? "rounded-xl bg-brand-600 px-3 py-2 text-center text-xs font-semibold text-white"
-              : "rounded-xl px-3 py-2 text-center text-xs font-semibold text-slate-700"
+              ? "rounded-xl bg-brand-600 px-2 py-2 text-center text-[11px] font-semibold text-white"
+              : "rounded-xl px-2 py-2 text-center text-[11px] font-semibold text-slate-700"
           }
           aria-current={hintsActive ? "page" : undefined}
         >
@@ -155,8 +174,8 @@ export default function MobileActionBar() {
           type="button"
           className={
             moreOpen || moreActive
-              ? "rounded-xl bg-brand-600 px-3 py-2 text-center text-xs font-semibold text-white"
-              : "rounded-xl px-3 py-2 text-center text-xs font-semibold text-slate-700"
+              ? "rounded-xl bg-brand-600 px-2 py-2 text-center text-[11px] font-semibold text-white"
+              : "rounded-xl px-2 py-2 text-center text-[11px] font-semibold text-slate-700"
           }
           aria-expanded={moreOpen}
           aria-controls="mobile-more-menu"

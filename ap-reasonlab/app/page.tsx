@@ -24,6 +24,26 @@ export default function HomePage() {
             AI Toolbox stays in the top bar. AP, English, tools, code, workshops, and forum live
             inside the boxes below.
           </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link
+              href="/user-guide"
+              className="inline-flex rounded-lg bg-white/15 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/25 hover:bg-white/25"
+            >
+              User Guide
+            </Link>
+            <Link
+              href="/search"
+              className="inline-flex rounded-lg bg-white/15 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/25 hover:bg-white/25"
+            >
+              Site search
+            </Link>
+            <Link
+              href="/about"
+              className="inline-flex rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-[#f7f4ee]/90 hover:bg-white/15"
+            >
+              About
+            </Link>
+          </div>
         </div>
       </section>
 

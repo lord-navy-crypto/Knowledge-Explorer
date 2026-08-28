@@ -17,6 +17,7 @@ function SearchPageInner() {
   const searchParams = useSearchParams();
   const initialQ = searchParams.get("q") || "";
   const initialType = searchParams.get("type") || "all";
+  const showScores = searchParams.get("debug") === "1";
 
   const [query, setQuery] = useState(initialQ);
   const [type, setType] = useState(initialType);
@@ -151,9 +152,11 @@ function SearchPageInner() {
             <div className="flex flex-wrap items-center gap-2">
               <span className="badge">{item.type}</span>
               <span className="text-xs text-slate-500">{item.subject}</span>
-              <span className="ml-auto text-[10px] font-medium uppercase tracking-wide text-slate-400">
-                score {item.score}
-              </span>
+              {showScores ? (
+                <span className="ml-auto text-[10px] font-medium uppercase tracking-wide text-slate-400">
+                  score {item.score}
+                </span>
+              ) : null}
             </div>
             <h2 className="mt-2 font-semibold text-slate-900">{item.title}</h2>
             <RichContent clampLines={2} className="mt-1 text-sm text-slate-600">
@@ -163,7 +166,33 @@ function SearchPageInner() {
           </Link>
         ))}
         {deferredQuery.length >= 2 && results.length === 0 && (
-          <div className="card text-sm text-slate-500">No matching content in the site index.</div>
+          <div className="card space-y-3 text-sm text-slate-600">
+            <p>No matching content in the site index.</p>
+            <p className="text-slate-500">Try a shorter query, clear the type filter, or browse:</p>
+            <ul className="list-disc space-y-1 pl-5">
+              <li>
+                <Link href="/user-guide" className="font-medium text-brand-700 hover:underline">
+                  User Guide
+                </Link>{" "}
+                — full site tour
+              </li>
+              <li>
+                <Link href="/hints" className="font-medium text-brand-700 hover:underline">
+                  AI Toolbox
+                </Link>{" "}
+                — AP / English / Coding help
+              </li>
+              <li>
+                <Link href="/tools" className="font-medium text-brand-700 hover:underline">
+                  Convenient Tools
+                </Link>{" "}
+                — timers, PDF, LaTeX, focus desk
+              </li>
+            </ul>
+            <p className="text-xs text-slate-400">
+              Examples: kinematics, TOEFL reading, flashcards, Monte Carlo, AP Statistics
+            </p>
+          </div>
         )}
       </section>
     </div>

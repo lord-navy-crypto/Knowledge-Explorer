@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import OfficialResourceLinks from "@/components/OfficialResourceLinks";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import { howToEmbedEditors, standardSnippets } from "@/data/code-snippets";
@@ -68,6 +69,13 @@ const langs = [
 export default function CodePage() {
   return (
     <div className="space-y-8">
+      <Breadcrumbs
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Tools & Code", href: "/explore/tools-code" },
+          { label: "Code" },
+        ]}
+      />
       <div>
         <h1 className="text-3xl font-bold">Code Resource</h1>
         <p className="mt-2 text-slate-600">
