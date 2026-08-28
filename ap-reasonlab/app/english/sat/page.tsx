@@ -7,7 +7,7 @@ export default function SatPage() {
     <EnglishExamHub
       exam={getExamConfig("sat")}
       title="SAT · English, Grammar, Reading & Math"
-      description="Four subject folders for SAT practice questions — English, Grammar, Reading, and Mathematics. Open a subject to upload files into that folder. Core language skills stay under Basic skills."
+      description="Four SAT subject folders for uploads plus 80+ in-site multiple-choice practice questions filtered by skill."
       officialNote={SAT_HUB_OFFICIAL.note}
       officialLinks={SAT_HUB_OFFICIAL.links}
     />

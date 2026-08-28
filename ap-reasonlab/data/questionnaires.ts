@@ -4,6 +4,7 @@ import { microQuestionnaires } from "@/data/ap-micro";
 import { physics2Questionnaires } from "@/data/ap-physics2";
 import { statsQuestionnaires } from "@/data/ap-stats";
 import { humanitiesQuestionnaires } from "@/data/ap-humanities-practice";
+import { apPracticeExpansion } from "@/data/ap-practice-expansion";
 import managed from "@/data/managed-content.json";
 
 /**
@@ -520,6 +521,7 @@ export const questionnaires: Questionnaire[] = [
   ...physics2Questionnaires,
   ...statsQuestionnaires,
   ...humanitiesQuestionnaires,
+  ...apPracticeExpansion,
   ...(((managed as { questionnaires?: Questionnaire[] }).questionnaires ||
     []) as Questionnaire[]),
 ];

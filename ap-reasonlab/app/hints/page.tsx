@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import AiForApToolboxSection from "@/components/AiForApToolboxSection";
 import EthicsBanner from "@/components/EthicsBanner";
 import LocalAiRecommendation from "@/components/LocalAiRecommendation";
+import SiteAiStatusBanner from "@/components/SiteAiStatusBanner";
 import RecommendedStudyTools from "@/components/RecommendedStudyTools";
 import UnifiedAiPanel from "@/components/UnifiedAiPanel";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
@@ -152,6 +153,8 @@ function ToolboxContent() {
         </div>
         <LocalAiRecommendation variant="hero" className="mt-4 max-w-2xl" />
       </section>
+
+      <SiteAiStatusBanner />
 
       <EthicsBanner />
 

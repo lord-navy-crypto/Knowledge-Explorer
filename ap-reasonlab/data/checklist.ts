@@ -46,8 +46,8 @@ export const checklistItems: ChecklistItem[] = [
   {
     id: "english-lanes",
     status: "done",
-    title: "Expand English TOEFL/SAT practice banks (80+ each)",
-    description: "Validated MCQ banks with batch3 expansion; lanes and uploads via Forum.",
+    title: "Expand English TOEFL/SAT practice banks (90+ each)",
+    description: "Validated MCQ banks with curated + batch items; playable on TOEFL/SAT hubs with skill filters.",
     link: "/english",
   },
   {

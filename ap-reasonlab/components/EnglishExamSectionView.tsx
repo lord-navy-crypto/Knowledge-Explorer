@@ -1,6 +1,8 @@
 import Link from "next/link";
 import EnglishPageHeader from "@/components/EnglishPageHeader";
+import EnglishPracticeBank from "@/components/EnglishPracticeBank";
 import EnglishResourcePanel from "@/components/EnglishResourcePanel";
+import { questionsForSection } from "@/lib/english-question-bank";
 import OfficialResourceLinks from "@/components/OfficialResourceLinks";
 import ToeflListenReplay from "@/components/ToeflListenReplay";
 import ToeflSpeakShadow from "@/components/ToeflSpeakShadow";
@@ -79,6 +81,7 @@ export default function EnglishExamSectionView({
   const isToefl = exam.id === "toefl";
   const lane = isToefl ? toeflLaneCopy(section.id) : null;
   const official = getExamSectionOfficial(exam.id, section.id);
+  const sectionMcqs = questionsForSection(exam.id, section.id);
 
   return (
     <div className="space-y-8">
@@ -140,6 +143,14 @@ export default function EnglishExamSectionView({
 
       {official ? (
         <OfficialResourceLinks block={official} tone={isToefl ? "emerald" : "rose"} />
+      ) : null}
+
+      {sectionMcqs.length > 0 ? (
+        <EnglishPracticeBank
+          title={`${section.title} · practice questions`}
+          description={`${sectionMcqs.length} in-site MCQ items tagged for ${section.title}. Upload lanes below for your own materials.`}
+          questions={sectionMcqs}
+        />
       ) : null}
 
       {/* Reading / Writing / Listening: upload slot first. Speaking: shadow tool first. */}

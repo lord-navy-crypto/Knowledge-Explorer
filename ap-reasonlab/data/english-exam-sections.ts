@@ -26,7 +26,7 @@ export const englishExamConfigs: Record<EnglishExamId, EnglishExamConfig> = {
     title: "TOEFL",
     hubHref: "/english/toefl",
     blurb:
-      "Four daily-practice lanes — not quiz banks. Upload reading articles, listening materials, writing prompts/范文, and speaking dialogues; Listening and Speaking include machine replay / shadow tools.",
+      "Four daily-practice lanes plus an in-site MCQ bank. Upload reading, listening, writing, and speaking materials; use built-in multiple-choice practice by skill.",
     sections: [
       {
         id: "reading",
@@ -67,7 +67,7 @@ export const englishExamConfigs: Record<EnglishExamId, EnglishExamConfig> = {
     title: "SAT",
     hubHref: "/english/sat",
     blurb:
-      "Four subject folders — English, Grammar, Reading, and Mathematics — each with its own upload space for practice questions and files.",
+      "Four subject folders plus an in-site MCQ bank (80+ questions). Upload practice files per subject or use built-in multiple-choice sets filtered by skill.",
     sections: [
       {
         id: "english",

@@ -1,5 +1,6 @@
 import { extraSatQuestions, extraToeflQuestions } from "./english-questions-extra";
 import { batch3SatQuestions, batch3ToeflQuestions } from "./english-questions-batch3";
+import { curatedSatQuestions, curatedToeflQuestions } from "./english-questions-curated";
 
 export type EnglishPracticeQuestion = {
   id: string;
@@ -17,7 +18,7 @@ export const englishExamAreas = [
     title: "TOEFL",
     icon: "T",
     description:
-      "Daily practice lanes: upload reading articles, listening scripts, writing prompts/范文, and speaking dialogues — no quiz bank.",
+      "Daily practice lanes plus an in-site MCQ bank (80+ questions). Upload reading articles, listening scripts, writing prompts, and speaking dialogues.",
   },
   {
     href: "/english/sat",
@@ -121,6 +122,7 @@ const baseToeflQuestions: EnglishPracticeQuestion[] = [
 ];
 
 export const toeflQuestions: EnglishPracticeQuestion[] = [
+  ...curatedToeflQuestions,
   ...baseToeflQuestions,
   ...extraToeflQuestions,
   ...batch3ToeflQuestions,
@@ -140,6 +142,7 @@ const baseSatQuestions: EnglishPracticeQuestion[] = [
 ];
 
 export const satQuestions: EnglishPracticeQuestion[] = [
+  ...curatedSatQuestions,
   ...baseSatQuestions,
   ...extraSatQuestions,
   ...batch3SatQuestions,

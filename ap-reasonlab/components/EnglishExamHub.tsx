@@ -1,5 +1,7 @@
 import Link from "next/link";
 import EnglishPageHeader from "@/components/EnglishPageHeader";
+import EnglishPracticeBank from "@/components/EnglishPracticeBank";
+import { questionsForExam } from "@/lib/english-question-bank";
 import type { EnglishExamConfig } from "@/data/english-exam-sections";
 
 type OfficialLink = { href: string; label: string };
@@ -24,6 +26,7 @@ export default function EnglishExamHub({
         ? "sm:grid-cols-2"
         : "sm:grid-cols-2 lg:grid-cols-4";
   const isToefl = exam.id === "toefl";
+  const mcqBank = questionsForExam(exam.id);
 
   return (
     <div className="space-y-8">
@@ -43,7 +46,7 @@ export default function EnglishExamHub({
         }
       >
         <p className="font-semibold">
-          {isToefl ? "Four practice lanes (materials, not quizzes)" : "Subject file folders"}
+          {isToefl ? "Four practice lanes + MCQ bank" : "Subject file folders + MCQ bank"}
         </p>
         <p className={`mt-1 ${isToefl ? "text-emerald-900/85" : "text-rose-900/85"}`}>
           {exam.blurb} Vocabulary and basic skills stay under{" "}
@@ -53,6 +56,12 @@ export default function EnglishExamHub({
           — no change needed there.
         </p>
       </section>
+
+      <EnglishPracticeBank
+        title={`${exam.title} · in-site practice questions`}
+        description="Original multiple-choice items grouped by skill. Use filters and pages — answers show explanations after you choose."
+        questions={mcqBank}
+      />
 
       <section className={`grid gap-4 ${cols}`}>
         {exam.sections.map((item) => (

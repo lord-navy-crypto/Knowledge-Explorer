@@ -37,8 +37,8 @@ if (extra.toeflCount < 40) throw new Error(`Expected at least 40 extra TOEFL que
 if (extra.satCount < 40) throw new Error(`Expected at least 40 extra SAT questions, got ${extra.satCount}`);
 if (extra.batch3Toefl < 31) throw new Error(`Expected at least 31 batch3 TOEFL questions, got ${extra.batch3Toefl}`);
 if (extra.batch3Sat < 31) throw new Error(`Expected at least 31 batch3 SAT questions, got ${extra.batch3Sat}`);
-if (toeflQuestions.length < 80) throw new Error(`Expected at least 80 TOEFL questions total, got ${toeflQuestions.length}`);
-if (satQuestions.length < 80) throw new Error(`Expected at least 80 SAT questions total, got ${satQuestions.length}`);
+if (toeflQuestions.length < 90) throw new Error(`Expected at least 90 TOEFL questions total, got ${toeflQuestions.length}`);
+if (satQuestions.length < 90) throw new Error(`Expected at least 90 SAT questions total, got ${satQuestions.length}`);
 
 console.log(
   `OK · TOEFL ${toeflQuestions.length} · SAT ${satQuestions.length} · extra ${extra.toeflCount}+${extra.satCount} · batch3 ${extra.batch3Toefl}+${extra.batch3Sat}`
