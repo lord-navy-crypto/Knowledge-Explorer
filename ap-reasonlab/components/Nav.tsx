@@ -6,8 +6,11 @@ import { usePathname } from "next/navigation";
 import { brand } from "@/data/brand";
 import { useEditorMode } from "@/components/EditorModeProvider";
 
-/** Slim top bar: AI Toolbox always visible; everything else under More. */
-const primaryLinks = [{ href: "/hints", label: "AI Toolbox" }];
+/** Slim top bar: AI Toolbox + Search always visible; everything else under More. */
+const primaryLinks = [
+  { href: "/hints", label: "AI Toolbox" },
+  { href: "/search", label: "Search" },
+];
 
 const moreGroups = [
   {
@@ -79,14 +82,22 @@ export default function Nav() {
     };
   }, [moreOpen]);
 
-  const visibleMoreGroups = moreGroups.map((group) =>
-    group.label === "Admin & developer" && editor
-      ? {
+  const visibleMoreGroups = moreGroups
+    .map((group) => {
+      if (group.label === "Admin & developer") {
+        if (!editor) {
+          return {
+            label: "Editors",
+            links: [{ href: "/login", label: "Editor login" }],
+          };
+        }
+        return {
           ...group,
           links: [...group.links, { href: "/ai-developer", label: "AI Developer" }],
-        }
-      : group
-  );
+        };
+      }
+      return group;
+    });
   const moreActive = visibleMoreGroups.some((group) =>
     group.links.some((link) => linkIsActive(pathname, link.href))
   );

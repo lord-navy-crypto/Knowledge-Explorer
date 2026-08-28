@@ -100,25 +100,9 @@ type EnglishTask =
 
 type CodingTask = "debug" | "write" | "explain" | "csa-frq";
 
-const SUBJECT_OPTIONS = [
-  "AP Physics 1",
-  "AP Physics 2",
-  "AP Physics C: Mechanics",
-  "AP Physics C: E&M",
-  "AP Calculus AB/BC",
-  "AP Statistics",
-  "AP Chemistry",
-  "AP Biology",
-  "AP Environmental Science",
-  "AP Psychology",
-  "AP Computer Science A",
-  "AP Computer Science Principles",
-  "AP Microeconomics",
-  "AP Macroeconomics",
-  "AP US History",
-  "AP World History",
-  "AP European History",
-] as const;
+import { AP_SUBJECTS } from "@/data/ap-expanded";
+
+const SUBJECT_OPTIONS = AP_SUBJECTS;
 
 const AP_TASKS: Array<{ value: ApTask; label: string; hint: string }> = [
   {

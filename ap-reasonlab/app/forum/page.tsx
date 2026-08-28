@@ -4,6 +4,7 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ForumDiscussions } from "@/components/ForumDiscussions";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import PrivateLearningBoxPanel, {
   type LearningBoxView,
 } from "@/components/PrivateLearningBoxPanel";
@@ -71,6 +72,7 @@ function ForumHub() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Forum" }]} />
       <header className="relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-sky-50 px-5 py-7 sm:px-8">
         <div
           className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-sky-100/70 blur-3xl"
@@ -93,7 +95,7 @@ function ForumHub() {
       </header>
 
       <nav
-        className="sticky top-0 z-10 -mx-1 flex gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white/95 p-1.5 shadow-sm backdrop-blur"
+        className="sticky top-16 z-10 -mx-1 flex gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white/95 p-1.5 shadow-sm backdrop-blur scroll-mt-24"
         aria-label="Forum sections"
       >
         {TABS.map((t) => {
