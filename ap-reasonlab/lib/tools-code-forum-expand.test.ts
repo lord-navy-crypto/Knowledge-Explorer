@@ -74,6 +74,19 @@ describe("write-tool-handoff", () => {
     expect(got?.text).toBe("Draft text");
     expect(consumeWriteToolHandoff("dual")).toBeNull();
   });
+
+  it("loads draft handoff into draft target", () => {
+    const store = new Map<string, string>();
+    vi.stubGlobal("window", {});
+    vi.stubGlobal("sessionStorage", {
+      getItem: (k: string) => store.get(k) ?? null,
+      setItem: (k: string, v: string) => store.set(k, v),
+      removeItem: (k: string) => store.delete(k),
+    });
+    preloadWriteToolDraft("draft", "# Outline\n\n- Point one");
+    const got = consumeWriteToolHandoff("draft");
+    expect(got?.text).toContain("Outline");
+  });
 });
 
 describe("forum-official-links", () => {

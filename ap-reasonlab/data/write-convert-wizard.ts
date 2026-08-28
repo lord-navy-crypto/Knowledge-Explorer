@@ -18,6 +18,34 @@ export type WriteConvertPath = {
 
 export const WRITE_CONVERT_PATHS: WriteConvertPath[] = [
   {
+    id: "sketch-export",
+    title: "Sketch notes → polish → PDF",
+    blurb: "Start on black draft paper, refine in dual-column, then export PDF.",
+    steps: [
+      {
+        id: "sketch",
+        title: "Black draft paper",
+        blurb: "Type outlines or sketch with stylus on the dark desk.",
+        toolHref: "/tools/draft",
+        handoffTarget: "draft",
+      },
+      {
+        id: "polish",
+        title: "Dual-column editor",
+        blurb: "Edit with live Markdown preview.",
+        toolHref: "/tools/dual",
+        handoffTarget: "dual",
+      },
+      {
+        id: "pdf",
+        title: "Markdown → PDF",
+        blurb: "Preview and print/save as PDF.",
+        toolHref: "/tools/markdown-pdf",
+        handoffTarget: "markdown-pdf",
+      },
+    ],
+  },
+  {
     id: "essay-export",
     title: "Essay → count → PDF",
     blurb: "Draft in Markdown, check length, then print/save as PDF.",

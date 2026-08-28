@@ -5,6 +5,7 @@ import Link from "next/link";
 import StudyToolShell from "@/components/StudyToolShell";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
 import RichContent from "@/components/RichContent";
+import WriteToolHandoffBanner from "@/components/WriteToolHandoffBanner";
 import { consumeWriteToolHandoff } from "@/lib/write-tool-handoff";
 
 export default function WordImportTool() {
@@ -87,6 +88,10 @@ export default function WordImportTool() {
       description="Upload a .docx file and extract readable Markdown you can paste into concepts, practice, or dual-column editor."
       tip="Complex Word layouts (tables, tracked changes) may simplify. Images are skipped — keep them in the file panel instead. Need a PDF? Use Word → PDF for a one-shot Print → Save as PDF flow."
     >
+      {handoffNote ? (
+        <WriteToolHandoffBanner message={handoffNote} onDismiss={() => setHandoffNote("")} />
+      ) : null}
+
       <div className="no-print flex flex-wrap items-center gap-3">
         <label className="btn-primary cursor-pointer">
           {busy ? "Reading…" : "Choose .docx"}

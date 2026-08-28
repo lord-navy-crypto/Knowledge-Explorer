@@ -5,6 +5,7 @@ import Link from "next/link";
 import StudyToolShell from "@/components/StudyToolShell";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
 import RichContent from "@/components/RichContent";
+import WriteToolHandoffBanner from "@/components/WriteToolHandoffBanner";
 import { consumeWriteToolHandoff } from "@/lib/write-tool-handoff";
 
 /**
@@ -85,6 +86,10 @@ export default function WordPdfTool() {
       description="Upload a .docx, preview the extracted content, then use Print → Save as PDF. Everything stays in this browser."
       tip="Layout will not match Word pixel-for-pixel (tables/images may simplify). For editable Markdown first, use Word → Markdown."
     >
+      {handoffNote ? (
+        <WriteToolHandoffBanner message={handoffNote} onDismiss={() => setHandoffNote("")} />
+      ) : null}
+
       <div className="no-print flex flex-wrap items-center gap-3">
         <label className="btn-primary cursor-pointer">
           {busy ? "Reading…" : "Choose .docx"}

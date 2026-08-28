@@ -5,6 +5,7 @@ import LocalAiRecommendation from "@/components/LocalAiRecommendation";
 import RecommendedStudyTools from "@/components/RecommendedStudyTools";
 import ToolClusters from "@/components/ToolClusters";
 import ToolsCatalog from "@/components/ToolsCatalog";
+import ToolsSpotlightCards from "@/components/ToolsSpotlightCards";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import { TOOL_SECURITY_LABELS, listedStudyTools, type ToolSecurity } from "@/data/study-tools";
 
@@ -74,6 +75,8 @@ export default function ToolsPage() {
           })}
         </div>
       </section>
+
+      <ToolsSpotlightCards />
 
       <Suspense fallback={<div className="card text-sm text-slate-500">Loading catalog…</div>}>
         <ToolsCatalog tools={tools} />
