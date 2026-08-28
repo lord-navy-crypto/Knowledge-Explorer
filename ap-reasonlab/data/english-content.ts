@@ -22,13 +22,13 @@ export const englishExamAreas = [
     title: "TOEFL",
     icon: "T",
     description:
-      "Daily practice lanes plus an in-site MCQ bank (80+ questions). Upload reading articles, listening scripts, writing prompts, and speaking dialogues.",
+      "Daily practice lanes plus an in-site MCQ bank (120+ questions). Upload reading articles, listening scripts, writing prompts, and speaking dialogues.",
   },
   {
     href: "/english/sat",
     title: "SAT",
     icon: "S",
-    description: "4 subject folders: English, Grammar, Reading, Mathematics — practice questions per folder.",
+    description: "4 subject folders plus 120+ in-site MCQ practice questions filtered by skill.",
   },
 ] as const;
 

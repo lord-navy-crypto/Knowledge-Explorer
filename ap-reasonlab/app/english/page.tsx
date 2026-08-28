@@ -20,10 +20,11 @@ export default function EnglishHubPage() {
       />
 
       <section className="rounded-2xl border border-sky-200 bg-sky-50/80 px-5 py-4 text-sm text-sky-950">
-        <p className="font-semibold">TOEFL &amp; SAT lanes are live</p>
+        <p className="font-semibold">TOEFL &amp; SAT MCQ banks are live (120+ each)</p>
         <p className="mt-1 text-sky-900/85">
-          Exam folders, vocabulary, grammar, and English AI are ready. Some SAT question banks are
-          still expanding — use AI Toolbox or Forum to request more practice sets.
+          Exam folders, vocabulary, grammar, and English AI are ready. Upload more lanes via Manage,
+          or ask for sets on Forum — built-in banks already include hand-curated and challenge-tier
+          items.
         </p>
       </section>
 

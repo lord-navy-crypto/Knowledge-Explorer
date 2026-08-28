@@ -12,6 +12,10 @@ export type NavyGithubRepo = {
   /** simulation = research/lab platforms; download = Shell builders/installers */
   lane: "simulation" | "download";
   badge?: string;
+  /** Short bullet highlights for card UI */
+  highlights?: string[];
+  /** Card accent token — maps to gradient in GithubRepoCard */
+  accent?: "violet" | "sky" | "emerald" | "amber" | "rose" | "indigo" | "slate";
 };
 
 export const LORD_NAVY_GITHUB = "https://github.com/lord-navy-crypto";
@@ -27,6 +31,8 @@ export const LORD_NAVY_REPOS: NavyGithubRepo[] = [
       "Random walks, Monte Carlo integration, uncertainty analysis, and reproducible numerical experiments.",
     lane: "simulation",
     badge: "Python",
+    accent: "violet",
+    highlights: ["2D/3D random walks", "Monte Carlo integration", "Uncertainty bands"],
   },
   {
     id: "numerical-methods",
@@ -37,6 +43,8 @@ export const LORD_NAVY_REPOS: NavyGithubRepo[] = [
       "Taylor evaluation, floating-point error, cancellation, stopping rules, and false-convergence diagnostics.",
     lane: "simulation",
     badge: "Python",
+    accent: "sky",
+    highlights: ["Round-off error demos", "Cancellation pitfalls", "Stopping-rule checks"],
   },
   {
     id: "oscillation",
@@ -47,6 +55,8 @@ export const LORD_NAVY_REPOS: NavyGithubRepo[] = [
       "Linear / damped / driven / nonlinear oscillators and the numerical integrators behind them.",
     lane: "simulation",
     badge: "Python",
+    accent: "indigo",
+    highlights: ["SHM & damping", "Driver forcing", "Integrator comparison"],
   },
   {
     id: "chaos",
@@ -57,6 +67,8 @@ export const LORD_NAVY_REPOS: NavyGithubRepo[] = [
       "Driven pendula, Kapitza stabilization, double pendulum, Lyapunov estimates, and reliability checks.",
     lane: "simulation",
     badge: "Python",
+    accent: "rose",
+    highlights: ["Double pendulum chaos", "Lyapunov estimates", "Kapitza stabilization"],
   },
   {
     id: "ising",
@@ -67,6 +79,8 @@ export const LORD_NAVY_REPOS: NavyGithubRepo[] = [
       "1D/2D Ising models, Monte Carlo sampling, finite-size effects, and analytic references.",
     lane: "simulation",
     badge: "Python",
+    accent: "amber",
+    highlights: ["Metropolis sampling", "Finite-size scaling", "1D vs 2D lattices"],
   },
   {
     id: "radia-magnet",
@@ -77,6 +91,8 @@ export const LORD_NAVY_REPOS: NavyGithubRepo[] = [
       "RADIA-based insertion-device modelling, presets, and sensitivity / Monte Carlo analysis.",
     lane: "simulation",
     badge: "Python",
+    accent: "emerald",
+    highlights: ["Insertion-device presets", "Field maps", "Sensitivity sweeps"],
   },
   {
     id: "radia-radiation",
@@ -87,6 +103,8 @@ export const LORD_NAVY_REPOS: NavyGithubRepo[] = [
       "Unified magnet → trajectory → radiation scan workflow (Streamlit research platform).",
     lane: "simulation",
     badge: "Python",
+    accent: "sky",
+    highlights: ["Magnet → trajectory pipeline", "Radiation scans", "Streamlit UI"],
   },
   {
     id: "radiation-study",
@@ -96,6 +114,8 @@ export const LORD_NAVY_REPOS: NavyGithubRepo[] = [
     detail: "Related radiation / RADIA study repository.",
     lane: "simulation",
     badge: "Python",
+    accent: "slate",
+    highlights: ["RADIA companion repo", "Radiation workflow notes"],
   },
 
   // —— Download (Shell builders / installers) ——
@@ -108,6 +128,8 @@ export const LORD_NAVY_REPOS: NavyGithubRepo[] = [
       "Shell builder: Project Chrono Modal as Universal2 (arm64 + x86_64). Run START_CHRONO_MODAL_BUILDER.command.",
     lane: "download",
     badge: "Shell",
+    accent: "emerald",
+    highlights: ["Universal2 fat binary", "Double-click .command launcher", "Project Chrono Modal"],
   },
   {
     id: "radia-installer",
@@ -118,6 +140,8 @@ export const LORD_NAVY_REPOS: NavyGithubRepo[] = [
       "Shell installer for the official RADIA Python extension as Universal2. Run RUN_RADIA_UNIVERSAL2_SAFE.command.",
     lane: "download",
     badge: "Shell",
+    accent: "indigo",
+    highlights: ["Official RADIA Python ext", "Safe installer script", "arm64 + x86_64"],
   },
   {
     id: "vampire-builder",
@@ -128,6 +152,8 @@ export const LORD_NAVY_REPOS: NavyGithubRepo[] = [
       "Native Apple Silicon (arm64) source builder for the VAMPIRE atomistic magnetic simulator. Double-click START.command.",
     lane: "download",
     badge: "Shell",
+    accent: "violet",
+    highlights: ["Native arm64 build", "VAMPIRE atomistic sim", "START.command entry"],
   },
 ];
 

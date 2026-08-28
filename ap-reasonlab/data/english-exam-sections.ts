@@ -26,7 +26,7 @@ export const englishExamConfigs: Record<EnglishExamId, EnglishExamConfig> = {
     title: "TOEFL",
     hubHref: "/english/toefl",
     blurb:
-      "Four daily-practice lanes plus an in-site MCQ bank. Upload reading, listening, writing, and speaking materials; use built-in multiple-choice practice by skill.",
+      "Four daily-practice lanes plus an in-site MCQ bank (120+ questions). Upload reading, listening, writing, and speaking materials; use built-in multiple-choice practice by skill.",
     sections: [
       {
         id: "reading",

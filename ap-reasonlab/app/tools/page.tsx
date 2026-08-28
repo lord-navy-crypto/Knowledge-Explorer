@@ -2,6 +2,7 @@ import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import LocalAiRecommendation from "@/components/LocalAiRecommendation";
 import RecommendedStudyTools from "@/components/RecommendedStudyTools";
+import ToolsCategoryJump from "@/components/ToolsCategoryJump";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import {
   STUDY_TOOL_CATEGORIES,
@@ -57,9 +58,11 @@ export default function ToolsPage() {
           <Link href="/hints" className="font-medium text-brand-700 underline">
             AI Toolbox
           </Link>
-          . Categories below are the single catalog — no duplicate “recommended built-in” strip.
-          Badges mark permission level (file upload, API keys, local data, shared/change code).
+          . {tools.length} tools in {STUDY_TOOL_CATEGORIES.length} categories — use the chips below
+          on mobile to jump. Security badges mark permission level (file upload, API keys, local
+          data).
         </p>
+        <ToolsCategoryJump />
         <LocalAiRecommendation className="relative mt-4 max-w-2xl" />
         <div className="relative mt-4 flex flex-wrap gap-2 text-[11px] text-slate-600">
           {(Object.keys(TOOL_SECURITY_LABELS) as ToolSecurity[]).map((key) => {
@@ -81,7 +84,7 @@ export default function ToolsPage() {
         const items = tools.filter((tool) => tool.category === category.id);
         if (!items.length) return null;
         return (
-          <section key={category.id} className="space-y-3">
+          <section key={category.id} id={`tools-${category.id}`} className="scroll-mt-28 space-y-3">
             <div className="flex items-end justify-between gap-3 border-b border-slate-200 pb-2">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                 {category.label}
@@ -93,7 +96,7 @@ export default function ToolsPage() {
                 <Link
                   key={tool.id}
                   href={tool.href}
-                  className="card-hover group flex min-h-[7.5rem] flex-col"
+                  className="card-hover group flex min-h-[7.5rem] flex-col touch-manipulation active:scale-[0.99]"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="text-base font-bold text-slate-900 group-hover:text-brand-700">

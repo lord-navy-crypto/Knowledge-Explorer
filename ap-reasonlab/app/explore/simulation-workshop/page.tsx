@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import GithubRepoCard from "@/components/GithubRepoCard";
 import { LORD_NAVY_GITHUB, reposForLane } from "@/data/lord-navy-github";
 
 const REPOS = reposForLane("simulation");
@@ -16,7 +17,7 @@ export default function SimulationWorkshopPage() {
         ]}
       />
 
-      <section className="space-y-3">
+      <section className="space-y-3 rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-50/80 via-white to-slate-50 px-5 py-6 sm:px-7">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-600">
           Simulation Workshop
         </p>
@@ -33,31 +34,22 @@ export default function SimulationWorkshopPage() {
           >
             github.com/lord-navy-crypto
           </a>
-          . Each card opens the GitHub repository — run them locally from the repo README.
+          . Each card opens the GitHub repository — clone or download ZIP, then follow the README to
+          run locally (Python / Streamlit).
         </p>
-        <p className="text-xs text-slate-500">{REPOS.length} repositories · GitHub links only</p>
+        <div className="flex flex-wrap gap-2 text-xs text-slate-600">
+          <span className="rounded-full bg-white px-3 py-1 ring-1 ring-slate-200">
+            {REPOS.length} repositories
+          </span>
+          <span className="rounded-full bg-white px-3 py-1 ring-1 ring-slate-200">
+            Monte Carlo · oscillators · chaos · Ising · RADIA
+          </span>
+        </div>
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2">
         {REPOS.map((item) => (
-          <a
-            key={item.id}
-            href={item.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group rounded-2xl border border-slate-200 bg-white px-5 py-5 shadow-sm transition hover:border-brand-300 hover:shadow-md"
-          >
-            {item.badge ? (
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                {item.badge}
-              </p>
-            ) : null}
-            <h2 className="mt-1 font-display text-lg font-semibold text-slate-900 group-hover:text-brand-800">
-              {item.title}
-            </h2>
-            <p className="mt-2 text-sm text-slate-600">{item.detail}</p>
-            <p className="mt-3 text-sm font-medium text-brand-700">Open on GitHub →</p>
-          </a>
+          <GithubRepoCard key={item.id} repo={item} />
         ))}
       </section>
 

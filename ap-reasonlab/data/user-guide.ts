@@ -47,11 +47,11 @@ export const USER_GUIDE_SECTIONS: UserGuideSection[] = [
       },
     ],
     body:
-      "Desktop: sticky header with AI Toolbox + Search, plus More dropdown (boxes, quick links, editor login). Mobile: four-button bottom bar — Home · Search · AI Toolbox · More. Jump-to-chat appears on toolbox pages. Themes and night mode live in the style window (palette icon).",
+      "Desktop: sticky header with AI Toolbox + Search, plus More dropdown (boxes, quick links, editor login). On narrow screens the header also scrolls AP · English · Practice · AI · Search quick links. Mobile bottom bar: Home · Explore · Search · AI · More — tap More for AP, English, Tools, Code, and guides. Jump-to-chat appears on toolbox pages. Themes and night mode live in the style window (palette icon).",
     steps: [
       "Open Home → choose a box (AP, Tools, Simulation, Forum).",
-      "Desktop: use Search in the header. Mobile: tap Search on the bottom bar.",
-      "More → Quick links for /ap, /english, /tools, /user-guide.",
+      "Desktop: use Search in the header. Mobile: tap Search on the bottom bar (or ⌘K).",
+      "More → Quick links for /ap, /english, /practice, /tools, /user-guide.",
       "Editors only: More shows full admin links after unlock at /login.",
     ],
     links: [
@@ -82,8 +82,7 @@ export const USER_GUIDE_SECTIONS: UserGuideSection[] = [
       { href: "/english", label: "English home" },
       { href: "/concepts", label: "Concepts (all subjects)" },
       { href: "/formulas", label: "Formulas (all subjects)" },
-      { href: "/practice", label: "Practice sets" },
-      { href: "/questionnaires", label: "Questionnaires" },
+      { href: "/practice", label: "Practice sets", detail: "Individual sets at /questionnaires/[id]" },
       { href: "/key-concepts", label: "Key concepts & guides" },
     ],
   },
@@ -252,7 +251,7 @@ export const USER_GUIDE_SECTIONS: UserGuideSection[] = [
       },
     ],
     steps: [
-      "Browse /tools — filter by category or search on that page.",
+      "Browse /tools — use sticky category chips on mobile, or scroll sections on desktop.",
       "Open a tool card; read the security badge (Safe, Local data, File permission, API key).",
       "For coding, /code lists Python, JavaScript, TypeScript, Web, SQL, Markdown, Java, C#.",
       "Run code, then use Send to AI in Toolbox coding tab when available.",
@@ -286,7 +285,7 @@ export const USER_GUIDE_SECTIONS: UserGuideSection[] = [
       },
     ],
     body:
-      "Simulation repos: Random Walk Monte Carlo, numerical-methods, Oscillation Integration Lab, Nonlinear Dynamics Chaos Lab, Ising Monte Carlo, RADIA Magnet Studio, RADIA Radiation Studio, radiation-study. Download: chrono-modal-macos-universal2-builder, lord-navy-crypto-radia-universal2-macos-installer, VAMPIRE-Apple-Silicon-Builder.",
+      "Simulation repos: Random Walk Monte Carlo, numerical-methods, Oscillation Integration Lab, Nonlinear Dynamics Chaos Lab, Ising Monte Carlo, RADIA Magnet Studio, RADIA Radiation Studio, radiation-study. Download: chrono-modal-macos-universal2-builder, lord-navy-crypto-radia-universal2-macos-installer, VAMPIRE-Apple-Silicon-Builder. Cards show highlights and open GitHub — clone or ZIP from each repo.",
     links: [
       { href: "/explore/workshops", label: "Simulation & Download hub" },
       { href: "/explore/simulation-workshop", label: "Simulation Workshop" },

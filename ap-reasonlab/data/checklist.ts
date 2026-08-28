@@ -69,6 +69,22 @@ export const checklistItems: ChecklistItem[] = [
     link: "/forum?tag=beta-feedback",
   },
   {
+    id: "study-tools",
+    status: "done",
+    title: "Convenient Tools catalog (38 tools + Code hub)",
+    description:
+      "Client-side study utilities, security badges, mobile category jump on /tools, and eight code playgrounds at /code.",
+    link: "/tools",
+  },
+  {
+    id: "workshops-hub",
+    status: "done",
+    title: "Simulation & Download GitHub hubs",
+    description:
+      "Rich repo cards for 8 simulation labs and 3 macOS builders — highlights, badges, and direct GitHub links.",
+    link: "/explore/workshops",
+  },
+  {
     id: "gemini",
     status: "todo",
     title: "Production AI keys on Vercel",
