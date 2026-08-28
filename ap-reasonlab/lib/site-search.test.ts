@@ -40,4 +40,44 @@ describe("searchSiteEngine", () => {
     const hits = searchSiteEngine("manage content", null, { limit: 30 });
     expect(hits.every((hit) => !hit.href.startsWith("/manage"))).toBe(true);
   });
+
+  it("indexes explore hub and writing frameworks", () => {
+    const corpus = getStaticSearchCorpus();
+    expect(corpus.some((r) => r.href === "/explore")).toBe(true);
+    expect(corpus.some((r) => r.href === "/ap/writing-frameworks")).toBe(true);
+    expect(corpus.some((r) => r.id.startsWith("writing-framework-"))).toBe(true);
+  });
+
+  it("finds calculator tool for calculator query", () => {
+    const hits = searchSiteEngine("calculator", null, { limit: 10 });
+    expect(hits.some((h) => h.href.includes("calculator"))).toBe(true);
+  });
+
+  it("finds DBQ writing framework", () => {
+    const hits = searchSiteEngine("DBQ essay", null, { limit: 10 });
+    expect(
+      hits.some(
+        (h) => h.href.includes("writing-frameworks") || h.title.toLowerCase().includes("dbq")
+      )
+    ).toBe(true);
+  });
+
+  it("finds explore page for explore query", () => {
+    const hits = searchSiteEngine("explore", null, { limit: 10 });
+    expect(hits.some((h) => h.href === "/explore" || h.href.startsWith("/explore/"))).toBe(true);
+  });
+
+  it("never returns admin or manage URLs", () => {
+    for (const q of ["manage", "manage content", "admin", "login"]) {
+      const hits = searchSiteEngine(q, null, { limit: 40 });
+      expect(hits.every((h) => !h.href.startsWith("/manage") && !h.href.startsWith("/admin"))).toBe(
+        true
+      );
+    }
+  });
+
+  it("ranks TOEFL english content for TOEFL query", () => {
+    const hits = searchSiteEngine("TOEFL reading", null, { limit: 15 });
+    expect(hits.some((h) => h.type === "english" || h.href.includes("/english/toefl"))).toBe(true);
+  });
 });
