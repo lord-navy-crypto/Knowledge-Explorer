@@ -59,8 +59,9 @@ export default function EnglishExamHub({
 
       <EnglishPracticeBank
         title={`${exam.title} · in-site practice questions`}
-        description="Original multiple-choice items grouped by skill. Use filters and pages — answers show explanations after you choose."
+        description="Original multiple-choice items grouped by skill. Progress saves in this browser."
         questions={mcqBank}
+        storageKey={`${exam.id}-hub`}
       />
 
       <section className={`grid gap-4 ${cols}`}>

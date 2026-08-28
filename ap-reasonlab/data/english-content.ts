@@ -1,6 +1,9 @@
 import { extraSatQuestions, extraToeflQuestions } from "./english-questions-extra";
-import { batch3SatQuestions, batch3ToeflQuestions } from "./english-questions-batch3";
 import { curatedSatQuestions, curatedToeflQuestions } from "./english-questions-curated";
+import {
+  curatedExtendedSatQuestions,
+  curatedExtendedToeflQuestions,
+} from "./english-questions-curated-extended";
 
 export type EnglishPracticeQuestion = {
   id: string;
@@ -123,9 +126,9 @@ const baseToeflQuestions: EnglishPracticeQuestion[] = [
 
 export const toeflQuestions: EnglishPracticeQuestion[] = [
   ...curatedToeflQuestions,
+  ...curatedExtendedToeflQuestions,
   ...baseToeflQuestions,
   ...extraToeflQuestions,
-  ...batch3ToeflQuestions,
 ];
 
 const baseSatQuestions: EnglishPracticeQuestion[] = [
@@ -143,8 +146,8 @@ const baseSatQuestions: EnglishPracticeQuestion[] = [
 
 export const satQuestions: EnglishPracticeQuestion[] = [
   ...curatedSatQuestions,
+  ...curatedExtendedSatQuestions,
   ...baseSatQuestions,
   ...extraSatQuestions,
-  ...batch3SatQuestions,
 ];
 

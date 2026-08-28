@@ -88,9 +88,10 @@ export const checklistItems: ChecklistItem[] = [
   },
   {
     id: "users",
-    status: "todo",
+    status: "in_progress",
     title: "Get 10–20 student testers",
-    description: "Share https://ap-webside.vercel.app — collect feedback on search, hints, and English lanes.",
+    description:
+      "Share https://ap-webside.vercel.app — use the beta feedback form on /about or /checklist (#beta-feedback on Forum).",
   },
   {
     id: "collab",

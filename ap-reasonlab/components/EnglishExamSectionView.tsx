@@ -150,6 +150,7 @@ export default function EnglishExamSectionView({
           title={`${section.title} · practice questions`}
           description={`${sectionMcqs.length} in-site MCQ items tagged for ${section.title}. Upload lanes below for your own materials.`}
           questions={sectionMcqs}
+          storageKey={`${exam.id}-${section.id}`}
         />
       ) : null}
 

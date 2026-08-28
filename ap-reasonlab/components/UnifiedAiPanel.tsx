@@ -412,16 +412,27 @@ export default function UnifiedAiPanel({
     [category, subject]
   );
 
-  // Warm site-search cache while typing so Local does not wait on submit.
+  // Warm site-search cache while typing (Local + English/Coding prefer modes).
   useEffect(() => {
-    if (!localAI.usesLocal || !localAI.ready) return;
     const q = input.trim();
     if (q.length < 8) return;
+    const prefer =
+      category === "english"
+        ? "language"
+        : category === "coding"
+          ? "code"
+          : category === "ap" && apTask === "guide"
+            ? "nav"
+            : category === "ap"
+              ? "formulas"
+              : undefined;
+    const shouldPrefetch = localAI.usesLocal && localAI.ready ? true : category === "english";
+    if (!shouldPrefetch) return;
     const timer = window.setTimeout(() => {
-      prefetchAiSiteContext(q, { limit: AI_SITE_SEARCH_LIMIT_LOCAL });
+      prefetchAiSiteContext(q, { limit: AI_SITE_SEARCH_LIMIT_LOCAL, prefer });
     }, 350);
     return () => window.clearTimeout(timer);
-  }, [input, localAI.ready, localAI.usesLocal]);
+  }, [input, localAI.ready, localAI.usesLocal, category, apTask]);
 
   useEffect(() => {
     saveToolboxPanelPrefs({

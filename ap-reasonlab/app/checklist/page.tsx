@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BetaFeedbackForm from "@/components/BetaFeedbackForm";
 import { checklistItems, getChecklistStats } from "@/data/checklist";
 
 const statusStyles = {
@@ -70,6 +71,8 @@ export default function ChecklistPage() {
           </article>
         ))}
       </div>
+
+      <BetaFeedbackForm />
 
       <section className="card space-y-2">
         <h2 className="section-title">Quick deploy reminder</h2>

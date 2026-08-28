@@ -13,6 +13,7 @@
     "test:e2e": "playwright test",
     "validate:english": "tsx scripts/validate-english-questions.ts",
     "generate:english-batch3": "tsx scripts/generate-english-batch3.ts",
+    "generate:curated-extended": "tsx scripts/generate-curated-extended.ts",
     "generate:ap-units": "tsx scripts/generate-ap-units-from-formulas.ts"
   },
   "dependencies": {

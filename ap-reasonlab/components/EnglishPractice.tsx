@@ -1,23 +1,31 @@
 "use client";
 
-import { useState } from "react";
 import type { EnglishPracticeQuestion } from "@/data/english-content";
 import RichContent from "@/components/RichContent";
 
-type Props = { questions: EnglishPracticeQuestion[] };
+type Props = {
+  questions: EnglishPracticeQuestion[];
+  answers?: Record<string, number>;
+  onAnswer?: (answers: Record<string, number>) => void;
+};
 
-export default function EnglishPractice({ questions }: Props) {
-  const [answers, setAnswers] = useState<Record<string, number>>({});
+export default function EnglishPractice({ questions, answers: controlled, onAnswer }: Props) {
+  const isControlled = controlled != null && onAnswer != null;
+
+  function select(questionId: string, choiceIndex: number) {
+    if (!onAnswer) return;
+    onAnswer({ ...(controlled || {}), [questionId]: choiceIndex });
+  }
 
   return (
     <div className="space-y-4">
       {questions.map((question, questionIndex) => {
-        const selected = answers[question.id];
+        const selected = isControlled ? controlled[question.id] : undefined;
         const answered = selected !== undefined;
         return (
           <article key={question.id} className="card space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="badge">Original practice {questionIndex + 1}</span>
+              <span className="badge">Practice {questionIndex + 1}</span>
               <span className="text-xs font-medium text-slate-500">{question.skill}</span>
             </div>
             <RichContent className="font-medium leading-7 text-slate-900">{question.prompt}</RichContent>
@@ -29,7 +37,7 @@ export default function EnglishPractice({ questions }: Props) {
                   <button
                     key={choice}
                     type="button"
-                    onClick={() => setAnswers((current) => ({ ...current, [question.id]: choiceIndex }))}
+                    onClick={() => select(question.id, choiceIndex)}
                     className={`rounded-xl border px-4 py-3 text-left text-sm transition ${
                       isCorrect
                         ? "border-emerald-300 bg-emerald-50 text-emerald-950"
@@ -46,8 +54,15 @@ export default function EnglishPractice({ questions }: Props) {
               })}
             </div>
             {answered && (
-              <div role="status" className={`rounded-xl px-4 py-3 text-sm ${selected === question.answer ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-950"}`}>
-                <strong>{selected === question.answer ? "Correct." : `Review: the best answer is ${String.fromCharCode(65 + question.answer)}.`}</strong>{" "}
+              <div
+                role="status"
+                className={`rounded-xl px-4 py-3 text-sm ${selected === question.answer ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-950"}`}
+              >
+                <strong>
+                  {selected === question.answer
+                    ? "Correct."
+                    : `Review: the best answer is ${String.fromCharCode(65 + question.answer)}.`}
+                </strong>{" "}
                 <RichContent className="mt-1 inline [&>p]:inline">{question.explanation}</RichContent>
               </div>
             )}

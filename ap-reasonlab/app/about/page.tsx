@@ -1,5 +1,6 @@
 import Link from "next/link";
 import EthicsBanner from "@/components/EthicsBanner";
+import BetaFeedbackForm from "@/components/BetaFeedbackForm";
 import { brand, trueJetMembers } from "@/data/brand";
 import { footerDisclaimerShort } from "@/data/disclaimer";
 
@@ -34,6 +35,8 @@ export default function AboutPage() {
       </section>
 
       <EthicsBanner />
+
+      <BetaFeedbackForm />
 
       <section className="card space-y-3">
         <h2 className="text-lg font-semibold">Content change code</h2>
