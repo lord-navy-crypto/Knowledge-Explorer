@@ -1,11 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const STORAGE_NAME = "ke-beta-feedback-name";
 
 export default function BetaFeedbackForm() {
   const [name, setName] = useState("");
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_NAME);
+      if (saved) setName(saved);
+    } catch {
+      /* ignore storage errors */
+    }
+  }, []);
   const [topic, setTopic] = useState("");
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");

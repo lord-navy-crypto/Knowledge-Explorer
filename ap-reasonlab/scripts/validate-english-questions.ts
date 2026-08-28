@@ -12,8 +12,8 @@ function loadExtra() {
   const extendedSource = readFileSync(extended, "utf8");
   const toeflCount = (source.match(/id: "toefl-extra-/g) || []).length;
   const satCount = (source.match(/id: "sat-extra-/g) || []).length;
-  const extToefl = (extendedSource.match(/"id": "toefl-curated-ext-/g) || []).length;
-  const extSat = (extendedSource.match(/"id": "sat-curated-ext-/g) || []).length;
+  const extToefl = (extendedSource.match(/toefl-curated-ext-/g) || []).length;
+  const extSat = (extendedSource.match(/sat-curated-ext-/g) || []).length;
   return { toeflCount, satCount, extToefl, extSat };
 }
 

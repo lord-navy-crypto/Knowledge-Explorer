@@ -1,6 +1,6 @@
 /**
- * Generate curated extended MCQ banks to replace batch3 templates.
- * Run: npx tsx scripts/generate-curated-extended.ts
+ * Legacy generator — prefer editing data/english-questions-curated-extended.ts by hand.
+ * Run: npm run generate:curated-extended
  */
 import { writeFileSync } from "node:fs";
 import path from "node:path";
