@@ -21,6 +21,18 @@ test("Physics 1 Set B practice set is reachable", async ({ page }) => {
   await expect(page).toHaveURL(/questionnaires\/phys1-gen-energy-b/);
 });
 
+test("MCQ score and review-wrong mode", async ({ page }) => {
+  await page.goto("/english/sat/reading");
+  await page.getByRole("button", { name: /^D\./ }).first().click();
+  await expect(page.getByText(/Score:/)).toBeVisible();
+  const reviewBtn = page.getByRole("button", { name: /Review \d+ wrong/ });
+  if (await reviewBtn.count()) {
+    await reviewBtn.first().click();
+    await expect(page.getByText(/Review mode/)).toBeVisible();
+    await page.getByRole("button", { name: "Show all questions" }).click();
+  }
+});
+
 test("beta feedback form prefill and forum tag filter", async ({ page }) => {
   await page.goto("/about");
   await page.evaluate(() => localStorage.setItem("results-forum-display-name", "Test Beta User"));

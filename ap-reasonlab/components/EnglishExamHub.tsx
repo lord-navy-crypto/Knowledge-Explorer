@@ -2,6 +2,7 @@ import Link from "next/link";
 import EnglishPageHeader from "@/components/EnglishPageHeader";
 import EnglishPracticeBank from "@/components/EnglishPracticeBank";
 import { questionsForExam } from "@/lib/english-question-bank";
+import { hubTimerMinutes } from "@/lib/english-section-timers";
 import type { EnglishExamConfig } from "@/data/english-exam-sections";
 
 type OfficialLink = { href: string; label: string };
@@ -62,6 +63,7 @@ export default function EnglishExamHub({
         description="Original multiple-choice items grouped by skill. Progress saves in this browser."
         questions={mcqBank}
         storageKey={`${exam.id}-hub`}
+        timedMinutes={hubTimerMinutes(exam.id)}
       />
 
       <section className={`grid gap-4 ${cols}`}>

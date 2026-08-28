@@ -62,6 +62,7 @@ export default function EnglishPracticeBank({
   const [restored, setRestored] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
   const [timerRunning, setTimerRunning] = useState(false);
+  const [reviewWrong, setReviewWrong] = useState(false);
 
   useEffect(() => {
     const saved = loadSaved(storageKey);
@@ -112,9 +113,31 @@ export default function EnglishPracticeBank({
     return questions.filter((q) => q.skill === skill);
   }, [questions, skill]);
 
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const scoreStats = useMemo(() => {
+    let correct = 0;
+    let wrong = 0;
+    for (const q of filtered) {
+      const picked = answers[q.id];
+      if (picked === undefined) continue;
+      if (picked === q.answer) correct += 1;
+      else wrong += 1;
+    }
+    return { correct, wrong, answered: correct + wrong };
+  }, [filtered, answers]);
+
+  const wrongQuestions = useMemo(
+    () =>
+      filtered.filter((q) => {
+        const picked = answers[q.id];
+        return picked !== undefined && picked !== q.answer;
+      }),
+    [filtered, answers]
+  );
+
+  const displayPool = reviewWrong ? wrongQuestions : filtered;
+  const pageCount = Math.max(1, Math.ceil(displayPool.length / PAGE_SIZE));
   const safePage = Math.min(page, pageCount - 1);
-  const slice = filtered.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
+  const slice = displayPool.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
 
   const answeredCount = Object.keys(answers).filter((id) =>
     filtered.some((q) => q.id === id)
@@ -124,6 +147,7 @@ export default function EnglishPracticeBank({
     setAnswers({});
     setPage(0);
     setSkill("all");
+    setReviewWrong(false);
     setTimerRunning(false);
     if (timedMinutes) setSecondsLeft(timedMinutes * 60);
     try {
@@ -183,6 +207,36 @@ export default function EnglishPracticeBank({
         </div>
       ) : null}
 
+      {scoreStats.answered > 0 ? (
+        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800">
+          <span>
+            Score: <strong>{scoreStats.correct}</strong> / {scoreStats.answered} correct in this
+            filter
+          </span>
+          {scoreStats.wrong > 0 ? (
+            <button
+              type="button"
+              className="font-semibold text-brand-700 underline"
+              onClick={() => {
+                setReviewWrong((v) => !v);
+                setPage(0);
+              }}
+            >
+              {reviewWrong ? "Show all questions" : `Review ${scoreStats.wrong} wrong`}
+            </button>
+          ) : (
+            <span className="text-emerald-700">No wrong answers in this filter.</span>
+          )}
+        </div>
+      ) : null}
+
+      {reviewWrong ? (
+        <p className="text-sm text-amber-900">
+          Review mode — {wrongQuestions.length} missed question
+          {wrongQuestions.length === 1 ? "" : "s"}. Change answers to update your score.
+        </p>
+      ) : null}
+
       {answeredCount > 0 ? (
         <div className="flex flex-wrap items-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-3 py-2 text-sm text-brand-900">
           <span>Progress saved — resume anytime on this device.</span>
@@ -204,6 +258,7 @@ export default function EnglishPracticeBank({
             onChange={(e) => {
               setSkill(e.target.value);
               setPage(0);
+              setReviewWrong(false);
             }}
           >
             <option value="all">All skills</option>
@@ -216,8 +271,10 @@ export default function EnglishPracticeBank({
         </div>
       ) : null}
 
-      {filtered.length === 0 ? (
-        <p className="text-sm text-slate-500">No practice questions in this filter yet.</p>
+      {displayPool.length === 0 ? (
+        <p className="text-sm text-slate-500">
+          {reviewWrong ? "No wrong answers to review in this filter." : "No practice questions in this filter yet."}
+        </p>
       ) : (
         <>
           <EnglishPractice questions={slice} answers={answers} onAnswer={setAnswers} />

@@ -40,7 +40,8 @@ export const checklistItems: ChecklistItem[] = [
     id: "content-v1",
     status: "in_progress",
     title: "Fill AP concepts, formulas, generated questions",
-    description: "Core STEM units live; humanities formula sheets and Chem/Bio expansion in progress.",
+    description:
+      "STEM Sets A–D and humanities Sets A–D live for major subjects; managed content adds more via /manage.",
     link: "/concepts",
   },
   {
@@ -54,9 +55,9 @@ export const checklistItems: ChecklistItem[] = [
   {
     id: "ap-practice-b",
     status: "done",
-    title: "AP generated FRQ Set A–D per STEM lane",
+    title: "AP generated FRQ Set A–D (STEM + humanities)",
     description:
-      "Physics 1, Calc, Chem, Bio have Sets A–D; other subjects have A–B. Practice page groups by Set label.",
+      "Physics 1, Calc, Chem, Bio, USH, World, Euro, English Lang/Lit have Sets A–D with concept links on /practice.",
     link: "/practice",
   },
   {
@@ -77,16 +78,18 @@ export const checklistItems: ChecklistItem[] = [
   },
   {
     id: "more-phys",
-    status: "in_progress",
+    status: "done",
     title: "Expand Physics 1 (energy, momentum, rotation, SHM)",
-    description: "Built-in concepts for Units 4–7; more generated sets welcome.",
+    description:
+      "Units 4–8 concepts, formulas, half-process drills, and FRQ Sets A–D with concept links.",
     link: "/formulas?subject=AP%20Physics%201",
   },
   {
     id: "more-calc",
-    status: "in_progress",
+    status: "done",
     title: "Expand Calculus AB/BC (integrals, FTC, applications)",
-    description: "Units 6–8 concepts + integral practice sets in built-in library.",
+    description:
+      "Units 4–8 formulas, related-rates/DE drills, and FRQ Sets A–D including applications and DE.",
     link: "/formulas?subject=AP%20Calculus%20AB%2FBC",
   },
   {
@@ -98,9 +101,10 @@ export const checklistItems: ChecklistItem[] = [
   },
   {
     id: "chem-bio",
-    status: "in_progress",
+    status: "done",
     title: "AP Chemistry & AP Biology depth",
-    description: "Starter concepts and formulas live; more units in progress.",
+    description:
+      "Starter concepts, formulas, and FRQ Sets A–D; expand further via Manage or generated uploads.",
     link: "/ap",
   },
   {

@@ -18,6 +18,7 @@ export const humanitiesQuestionnaires: Questionnaire[] = [
         id: "apush-dbq-a1",
         format: "frq_half",
         difficultyTier: 2,
+        conceptId: "ush-periodization",
         prompt:
           "Evaluate the extent to which Progressive Era reforms (1890–1920) expanded democratic participation in the United States.",
         visibleSteps: [
@@ -50,6 +51,7 @@ export const humanitiesQuestionnaires: Questionnaire[] = [
         id: "apwh-leq-a1",
         format: "frq_half",
         difficultyTier: 2,
+        conceptId: "whap-industrial",
         prompt:
           "In the period 1450–1750, compare the effects of maritime exploration on two world regions.",
         visibleSteps: [
@@ -82,6 +84,7 @@ export const humanitiesQuestionnaires: Questionnaire[] = [
         id: "aplang-rhet-a1",
         format: "frq_half",
         difficultyTier: 2,
+        conceptId: "elang-rhetoric",
         prompt:
           "Analyze how the author of a speech advocating for public parks uses rhetorical choices to build credibility with a city council audience.",
         visibleSteps: [

@@ -25,3 +25,13 @@ export function sectionTimerMinutes(
 ): number | undefined {
   return ENGLISH_SECTION_TIMER_MINUTES[examId]?.[sectionId];
 }
+
+/** Full-hub practice pace (all skills combined). */
+export const ENGLISH_HUB_TIMER_MINUTES: Record<EnglishExamId, number> = {
+  toefl: 54,
+  sat: 64,
+};
+
+export function hubTimerMinutes(examId: EnglishExamId): number {
+  return ENGLISH_HUB_TIMER_MINUTES[examId];
+}

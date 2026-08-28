@@ -102,6 +102,7 @@ export const apPracticeBySubject: Questionnaire[] = [
       {
         id: "ush-src-a1",
         format: "frq_half",
+        conceptId: "ush-constitution",
         conceptIntro: "Key concept: HIPP — Historical context, Intended audience, Purpose, Point of view.",
         prompt:
           "A 1917 editorial urges women's suffrage. List two contextual facts that would help frame the author's argument.",
@@ -125,6 +126,7 @@ export const apPracticeBySubject: Questionnaire[] = [
       {
         id: "wh-comp-a1",
         format: "frq_half",
+        conceptId: "whap-industrial",
         conceptIntro: "Key concept: valid comparison category.",
         prompt:
           "Compare land-based empires' use of tribute systems in the period 1450–1750. Name one similarity and one difference to explain.",
@@ -148,6 +150,7 @@ export const apPracticeBySubject: Questionnaire[] = [
       {
         id: "aplang-rhet-a1",
         format: "frq_half",
+        conceptId: "elang-rhetoric",
         conceptIntro: "Key concept: SOAPS + thesis.",
         prompt:
           "Analyze how an op-ed about school start times uses evidence to appeal to parents.",
@@ -171,6 +174,7 @@ export const apPracticeBySubject: Questionnaire[] = [
       {
         id: "aplit-cr-a1",
         format: "frq_half",
+        conceptId: "elit-poetry",
         conceptIntro: "Key concept: claim about effect of a device.",
         prompt:
           "A poem uses enjambment across three lines describing a storm. What effect might enjambment create for the reader?",
@@ -343,6 +347,7 @@ export const apPracticeBySubject: Questionnaire[] = [
       {
         id: "eur-ctx-a1",
         format: "frq_half",
+        conceptId: "euro-renaissance",
         conceptIntro: "Key concept: broader historical context before thesis.",
         prompt:
           "Before writing about Enlightenment reforms, give two sentences of context from the 17th–18th centuries.",

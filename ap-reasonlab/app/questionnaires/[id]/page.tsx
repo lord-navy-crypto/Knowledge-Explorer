@@ -114,6 +114,9 @@ export default function QuestionnaireDetailPage() {
   }
 
   const isManaged = quiz.id.startsWith("m-quiz");
+  const relatedConceptIds = [
+    ...new Set((quiz.items || []).map((item) => item.conceptId).filter(Boolean) as string[]),
+  ];
 
   return (
     <div className="practice-exam-page space-y-6">
@@ -140,6 +143,25 @@ export default function QuestionnaireDetailPage() {
       </section>
 
       <EthicsBanner />
+
+      {relatedConceptIds.length > 0 ? (
+        <section className="card space-y-2 border-brand-100 bg-brand-50/40">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-600">
+            Related concepts
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            {relatedConceptIds.map((conceptId) => (
+              <Link
+                key={conceptId}
+                href={`/concepts/${conceptId}`}
+                className="rounded-full border border-brand-200 bg-white px-3 py-1 text-sm font-medium text-brand-800 hover:border-brand-400"
+              >
+                {conceptId.replace(/-/g, " ")} →
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {(quiz.items || []).map((item, index) => (
         <QuestionnaireItemCard key={item.id} item={item} index={index} />
