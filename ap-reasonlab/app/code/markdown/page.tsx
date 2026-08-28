@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import OfficialResourceLinks from "@/components/OfficialResourceLinks";
+import TrackToolboxVisit from "@/components/TrackToolboxVisit";
 import { getCodeLangOfficial } from "@/data/official-resources";
 import MarkdownPlayground from "@/components/MarkdownPlayground";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
@@ -11,6 +12,7 @@ export default function CodeMarkdownPage() {
   const official = getCodeLangOfficial("markdown");
   return (
     <div className="space-y-6">
+      <TrackToolboxVisit href="/code/markdown" title="Markdown" />
       <Link href="/code" className="text-sm text-brand-600 hover:underline">
         ← Back to Code Resource
       </Link>

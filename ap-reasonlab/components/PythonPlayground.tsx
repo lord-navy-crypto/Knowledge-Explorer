@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import PlaygroundExtras from "@/components/PlaygroundExtras";
 
 type Example = { id: string; title: string; code: string };
 
@@ -201,6 +202,7 @@ export default function PythonPlayground({
                 ? "Running…"
                 : "Run"}
           </button>
+          <PlaygroundExtras code={code} language="python" filename="playground.py" />
         </div>
       </div>
 

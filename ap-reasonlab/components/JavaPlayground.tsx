@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import PlaygroundExtras from "@/components/PlaygroundExtras";
 import { javaDownloadFilename, normalizeJavaSource } from "@/lib/java-source";
 import {
   runJavaPracticeJs,
@@ -208,6 +209,7 @@ export default function JavaPlayground({
           >
             {status === "running" ? "Running…" : "Practice Run"}
           </button>
+          <PlaygroundExtras code={code} language="java" filename="Main.java" />
           <button
             type="button"
             className="btn-secondary self-end"

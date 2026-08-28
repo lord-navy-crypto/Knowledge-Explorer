@@ -62,13 +62,13 @@ export const SITE_RELATED_PACKS = {
   }),
   code: withShortCode({
     title: "Code · related tools",
-    toolIds: ["ai", "code-board", "text-diff", "markdown-plain"],
+    toolIds: ["code-board", "json-formatter", "encode-decode", "text-comparator", "markdown-plain"],
     externalIds: ["mdn", "python-docs", "stackoverflow"],
   }),
   tools: withShortCode({
     title: "Toolbox · related links",
-    toolIds: ["ai", "focus-desk", "qr-code", "external-hub"],
-    externalIds: ["ap-central", "desmos", "cambridge-dictionary"],
+    toolIds: ["write-convert", "code-board", "json-formatter", "encode-decode", "qr-code", "external-hub"],
+    externalIds: ["mdn", "desmos", "python-docs"],
   }),
   "tools-math": withShortCode({
     title: "Math tools · related",
@@ -82,7 +82,7 @@ export const SITE_RELATED_PACKS = {
   }),
   "tools-files": withShortCode({
     title: "File lab · related",
-    toolIds: ["pdf-tools", "markdown-pdf", "word-pdf", "csv-markdown", "batch-rename"],
+    toolIds: ["write-convert", "pdf-tools", "markdown-pdf", "word-pdf", "csv-markdown", "json-formatter", "encode-decode"],
     externalIds: [],
   }),
   hints: withShortCode({
@@ -92,8 +92,8 @@ export const SITE_RELATED_PACKS = {
   }),
   forum: withShortCode({
     title: "Forum · related tools",
-    toolIds: ["ai", "qr-code", "text-comparator", "random-groups"],
-    externalIds: [],
+    toolIds: ["code-board", "write-convert", "markdown-plain", "json-formatter", "encode-decode", "qr-code", "text-comparator"],
+    externalIds: ["mdn", "python-docs", "stackoverflow"],
   }),
   academic: withShortCode({
     title: "Academic · related tools",
@@ -127,7 +127,7 @@ const MATH_TOOL_PATHS =
 const ENGLISH_TOOL_PATHS =
   /\/tools\/(vocab-book|dictation|speech-to-text|paraphrase|reading-highlight)/;
 const FILE_TOOL_PATHS =
-  /\/tools\/(pdf|markdown|word|csv|batch-rename)/;
+  /\/tools\/(pdf|markdown|word|csv|batch-rename|json-formatter|encode-decode|write-convert)/;
 
 /** Paths that should not show the related bar (auth / heavy admin chrome). */
 export function shouldHideRelatedBar(pathname: string): boolean {

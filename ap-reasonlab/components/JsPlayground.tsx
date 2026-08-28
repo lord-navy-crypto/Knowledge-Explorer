@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import PlaygroundExtras from "@/components/PlaygroundExtras";
 
 type Example = { id: string; title: string; code: string };
 
@@ -154,6 +155,7 @@ export default function JsPlayground({
           <button type="button" className="btn-primary self-end" onClick={run} disabled={running}>
             {running ? "Running…" : "Run"}
           </button>
+          <PlaygroundExtras code={code} language="javascript" filename="playground.js" />
         </div>
       </div>
 

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import OfficialResourceLinks from "@/components/OfficialResourceLinks";
 import PythonPlayground from "@/components/PythonPlayground";
+import TrackToolboxVisit from "@/components/TrackToolboxVisit";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import { getCodeLangOfficial } from "@/data/official-resources";
 import { standardSnippets } from "@/data/code-snippets";
@@ -12,6 +13,7 @@ export default function CodePythonPage() {
   const snippets = standardSnippets.filter((s) => s.language === "python");
   return (
     <div className="space-y-6">
+      <TrackToolboxVisit href="/code/python" title="Python" />
       <Link href="/code" className="text-sm text-brand-600 hover:underline">
         ← Back to Code Resource
       </Link>

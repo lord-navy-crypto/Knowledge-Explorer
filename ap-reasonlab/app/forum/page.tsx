@@ -9,6 +9,7 @@ import PrivateLearningBoxPanel, {
   type LearningBoxView,
 } from "@/components/PrivateLearningBoxPanel";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
+import ForumCompanionStrip from "@/components/ForumCompanionStrip";
 import { spaceFromSearchParams } from "@/lib/storage-space";
 
 export type ForumTab = "discussions" | "shared" | "box";
@@ -97,6 +98,8 @@ function ForumHub() {
           box (private to this browser only).
         </p>
       </header>
+
+      <ForumCompanionStrip />
 
       <nav
         className="sticky top-16 z-10 -mx-1 flex gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white/95 p-1.5 shadow-sm backdrop-blur scroll-mt-24"

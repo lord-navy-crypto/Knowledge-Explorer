@@ -5,6 +5,7 @@ import StudyToolShell from "@/components/StudyToolShell";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
 import { useSiteDialog } from "@/components/SiteDialog";
 import RichContent from "@/components/RichContent";
+import { consumeWriteToolHandoff } from "@/lib/write-tool-handoff";
 
 const STORAGE_KEY = "ke-dual-column-v1";
 
@@ -69,6 +70,11 @@ export default function DualColumnEditor() {
 
   useEffect(() => {
     setMounted(true);
+    const handoff = consumeWriteToolHandoff("dual");
+    if (handoff?.text) {
+      setValue(handoff.text);
+      return;
+    }
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {

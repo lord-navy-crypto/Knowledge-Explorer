@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import OfficialResourceLinks from "@/components/OfficialResourceLinks";
+import TrackToolboxVisit from "@/components/TrackToolboxVisit";
 import { getCodeLangOfficial } from "@/data/official-resources";
 import SqlPlayground from "@/components/SqlPlayground";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
@@ -11,6 +12,7 @@ export default function CodeSqlPage() {
   const official = getCodeLangOfficial("sql");
   return (
     <div className="space-y-6">
+      <TrackToolboxVisit href="/code/sql" title="SQL" />
       <Link href="/code" className="text-sm text-brand-600 hover:underline">
         ← Back to Code Resource
       </Link>

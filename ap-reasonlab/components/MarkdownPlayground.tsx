@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import PlaygroundExtras from "@/components/PlaygroundExtras";
 import RichContent from "@/components/RichContent";
 
 type Example = { id: string; title: string; code: string };
@@ -86,6 +87,7 @@ export default function MarkdownPlayground({
           <button type="button" className="btn-secondary self-end" onClick={resetStarter}>
             Reset
           </button>
+          <PlaygroundExtras code={code} language="markdown" filename="notes.md" />
         </div>
       </div>
 

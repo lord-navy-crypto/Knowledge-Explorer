@@ -3,6 +3,7 @@
 import Link from "next/link";
 import OfficialResourceLinks from "@/components/OfficialResourceLinks";
 import HtmlPlayground from "@/components/HtmlPlayground";
+import TrackToolboxVisit from "@/components/TrackToolboxVisit";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import { getCodeLangOfficial } from "@/data/official-resources";
 import { standardSnippets } from "@/data/code-snippets";
@@ -12,6 +13,7 @@ export default function CodeWebPage() {
   const snippets = standardSnippets.filter((s) => s.language === "html");
   return (
     <div className="space-y-6">
+      <TrackToolboxVisit href="/code/web" title="Web / HTML" />
       <Link href="/code" className="text-sm text-brand-600 hover:underline">
         ← Back to Code Resource
       </Link>

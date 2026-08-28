@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import PlaygroundExtras from "@/components/PlaygroundExtras";
 
 type Example = { id: string; title: string; code: string };
 
@@ -115,6 +116,7 @@ export default function HtmlPlayground({
           <button type="button" className="btn-primary self-end" onClick={run}>
             Run preview
           </button>
+          <PlaygroundExtras code={code} language="html" filename="playground.html" />
         </div>
       </div>
 

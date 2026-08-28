@@ -410,8 +410,11 @@ export const CODE_HUB_OFFICIAL: OfficialResourceBlock = {
     },
     { href: "https://www.typescriptlang.org/docs/", label: "TypeScript docs" },
     {
-      href: "https://learn.microsoft.com/en-us/dotnet/csharp/",
-      label: "C# docs",
+      href: "https://developer.mozilla.org/en-US/docs/Learn_web_development",
+      label: "MDN Learn Web",
     },
+    { href: "https://www.sqlite.org/docs.html", label: "SQLite docs" },
+    { href: "https://docs.oracle.com/javase/tutorial/", label: "Java tutorials" },
+    { href: "https://commonmark.org/help/", label: "CommonMark" },
   ],
 };

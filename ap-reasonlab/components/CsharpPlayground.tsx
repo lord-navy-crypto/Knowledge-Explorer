@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import PlaygroundExtras from "@/components/PlaygroundExtras";
 import { csharpDownloadFilename, normalizeCsharpSource } from "@/lib/csharp-source";
 import {
   runCsharpPracticeJs,
@@ -177,6 +178,7 @@ export default function CsharpPlayground({
           >
             {status === "running" ? "Running…" : "Practice Run"}
           </button>
+          <PlaygroundExtras code={code} language="csharp" filename="Program.cs" />
         </div>
       </div>
 

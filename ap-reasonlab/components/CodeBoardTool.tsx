@@ -9,6 +9,7 @@ import {
   type CodeBoardBlock,
   type CodeBoardLanguage,
 } from "@/data/code-board";
+import { preloadPlaygroundDraft } from "@/lib/code-draft-bridge";
 
 const KEY = "ke-code-board-v1";
 
@@ -418,6 +419,7 @@ export default function CodeBoardTool() {
                         <Link
                           href={play}
                           className="rounded-lg bg-white px-2.5 py-1 text-[11px] font-semibold text-brand-700 ring-1 ring-brand-200 hover:bg-brand-50"
+                          onClick={() => preloadPlaygroundDraft(block.language, block.code)}
                         >
                           Open playground
                         </Link>

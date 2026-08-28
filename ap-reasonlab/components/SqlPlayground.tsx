@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import PlaygroundExtras from "@/components/PlaygroundExtras";
 
 type Example = { id: string; title: string; code: string };
 
@@ -187,6 +188,7 @@ export default function SqlPlayground({
           >
             {status === "loading" ? "Loading SQL…" : status === "running" ? "Running…" : "Run"}
           </button>
+          <PlaygroundExtras code={code} language="sql" filename="playground.sql" />
         </div>
       </div>
 

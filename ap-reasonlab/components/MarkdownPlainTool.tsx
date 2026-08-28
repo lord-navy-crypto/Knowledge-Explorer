@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import StudyToolShell from "@/components/StudyToolShell";
+import { consumeWriteToolHandoff } from "@/lib/write-tool-handoff";
 
 function mdToPlain(md: string, keepLinks: boolean): string {
   return md
@@ -41,6 +42,11 @@ export default function MarkdownPlainTool() {
   const [input, setInput] = useState("# Title\n\nHello **world** and a [link](https://example.com).");
   const [keepLinks, setKeepLinks] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    const handoff = consumeWriteToolHandoff("markdown-plain");
+    if (handoff?.text) setInput(handoff.text);
+  }, []);
 
   const output = useMemo(
     () => (mode === "md2plain" ? mdToPlain(input, keepLinks) : plainToMd(input)),

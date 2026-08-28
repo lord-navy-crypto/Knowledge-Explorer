@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import PlaygroundExtras from "@/components/PlaygroundExtras";
 
 type Example = { id: string; title: string; code: string };
 
@@ -207,6 +208,7 @@ export default function TsPlayground({
           >
             {status === "loading" ? "Loading…" : status === "running" ? "Running…" : "Run"}
           </button>
+          <PlaygroundExtras code={code} language="typescript" filename="playground.ts" />
         </div>
       </div>
 

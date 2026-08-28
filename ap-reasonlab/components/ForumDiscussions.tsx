@@ -13,6 +13,7 @@ import {
   readForumDisplayName,
   writeForumDisplayName,
 } from "@/lib/forum-display-name";
+import ForumCodeLaunchers from "@/components/ForumCodeLaunchers";
 
 const MAX_POST_ATTACH = 4;
 const MAX_REPLY_ATTACH = 2;
@@ -82,6 +83,15 @@ function Avatar({ name }: { name: string }) {
       {letter}
     </span>
   );
+}
+
+function quoteSnippet(author: string, body: string): string {
+  const excerpt = body.trim().split(/\n+/).slice(0, 6).join("\n");
+  const quoted = excerpt
+    .split("\n")
+    .map((line) => `> ${line}`)
+    .join("\n");
+  return `> **${author}** wrote:\n${quoted}\n\n`;
 }
 
 function formatBytes(n: number): string {
@@ -305,6 +315,11 @@ export function ForumDiscussions({
     setDisplayName(readForumDisplayName());
     void refresh();
   }, [refresh]);
+
+  useEffect(() => {
+    const thread = searchParams.get("thread");
+    if (thread) setExpandedId(thread);
+  }, [searchParams]);
 
   const filtered = useMemo(() => {
     const cat = CATEGORIES.find((c) => c.id === category) || CATEGORIES[0];
@@ -645,7 +660,7 @@ export function ForumDiscussions({
             const replyCount = (post.replies || []).length;
             const attachCount = (post.attachments || []).length;
             return (
-              <li key={post.id} className="card overflow-hidden !p-0">
+              <li key={post.id} id={`forum-thread-${post.id}`} className="card overflow-hidden !p-0 scroll-mt-28">
                 <button
                   type="button"
                   onClick={() => setExpandedId(open ? null : post.id)}
@@ -685,6 +700,7 @@ export function ForumDiscussions({
                       </button>
                     </div>
                     <RichContent className="text-sm text-slate-700">{post.body}</RichContent>
+                    <ForumCodeLaunchers body={post.body} />
                     <AttachmentList items={post.attachments} />
                     <div className="flex flex-wrap gap-3 text-xs">
                       <button
@@ -697,9 +713,31 @@ export function ForumDiscussions({
                       <button
                         type="button"
                         className="text-brand-600 hover:underline"
+                        onClick={() => {
+                          setReplyBody(quoteSnippet(post.author, post.body));
+                          requestIdentity(post.id);
+                        }}
+                      >
+                        Quote reply
+                      </button>
+                      <button
+                        type="button"
+                        className="text-brand-600 hover:underline"
                         onClick={() => void saveToMyBox(post)}
                       >
                         Save to My box
+                      </button>
+                      <button
+                        type="button"
+                        className="text-slate-500 hover:underline"
+                        onClick={() => {
+                          const url = `${window.location.origin}/forum?thread=${encodeURIComponent(post.id)}`;
+                          void navigator.clipboard.writeText(url);
+                          setNotice("Permalink copied.");
+                          window.setTimeout(() => setNotice(""), 1500);
+                        }}
+                      >
+                        Copy permalink
                       </button>
                       <Link href="/forum?tab=box" className="text-slate-500 hover:underline">
                         Open My box →
@@ -725,7 +763,18 @@ export function ForumDiscussions({
                                 </button>
                               </div>
                               <RichContent className="mt-2 text-sm text-slate-700">{reply.body}</RichContent>
+                              <ForumCodeLaunchers body={reply.body} />
                               <AttachmentList items={reply.attachments} />
+                              <button
+                                type="button"
+                                className="mt-2 text-xs text-brand-600 hover:underline"
+                                onClick={() => {
+                                  setReplyBody(quoteSnippet(reply.author, reply.body));
+                                  requestIdentity(post.id);
+                                }}
+                              >
+                                Quote this reply
+                              </button>
                             </div>
                           </div>
                         ))}

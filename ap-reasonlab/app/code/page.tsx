@@ -3,68 +3,11 @@
 import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import OfficialResourceLinks from "@/components/OfficialResourceLinks";
+import RecentPlaygrounds from "@/components/RecentPlaygrounds";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import { howToEmbedEditors, standardSnippets } from "@/data/code-snippets";
+import { CODE_LANG_FAMILIES } from "@/data/code-language-hub";
 import { CODE_HUB_OFFICIAL } from "@/data/official-resources";
-
-const langs = [
-  {
-    id: "python",
-    title: "Python",
-    href: "/code/python",
-    run: true,
-    description: "In-browser Pyodide playground + uploads.",
-  },
-  {
-    id: "javascript",
-    title: "JavaScript",
-    href: "/code/javascript",
-    run: true,
-    description: "Sandboxed console playground in the browser.",
-  },
-  {
-    id: "typescript",
-    title: "TypeScript",
-    href: "/code/typescript",
-    run: true,
-    description: "Transpile + run with the TS compiler in-browser.",
-  },
-  {
-    id: "web",
-    title: "Web / HTML",
-    href: "/code/web",
-    run: true,
-    description: "Live HTML / CSS / JS preview playground.",
-  },
-  {
-    id: "sql",
-    title: "SQL",
-    href: "/code/sql",
-    run: true,
-    description: "SQLite via sql.js — create, insert, select in memory.",
-  },
-  {
-    id: "markdown",
-    title: "Markdown",
-    href: "/code/markdown",
-    run: true,
-    description: "Live Markdown + KaTeX notes preview.",
-  },
-  {
-    id: "java",
-    title: "Java",
-    href: "/code/java",
-    run: true,
-    description: "Java training: Practice Run in browser (JS stand-in). Download for real JDK.",
-  },
-  {
-    id: "csharp",
-    title: "C#",
-    href: "/code/csharp",
-    run: true,
-    description: "C# training: Practice Run like Java (JS stand-in). Download for real .NET.",
-  },
-];
 
 export default function CodePage() {
   return (
@@ -79,27 +22,24 @@ export default function CodePage() {
       <div>
         <h1 className="text-3xl font-bold">Code Resource</h1>
         <p className="mt-2 text-slate-600">
-          Browser playgrounds for Python, JavaScript, TypeScript, Web, SQL, and Markdown.{" "}
-          <Link href="/code/java" className="font-medium text-brand-700 underline">
-            Java
-          </Link>{" "}
-          and{" "}
-          <Link href="/code/csharp" className="font-medium text-brand-700 underline">
-            C#
-          </Link>{" "}
-          use Practice Run (training stand-in). Plus a{" "}
+          Browser playgrounds grouped by family. Save reusable blocks in the{" "}
           <Link href="/tools/code-board" className="font-medium text-brand-700 underline">
             long code block adder
           </Link>
-          . Need coaching? Open{" "}
-          <Link href="/hints?tool=coding" className="font-medium text-brand-700 underline">
-            AI Toolbox · Coding AI
+          . Fence code on{" "}
+          <Link href="/forum" className="font-medium text-brand-700 underline">
+            Forum
+          </Link>{" "}
+          to run it here. Format JSON or Base64 in{" "}
+          <Link href="/tools" className="font-medium text-brand-700 underline">
+            Convenient Tools
           </Link>
           .
         </p>
       </div>
 
       <OfficialResourceLinks block={CODE_HUB_OFFICIAL} tone="slate" />
+      <RecentPlaygrounds />
 
       <section className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white px-5 py-5 shadow-sm">
         <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800">
@@ -107,43 +47,65 @@ export default function CodePage() {
         </p>
         <h2 className="mt-1 text-xl font-semibold text-slate-900">Long code block adder</h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-          Add title + comment + long code, then scroll a library of blocks. Copy code or jump to a
-          playground.
+          Add title + comment + long code, then copy or open a playground with the block preloaded.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           <Link href="/tools/code-board" className="btn-primary">
             Open code block adder
           </Link>
+          <Link href="/tools/json-formatter" className="btn-secondary">
+            JSON formatter
+          </Link>
+          <Link href="/tools/encode-decode" className="btn-secondary">
+            Base64 / URL
+          </Link>
         </div>
       </section>
 
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Online editors</h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {langs.map((r) => (
-            <Link key={r.id} href={r.href} className="card-hover group flex items-start gap-3">
-              <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-[11px] font-bold uppercase text-emerald-800">
-                {r.title.slice(0, 3)}
-              </span>
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="font-semibold group-hover:text-brand-700">{r.title}</h2>
-                  <span
-                    className={
-                      r.run
-                        ? "rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-800"
-                        : "rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800"
-                    }
-                  >
-                    {r.run ? "Run in browser" : "No runner yet"}
+      {CODE_LANG_FAMILIES.map((family) => (
+        <section key={family.id} className="space-y-3">
+          <div>
+            <h2 className="text-lg font-semibold">{family.label}</h2>
+            <p className="text-sm text-slate-600">{family.blurb}</p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {family.langs.map((r) => (
+              <article key={r.id} className="card-hover group flex flex-col gap-3">
+                <Link href={r.href} className="flex items-start gap-3">
+                  <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-[11px] font-bold uppercase text-emerald-800">
+                    {r.title.slice(0, 3)}
                   </span>
-                </div>
-                <p className="mt-1 text-sm text-slate-600">{r.description}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="font-semibold group-hover:text-brand-700">{r.title}</h3>
+                      <span
+                        className={
+                          r.runKind === "browser"
+                            ? "rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-800"
+                            : "rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800"
+                        }
+                      >
+                        {r.runKind === "browser" ? "Run in browser" : "Practice Run"}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm text-slate-600">{r.description}</p>
+                  </div>
+                </Link>
+                {r.official ? (
+                  <a
+                    href={r.official.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs font-semibold text-brand-700 hover:underline"
+                  >
+                    Official: {r.official.label} ↗
+                  </a>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        </section>
+      ))}
 
       <UnifiedMediaFrame
         alsoShow={["document", "folder"]}
