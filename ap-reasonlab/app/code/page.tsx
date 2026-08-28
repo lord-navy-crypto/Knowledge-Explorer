@@ -7,61 +7,67 @@ import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import { howToEmbedEditors, standardSnippets } from "@/data/code-snippets";
 import { CODE_HUB_OFFICIAL } from "@/data/official-resources";
 
-const langs = [
+const langs: {
+  id: string;
+  title: string;
+  href: string;
+  runKind: "browser" | "practice";
+  description: string;
+}[] = [
   {
     id: "python",
     title: "Python",
     href: "/code/python",
-    run: true,
+    runKind: "browser",
     description: "In-browser Pyodide playground + uploads.",
   },
   {
     id: "javascript",
     title: "JavaScript",
     href: "/code/javascript",
-    run: true,
+    runKind: "browser",
     description: "Sandboxed console playground in the browser.",
   },
   {
     id: "typescript",
     title: "TypeScript",
     href: "/code/typescript",
-    run: true,
+    runKind: "browser",
     description: "Transpile + run with the TS compiler in-browser.",
   },
   {
     id: "web",
     title: "Web / HTML",
     href: "/code/web",
-    run: true,
+    runKind: "browser",
     description: "Live HTML / CSS / JS preview playground.",
   },
   {
     id: "sql",
     title: "SQL",
     href: "/code/sql",
-    run: true,
+    runKind: "browser",
     description: "SQLite via sql.js — create, insert, select in memory.",
   },
   {
     id: "markdown",
     title: "Markdown",
     href: "/code/markdown",
-    run: true,
+    runKind: "browser",
     description: "Live Markdown + KaTeX notes preview.",
   },
   {
     id: "java",
     title: "Java",
     href: "/code/java",
-    run: true,
+    runKind: "practice",
     description: "Java training: Practice Run in browser (JS stand-in). Download for real JDK.",
   },
   {
     id: "csharp",
     title: "C#",
     href: "/code/csharp",
-    run: true,
+    runKind: "practice",
     description: "C# training: Practice Run like Java (JS stand-in). Download for real .NET.",
   },
 ];
@@ -130,12 +136,12 @@ export default function CodePage() {
                   <h2 className="font-semibold group-hover:text-brand-700">{r.title}</h2>
                   <span
                     className={
-                      r.run
+                      r.runKind === "browser"
                         ? "rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-800"
                         : "rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800"
                     }
                   >
-                    {r.run ? "Run in browser" : "No runner yet"}
+                    {r.runKind === "browser" ? "Run in browser" : "Practice Run (JS stand-in)"}
                   </span>
                 </div>
                 <p className="mt-1 text-sm text-slate-600">{r.description}</p>

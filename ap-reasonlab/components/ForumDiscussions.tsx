@@ -8,7 +8,8 @@ import { useToast } from "@/components/ToastProvider";
 import { saveLearningItem } from "@/lib/storage";
 import RichContent from "@/components/RichContent";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
-import type { ManagedForumAttachment, ManagedForumPost } from "@/lib/managed-types";
+import type { ManagedForumAttachment, ManagedForumPost, ForumPostCategory } from "@/lib/managed-types";
+import { forumPostMatchesCategory } from "@/lib/forum-api";
 import {
   readForumDisplayName,
   writeForumDisplayName,
@@ -18,8 +19,9 @@ const MAX_POST_ATTACH = 4;
 const MAX_REPLY_ATTACH = 2;
 const MAX_ATTACH_BYTES = 650_000;
 const POSTS_PER_PAGE = 8;
+const COMPOSER_DRAFT_KEY = "ke-forum-composer-draft-v1";
 
-type Category = "all" | "questions" | "resources" | "announcements" | "beta-feedback";
+type Category = "all" | ForumPostCategory;
 
 export function parseForumDiscussionCategory(tag: string | null): Category {
   if (tag === "beta-feedback" || tag === "beta") return "beta-feedback";
@@ -39,22 +41,22 @@ const CATEGORIES: { id: Category; label: string; match: (p: ManagedForumPost) =>
   {
     id: "questions",
     label: "Questions",
-    match: (p) => /question|\?|help|how|why|what/i.test(`${p.title} ${p.body}`),
+    match: (p) => forumPostMatchesCategory(p, "questions"),
   },
   {
     id: "resources",
     label: "Resources",
-    match: (p) => /resource|share|note|link|material|pdf|guide|tip/i.test(`${p.title} ${p.body}`),
+    match: (p) => forumPostMatchesCategory(p, "resources"),
   },
   {
     id: "announcements",
     label: "Announcements",
-    match: (p) => /announce|update|news|notice|important/i.test(`${p.title} ${p.body}`),
+    match: (p) => forumPostMatchesCategory(p, "announcements"),
   },
   {
     id: "beta-feedback",
     label: "Beta feedback",
-    match: (p) => /#beta-feedback|\[beta feedback\]/i.test(`${p.title} ${p.body}`),
+    match: (p) => forumPostMatchesCategory(p, "beta-feedback"),
   },
 ];
 
@@ -264,6 +266,7 @@ export function ForumDiscussions({
   const [pendingAction, setPendingAction] = useState<"post" | string | null>(null);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [postCategory, setPostCategory] = useState<ForumPostCategory>("questions");
   const [postAttachments, setPostAttachments] = useState<DraftAttachment[]>([]);
   const [replyBody, setReplyBody] = useState("");
   const [replyAttachments, setReplyAttachments] = useState<DraftAttachment[]>([]);
@@ -305,6 +308,67 @@ export function ForumDiscussions({
     setDisplayName(readForumDisplayName());
     void refresh();
   }, [refresh]);
+
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(COMPOSER_DRAFT_KEY);
+      if (!raw) return;
+      const draft = JSON.parse(raw) as {
+        title?: string;
+        body?: string;
+        category?: ForumPostCategory;
+      };
+      if (draft.title) setTitle(draft.title);
+      if (draft.body) setBody(draft.body);
+      if (draft.category) setPostCategory(draft.category);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!composerOpen) return;
+    sessionStorage.setItem(
+      COMPOSER_DRAFT_KEY,
+      JSON.stringify({ title, body, category: postCategory })
+    );
+  }, [composerOpen, title, body, postCategory]);
+
+  const threadParam = searchParams.get("thread");
+
+  useEffect(() => {
+    if (!threadParam || loading) return;
+    const found = posts.find((p) => p.id === threadParam);
+    if (found) {
+      setExpandedId(threadParam);
+      window.setTimeout(() => {
+        document.getElementById(`forum-thread-${threadParam}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 80);
+    }
+  }, [threadParam, posts, loading]);
+
+  function setThreadExpanded(postId: string | null) {
+    setExpandedId(postId);
+    const params = new URLSearchParams(searchParams.toString());
+    if (postId) params.set("thread", postId);
+    else params.delete("thread");
+    const qs = params.toString();
+    router.replace(qs ? `/forum?${qs}` : "/forum", { scroll: false });
+  }
+
+  async function copyThreadLink(postId: string) {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("thread", postId);
+    const url = `${origin}/forum?${params.toString()}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setNotice("Thread link copied.");
+      window.setTimeout(() => setNotice(""), 2800);
+    } catch {
+      setNotice(url);
+    }
+  }
 
   const filtered = useMemo(() => {
     const cat = CATEGORIES.find((c) => c.id === category) || CATEGORIES[0];
@@ -427,13 +491,16 @@ export function ForumDiscussions({
       author: displayName,
       title,
       body,
+      category: postCategory,
       attachments: draftsPayload(postAttachments),
     });
     if (ok) {
       setTitle("");
       setBody("");
+      setPostCategory("questions");
       setPostAttachments([]);
       setComposerOpen(false);
+      sessionStorage.removeItem(COMPOSER_DRAFT_KEY);
     }
   }
 
@@ -600,6 +667,19 @@ export function ForumDiscussions({
             onChange={(event) => setTitle(event.target.value)}
             required
           />
+          <label className="block text-sm">
+            <span className="mb-1 block font-medium text-slate-700">Category</span>
+            <select
+              className="input py-2 text-sm"
+              value={postCategory}
+              onChange={(e) => setPostCategory(e.target.value as ForumPostCategory)}
+            >
+              <option value="questions">Question</option>
+              <option value="resources">Resource / share</option>
+              <option value="announcements">Announcement</option>
+              <option value="beta-feedback">Beta feedback</option>
+            </select>
+          </label>
           <MarkdownLatexField
             label="Discussion body"
             value={body}
@@ -645,10 +725,10 @@ export function ForumDiscussions({
             const replyCount = (post.replies || []).length;
             const attachCount = (post.attachments || []).length;
             return (
-              <li key={post.id} className="card overflow-hidden !p-0">
+              <li key={post.id} id={`forum-thread-${post.id}`} className="card overflow-hidden !p-0 scroll-mt-28">
                 <button
                   type="button"
-                  onClick={() => setExpandedId(open ? null : post.id)}
+                  onClick={() => setThreadExpanded(open ? null : post.id)}
                   className="flex w-full items-start gap-3 px-4 py-3 text-left hover:bg-slate-50/80"
                 >
                   <Avatar name={post.author} />
@@ -687,6 +767,13 @@ export function ForumDiscussions({
                     <RichContent className="text-sm text-slate-700">{post.body}</RichContent>
                     <AttachmentList items={post.attachments} />
                     <div className="flex flex-wrap gap-3 text-xs">
+                      <button
+                        type="button"
+                        className="text-brand-600 hover:underline"
+                        onClick={() => void copyThreadLink(post.id)}
+                      >
+                        Copy link
+                      </button>
                       <button
                         type="button"
                         className="text-brand-600 hover:underline"

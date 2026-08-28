@@ -26,6 +26,8 @@ type Props = {
   /** When true, omit page chrome (used inside Forum hub). */
   embedded?: boolean;
   initialView?: LearningBoxView;
+  /** Sync My box sub-view to parent URL (Forum hub). */
+  onViewChange?: (view: LearningBoxView) => void;
 };
 
 /**
@@ -34,6 +36,7 @@ type Props = {
 export default function PrivateLearningBoxPanel({
   embedded = false,
   initialView = "library",
+  onViewChange,
 }: Props) {
   const [tab, setTab] = useState<LearningBoxView>(initialView);
   const [items, setItems] = useState<LearningBoxItem[]>([]);
@@ -51,6 +54,11 @@ export default function PrivateLearningBoxPanel({
   useEffect(() => {
     setTab(initialView);
   }, [initialView]);
+
+  function selectView(next: LearningBoxView) {
+    setTab(next);
+    onViewChange?.(next);
+  }
 
   useEffect(() => {
     setMounted(true);
@@ -155,7 +163,7 @@ export default function PrivateLearningBoxPanel({
       }
       await refresh();
       e.target.value = "";
-      setTab("pictures");
+      selectView("pictures");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Image upload failed");
     }
@@ -166,7 +174,7 @@ export default function PrivateLearningBoxPanel({
     setTitle(item.title);
     setContent(item.content);
     setCategory(item.category);
-    setTab("library");
+    selectView("library");
   }
 
   async function handleDelete(id: string) {
@@ -237,7 +245,7 @@ export default function PrivateLearningBoxPanel({
             <button
               key={id}
               type="button"
-              onClick={() => setTab(id)}
+              onClick={() => selectView(id)}
               className={
                 tab === id
                   ? "rounded-xl bg-brand-600 px-3 py-2.5 text-sm font-semibold text-white shadow"

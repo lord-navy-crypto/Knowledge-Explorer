@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { usePlaygroundHandoffNotice } from "@/lib/use-playground-handoff";
 import { csharpDownloadFilename, normalizeCsharpSource } from "@/lib/csharp-source";
 import {
   runCsharpPracticeJs,
@@ -44,6 +45,8 @@ export default function CsharpPlayground({
   const [note, setNote] = useState("");
   const [status, setStatus] = useState<"idle" | "running">("idle");
   const [copied, setCopied] = useState(false);
+
+  usePlaygroundHandoffNotice((msg) => setNote(msg));
 
   useEffect(() => {
     const stored = localStorage.getItem(storageKey);

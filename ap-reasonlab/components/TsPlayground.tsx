@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { usePlaygroundHandoffNotice } from "@/lib/use-playground-handoff";
 
 type Example = { id: string; title: string; code: string };
 
@@ -98,6 +99,8 @@ export default function TsPlayground({
   const [note, setNote] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "running">("idle");
   const [srcDoc, setSrcDoc] = useState("");
+
+  usePlaygroundHandoffNotice((msg) => setNote(msg));
   const [emitted, setEmitted] = useState("");
 
   useEffect(() => {

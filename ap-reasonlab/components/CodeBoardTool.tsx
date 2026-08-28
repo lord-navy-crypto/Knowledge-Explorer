@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import StudyToolShell from "@/components/StudyToolShell";
 import {
@@ -9,6 +10,7 @@ import {
   type CodeBoardBlock,
   type CodeBoardLanguage,
 } from "@/data/code-board";
+import { playgroundHref, preloadPlaygroundDraft } from "@/lib/code-draft-bridge";
 
 const KEY = "ke-code-board-v1";
 
@@ -17,19 +19,8 @@ type SortMode = "newest" | "title" | "lang";
 
 type StoredBlock = CodeBoardBlock & { favorite?: boolean; updatedAt?: number };
 
-function playgroundHref(language: CodeBoardLanguage): string | null {
-  if (language === "python") return "/code/python";
-  if (language === "javascript") return "/code/javascript";
-  if (language === "typescript") return "/code/typescript";
-  if (language === "html") return "/code/web";
-  if (language === "sql") return "/code/sql";
-  if (language === "markdown") return "/code/markdown";
-  if (language === "java") return "/code/java";
-  if (language === "csharp") return "/code/csharp";
-  return "/code";
-}
-
 export default function CodeBoardTool() {
+  const router = useRouter();
   const [tab, setTab] = useState<Tab>("library");
   const [userBlocks, setUserBlocks] = useState<StoredBlock[]>([]);
   const [lang, setLang] = useState<CodeBoardLanguage | "all">("all");
@@ -415,12 +406,16 @@ export default function CodeBoardTool() {
                         {copied === `${block.id}-all` ? "Copied" : "Copy + comment"}
                       </button>
                       {play ? (
-                        <Link
-                          href={play}
+                        <button
+                          type="button"
                           className="rounded-lg bg-white px-2.5 py-1 text-[11px] font-semibold text-brand-700 ring-1 ring-brand-200 hover:bg-brand-50"
+                          onClick={() => {
+                            const href = preloadPlaygroundDraft(block.language, block.code);
+                            if (href) router.push(href);
+                          }}
                         >
-                          Open playground
-                        </Link>
+                          Run in playground
+                        </button>
                       ) : null}
                       <button
                         type="button"

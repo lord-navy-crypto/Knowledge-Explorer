@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import RichContent from "@/components/RichContent";
+import { usePlaygroundHandoffNotice } from "@/lib/use-playground-handoff";
 
 type Example = { id: string; title: string; code: string };
 
@@ -23,6 +24,8 @@ export default function MarkdownPlayground({
   const [code, setCode] = useState(starter);
   const [selected, setSelected] = useState(examples[0]?.id || "default");
   const [note, setNote] = useState("");
+
+  usePlaygroundHandoffNotice((msg) => setNote(msg));
 
   useEffect(() => {
     const stored = localStorage.getItem(storageKey);

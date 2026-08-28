@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { usePlaygroundHandoffNotice } from "@/lib/use-playground-handoff";
 
 type Example = { id: string; title: string; code: string };
 
@@ -83,6 +84,8 @@ export default function SqlPlayground({
   const [note, setNote] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "running" | "error">("idle");
   const sqlRef = useRef<SqlJsStatic | null>(null);
+
+  usePlaygroundHandoffNotice((msg) => setNote(msg));
 
   useEffect(() => {
     const stored = localStorage.getItem(storageKey);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { usePlaygroundHandoffNotice } from "@/lib/use-playground-handoff";
 
 type Example = { id: string; title: string; code: string };
 
@@ -68,6 +69,8 @@ export default function JsPlayground({
   const [running, setRunning] = useState(false);
   const [srcDoc, setSrcDoc] = useState("");
   const runId = useRef(0);
+
+  usePlaygroundHandoffNotice((msg) => setNote(msg));
 
   useEffect(() => {
     const stored = localStorage.getItem(storageKey);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { usePlaygroundHandoffNotice } from "@/lib/use-playground-handoff";
 
 type Example = { id: string; title: string; code: string };
 
@@ -41,6 +42,8 @@ export default function HtmlPlayground({
   const [preview, setPreview] = useState(starter);
   const [selected, setSelected] = useState(examples[0]?.id || "default");
   const [savedNote, setSavedNote] = useState("");
+
+  usePlaygroundHandoffNotice((msg) => setSavedNote(msg));
 
   useEffect(() => {
     const stored = localStorage.getItem(storageKey);

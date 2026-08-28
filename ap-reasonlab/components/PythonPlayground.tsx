@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { usePlaygroundHandoffNotice } from "@/lib/use-playground-handoff";
 
 type Example = { id: string; title: string; code: string };
 
@@ -72,6 +73,8 @@ export default function PythonPlayground({
   const stdinLinesRef = useRef<string[]>([]);
   const stdinIndexRef = useRef(0);
   const usesInput = code.includes("input(");
+
+  usePlaygroundHandoffNotice((msg) => setNote(msg));
 
   useEffect(() => {
     const stored = localStorage.getItem(storageKey);
