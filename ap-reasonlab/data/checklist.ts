@@ -38,10 +38,10 @@ export const checklistItems: ChecklistItem[] = [
   },
   {
     id: "content-v1",
-    status: "in_progress",
+    status: "done",
     title: "Fill AP concepts, formulas, generated questions",
     description:
-      "STEM Sets A–D and humanities Sets A–D live for major subjects; managed content adds more via /manage.",
+      "Built-in CED depth across Chem, Bio, Psych, APES, Human Geo, CSA/CSP, Phys C, Calc BC, and World; Sets A–E plus long-tail via /manage.",
     link: "/concepts",
   },
   {
