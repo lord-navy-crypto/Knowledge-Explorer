@@ -8,6 +8,7 @@ import type { ManagedContent } from "@/lib/managed-types";
 
 export type SiteSearchType =
   | "page"
+  | "tool"
   | "subject"
   | "concept"
   | "formula"
@@ -37,6 +38,7 @@ export type SiteSearchHit = {
 export const SITE_SEARCH_TYPE_OPTIONS: Array<{ value: string; label: string }> = [
   { value: "all", label: "All types" },
   { value: "page", label: "Pages" },
+  { value: "tool", label: "Tools" },
   { value: "subject", label: "AP subjects" },
   { value: "concept", label: "Concepts" },
   { value: "formula", label: "Formulas" },
@@ -126,6 +128,7 @@ const TYPE_BOOST: Record<string, number> = {
   document: 1.5,
   content: 1.5,
   english: 1.5,
+  tool: 2.8,
   code: 1.2,
   subject: 1,
   learning: 1,
@@ -136,6 +139,27 @@ const TYPE_BOOST: Record<string, number> = {
   forum: 0.8,
   checklist: 0.5,
 };
+
+/** Never surface admin routes in public search. */
+const BLOCKED_HREF_PREFIXES = ["/manage", "/admin"];
+
+/** Short navigation queries — prefer tools/pages over incidental body mentions. */
+const NAV_QUERY_TERMS = new Set([
+  "calculator",
+  "grapher",
+  "explore",
+  "flashcards",
+  "toolbox",
+  "hints",
+  "forum",
+  "search",
+  "guide",
+  "tools",
+  "english",
+  "code",
+]);
+
+const EXAM_QUERY_TERMS = new Set(["toefl", "sat", "ielts"]);
 
 function tokenize(raw: string): string[] {
   const tokens = raw
@@ -155,27 +179,103 @@ function tokenize(raw: string): string[] {
   return tokens.slice(0, 32);
 }
 
-function scoreFields(tokens: string[], title: string, body: string): number {
+function escapeRegex(raw: string): string {
+  return raw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function hasWord(text: string, token: string): boolean {
+  if (!token) return false;
+  const re = new RegExp(`(?:^|[^a-z0-9])${escapeRegex(token)}(?:[^a-z0-9]|$)`, "i");
+  return re.test(text);
+}
+
+function scoreFields(
+  tokens: string[],
+  title: string,
+  body: string,
+  href = ""
+): number {
   if (tokens.length === 0) return 0;
   const titleText = title.toLowerCase();
   const bodyText = body.toLowerCase();
+  const hrefText = href.toLowerCase();
   let score = 0;
-  let titleHits = 0;
+  let titleWordHits = 0;
+  let bodyWordHits = 0;
+
   for (const token of tokens) {
-    if (titleText.includes(token)) {
-      score += 4;
-      titleHits += 1;
+    if (hasWord(titleText, token)) {
+      score += 8;
+      titleWordHits += 1;
+    } else if (titleText.includes(token)) {
+      score += 3;
     }
-    if (bodyText.includes(token)) score += 1;
+    if (hasWord(bodyText, token)) {
+      score += 0.75;
+      bodyWordHits += 1;
+    } else if (bodyText.includes(token)) {
+      score += 0.25;
+    }
+    if (hrefText.includes(token)) score += 10;
   }
+
   const phrase = tokens.join(" ");
   if (phrase.length >= 2) {
-    if (titleText.includes(phrase)) score += 8;
-    else if (bodyText.includes(phrase)) score += 3;
+    if (titleText.includes(phrase)) score += 12;
+    else if (bodyText.includes(phrase)) score += 4;
+    if (hrefText.includes(phrase.replace(/\s+/g, ""))) score += 6;
   }
-  // Soft preference for title matches on short common queries.
-  if (titleHits > 0) score += titleHits;
-  return score;
+
+  if (titleWordHits === tokens.length) score += 14;
+  else if (titleWordHits > 0 && bodyWordHits === 0) score += 6;
+  else if (bodyWordHits > 0 && titleWordHits === 0) score -= 2;
+
+  const normalizedTitle = titleText.replace(/[^a-z0-9]+/g, " ").trim();
+  const normalizedQuery = tokens.join(" ");
+  if (normalizedTitle === normalizedQuery) score += 20;
+
+  return Math.max(0, score);
+}
+
+function isNavQuery(tokens: string[]): boolean {
+  if (tokens.length === 0 || tokens.length > 2) return false;
+  return tokens.every((token) => NAV_QUERY_TERMS.has(token));
+}
+
+function isExamQuery(tokens: string[]): boolean {
+  return tokens.some((token) => EXAM_QUERY_TERMS.has(token));
+}
+
+function navTypeBoosts(): Partial<Record<string, number>> {
+  return {
+    tool: 5,
+    page: 4.5,
+    guide: 2.5,
+    english: 2,
+    subject: 1.5,
+    concept: 0.35,
+    formula: 0.35,
+    practice: 0.5,
+    member: 0.2,
+    file: 0.3,
+    folder: 0.3,
+  };
+}
+
+function examTypeBoosts(): Partial<Record<string, number>> {
+  return {
+    english: 5,
+    guide: 2.5,
+    practice: 2,
+    page: 1.2,
+    concept: 0.6,
+    formula: 0.4,
+  };
+}
+
+function isBlockedHref(href: string): boolean {
+  const path = href.split("?")[0] || href;
+  return BLOCKED_HREF_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
 }
 
 function clip(text: string, max = 220): string {
@@ -257,12 +357,17 @@ export function searchSiteEngine(
   const limit = Math.max(1, Math.min(options?.limit ?? 80, 200));
   const detailMax = Math.max(120, Math.min(options?.detailMax ?? 220, 2400));
   const boosts = { ...TYPE_BOOST, ...(options?.typeBoosts || {}) };
+  const navQuery = isNavQuery(tokens);
+  const examQuery = isExamQuery(tokens);
+  if (navQuery) Object.assign(boosts, navTypeBoosts());
+  else if (examQuery) Object.assign(boosts, examTypeBoosts());
   const bag = new Map<string, SiteSearchHit>();
   const subjects = managed?.subjects || [];
   const excerpt = (text: string) => bestClip(text, tokens, detailMax);
 
   // —— Built-in catalogs (cached corpus, scored per query) ——
   for (const entry of getStaticSearchCorpus()) {
+    if (isBlockedHref(entry.href)) continue;
     pushHit(bag, {
       id: entry.id,
       type: entry.type,
@@ -270,7 +375,7 @@ export function searchSiteEngine(
       subject: entry.subject,
       detail: excerpt(entry.body) || entry.detail,
       href: entry.href,
-      score: scoreFields(tokens, entry.title, entry.body),
+      score: scoreFields(tokens, entry.title, entry.body, entry.href),
     });
   }
 
@@ -455,6 +560,7 @@ export function searchSiteEngine(
   }
 
   let hits = Array.from(bag.values())
+    .filter((hit) => !isBlockedHref(hit.href))
     .map((hit) => ({
       ...hit,
       score: hit.score * (boosts[hit.type] ?? 1),

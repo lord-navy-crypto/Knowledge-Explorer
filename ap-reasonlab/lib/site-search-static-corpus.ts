@@ -19,6 +19,7 @@ import { checklistItems } from "@/data/checklist";
 import { trueJetMembers } from "@/data/brand";
 import { listedStudyTools, STUDY_TOOL_CATEGORIES } from "@/data/study-tools";
 import { USER_GUIDE_SECTIONS } from "@/data/user-guide";
+import { writingFrameworks } from "@/data/humanities-writing-frameworks";
 import { SITE_SECTION_FOLDERS } from "@/lib/site-media-map";
 
 export type StaticCorpusRow = {
@@ -35,6 +36,7 @@ let cachedCorpus: StaticCorpusRow[] | null = null;
 
 const CORE_STATIC_PAGES: Array<Omit<StaticCorpusRow, "body">> = [
   { id: "home", type: "page", title: "Home · Knowledge Explorer", subject: "Site", detail: "Knowledge Explorer portal", href: "/" },
+  { id: "explore", type: "page", title: "Explore", subject: "Site", detail: "Browse AP, English, tools, code, simulation, and downloads", href: "/explore" },
   { id: "explore-ap-english", type: "page", title: "AP & English", subject: "Site", detail: "AP subjects and English hub box", href: "/explore/ap-english" },
   { id: "explore-tools-code", type: "page", title: "Convenient Tools & Code", subject: "Site", detail: "Tools and coding hub box", href: "/explore/tools-code" },
   { id: "explore-workshops", type: "page", title: "Simulation & Download", subject: "Site", detail: "Simulation Workshop and Download", href: "/explore/workshops" },
@@ -107,12 +109,29 @@ export function getStaticSearchCorpus(): StaticCorpusRow[] {
     rows.push(
       row({
         id: `tool-${tool.id}`,
-        type: "page",
+        type: "tool",
         title: tool.title,
         subject: categoryLabel[tool.category] || "Tools",
         detail: tool.blurb,
         href: tool.href,
-        body: `${tool.title} ${tool.blurb} ${tool.category} ${tool.href}`,
+        body: `${tool.title} ${tool.blurb} ${tool.category} ${tool.href} tool`,
+      })
+    );
+  }
+
+  for (const framework of writingFrameworks) {
+    const sectionText = framework.sections
+      .map((s) => `${s.heading} ${s.bullets.join(" ")}`)
+      .join(" ");
+    rows.push(
+      row({
+        id: `writing-framework-${framework.id}`,
+        type: "guide",
+        title: framework.title,
+        subject: framework.subject,
+        detail: framework.exampleThesis || framework.sections[0]?.heading || "Writing framework",
+        href: `/ap/writing-frameworks#${framework.id}`,
+        body: `${framework.title} ${framework.subject} ${framework.exampleThesis || ""} ${sectionText} DBQ LEQ essay writing framework`,
       })
     );
   }
@@ -222,6 +241,12 @@ export function getStaticSearchCorpus(): StaticCorpusRow[] {
   }
 
   for (const area of englishAreas) {
+    const examTags =
+      area.href === "/english/toefl"
+        ? "TOEFL reading listening writing speaking practice"
+        : area.href === "/english/sat"
+          ? "SAT reading grammar mathematics english practice"
+          : "";
     rows.push(
       row({
         id: area.href,
@@ -230,7 +255,7 @@ export function getStaticSearchCorpus(): StaticCorpusRow[] {
         subject: "English",
         detail: area.description,
         href: area.href,
-        body: `${area.title} ${area.description}`,
+        body: `${area.title} ${area.description} ${examTags}`,
       })
     );
   }
