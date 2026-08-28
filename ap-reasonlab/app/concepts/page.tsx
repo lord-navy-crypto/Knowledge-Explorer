@@ -195,6 +195,20 @@ function ConceptsContent() {
             Open a subject folder to add topics. Or use <strong>+ Add subject folder</strong> below
             to create a new subject that appears in this grid.
           </p>
+          <div className="mt-4 rounded-2xl border border-brand-200 bg-brand-50/80 px-4 py-4 sm:flex sm:items-center sm:justify-between sm:gap-4">
+            <div>
+              <p className="font-semibold text-brand-900">Key guides</p>
+              <p className="mt-1 text-sm text-brand-900/80">
+                Curated study guides with formulas and exam tips — separate from uploaded topic folders.
+              </p>
+            </div>
+            <Link
+              href="/key-concepts"
+              className="mt-3 inline-flex shrink-0 rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 sm:mt-0"
+            >
+              Browse key guides →
+            </Link>
+          </div>
         </div>
         <UnifiedMediaFrame
           alsoShow={["subject", "folder", "document"]}

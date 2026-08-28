@@ -14,6 +14,7 @@ import { AP_CATALOG, type SubjectDefinition } from "@/data/ap-catalog";
 import type { ManagedContent, ManagedContentItem, ManagedUnit } from "@/lib/managed-types";
 import { canonicalizeSubjectId, subjectIdsMatch } from "@/lib/managed-types";
 import MacFinderDesktop from "@/components/MacFinderDesktop";
+import { useSiteDialog } from "@/components/SiteDialog";
 import { readResponseJson } from "@/lib/safe-json";
 
 type Tab = "content" | "subjects" | "units" | "files" | "trash" | "ai" | "settings" | "history";
@@ -21,6 +22,7 @@ type Tab = "content" | "subjects" | "units" | "files" | "trash" | "ai" | "settin
 const TAB_IDS: Tab[] = ["content", "subjects", "units", "files", "trash", "ai", "settings", "history"];
 
 export default function ManagePage() {
+  const { confirm, prompt, dialog } = useSiteDialog();
   const { unlocked, editor, refresh: refreshEditor } = useEditorMode();
   const [data, setData] = useState<Partial<ManagedContent>>({});
   const [tab, setTab] = useState<Tab>("content");
@@ -347,7 +349,12 @@ export default function ManagePage() {
                         type="button"
                         className="btn-secondary text-xs"
                         onClick={async () => {
-                          const title = window.prompt("Rename unit", unit.title);
+                          const title = await prompt({
+                            title: "Rename unit",
+                            defaultValue: unit.title,
+                            placeholder: "Unit title",
+                            confirmLabel: "Rename",
+                          });
                           if (title == null) return;
                           const next = title.trim();
                           if (!next || next === unit.title) return;
@@ -360,9 +367,13 @@ export default function ManagePage() {
                         type="button"
                         className="rounded-md border border-red-200 px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-50"
                         onClick={async () => {
-                          if (!window.confirm(`Delete unit “${unit.title}”? Content items stay; they just leave this unit.`)) {
-                            return;
-                          }
+                          const ok = await confirm({
+                            title: "Delete unit?",
+                            message: `Delete unit “${unit.title}”? Content items stay; they just leave this unit.`,
+                            confirmLabel: "Delete unit",
+                            danger: true,
+                          });
+                          if (!ok) return;
                           await mutate("delete", { target: "unit", id: unit.id });
                         }}
                       >
@@ -425,15 +436,15 @@ export default function ManagePage() {
                 type="button"
                 disabled={recycleTotal === 0}
                 className="rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white shadow-lg hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-40"
-                onClick={() => {
-                  if (
-                    !recycleTotal ||
-                    !window.confirm(
-                      `清空垃圾桶？\n\n将永久删除全部 ${recycleTotal} 项，无法恢复。`
-                    )
-                  ) {
-                    return;
-                  }
+                onClick={async () => {
+                  if (!recycleTotal) return;
+                  const ok = await confirm({
+                    title: "Empty recycle bin?",
+                    message: `将永久删除全部 ${recycleTotal} 项，无法恢复。`,
+                    confirmLabel: "Empty bin",
+                    danger: true,
+                  });
+                  if (!ok) return;
                   void mutate("empty_recycle", {});
                 }}
               >
@@ -459,8 +470,14 @@ export default function ManagePage() {
                 </button>
                 <button
                   className="rounded-xl bg-red-600 px-3 py-2 text-sm font-semibold text-white hover:bg-red-700"
-                  onClick={() => {
-                    if (!window.confirm(`Permanently delete “${entry.label}”?`)) return;
+                  onClick={async () => {
+                    const ok = await confirm({
+                      title: "Delete forever?",
+                      message: `Permanently delete “${entry.label}”?`,
+                      confirmLabel: "Delete forever",
+                      danger: true,
+                    });
+                    if (!ok) return;
                     void mutate("purge_recycle", { id: entry.id });
                   }}
                 >
@@ -484,8 +501,14 @@ export default function ManagePage() {
                 </button>
                 <button
                   className="rounded-xl bg-red-600 px-3 py-2 text-sm font-semibold text-white hover:bg-red-700"
-                  onClick={() => {
-                    if (!window.confirm(`Permanently delete “${item.title}”?`)) return;
+                  onClick={async () => {
+                    const ok = await confirm({
+                      title: "Delete forever?",
+                      message: `Permanently delete “${item.title}”?`,
+                      confirmLabel: "Delete forever",
+                      danger: true,
+                    });
+                    if (!ok) return;
                     void mutate("purge_content_item", { id: item.id });
                   }}
                 >
@@ -570,6 +593,7 @@ export default function ManagePage() {
           }}
         />
       )}
+      {dialog}
     </div>
   );
 }

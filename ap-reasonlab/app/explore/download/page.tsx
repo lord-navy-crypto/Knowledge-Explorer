@@ -10,6 +10,7 @@ export default function DownloadPage() {
       <Breadcrumbs
         items={[
           { label: "Home", href: "/" },
+          { label: "Explore", href: "/explore" },
           { label: "Simulation & Download", href: "/explore/workshops" },
           { label: "Download" },
         ]}

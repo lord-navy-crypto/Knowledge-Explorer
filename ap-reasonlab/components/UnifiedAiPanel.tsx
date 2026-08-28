@@ -10,6 +10,7 @@ import AiToolboxRelatedStrip from "@/components/AiToolboxRelatedStrip";
 import AiSpecialFeatures from "@/components/AiSpecialFeatures";
 import RichContent from "@/components/RichContent";
 import VoiceInputButton from "@/components/VoiceInputButton";
+import InlineNotice from "@/components/InlineNotice";
 import SaveGeneratedPractice from "@/components/SaveGeneratedPractice";
 import { useLocalAI } from "@/components/LocalAIProvider";
 import { codingAiLocal } from "@/lib/ai-coding-prompt";
@@ -339,6 +340,7 @@ export default function UnifiedAiPanel({
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [ttsNotice, setTtsNotice] = useState("");
   const [siteSearchNote, setSiteSearchNote] = useState("");
   const [siteHits, setSiteHits] = useState<Array<{ title: string; href: string; subject?: string }>>(
     []
@@ -1305,10 +1307,22 @@ export default function UnifiedAiPanel({
         </div>
 
         <div className="grid gap-3 md:grid-cols-2">
-          <label className="block text-sm font-medium text-slate-700">
-            Task
+          <label className="block text-sm font-medium text-slate-700" htmlFor="ai-toolbox-task">
+            {category === "ap"
+              ? "AP task"
+              : category === "english"
+                ? "English task"
+                : "Coding task"}
             <select
+              id="ai-toolbox-task"
               className="input mt-1"
+              aria-label={
+                category === "ap"
+                  ? "Choose an AP AI task"
+                  : category === "english"
+                    ? "Choose an English AI task"
+                    : "Choose a coding AI task"
+              }
               value={
                 category === "ap" ? apTask : category === "english" ? englishTask : codingTask
               }
@@ -1635,7 +1649,7 @@ export default function UnifiedAiPanel({
                       className="mt-2 text-xs font-medium text-brand-700 hover:underline"
                       onClick={() => {
                         if (!speakEnglish(message.text.slice(0, 1200), { rate: 0.92 })) {
-                          window.alert("Speech synthesis unavailable in this browser.");
+                          setTtsNotice("Speech synthesis unavailable in this browser.");
                         }
                       }}
                     >
@@ -1787,6 +1801,7 @@ export default function UnifiedAiPanel({
             ) : null}
 
             {error ? <p className="text-sm text-red-600">{error}</p> : null}
+            <InlineNotice message={ttsNotice} onDismiss={() => setTtsNotice("")} />
             {shareNote ? <p className="text-xs text-emerald-800">{shareNote}</p> : null}
 
             <div className="flex flex-wrap gap-2">

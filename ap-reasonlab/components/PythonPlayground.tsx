@@ -67,7 +67,11 @@ export default function PythonPlayground({
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "running" | "error">("idle");
   const [selected, setSelected] = useState(runnableFirst[0]?.id || examples[0]?.id || "default");
   const [note, setNote] = useState("");
+  const [programInput, setProgramInput] = useState("");
   const pyodideRef = useRef<PyodideLike | null>(null);
+  const stdinLinesRef = useRef<string[]>([]);
+  const stdinIndexRef = useRef(0);
+  const usesInput = code.includes("input(");
 
   useEffect(() => {
     const stored = localStorage.getItem(storageKey);
@@ -89,10 +93,13 @@ export default function PythonPlayground({
     if (!window.loadPyodide) throw new Error("Pyodide loader missing");
     const pyodide = await window.loadPyodide({ indexURL: PYODIDE_INDEX });
     if (pyodide.setStdin) {
+      stdinLinesRef.current = programInput.split(/\r?\n/);
+      stdinIndexRef.current = 0;
       pyodide.setStdin({
         stdin: () => {
-          const value = window.prompt("Python input()", "") ?? "";
-          return `${value}\n`;
+          const line = stdinLinesRef.current[stdinIndexRef.current] ?? "";
+          stdinIndexRef.current += 1;
+          return `${line}\n`;
         },
       });
     }
@@ -161,7 +168,7 @@ export default function PythonPlayground({
           <p className="mt-1 text-sm text-slate-600">
             Runs with Pyodide in your browser — no server. Draft auto-saves on this device.
             <code className="mx-1 rounded bg-slate-100 px-1">input()</code>
-            uses a browser prompt.
+            reads from the program input box below (one line per call).
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -196,6 +203,19 @@ export default function PythonPlayground({
           </button>
         </div>
       </div>
+
+      {usesInput ? (
+        <label className="block text-sm font-medium text-slate-700">
+          Program input for <code className="rounded bg-slate-100 px-1">input()</code>
+          <textarea
+            className="textarea mt-2 min-h-[4.5rem] font-mono text-xs"
+            value={programInput}
+            onChange={(event) => setProgramInput(event.target.value)}
+            placeholder="One line per input() call — e.g. first line for input(), second for the next input(), …"
+            spellCheck={false}
+          />
+        </label>
+      ) : null}
 
       <div className="grid gap-4 lg:grid-cols-2">
         <label className="block min-w-0 text-sm font-medium">
