@@ -20,9 +20,14 @@ type Resolver =
   | { kind: "prompt"; resolve: (value: string | null) => void }
   | { kind: "alert"; resolve: () => void };
 
+const FOCUSABLE =
+  'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+
 export function useSiteDialog() {
   const titleId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
   const [open, setOpen] = useState(false);
   const [state, setState] = useState<DialogState | null>(null);
   const [inputValue, setInputValue] = useState("");
@@ -33,13 +38,49 @@ export function useSiteDialog() {
     setState(null);
     setInputValue("");
     resolverRef.current = null;
+    const previous = previousFocusRef.current;
+    previousFocusRef.current = null;
+    window.requestAnimationFrame(() => previous?.focus());
   }, []);
 
   useEffect(() => {
-    if (!open || state?.mode !== "prompt") return;
-    const timer = window.setTimeout(() => inputRef.current?.focus(), 0);
+    if (!open) return;
+    previousFocusRef.current = document.activeElement as HTMLElement | null;
+    const timer = window.setTimeout(() => {
+      if (state?.mode === "prompt") inputRef.current?.focus();
+      else panelRef.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
+    }, 0);
     return () => window.clearTimeout(timer);
   }, [open, state?.mode]);
+
+  useEffect(() => {
+    if (!open) return;
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        if (state?.mode === "confirm") finishConfirm(false);
+        else if (state?.mode === "prompt") finishPrompt(null);
+        else finishAlert();
+        return;
+      }
+      if (event.key !== "Tab" || !panelRef.current) return;
+      const nodes = [...panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE)].filter(
+        (node) => !node.hasAttribute("disabled")
+      );
+      if (!nodes.length) return;
+      const first = nodes[0]!;
+      const last = nodes[nodes.length - 1]!;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  });
 
   const confirm = useCallback(
     (options: Omit<DialogState, "mode">) =>
@@ -104,6 +145,7 @@ export function useSiteDialog() {
         }}
       >
         <div
+          ref={panelRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby={titleId}
@@ -124,7 +166,6 @@ export function useSiteDialog() {
               onChange={(event) => setInputValue(event.target.value)}
               onKeyDown={(event) => {
                 if (event.key === "Enter") finishPrompt(inputValue);
-                if (event.key === "Escape") finishPrompt(null);
               }}
             />
           ) : null}

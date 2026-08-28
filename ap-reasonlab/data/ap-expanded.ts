@@ -196,6 +196,32 @@ export const expandedApConcepts: Concept[] = [
     example: "Enjambment can create urgency; end-stopped lines can feel final or formal.",
   },
   {
+    id: "ush-periodization",
+    title: "Periodization & continuity",
+    subject: "AP US History",
+    summary: "Place events in chronological context and explain what changed versus what persisted.",
+    keyPoints: [
+      "Periodization is an interpretive choice, not just dates.",
+      "Continuity and change over time (CCOT) needs specific evidence.",
+      "Causation links short-term triggers to long-term structures.",
+    ],
+    commonMistakes: ["Listing dates without explaining significance or change."],
+    example: "Reconstruction ended formal slavery but left economic and political inequalities in place.",
+  },
+  {
+    id: "elang-synthesis-sources",
+    title: "Synthesis with multiple sources",
+    subject: "AP English Language",
+    summary: "Combine provided sources into one argument with clear commentary.",
+    keyPoints: [
+      "At least two sources should interact in each body paragraph.",
+      "Commentary explains how evidence supports the thesis.",
+      "Concession can strengthen credibility when rebutted.",
+    ],
+    commonMistakes: ["Summarizing sources in separate paragraphs without synthesis."],
+    example: "If one source favors phones in class and another warns about distraction, explain which limits matter more.",
+  },
+  {
     id: "whap-industrial",
     title: "Industrialization & global labor",
     subject: "AP World History",

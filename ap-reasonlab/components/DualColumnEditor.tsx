@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import StudyToolShell from "@/components/StudyToolShell";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
+import { useSiteDialog } from "@/components/SiteDialog";
 import RichContent from "@/components/RichContent";
 
 const STORAGE_KEY = "ke-dual-column-v1";
@@ -60,6 +61,7 @@ function downloadText(filename: string, text: string) {
 }
 
 export default function DualColumnEditor() {
+  const { confirm, dialog } = useSiteDialog();
   const [value, setValue] = useState(STARTER);
   const [savedHint, setSavedHint] = useState("");
   const [focusPreview, setFocusPreview] = useState(false);
@@ -149,8 +151,19 @@ export default function DualColumnEditor() {
               key={t.id}
               type="button"
               className="rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-600 hover:border-brand-300"
-              onClick={() => {
-                if (value.trim() && value !== STARTER && !window.confirm("Replace current draft with template?")) return;
+              onClick={async () => {
+                if (
+                  value.trim() &&
+                  value !== STARTER &&
+                  !(await confirm({
+                    title: "Replace draft?",
+                    message: "Replace the current draft with this template?",
+                    confirmLabel: "Replace",
+                    danger: true,
+                  }))
+                ) {
+                  return;
+                }
                 setValue(t.body);
               }}
             >
@@ -183,6 +196,7 @@ export default function DualColumnEditor() {
       <article className="hidden print:block">
         <RichContent>{value}</RichContent>
       </article>
+      {dialog}
     </StudyToolShell>
   );
 }

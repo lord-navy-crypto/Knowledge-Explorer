@@ -13,6 +13,7 @@ export default function EnglishHubPage() {
       <Breadcrumbs
         items={[
           { label: "Home", href: "/" },
+          { label: "Explore", href: "/explore" },
           { label: "AP & English", href: "/explore/ap-english" },
           { label: "English" },
         ]}

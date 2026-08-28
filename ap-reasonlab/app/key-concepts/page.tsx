@@ -32,6 +32,7 @@ export default function KeyConceptsIndexPage() {
       <Breadcrumbs
         items={[
           { label: "Home", href: "/" },
+          { label: "Explore", href: "/explore" },
           { label: "AP & English", href: "/explore/ap-english" },
           { label: "Key concepts & guides" },
         ]}
@@ -51,7 +52,10 @@ export default function KeyConceptsIndexPage() {
         </p>
         <div className="flex flex-wrap gap-3 text-sm">
           <Link href="/concepts" className="font-medium text-brand-700 hover:underline">
-            Browse all concepts →
+            Browse topic folders in Concepts →
+          </Link>
+          <Link href="/ap/writing-frameworks" className="font-medium text-brand-700 hover:underline">
+            DBQ / LEQ writing frameworks →
           </Link>
           <Link href="/hints?section=ai-for-ap" className="font-medium text-brand-700 hover:underline">
             AI for AP in Toolbox →

@@ -59,6 +59,8 @@ const CORE_STATIC_PAGES: Array<Omit<StaticCorpusRow, "body">> = [
   { id: "formulas", type: "page", title: "Formulas", subject: "AP", detail: "Formula sheets by subject", href: "/formulas" },
   { id: "practice", type: "page", title: "Practice", subject: "AP", detail: "Practice and questionnaires", href: "/practice" },
   { id: "key-concepts", type: "page", title: "Key Concepts", subject: "AP", detail: "Guides and concept checks", href: "/key-concepts" },
+  { id: "concepts-hub", type: "page", title: "Concepts topic folders", subject: "AP", detail: "Browse subject folders; pair with Key guides", href: "/concepts" },
+  { id: "ap-writing-frameworks", type: "page", title: "AP writing frameworks", subject: "Humanities", detail: "DBQ LEQ rhetorical analysis essay frames", href: "/ap/writing-frameworks" },
   { id: "gh-vampire", type: "page", title: "VAMPIRE Apple Silicon Builder", subject: "Download", detail: "Native arm64 VAMPIRE builder", href: "https://github.com/lord-navy-crypto/VAMPIRE-Apple-Silicon-Builder" },
   { id: "gh-monte-carlo", type: "page", title: "Random Walk Monte Carlo Studio", subject: "Simulation", detail: "Monte Carlo lab on GitHub", href: "https://github.com/lord-navy-crypto/Random_Walk_Monte_Carlo_Studio" },
   { id: "gh-ising", type: "page", title: "Ising Monte Carlo Lab", subject: "Simulation", detail: "Ising model workbench", href: "https://github.com/lord-navy-crypto/Ising-Monte-Carlo-Lab" },
@@ -152,9 +154,9 @@ export function getStaticSearchCorpus(): StaticCorpusRow[] {
         type: "concept",
         title: item.title,
         subject: item.subject,
-        detail: item.summary,
+        detail: `${item.summary} · Also see Key guides`,
         href: `/concepts/${item.id}`,
-        body: `${item.title} ${item.subject} ${item.summary} ${(item.keyPoints || []).join(" ")}`,
+        body: `${item.title} ${item.subject} ${item.summary} ${(item.keyPoints || []).join(" ")} key guides concepts topic`,
       })
     );
   }
@@ -212,9 +214,9 @@ export function getStaticSearchCorpus(): StaticCorpusRow[] {
         type: "guide",
         title: item.title,
         subject: item.subject,
-        detail: item.introduction,
-        href: `/key-concepts?subject=${encodeURIComponent(item.subject)}`,
-        body: `${item.title} ${item.subject} ${item.introduction} ${(item.howToUseAI || []).join(" ")} ${qText}`,
+        detail: `${item.introduction} · See also Concepts topic folders`,
+        href: `/key-concepts/${item.id}`,
+        body: `${item.title} ${item.subject} ${item.introduction} ${(item.howToUseAI || []).join(" ")} ${qText} concepts topic folders`,
       })
     );
   }

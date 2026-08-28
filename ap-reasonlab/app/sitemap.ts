@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { AP_CATALOG } from "@/data/ap-catalog";
+import { concepts } from "@/data/content";
 import { listedStudyTools } from "@/data/study-tools";
 import { keyConceptGuides } from "@/data/key-concepts";
 
@@ -16,6 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/partners",
     "/hints",
     "/ap",
+    "/ap/writing-frameworks",
     "/english",
     "/tools",
     "/code",
@@ -72,6 +74,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: "monthly",
       priority: 0.65,
+    });
+  }
+
+  for (const concept of concepts) {
+    entries.push({
+      url: `${BASE}/concepts/${concept.id}`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.6,
     });
   }
 

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import { useEditorMode } from "@/components/EditorModeProvider";
+import { useSiteDialog } from "@/components/SiteDialog";
 import { trueJetMembers } from "@/data/brand";
 import ResourceEditor from "@/components/ResourceEditor";
 import type { ManagedContent } from "@/lib/managed-types";
@@ -22,6 +23,7 @@ function displayGithubHandle(url: string): string {
 }
 
 export default function PartnersPage() {
+  const { confirm, dialog } = useSiteDialog();
   const { active: editMode, setActive, unlocked, refresh: refreshEditor } = useEditorMode();
   const [members, setMembers] = useState<Member[]>([]);
   const [name, setName] = useState("");
@@ -125,7 +127,13 @@ export default function PartnersPage() {
   }
 
   async function deletePartner(id: string, name: string) {
-    if (!window.confirm(`Remove “${name}” from the managed partner list?`)) return;
+    const ok = await confirm({
+      title: "Remove partner?",
+      message: `Remove “${name}” from the managed partner list?`,
+      confirmLabel: "Remove",
+      danger: true,
+    });
+    if (!ok) return;
     const response = await fetch("/api/edit", {
       method: "POST",
       credentials: "include",
@@ -288,6 +296,7 @@ export default function PartnersPage() {
         title="Partners · pictures, documents & files"
         collapsedByDefault
       />
+      {dialog}
     </div>
   );
 }

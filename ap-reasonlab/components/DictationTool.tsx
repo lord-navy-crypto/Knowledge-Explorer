@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import StudyToolShell from "@/components/StudyToolShell";
-import InlineNotice from "@/components/InlineNotice";
+import { useToast } from "@/components/ToastProvider";
 import { listEnglishVoices, speakEnglish, whenVoicesReady } from "@/lib/english-tts";
 
 type Tab = "practice" | "queue" | "history";
@@ -62,6 +62,7 @@ function buildDiff(prompt: string, answer: string): DiffToken[] {
 }
 
 export default function DictationTool() {
+  const { warning } = useToast();
   const [tab, setTab] = useState<Tab>("practice");
   const [prompt, setPrompt] = useState(SAMPLE_QUEUE[0]!);
   const [answer, setAnswer] = useState("");
@@ -75,7 +76,6 @@ export default function DictationTool() {
   const [queueRaw, setQueueRaw] = useState(SAMPLE_QUEUE.join("\n"));
   const [history, setHistory] = useState<Attempt[]>([]);
   const [mounted, setMounted] = useState(false);
-  const [notice, setNotice] = useState("");
 
   useEffect(() => {
     return whenVoicesReady((list) => {
@@ -127,7 +127,7 @@ export default function DictationTool() {
       onEnd: () => setSpeaking(false),
       onError: () => setSpeaking(false),
     });
-    if (!ok) setNotice("Speech synthesis is not available in this browser.");
+    if (!ok) warning("Speech synthesis is not available in this browser.");
   }
 
   function loadQueueIndex(i: number) {
@@ -173,7 +173,6 @@ export default function DictationTool() {
       description="Listen to a sentence, type what you hear, check word-level diffs, and work through a queue. History stays local."
       tip="Adjust playback speed. Save attempts after you check. Queue = one sentence per line."
     >
-      <InlineNotice message={notice} onDismiss={() => setNotice("")} />
       <div className="flex flex-wrap gap-2">
         {(
           [

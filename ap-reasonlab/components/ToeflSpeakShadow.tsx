@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import ToeflPracticeTimer from "@/components/ToeflPracticeTimer";
-import InlineNotice from "@/components/InlineNotice";
+import { useToast } from "@/components/ToastProvider";
 import {
   listEnglishVoices,
   speakEnglish,
@@ -75,6 +75,7 @@ function getSpeechRecognition(): (new () => SpeechRec) | null {
 
 /** Paste dialogue / tongue twisters → natural English TTS + mic score + 40s timer. */
 export default function ToeflSpeakShadow() {
+  const { warning, error } = useToast();
   const [corpus, setCorpus] = useState(DIALOGUE_PACK);
   const [packLabel, setPackLabel] = useState("Dialogue");
   const [rate, setRate] = useState(0.9);
@@ -86,7 +87,6 @@ export default function ToeflSpeakShadow() {
   const [listening, setListening] = useState(false);
   const [heard, setHeard] = useState("");
   const [score, setScore] = useState<number | null>(null);
-  const [notice, setNotice] = useState("");
   const recRef = useRef<SpeechRec | null>(null);
 
   const lines = useMemo(() => splitLines(corpus), [corpus]);
@@ -138,7 +138,7 @@ export default function ToeflSpeakShadow() {
       },
       onError: () => setSpeaking(false),
     });
-    if (!ok) setNotice("Speech synthesis is not available in this browser.");
+    if (!ok) warning("Speech synthesis is not available in this browser.");
   }
 
   function playCurrent() {
@@ -158,7 +158,7 @@ export default function ToeflSpeakShadow() {
   function startMicScore() {
     const Ctor = getSpeechRecognition();
     if (!Ctor || !current) {
-      setNotice("Live mic scoring needs Chrome or Edge.");
+      warning("Live mic scoring needs Chrome or Edge.");
       return;
     }
     stopMic();
@@ -186,13 +186,12 @@ export default function ToeflSpeakShadow() {
       setListening(true);
     } catch {
       setListening(false);
-      setNotice("Could not start the microphone.");
+      error("Could not start the microphone.");
     }
   }
 
   return (
     <div className="space-y-4">
-      <InlineNotice message={notice} onDismiss={() => setNotice("")} />
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_16rem]">
       <section className="space-y-4 rounded-2xl border border-violet-200 bg-violet-50/50 p-5">
         <div>
