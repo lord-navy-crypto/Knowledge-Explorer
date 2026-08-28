@@ -38,7 +38,7 @@ export const USER_GUIDE_SECTIONS: UserGuideSection[] = [
       { speaker: "you", text: "Where do I start on Knowledge Explorer?" },
       {
         speaker: "guide",
-        text: "Home has four boxes — Forum first, then AP & English, Convenient Tools & Code, and Sentinel Mac (macOS download). Simulation & Download lives under Explore. AI Toolbox is always one click away in the header.",
+        text: "Home has four boxes — Simulation & Download, AP & English, Convenient Tools & Code, and Sentinel Mac. Forum, AI Toolbox, and Manage sit in the top bar for quick access anytime.",
       },
       { speaker: "you", text: "Anything I should avoid?" },
       {
@@ -47,9 +47,9 @@ export const USER_GUIDE_SECTIONS: UserGuideSection[] = [
       },
     ],
     body:
-      "Desktop: sticky header with AI Toolbox + Search, plus More dropdown (boxes, quick links, editor login). On narrow screens the header also scrolls AP · English · Practice · AI · Search quick links. Mobile bottom bar: Home · Explore · Search · AI · More — tap More for AP, English, Tools, Code, and guides. Jump-to-chat appears on toolbox pages. Themes and night mode live in the style window (palette icon).",
+      "Desktop: sticky header with AI Toolbox, Forum, Manage, and Quick search (⌘K), plus More dropdown for boxes and guides. On narrow screens the header scrolls Forum · AP · English · AI · Manage quick links. Mobile bottom bar: Home · Forum · Search · AI · More.",
     steps: [
-      "Open Home → choose a box (Forum, AP, Tools, Sentinel Mac).",
+      "Open Home → choose a box (Simulation, AP, Tools, Sentinel Mac). Forum is in the header.",
       "Desktop: use Search in the header. Mobile: tap Search on the bottom bar (or ⌘K).",
       "More → Quick links for /ap, /english, /practice, /tools, /user-guide.",
       "Editors only: More shows full admin links after unlock at /login.",

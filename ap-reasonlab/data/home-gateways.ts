@@ -21,10 +21,23 @@ export type HomeGateway = {
 
 export const HOME_GATEWAYS: HomeGateway[] = [
   {
-    id: "forum",
-    title: "Forum",
-    description: "Discussions, shared materials, and your private My box — community hub first.",
-    href: "/forum",
+    id: "workshops",
+    title: "Simulation & Download",
+    description:
+      "Simulation Workshop (research labs on GitHub) and Download (macOS Shell builders / installers, including VAMPIRE).",
+    href: "/explore/workshops",
+    links: [
+      {
+        href: "/explore/simulation-workshop",
+        title: "Simulation Workshop",
+        description: "Monte Carlo, oscillators, chaos, Ising, RADIA labs — open on GitHub.",
+      },
+      {
+        href: "/explore/download",
+        title: "Download",
+        description: "Chrono Modal, RADIA Universal2, and VAMPIRE Apple Silicon builders.",
+      },
+    ],
   },
   {
     id: "ap-english",
@@ -84,29 +97,6 @@ export const HOME_GATEWAYS: HomeGateway[] = [
   },
 ];
 
-/** Secondary explore lanes not shown as home boxes. */
-export const EXPLORE_EXTRA_GATEWAYS: HomeGateway[] = [
-  {
-    id: "workshops",
-    title: "Simulation & Download",
-    description:
-      "Simulation Workshop (research labs on GitHub) and Download (macOS Shell builders / installers).",
-    href: "/explore/workshops",
-    links: [
-      {
-        href: "/explore/simulation-workshop",
-        title: "Simulation Workshop",
-        description: "Monte Carlo, oscillators, chaos, Ising, RADIA labs — open on GitHub.",
-      },
-      {
-        href: "/explore/download",
-        title: "Download",
-        description: "Chrono Modal, RADIA Universal2, and VAMPIRE Apple Silicon builders.",
-      },
-    ],
-  },
-];
-
 export function getGatewayById(id: string): HomeGateway | undefined {
-  return [...HOME_GATEWAYS, ...EXPLORE_EXTRA_GATEWAYS].find((g) => g.id === id);
+  return HOME_GATEWAYS.find((g) => g.id === id);
 }

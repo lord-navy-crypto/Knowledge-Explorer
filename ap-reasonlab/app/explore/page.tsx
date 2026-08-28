@@ -1,10 +1,8 @@
 import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
-import { EXPLORE_EXTRA_GATEWAYS, HOME_GATEWAYS } from "@/data/home-gateways";
+import { HOME_GATEWAYS } from "@/data/home-gateways";
 
 export default function ExploreIndexPage() {
-  const workshops = EXPLORE_EXTRA_GATEWAYS.find((g) => g.id === "workshops");
-
   return (
     <div className="space-y-8">
       <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Explore" }]} />
@@ -17,7 +15,13 @@ export default function ExploreIndexPage() {
           Explore
         </h1>
         <p className="max-w-2xl text-slate-600">
-          Open a gateway box — Forum, AP &amp; English, tools &amp; code, and Sentinel Mac downloads.
+          Home gateway boxes — simulation labs, AP &amp; English, tools &amp; code, and Sentinel Mac.
+          Forum lives in the top bar with AI Toolbox and Manage.
+        </p>
+        <p className="text-sm text-slate-500">
+          <Link href="/forum" className="font-medium text-brand-700 hover:underline">
+            Open Forum →
+          </Link>
         </p>
       </section>
 
@@ -58,19 +62,6 @@ export default function ExploreIndexPage() {
           </Link>
         ))}
       </section>
-
-      {workshops ? (
-        <section className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-5 py-5">
-          <h2 className="font-display text-lg font-semibold text-slate-900">{workshops.title}</h2>
-          <p className="mt-1 max-w-2xl text-sm text-slate-600">{workshops.description}</p>
-          <Link
-            href={workshops.href}
-            className="mt-3 inline-flex text-sm font-semibold text-brand-700 hover:underline"
-          >
-            Open Simulation &amp; Download →
-          </Link>
-        </section>
-      ) : null}
     </div>
   );
 }

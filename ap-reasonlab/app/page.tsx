@@ -18,11 +18,11 @@ export default function HomePage() {
             {brand.name}
           </h1>
           <p className="mt-4 max-w-xl font-display text-xl font-medium leading-snug text-[#f7f4ee]/90 md:text-2xl">
-            Four doors into study — Forum first, then AP, tools, and Sentinel Mac.
+            Four study boxes below — simulation, AP, tools, and Sentinel Mac.
           </p>
           <p className="mt-3 max-w-lg text-base leading-relaxed text-[#f7f4ee]/75">
-            AI Toolbox stays in the top bar. Forum, AP &amp; English, convenient tools &amp; code, and
-            Sentinel Mac downloads live in the boxes below.
+            AI Toolbox, Forum, and Manage stay in the top bar. Pick a box for labs, subjects,
+            coding utilities, or the Sentinel Mac download.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
