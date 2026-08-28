@@ -15,8 +15,13 @@ export default function ExploreIndexPage() {
           Explore
         </h1>
         <p className="max-w-2xl text-slate-600">
-          Open a gateway box — AP &amp; English, tools &amp; code, simulation labs, downloads, and
-          more.
+          Home gateway boxes — simulation labs, AP &amp; English, tools &amp; code, and Sentinel Mac.
+          Forum lives in the top bar with AI Toolbox and Manage.
+        </p>
+        <p className="text-sm text-slate-500">
+          <Link href="/forum" className="font-medium text-brand-700 hover:underline">
+            Open Forum →
+          </Link>
         </p>
       </section>
 
@@ -25,13 +30,35 @@ export default function ExploreIndexPage() {
           <Link
             key={gateway.id}
             href={gateway.href}
-            className="group rounded-2xl border border-slate-200 bg-white px-5 py-6 shadow-sm transition hover:border-brand-300 hover:shadow-md"
+            className={`group rounded-2xl border px-5 py-6 shadow-sm transition hover:shadow-md ${
+              gateway.accent === "sentinel"
+                ? "border-slate-700 bg-gradient-to-br from-slate-950 via-slate-900 to-sky-950 text-white hover:border-sky-500/50"
+                : "border-slate-200 bg-white hover:border-brand-300"
+            }`}
           >
-            <h2 className="font-display text-xl font-semibold text-slate-900 group-hover:text-brand-800">
+            <h2
+              className={`font-display text-xl font-semibold ${
+                gateway.accent === "sentinel"
+                  ? "text-white group-hover:text-sky-100"
+                  : "text-slate-900 group-hover:text-brand-800"
+              }`}
+            >
               {gateway.title}
             </h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">{gateway.description}</p>
-            <p className="mt-4 text-sm font-medium text-brand-700">Open hub →</p>
+            <p
+              className={`mt-2 text-sm leading-6 ${
+                gateway.accent === "sentinel" ? "text-slate-300" : "text-slate-600"
+              }`}
+            >
+              {gateway.description}
+            </p>
+            <p
+              className={`mt-4 text-sm font-medium ${
+                gateway.accent === "sentinel" ? "text-sky-300" : "text-brand-700"
+              }`}
+            >
+              Open hub →
+            </p>
           </Link>
         ))}
       </section>

@@ -2,12 +2,13 @@
 
 export const SITE_GUIDE_FACTS = `
 Site name: Knowledge Explorer — academic platform (tutor, not solver).
-Home: four gateway boxes on / ; AI Toolbox stays in the top bar.
+Home: four gateway boxes on / ; AI Toolbox, Forum, and Manage stay in the top bar.
 Main boxes:
-- Box 1 AP & English (/explore/ap-english) → /ap and /english
-- Box 2 Convenient Tools & Code (/explore/tools-code) → /tools and /code
-- Box 3 Simulation & Download (/explore/workshops) — Simulation Workshop + Download
-- Box 4 Forum (/forum) — discussions, shared library, My box
+- Box 1 Simulation & Download (/explore/workshops) — Simulation Workshop + Download
+- Box 2 AP & English (/explore/ap-english) → /ap and /english
+- Box 3 Convenient Tools & Code (/explore/tools-code) → /tools and /code
+- Box 4 Sentinel Mac (/explore/sentinel) — local-first macOS system intelligence; DMG download + GitHub releases
+Top bar (always visible): AI Toolbox (/hints), Forum (/forum), Manage (/manage), Quick search
 Purpose: Learn by reasoning with concrete formulas, data, and half-process guidance.
 Main areas:
 - AP (/ap): subject-first workspace → concepts, formulas, practice, AI Toolbox. Documents/files live in the page storage panel.

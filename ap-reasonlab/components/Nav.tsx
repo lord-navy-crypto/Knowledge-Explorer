@@ -9,15 +9,16 @@ import { useQuickSearch } from "@/components/QuickSearchModal";
 
 const primaryLinks = [
   { href: "/hints", label: "AI Toolbox" },
-  { href: "/search", label: "Search" },
+  { href: "/forum", label: "Forum" },
+  { href: "/manage", label: "Manage" },
 ];
 
 const mobileQuickLinks = [
+  { href: "/forum", label: "Forum" },
   { href: "/ap", label: "AP" },
   { href: "/english", label: "English" },
-  { href: "/practice", label: "Practice" },
   { href: "/hints", label: "AI" },
-  { href: "/search", label: "Search" },
+  { href: "/manage", label: "Manage" },
 ];
 
 const moreGroups = [
@@ -31,7 +32,7 @@ const moreGroups = [
       { href: "/explore/workshops", label: "Simulation & Download" },
       { href: "/explore/simulation-workshop", label: "Simulation Workshop" },
       { href: "/explore/download", label: "Download" },
-      { href: "/forum", label: "Forum" },
+      { href: "/explore/sentinel", label: "Sentinel Mac" },
     ],
   },
   {

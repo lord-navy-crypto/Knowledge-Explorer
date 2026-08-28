@@ -15,7 +15,7 @@ const moreGroups = [
       { href: "/explore/ap-english", label: "AP & English" },
       { href: "/explore/tools-code", label: "Tools & Code" },
       { href: "/explore/workshops", label: "Simulation & Download" },
-      { href: "/forum", label: "Forum" },
+      { href: "/explore/sentinel", label: "Sentinel Mac" },
     ],
   },
   {
@@ -68,7 +68,7 @@ export default function MobileActionBar() {
     )
   );
   const hintsActive = pathname === "/hints" || pathname.startsWith("/hints/");
-  const exploreActive = pathname === "/explore" || pathname.startsWith("/explore/");
+  const forumActive = pathname === "/forum" || pathname.startsWith("/forum");
 
   useEffect(() => {
     setMoreOpen(false);
@@ -160,15 +160,15 @@ export default function MobileActionBar() {
           Home
         </Link>
         <Link
-          href="/explore"
+          href="/forum"
           className={
-            exploreActive
+            forumActive
               ? "rounded-xl bg-brand-600 px-1 py-2 text-center text-[10px] font-semibold text-white"
               : "rounded-xl px-1 py-2 text-center text-[10px] font-semibold text-slate-700"
           }
-          aria-current={exploreActive ? "page" : undefined}
+          aria-current={forumActive ? "page" : undefined}
         >
-          Explore
+          Forum
         </Link>
         <button
           type="button"

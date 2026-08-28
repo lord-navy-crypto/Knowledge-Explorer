@@ -35,6 +35,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/explore/ap-english",
     "/explore/tools-code",
     "/explore/workshops",
+    "/explore/sentinel",
     "/explore/simulation-workshop",
     "/explore/download",
     "/english/toefl",
