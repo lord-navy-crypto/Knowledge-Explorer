@@ -40,6 +40,7 @@ const CORE_STATIC_PAGES: Array<Omit<StaticCorpusRow, "body">> = [
   { id: "explore-ap-english", type: "page", title: "AP & English", subject: "Site", detail: "AP subjects and English hub box", href: "/explore/ap-english" },
   { id: "explore-tools-code", type: "page", title: "Convenient Tools & Code", subject: "Site", detail: "Tools and coding hub box", href: "/explore/tools-code" },
   { id: "explore-workshops", type: "page", title: "Simulation & Download", subject: "Site", detail: "Simulation Workshop and Download", href: "/explore/workshops" },
+  { id: "explore-sentinel", type: "page", title: "Sentinel Mac", subject: "Site", detail: "Local-first macOS system intelligence — download DMG", href: "/explore/sentinel" },
   { id: "explore-simulation", type: "page", title: "Simulation Workshop", subject: "Site", detail: "Research simulation labs on GitHub", href: "/explore/simulation-workshop" },
   { id: "explore-download", type: "page", title: "Download", subject: "Site", detail: "macOS Shell builders on GitHub", href: "/explore/download" },
   { id: "search", type: "page", title: "Search", subject: "Site", detail: "Full-site search", href: "/search" },

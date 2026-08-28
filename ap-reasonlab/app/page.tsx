@@ -18,11 +18,11 @@ export default function HomePage() {
             {brand.name}
           </h1>
           <p className="mt-4 max-w-xl font-display text-xl font-medium leading-snug text-[#f7f4ee]/90 md:text-2xl">
-            Four doors into study — pick a box, then open what you need.
+            Four doors into study — Forum first, then AP, tools, and Sentinel Mac.
           </p>
           <p className="mt-3 max-w-lg text-base leading-relaxed text-[#f7f4ee]/75">
-            AI Toolbox stays in the top bar. AP, English, tools, code, workshops, and forum live
-            inside the boxes below.
+            AI Toolbox stays in the top bar. Forum, AP &amp; English, convenient tools &amp; code, and
+            Sentinel Mac downloads live in the boxes below.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
@@ -57,27 +57,50 @@ export default function HomePage() {
         <div className="grid gap-4 sm:grid-cols-2">
           {HOME_GATEWAYS.map((box, index) => {
             const mark = String(index + 1).padStart(2, "0");
+            const isSentinel = box.accent === "sentinel";
             return (
               <Link
                 key={box.id}
                 href={box.href}
-                className="group relative overflow-hidden rounded-2xl border border-[var(--ke-border)] bg-[var(--ke-surface)] px-5 py-6 shadow-sm transition hover:border-brand-300 hover:shadow-md"
+                className={`group relative overflow-hidden rounded-2xl border px-5 py-6 shadow-sm transition hover:shadow-md ${
+                  isSentinel
+                    ? "border-slate-700 bg-gradient-to-br from-slate-950 via-slate-900 to-sky-950 text-white hover:border-sky-500/50"
+                    : "border-[var(--ke-border)] bg-[var(--ke-surface)] hover:border-brand-300"
+                }`}
               >
                 <div
-                  className="pointer-events-none absolute inset-0 bg-gradient-to-br from-brand-50/80 via-transparent to-sky-50/40 opacity-0 transition group-hover:opacity-100"
+                  className={`pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-100 ${
+                    isSentinel
+                      ? "bg-gradient-to-br from-sky-500/10 via-transparent to-transparent"
+                      : "bg-gradient-to-br from-brand-50/80 via-transparent to-sky-50/40"
+                  }`}
                   aria-hidden
                 />
                 <div className="relative">
-                  <p className="font-display text-xs font-semibold tracking-[0.18em] text-brand-600">
+                  <p
+                    className={`font-display text-xs font-semibold tracking-[0.18em] ${
+                      isSentinel ? "text-sky-300" : "text-brand-600"
+                    }`}
+                  >
                     BOX {mark}
-                    {box.comingSoon ? " · SOON" : ""}
+                    {box.comingSoon ? " · SOON" : isSentinel ? " · DOWNLOAD" : ""}
                   </p>
-                  <h3 className="mt-2 font-display text-2xl font-semibold text-[var(--ke-ink)] group-hover:text-brand-900">
+                  <h3
+                    className={`mt-2 font-display text-2xl font-semibold group-hover:text-brand-900 ${
+                      isSentinel ? "text-white group-hover:text-sky-100" : "text-[var(--ke-ink)]"
+                    }`}
+                  >
                     {box.title}
                   </h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">{box.description}</p>
-                  <p className="mt-4 text-sm font-semibold text-brand-700">
-                    {box.comingSoon ? "View placeholder →" : "Enter →"}
+                  <p className={`mt-2 text-sm leading-6 ${isSentinel ? "text-slate-300" : "text-slate-600"}`}>
+                    {box.description}
+                  </p>
+                  <p
+                    className={`mt-4 text-sm font-semibold ${
+                      isSentinel ? "text-sky-300 group-hover:text-sky-200" : "text-brand-700"
+                    }`}
+                  >
+                    {box.comingSoon ? "View placeholder →" : isSentinel ? "Download & overview →" : "Enter →"}
                   </p>
                 </div>
               </Link>

@@ -13,11 +13,19 @@ export type HomeGateway = {
   href: string;
   /** When true, the card is a placeholder (no deep links yet). */
   comingSoon?: boolean;
+  /** Optional homepage card accent (tailwind token). */
+  accent?: "brand" | "sentinel";
   /** Shown inside the gateway hub after click. */
   links?: GatewayLink[];
 };
 
 export const HOME_GATEWAYS: HomeGateway[] = [
+  {
+    id: "forum",
+    title: "Forum",
+    description: "Discussions, shared materials, and your private My box — community hub first.",
+    href: "/forum",
+  },
   {
     id: "ap-english",
     title: "AP & English",
@@ -55,10 +63,34 @@ export const HOME_GATEWAYS: HomeGateway[] = [
     ],
   },
   {
+    id: "sentinel",
+    title: "Sentinel Mac",
+    description:
+      "Local-first macOS system intelligence — download v2.2.0-beta (DMG) or open releases on GitHub.",
+    href: "/explore/sentinel",
+    accent: "sentinel",
+    links: [
+      {
+        href: "/explore/sentinel",
+        title: "Download & overview",
+        description: "Install Sentinel.app, feature tour, and release notes on this site.",
+      },
+      {
+        href: "https://github.com/lord-navy-crypto/sentinel-macos/releases",
+        title: "GitHub Releases",
+        description: "Latest DMG, checksums, and full release documentation.",
+      },
+    ],
+  },
+];
+
+/** Secondary explore lanes not shown as home boxes. */
+export const EXPLORE_EXTRA_GATEWAYS: HomeGateway[] = [
+  {
     id: "workshops",
     title: "Simulation & Download",
     description:
-      "Simulation Workshop (research labs on GitHub) and Download (macOS Shell builders / installers, including VAMPIRE).",
+      "Simulation Workshop (research labs on GitHub) and Download (macOS Shell builders / installers).",
     href: "/explore/workshops",
     links: [
       {
@@ -69,19 +101,12 @@ export const HOME_GATEWAYS: HomeGateway[] = [
       {
         href: "/explore/download",
         title: "Download",
-        description:
-          "Chrono Modal, RADIA Universal2, and VAMPIRE Apple Silicon builders — GitHub download links.",
+        description: "Chrono Modal, RADIA Universal2, and VAMPIRE Apple Silicon builders.",
       },
     ],
-  },
-  {
-    id: "forum",
-    title: "Forum",
-    description: "Discussions, shared materials, and your private My box.",
-    href: "/forum",
   },
 ];
 
 export function getGatewayById(id: string): HomeGateway | undefined {
-  return HOME_GATEWAYS.find((g) => g.id === id);
+  return [...HOME_GATEWAYS, ...EXPLORE_EXTRA_GATEWAYS].find((g) => g.id === id);
 }
