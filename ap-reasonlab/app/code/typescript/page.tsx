@@ -4,6 +4,7 @@ import Link from "next/link";
 import OfficialResourceLinks from "@/components/OfficialResourceLinks";
 import { getCodeLangOfficial } from "@/data/official-resources";
 import TsPlayground from "@/components/TsPlayground";
+import TrackToolboxVisit from "@/components/TrackToolboxVisit";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import { tsExamples } from "@/data/easy-code-langs";
 
@@ -11,6 +12,7 @@ export default function CodeTypeScriptPage() {
   const official = getCodeLangOfficial("typescript");
   return (
     <div className="space-y-6">
+      <TrackToolboxVisit href="/code/typescript" title="TypeScript" />
       <Link href="/code" className="text-sm text-brand-600 hover:underline">
         ← Back to Code Resource
       </Link>

@@ -256,6 +256,15 @@ export const STUDY_TOOLS: StudyTool[] = [
 
   // —— Write ——
   {
+    id: "write-convert",
+    href: "/tools/write-convert",
+    title: "Write & convert wizard",
+    blurb: "Batch pipeline: hand off one draft to word count, Markdown cleanup, or PDF export.",
+    category: "write",
+    security: "local-data",
+    badge: "Wizard",
+  },
+  {
     id: "dual",
     href: "/tools/dual",
     title: "Dual-column editor",
@@ -374,6 +383,24 @@ export const STUDY_TOOLS: StudyTool[] = [
     blurb: "Paste left + right text. Perfect match or highlighted diffs — see how much changed.",
     category: "collab",
     security: "safe",
+  },
+  {
+    id: "json-formatter",
+    href: "/tools/json-formatter",
+    title: "JSON formatter",
+    blurb: "Validate, pretty-print, and minify JSON locally — pair with text comparator or code board.",
+    category: "utilities",
+    security: "safe",
+    badge: "New",
+  },
+  {
+    id: "encode-decode",
+    href: "/tools/encode-decode",
+    title: "Base64 & URL encoder",
+    blurb: "Encode/decode Base64 and URL/URI strings locally — handy for APIs and query params.",
+    category: "utilities",
+    security: "safe",
+    badge: "New",
   },
   {
     id: "text-diff",

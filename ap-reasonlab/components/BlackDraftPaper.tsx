@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import StudyToolShell from "@/components/StudyToolShell";
 import RichContent from "@/components/RichContent";
+import WriteToolHandoffBanner from "@/components/WriteToolHandoffBanner";
+import { consumeWriteToolHandoff } from "@/lib/write-tool-handoff";
 
 const STORAGE_KEY = "ke-black-draft-v1";
 
@@ -35,6 +37,7 @@ export default function BlackDraftPaper() {
   const [showGrid, setShowGrid] = useState(true);
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
+  const [handoffNote, setHandoffNote] = useState("");
 
   const pushHistory = useCallback(() => {
     const canvas = canvasRef.current;
@@ -87,6 +90,17 @@ export default function BlackDraftPaper() {
   }, []);
 
   useEffect(() => {
+    const handoff = consumeWriteToolHandoff("draft");
+    if (handoff?.text) {
+      setNotes(handoff.text);
+      setHandoffNote("Loaded from write & convert wizard.");
+      requestAnimationFrame(() => {
+        resizeCanvas();
+        pushHistory();
+      });
+      return;
+    }
+
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
@@ -300,6 +314,10 @@ export default function BlackDraftPaper() {
       description="Dual-blended dark desk: type Markdown notes on the left, draw with mouse or stylus on the right. Undo, highlighter, and auto-save included."
       tip="Tip: use a stylus on Chromebook / Surface / iPad (Safari). Pressure thickens strokes. Everything stays in this browser until you export."
     >
+      {handoffNote ? (
+        <WriteToolHandoffBanner message={handoffNote} onDismiss={() => setHandoffNote("")} />
+      ) : null}
+
       <div className="flex flex-wrap items-center gap-2">
         <button type="button" className="btn-primary" onClick={saveDraft}>
           Save draft

@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import PlaygroundExtras from "@/components/PlaygroundExtras";
+import CodeLangOfficialStrip from "@/components/CodeLangOfficialStrip";
+import { usePlaygroundHandoffNotice } from "@/lib/use-playground-handoff";
+import { usePlaygroundShortcuts } from "@/lib/use-playground-shortcuts";
+import { copySource } from "@/lib/playground-export";
 
 type Example = { id: string; title: string; code: string };
 
@@ -98,6 +103,15 @@ export default function TsPlayground({
   const [note, setNote] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "running">("idle");
   const [srcDoc, setSrcDoc] = useState("");
+
+  usePlaygroundHandoffNotice((msg) => setNote(msg));
+
+  usePlaygroundShortcuts({
+    onRun: () => void run(),
+    onCopy: () => {
+      void copySource(code).then((ok) => setNote(ok ? "Source copied." : "Copy failed."));
+    },
+  });
   const [emitted, setEmitted] = useState("");
 
   useEffect(() => {
@@ -170,6 +184,7 @@ export default function TsPlayground({
 
   return (
     <section className="card space-y-4">
+      <CodeLangOfficialStrip langId="typescript" compact />
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-brand-600">
@@ -199,6 +214,7 @@ export default function TsPlayground({
           <button type="button" className="btn-secondary self-end" onClick={resetStarter}>
             Reset
           </button>
+          <PlaygroundExtras code={code} language="typescript" filename="playground.ts" onNote={setNote} />
           <button
             type="button"
             className="btn-primary self-end"

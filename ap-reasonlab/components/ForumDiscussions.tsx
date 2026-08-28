@@ -8,7 +8,16 @@ import { useToast } from "@/components/ToastProvider";
 import { saveLearningItem } from "@/lib/storage";
 import RichContent from "@/components/RichContent";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
-import type { ManagedForumAttachment, ManagedForumPost } from "@/lib/managed-types";
+import type { ManagedForumAttachment, ManagedForumPost, ForumPostCategory } from "@/lib/managed-types";
+import {
+  forumPostMatchesCategory,
+  FORUM_CATEGORY_LABELS,
+  resolveForumPostCategory,
+} from "@/lib/forum-api";
+import { extractForumCodeBlocks } from "@/lib/forum-code-blocks";
+import { preloadPlaygroundDraft } from "@/lib/code-draft-bridge";
+import { getCodeLangOfficial } from "@/data/official-resources";
+import ForumOfficialLinks from "@/components/ForumOfficialLinks";
 import {
   readForumDisplayName,
   writeForumDisplayName,
@@ -18,8 +27,9 @@ const MAX_POST_ATTACH = 4;
 const MAX_REPLY_ATTACH = 2;
 const MAX_ATTACH_BYTES = 650_000;
 const POSTS_PER_PAGE = 8;
+const COMPOSER_DRAFT_KEY = "ke-forum-composer-draft-v1";
 
-type Category = "all" | "questions" | "resources" | "announcements" | "beta-feedback";
+type Category = "all" | ForumPostCategory;
 
 export function parseForumDiscussionCategory(tag: string | null): Category {
   if (tag === "beta-feedback" || tag === "beta") return "beta-feedback";
@@ -39,24 +49,69 @@ const CATEGORIES: { id: Category; label: string; match: (p: ManagedForumPost) =>
   {
     id: "questions",
     label: "Questions",
-    match: (p) => /question|\?|help|how|why|what/i.test(`${p.title} ${p.body}`),
+    match: (p) => forumPostMatchesCategory(p, "questions"),
   },
   {
     id: "resources",
     label: "Resources",
-    match: (p) => /resource|share|note|link|material|pdf|guide|tip/i.test(`${p.title} ${p.body}`),
+    match: (p) => forumPostMatchesCategory(p, "resources"),
   },
   {
     id: "announcements",
     label: "Announcements",
-    match: (p) => /announce|update|news|notice|important/i.test(`${p.title} ${p.body}`),
+    match: (p) => forumPostMatchesCategory(p, "announcements"),
   },
   {
     id: "beta-feedback",
     label: "Beta feedback",
-    match: (p) => /#beta-feedback|\[beta feedback\]/i.test(`${p.title} ${p.body}`),
+    match: (p) => forumPostMatchesCategory(p, "beta-feedback"),
   },
 ];
+
+function quoteSnippet(author: string, body: string): string {
+  const excerpt = body.trim().split(/\r?\n/).slice(0, 8).join("\n").slice(0, 480);
+  const quoted = excerpt
+    .split(/\r?\n/)
+    .map((line) => `> ${line}`)
+    .join("\n");
+  return `> **${author}** wrote:\n${quoted}\n\n`;
+}
+
+function ForumCategoryBadge({ post }: { post: ManagedForumPost }) {
+  const cat = resolveForumPostCategory(post);
+  if (!cat) return null;
+  return (
+    <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+      {FORUM_CATEGORY_LABELS[cat]}
+    </span>
+  );
+}
+
+function ForumCodeLaunchers({ body }: { body: string }) {
+  const router = useRouter();
+  const blocks = useMemo(() => extractForumCodeBlocks(body), [body]);
+  if (!blocks.length) return null;
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap gap-2">
+        {blocks.map((block, index) => (
+          <button
+            key={`${block.language}-${index}`}
+            type="button"
+            className="rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-900 hover:bg-emerald-100"
+            onClick={() => {
+              const href = preloadPlaygroundDraft(block.language, block.code);
+              if (href) router.push(href);
+            }}
+          >
+            Run {block.label} in playground
+          </button>
+        ))}
+      </div>
+      <ForumOfficialLinks body={body} />
+    </div>
+  );
+}
 
 function relativeTime(value: string | number): string {
   const t = typeof value === "number" ? value : new Date(value).getTime();
@@ -264,6 +319,7 @@ export function ForumDiscussions({
   const [pendingAction, setPendingAction] = useState<"post" | string | null>(null);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [postCategory, setPostCategory] = useState<ForumPostCategory>("questions");
   const [postAttachments, setPostAttachments] = useState<DraftAttachment[]>([]);
   const [replyBody, setReplyBody] = useState("");
   const [replyAttachments, setReplyAttachments] = useState<DraftAttachment[]>([]);
@@ -305,6 +361,67 @@ export function ForumDiscussions({
     setDisplayName(readForumDisplayName());
     void refresh();
   }, [refresh]);
+
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(COMPOSER_DRAFT_KEY);
+      if (!raw) return;
+      const draft = JSON.parse(raw) as {
+        title?: string;
+        body?: string;
+        category?: ForumPostCategory;
+      };
+      if (draft.title) setTitle(draft.title);
+      if (draft.body) setBody(draft.body);
+      if (draft.category) setPostCategory(draft.category);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!composerOpen) return;
+    sessionStorage.setItem(
+      COMPOSER_DRAFT_KEY,
+      JSON.stringify({ title, body, category: postCategory })
+    );
+  }, [composerOpen, title, body, postCategory]);
+
+  const threadParam = searchParams.get("thread");
+
+  useEffect(() => {
+    if (!threadParam || loading) return;
+    const found = posts.find((p) => p.id === threadParam);
+    if (found) {
+      setExpandedId(threadParam);
+      window.setTimeout(() => {
+        document.getElementById(`forum-thread-${threadParam}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 80);
+    }
+  }, [threadParam, posts, loading]);
+
+  function setThreadExpanded(postId: string | null) {
+    setExpandedId(postId);
+    const params = new URLSearchParams(searchParams.toString());
+    if (postId) params.set("thread", postId);
+    else params.delete("thread");
+    const qs = params.toString();
+    router.replace(qs ? `/forum?${qs}` : "/forum", { scroll: false });
+  }
+
+  async function copyThreadLink(postId: string) {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("thread", postId);
+    const url = `${origin}/forum?${params.toString()}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setNotice("Thread link copied.");
+      window.setTimeout(() => setNotice(""), 2800);
+    } catch {
+      setNotice(url);
+    }
+  }
 
   const filtered = useMemo(() => {
     const cat = CATEGORIES.find((c) => c.id === category) || CATEGORIES[0];
@@ -427,13 +544,16 @@ export function ForumDiscussions({
       author: displayName,
       title,
       body,
+      category: postCategory,
       attachments: draftsPayload(postAttachments),
     });
     if (ok) {
       setTitle("");
       setBody("");
+      setPostCategory("questions");
       setPostAttachments([]);
       setComposerOpen(false);
+      sessionStorage.removeItem(COMPOSER_DRAFT_KEY);
     }
   }
 
@@ -600,6 +720,19 @@ export function ForumDiscussions({
             onChange={(event) => setTitle(event.target.value)}
             required
           />
+          <label className="block text-sm">
+            <span className="mb-1 block font-medium text-slate-700">Category</span>
+            <select
+              className="input py-2 text-sm"
+              value={postCategory}
+              onChange={(e) => setPostCategory(e.target.value as ForumPostCategory)}
+            >
+              <option value="questions">Question</option>
+              <option value="resources">Resource / share</option>
+              <option value="announcements">Announcement</option>
+              <option value="beta-feedback">Beta feedback</option>
+            </select>
+          </label>
           <MarkdownLatexField
             label="Discussion body"
             value={body}
@@ -645,16 +778,17 @@ export function ForumDiscussions({
             const replyCount = (post.replies || []).length;
             const attachCount = (post.attachments || []).length;
             return (
-              <li key={post.id} className="card overflow-hidden !p-0">
+              <li key={post.id} id={`forum-thread-${post.id}`} className="card overflow-hidden !p-0 scroll-mt-28">
                 <button
                   type="button"
-                  onClick={() => setExpandedId(open ? null : post.id)}
+                  onClick={() => setThreadExpanded(open ? null : post.id)}
                   className="flex w-full items-start gap-3 px-4 py-3 text-left hover:bg-slate-50/80"
                 >
                   <Avatar name={post.author} />
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
                       <h3 className="font-semibold text-slate-900">{post.title}</h3>
+                      <ForumCategoryBadge post={post} />
                       <span className="text-[11px] text-slate-500">
                         {replyCount} {replyCount === 1 ? "reply" : "replies"}
                         {attachCount ? ` · ${attachCount} file${attachCount === 1 ? "" : "s"}` : ""}
@@ -685,8 +819,30 @@ export function ForumDiscussions({
                       </button>
                     </div>
                     <RichContent className="text-sm text-slate-700">{post.body}</RichContent>
+                    <ForumCodeLaunchers body={post.body} />
+                    {!extractForumCodeBlocks(post.body).length ? (
+                      <ForumOfficialLinks body={post.body} />
+                    ) : null}
                     <AttachmentList items={post.attachments} />
                     <div className="flex flex-wrap gap-3 text-xs">
+                      <button
+                        type="button"
+                        className="text-brand-600 hover:underline"
+                        onClick={() => void copyThreadLink(post.id)}
+                      >
+                        Copy link
+                      </button>
+                      <button
+                        type="button"
+                        className="text-brand-600 hover:underline"
+                        onClick={() => {
+                          setReplyBody(quoteSnippet(post.author, post.body));
+                          setReplyingTo(post.id);
+                          setExpandedId(post.id);
+                        }}
+                      >
+                        Quote
+                      </button>
                       <button
                         type="button"
                         className="text-brand-600 hover:underline"
@@ -725,6 +881,20 @@ export function ForumDiscussions({
                                 </button>
                               </div>
                               <RichContent className="mt-2 text-sm text-slate-700">{reply.body}</RichContent>
+                              <ForumCodeLaunchers body={reply.body} />
+                              {!extractForumCodeBlocks(reply.body).length ? (
+                                <ForumOfficialLinks body={reply.body} />
+                              ) : null}
+                              <button
+                                type="button"
+                                className="mt-2 text-[11px] text-brand-600 hover:underline"
+                                onClick={() => {
+                                  setReplyBody(quoteSnippet(reply.author, reply.body));
+                                  setReplyingTo(post.id);
+                                }}
+                              >
+                                Quote reply
+                              </button>
                               <AttachmentList items={reply.attachments} />
                             </div>
                           </div>

@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import PlaygroundExtras from "@/components/PlaygroundExtras";
+import CodeLangOfficialStrip from "@/components/CodeLangOfficialStrip";
+import { usePlaygroundHandoffNotice } from "@/lib/use-playground-handoff";
+import { usePlaygroundShortcuts } from "@/lib/use-playground-shortcuts";
+import { copySource } from "@/lib/playground-export";
 
 type Example = { id: string; title: string; code: string };
 
@@ -72,6 +77,15 @@ export default function PythonPlayground({
   const stdinLinesRef = useRef<string[]>([]);
   const stdinIndexRef = useRef(0);
   const usesInput = code.includes("input(");
+
+  usePlaygroundHandoffNotice((msg) => setNote(msg));
+
+  usePlaygroundShortcuts({
+    onRun: () => void run(),
+    onCopy: () => {
+      void copySource(code).then((ok) => setNote(ok ? "Source copied." : "Copy failed."));
+    },
+  });
 
   useEffect(() => {
     const stored = localStorage.getItem(storageKey);
@@ -159,6 +173,7 @@ export default function PythonPlayground({
 
   return (
     <section className="card space-y-4">
+      <CodeLangOfficialStrip langId="python" compact />
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-brand-600">
@@ -189,6 +204,12 @@ export default function PythonPlayground({
           <button type="button" className="btn-secondary self-end" onClick={resetStarter}>
             Reset
           </button>
+          <PlaygroundExtras
+            code={code}
+            language="python"
+            filename="playground.py"
+            onNote={setNote}
+          />
           <button
             type="button"
             className="btn-primary self-end"

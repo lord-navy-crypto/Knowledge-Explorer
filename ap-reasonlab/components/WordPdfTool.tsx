@@ -1,10 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import StudyToolShell from "@/components/StudyToolShell";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
 import RichContent from "@/components/RichContent";
+import WriteToolHandoffBanner from "@/components/WriteToolHandoffBanner";
+import { consumeWriteToolHandoff } from "@/lib/write-tool-handoff";
 
 /**
  * One-shot Word → preview → Print/Save as PDF (browser local).
@@ -18,6 +20,16 @@ export default function WordPdfTool() {
   const [warnings, setWarnings] = useState("");
   const [docTitle, setDocTitle] = useState("");
   const [copied, setCopied] = useState(false);
+  const [handoffNote, setHandoffNote] = useState("");
+
+  useEffect(() => {
+    const handoff = consumeWriteToolHandoff("word-pdf");
+    if (handoff?.text) {
+      setMarkdown(handoff.text);
+      if (handoff.title) setDocTitle(handoff.title);
+      setHandoffNote("Loaded from write & convert wizard.");
+    }
+  }, []);
 
   const stats = useMemo(() => {
     const words = markdown.trim().split(/\s+/).filter(Boolean).length;
@@ -74,6 +86,10 @@ export default function WordPdfTool() {
       description="Upload a .docx, preview the extracted content, then use Print → Save as PDF. Everything stays in this browser."
       tip="Layout will not match Word pixel-for-pixel (tables/images may simplify). For editable Markdown first, use Word → Markdown."
     >
+      {handoffNote ? (
+        <WriteToolHandoffBanner message={handoffNote} onDismiss={() => setHandoffNote("")} />
+      ) : null}
+
       <div className="no-print flex flex-wrap items-center gap-3">
         <label className="btn-primary cursor-pointer">
           {busy ? "Reading…" : "Choose .docx"}

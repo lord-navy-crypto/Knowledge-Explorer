@@ -290,11 +290,13 @@ export function getExamSectionOfficial(
 export const CODE_LANG_OFFICIAL: Record<string, OfficialResourceBlock> = {
   python: {
     title: "Official Python resources",
-    note: "Start with the official tutorial and language reference.",
+    note: "Start with the official tutorial and language reference (this playground uses Pyodide).",
     links: [
       { href: "https://docs.python.org/3/tutorial/", label: "Python tutorial" },
       { href: "https://docs.python.org/3/", label: "Python docs" },
+      { href: "https://docs.python.org/3/library/", label: "Standard library" },
       { href: "https://www.python.org/", label: "python.org" },
+      { href: "https://pyodide.org/en/stable/", label: "Pyodide (in-browser)" },
     ],
   },
   javascript: {
@@ -309,6 +311,7 @@ export const CODE_LANG_OFFICIAL: Record<string, OfficialResourceBlock> = {
         href: "https://developer.mozilla.org/en-US/docs/Web/JavaScript",
         label: "MDN JavaScript",
       },
+      { href: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference", label: "JS Reference" },
       { href: "https://tc39.es/ecma262/", label: "ECMAScript spec" },
     ],
   },
@@ -337,6 +340,7 @@ export const CODE_LANG_OFFICIAL: Record<string, OfficialResourceBlock> = {
         href: "https://developer.mozilla.org/en-US/docs/Web/CSS",
         label: "MDN CSS",
       },
+      { href: "https://www.w3.org/TR/html52/", label: "HTML spec (W3C)" },
     ],
   },
   sql: {
@@ -345,6 +349,7 @@ export const CODE_LANG_OFFICIAL: Record<string, OfficialResourceBlock> = {
     links: [
       { href: "https://www.sqlite.org/docs.html", label: "SQLite docs" },
       { href: "https://www.sqlite.org/lang.html", label: "SQLite SQL language" },
+      { href: "https://www.sqlite.org/quickstart.html", label: "SQLite quickstart" },
       {
         href: "https://www.postgresql.org/docs/current/tutorial.html",
         label: "PostgreSQL tutorial",
@@ -362,7 +367,7 @@ export const CODE_LANG_OFFICIAL: Record<string, OfficialResourceBlock> = {
   },
   java: {
     title: "Official Java resources",
-    note: "Oracle Java Tutorials and language docs.",
+    note: "Oracle Java Tutorials and language docs — download .java from Practice Run for real JDK.",
     links: [
       {
         href: "https://docs.oracle.com/javase/tutorial/",
@@ -373,6 +378,10 @@ export const CODE_LANG_OFFICIAL: Record<string, OfficialResourceBlock> = {
         label: "Java SE documentation",
       },
       { href: "https://dev.java/learn/", label: "dev.java Learn" },
+      {
+        href: "https://docs.oracle.com/javase/specs/jls/se17/html/index.html",
+        label: "Java Language Spec",
+      },
     ],
   },
   csharp: {
@@ -391,6 +400,10 @@ export const CODE_LANG_OFFICIAL: Record<string, OfficialResourceBlock> = {
         href: "https://dotnet.microsoft.com/learn/csharp",
         label: "Learn C# (.NET)",
       },
+      {
+        href: "https://learn.microsoft.com/en-us/dotnet/",
+        label: ".NET documentation",
+      },
     ],
   },
 };
@@ -400,18 +413,25 @@ export function getCodeLangOfficial(langId: string): OfficialResourceBlock | nul
 }
 
 export const CODE_HUB_OFFICIAL: OfficialResourceBlock = {
-  title: "Official coding docs",
-  note: "Jump to language tutorials and references. Open a language page for more focused links.",
+  title: "Official coding docs by language",
+  note: "Free tutorials and references from language teams — not affiliated. Each playground page lists focused links too.",
   links: [
-    { href: "https://docs.python.org/3/tutorial/", label: "Python tutorial" },
+    { href: "https://docs.python.org/3/tutorial/", label: "Python" },
     {
       href: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide",
-      label: "MDN JavaScript",
+      label: "JavaScript (MDN)",
     },
-    { href: "https://www.typescriptlang.org/docs/", label: "TypeScript docs" },
+    { href: "https://www.typescriptlang.org/docs/", label: "TypeScript" },
+    {
+      href: "https://developer.mozilla.org/en-US/docs/Learn_web_development",
+      label: "Web (MDN Learn)",
+    },
+    { href: "https://www.sqlite.org/docs.html", label: "SQLite" },
+    { href: "https://commonmark.org/", label: "Markdown (CommonMark)" },
+    { href: "https://dev.java/learn/", label: "Java" },
     {
       href: "https://learn.microsoft.com/en-us/dotnet/csharp/",
-      label: "C# docs",
+      label: "C#",
     },
   ],
 };
