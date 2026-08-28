@@ -5,6 +5,7 @@ import { physics2Questionnaires } from "@/data/ap-physics2";
 import { statsQuestionnaires } from "@/data/ap-stats";
 import { humanitiesQuestionnaires } from "@/data/ap-humanities-practice";
 import { apHumanitiesSetC, apHumanitiesSetD } from "@/data/ap-humanities-set-c-d";
+import { apHumanitiesSetE } from "@/data/ap-humanities-set-e";
 import { apPracticeExpansion } from "@/data/ap-practice-expansion";
 import { apPracticeBySubject } from "@/data/ap-practice-by-subject";
 import { apPracticeSetB } from "@/data/ap-practice-set-b";
@@ -529,6 +530,7 @@ export const questionnaires: Questionnaire[] = [
   ...humanitiesQuestionnaires,
   ...apHumanitiesSetC,
   ...apHumanitiesSetD,
+  ...apHumanitiesSetE,
   ...apPracticeExpansion,
   ...apPracticeBySubject,
   ...apPracticeSetB,

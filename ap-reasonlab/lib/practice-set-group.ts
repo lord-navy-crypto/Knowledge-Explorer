@@ -1,14 +1,17 @@
 import type { Questionnaire } from "@/lib/types";
 
-/** Extract Set A/B/C/D label from generated practice titles. */
+/** Extract Set A–E label from generated practice titles. */
 export function practiceSetLabel(title: string): string | null {
-  const match = title.match(/\bSet\s+([A-D])\b/i);
+  const match = title.match(/\bSet\s+([A-E])\b/i);
   return match ? `Set ${match[1]!.toUpperCase()}` : null;
 }
 
 /** Base title without trailing "Set X" for grouping. */
 export function practiceSetBaseTitle(title: string): string {
-  return title.replace(/\s*—\s*Set\s+[A-D]\s*$/i, "").replace(/\s+Set\s+[A-D]\s*$/i, "").trim();
+  return title
+    .replace(/\s*—\s*Set\s+[A-E]\s*$/i, "")
+    .replace(/\s+Set\s+[A-E]\s*$/i, "")
+    .trim();
 }
 
 export type PracticeSetGroup = {
@@ -17,7 +20,7 @@ export type PracticeSetGroup = {
   sets: Questionnaire[];
 };
 
-const SET_ORDER = ["Set A", "Set B", "Set C", "Set D", "Other"];
+const SET_ORDER = ["Set A", "Set B", "Set C", "Set D", "Set E", "Other"];
 
 export function groupPracticeSets(sets: Questionnaire[]): PracticeSetGroup[] {
   const map = new Map<string, PracticeSetGroup>();
@@ -47,5 +50,5 @@ export function groupPracticeSets(sets: Questionnaire[]): PracticeSetGroup[] {
 }
 
 export function isGeneratedPracticeSet(q: Questionnaire): boolean {
-  return q.kind === "generated" || /Set\s+[A-D]\b/i.test(q.title);
+  return q.kind === "generated" || /Set\s+[A-E]\b/i.test(q.title);
 }

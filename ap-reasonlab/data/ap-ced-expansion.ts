@@ -714,6 +714,93 @@ export const cedExpansionConcepts: Concept[] = [
     ],
     example: "Converging lens with object beyond F produces real inverted image.",
   },
+  // ── AP Physics C depth ──
+  {
+    id: "physc-mech-energy",
+    title: "Work–Energy (Physics C: Mechanics)",
+    subject: "AP Physics C: Mechanics",
+    summary:
+      "Calculus-based work W = ∫ F·dx; kinetic and potential energy with variable forces.",
+    keyPoints: [
+      "W_net = ΔK for particle.",
+      "Power P = dW/dt = F·v.",
+      "Conservative forces: F = −dU/dx.",
+    ],
+    commonMistakes: [
+      "Using constant-force W = Fd when force varies.",
+      "Sign errors on work done by vs on system.",
+    ],
+    example: "Spring force F = −kx ⇒ U = ½kx².",
+  },
+  {
+    id: "physc-em-potential",
+    title: "Electric Potential (Physics C: E&M)",
+    subject: "AP Physics C: E&M",
+    summary:
+      "Voltage is potential energy per charge. Equipotentials are perpendicular to field lines.",
+    keyPoints: [
+      "V = kQ/r for point charge.",
+      "ΔV = −∫ E·dl along path.",
+      "Conductors in equilibrium are equipotential surfaces.",
+    ],
+    commonMistakes: [
+      "Confusing V with E (V is scalar, E is vector).",
+      "Using point-charge V inside a uniform sphere incorrectly.",
+    ],
+    example: "Parallel plates: uniform E, linear ΔV between plates.",
+  },
+  // ── AP European History depth ──
+  {
+    id: "euro-imperialism",
+    title: "New Imperialism (1870–1914)",
+    subject: "AP European History",
+    summary:
+      "Industrial powers competed for colonies, resources, and strategic advantage in Africa and Asia.",
+    keyPoints: [
+      "Berlin Conference (1884) formalized African partition.",
+      "Economic motives: raw materials and markets.",
+      "Racial ideology and 'civilizing mission' justified control.",
+    ],
+    commonMistakes: [
+      "Treating imperialism as only political without economic roots.",
+      "Ignoring resistance and collaboration by colonized elites.",
+    ],
+    example: "British rule in India linked cotton exports to Lancashire mills.",
+  },
+  {
+    id: "euro-world-wars",
+    title: "World Wars & Total War",
+    subject: "AP European History",
+    summary:
+      "WWI and WWII mobilized entire economies and societies; peace settlements reshaped Europe.",
+    keyPoints: [
+      "WWI: trench warfare, nationalism, alliance system.",
+      "Versailles: reparations, territorial losses, war guilt clause.",
+      "WWII: fascism, appeasement failure, Holocaust, Cold War origins.",
+    ],
+    commonMistakes: [
+      "Attributing WWI to a single cause (assassination alone).",
+      "Equating fascism and communism without context.",
+    ],
+    example: "Appeasement at Munich (1938) delayed but did not prevent wider war.",
+  },
+  {
+    id: "euro-integration",
+    title: "European Integration",
+    subject: "AP European History",
+    summary:
+      "Post-1945 cooperation aimed to prevent another continental war and rebuild economies.",
+    keyPoints: [
+      "ECSC (1951) → EEC → European Union.",
+      "Eurozone and free movement trade sovereignty for stability.",
+      "Brexit shows limits of integration.",
+    ],
+    commonMistakes: [
+      "Assuming EU membership was identical for all states.",
+      "Ignoring Eastern Europe's different post-1989 path.",
+    ],
+    example: "Maastricht Treaty (1993) deepened political and economic union.",
+  },
 ];
 
 export const cedExpansionFormulas: Formula[] = [
@@ -1011,5 +1098,73 @@ export const cedExpansionFormulas: Formula[] = [
     whenToUse: "Comparison LEQ prompts.",
     relatedConceptId: "whap-silk-roads",
     sourceNote: "AP World History CED skills",
+  },
+  // Physics C
+  {
+    id: "physc-L",
+    subject: "AP Physics C: Mechanics",
+    unit: "Rotation",
+    name: "Angular momentum",
+    expression: "L = I \\omega",
+    variables: "Conserved when net external torque is zero",
+    whenToUse: "Rotation collisions and spinning systems.",
+    relatedConceptId: "physc-mech-rotation",
+    sourceNote: "AP Physics C: Mechanics CED",
+  },
+  {
+    id: "physc-capacitor",
+    subject: "AP Physics C: E&M",
+    unit: "Conductors and Capacitors",
+    name: "Capacitance",
+    expression: "C = Q / V",
+    variables: "Q charge on capacitor, V potential difference",
+    whenToUse: "Capacitor energy and RC circuits.",
+    relatedConceptId: "physc-em-potential",
+    sourceNote: "AP Physics C: E&M CED",
+  },
+  {
+    id: "physc-ampere",
+    subject: "AP Physics C: E&M",
+    unit: "Magnetism",
+    name: "Ampère's law",
+    expression: "\\oint \\vec{B} \\cdot d\\vec{\\ell} = \\mu_0 I_{enc}",
+    variables: "Use symmetry for long wires and solenoids",
+    whenToUse: "Magnetic field from steady currents.",
+    relatedConceptId: "physc-em-induction",
+    sourceNote: "AP Physics C: E&M CED",
+  },
+  // CSP
+  {
+    id: "csp-runtime-compare",
+    subject: "AP Computer Science Principles",
+    unit: "Big Idea 3: Algorithms",
+    name: "Sequential vs polynomial runtime",
+    expression: "O(n) \\ll O(n^2) \\text{ for large } n",
+    variables: "Compare algorithm efficiency qualitatively",
+    whenToUse: "Explain why binary search beats linear search on big data.",
+    relatedConceptId: "csp-algorithms",
+    sourceNote: "AP CSP CED",
+  },
+  {
+    id: "csp-data-size",
+    subject: "AP Computer Science Principles",
+    unit: "Big Idea 2: Data",
+    name: "Bits per symbol",
+    expression: "n \\text{ bits} \\Rightarrow 2^n \\text{ distinct values}",
+    variables: "Binary encoding of data",
+    whenToUse: "Color depth, character encoding, compression tradeoffs.",
+    relatedConceptId: "csp-data-internet",
+    sourceNote: "AP CSP CED",
+  },
+  {
+    id: "csp-abstraction-layers",
+    subject: "AP Computer Science Principles",
+    unit: "Big Idea 1: Creative Development",
+    name: "Abstraction layers",
+    expression: "App \\rightarrow OS \\rightarrow Hardware",
+    variables: "Each layer hides lower-level detail",
+    whenToUse: "Explain APIs, protocols, and modularity.",
+    relatedConceptId: "csp-abstraction",
+    sourceNote: "AP CSP CED",
   },
 ];

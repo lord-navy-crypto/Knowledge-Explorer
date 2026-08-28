@@ -35,6 +35,7 @@ import {
   repairAiMarkdownMath,
   withFormulaAccuracy,
 } from "@/lib/ai-latex-accuracy";
+import { normalizeAiDialogueText } from "@/lib/unicode-math";
 import {
   loadToolboxPanelPrefs,
   saveToolboxPanelPrefs,
@@ -287,6 +288,11 @@ function formatAssistantText(parts: {
   return joined;
 }
 
+/** English replies stay prose-only — strip stray math delimiters models sometimes emit. */
+function formatEnglishAssistantText(parts: Parameters<typeof formatAssistantText>[0]): string {
+  return normalizeAiDialogueText(formatAssistantText(parts));
+}
+
 function buildHistoryBlock(messages: ChatMessage[]): string {
   if (messages.length === 0) return "";
   const recent = messages.slice(-8);
@@ -426,7 +432,8 @@ export default function UnifiedAiPanel({
             : category === "ap"
               ? "formulas"
               : undefined;
-    const shouldPrefetch = localAI.usesLocal && localAI.ready ? true : category === "english";
+    const shouldPrefetch =
+      category === "english" || category === "ap" || (localAI.usesLocal && localAI.ready);
     if (!shouldPrefetch) return;
     const timer = window.setTimeout(() => {
       prefetchAiSiteContext(q, { limit: AI_SITE_SEARCH_LIMIT_LOCAL, prefer });
@@ -994,11 +1001,12 @@ export default function UnifiedAiPanel({
             ? `**${direction.replace(/\*\*/g, "").trim()}**`
             : "**Translation**";
         const body = [directionLine, translation || "(No translation returned.)"].join("\n\n");
-        await paintCloudReply(body, onToken, signal);
+        const cleanBody = normalizeAiDialogueText(body);
+        await paintCloudReply(cleanBody, onToken, signal);
         return {
           id: `a-${Date.now()}`,
           role: "assistant",
-          text: body,
+          text: cleanBody,
           meta: cloudMeta,
           snippet: translation,
           refused: Boolean(data.refused),
@@ -1011,7 +1019,7 @@ export default function UnifiedAiPanel({
       ];
       const feedbackBody = String(data.feedback || data.raw || "").trim();
       const snippet = [data.revisionExample, data.practicePrompt].filter(Boolean).join("\n\n");
-      const text = formatAssistantText({
+      const text = formatEnglishAssistantText({
         body: feedbackBody,
         lists,
         snippet: data.revisionExample
@@ -1172,7 +1180,7 @@ export default function UnifiedAiPanel({
         text: "",
         meta: streamLocal
           ? `${taskMeta.label} · Local · starting…`
-          : `${taskMeta.label} · starting…`,
+          : `${taskMeta.label} · searching site & preparing…`,
       },
     ]);
 

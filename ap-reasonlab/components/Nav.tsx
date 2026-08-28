@@ -7,9 +7,16 @@ import { brand } from "@/data/brand";
 import { useEditorMode } from "@/components/EditorModeProvider";
 import { useQuickSearch } from "@/components/QuickSearchModal";
 
-/** Slim top bar: AI Toolbox + Search always visible; everything else under More. */
 const primaryLinks = [
   { href: "/hints", label: "AI Toolbox" },
+  { href: "/search", label: "Search" },
+];
+
+const mobileQuickLinks = [
+  { href: "/ap", label: "AP" },
+  { href: "/english", label: "English" },
+  { href: "/practice", label: "Practice" },
+  { href: "/hints", label: "AI" },
   { href: "/search", label: "Search" },
 ];
 
@@ -32,9 +39,9 @@ const moreGroups = [
     links: [
       { href: "/ap", label: "AP subjects" },
       { href: "/english", label: "English" },
+      { href: "/practice", label: "Practice" },
       { href: "/tools", label: "Convenient Tools" },
       { href: "/code", label: "Code" },
-      { href: "/search", label: "Search" },
       { href: "/user-guide", label: "User Guide" },
       { href: "/about", label: "About" },
       { href: "/partners", label: "Partners" },
@@ -54,6 +61,17 @@ const moreGroups = [
 function linkIsActive(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
   return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function linkClass(active: boolean, compact?: boolean) {
+  if (active) {
+    return compact
+      ? "inline-flex shrink-0 items-center rounded-lg bg-brand-50 px-2.5 py-1.5 text-xs font-semibold text-brand-700"
+      : "inline-flex items-center justify-center rounded-xl bg-brand-50 px-3 py-2 text-sm font-semibold text-brand-700";
+  }
+  return compact
+    ? "inline-flex shrink-0 items-center rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+    : "btn-ghost px-3";
 }
 
 export default function Nav() {
@@ -85,121 +103,141 @@ export default function Nav() {
     };
   }, [moreOpen]);
 
-  const visibleMoreGroups = moreGroups
-    .map((group) => {
-      if (group.label === "Admin & developer") {
-        if (!editor) {
-          return {
-            label: "Editors",
-            links: [{ href: "/login", label: "Editor login" }],
-          };
-        }
+  const visibleMoreGroups = moreGroups.map((group) => {
+    if (group.label === "Admin & developer") {
+      if (!editor) {
         return {
-          ...group,
-          links: [...group.links, { href: "/ai-developer", label: "AI Developer" }],
+          label: "Editors",
+          links: [{ href: "/login", label: "Editor login" }],
         };
       }
-      return group;
-    });
+      return {
+        ...group,
+        links: [...group.links, { href: "/ai-developer", label: "AI Developer" }],
+      };
+    }
+    return group;
+  });
+
   const moreActive = visibleMoreGroups.some((group) =>
     group.links.some((link) => linkIsActive(pathname, link.href))
   );
 
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--ke-border)] bg-[rgba(255,252,247,0.92)] backdrop-blur-md">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
-        <Link href="/" className="flex shrink-0 items-center gap-2.5">
-          <span className="flex h-8 w-8 items-center justify-center rounded border border-[var(--ke-border-strong)] bg-[var(--ke-navy)] font-display text-[11px] font-bold tracking-wide text-[#f7f4ee]">
-            {brand.shortName}
-          </span>
-          <span className="font-display text-lg font-semibold tracking-tight text-[var(--ke-ink)]">
-            {brand.name}
-          </span>
-        </Link>
-
-        <nav className="hidden items-center gap-1 md:flex" aria-label="Primary">
-          <button
-            type="button"
-            className="btn-ghost hidden px-3 sm:inline-flex"
-            onClick={openQuickSearch}
-            aria-label="Open quick search (Ctrl+K or Cmd+K)"
-          >
-            <span className="flex items-center gap-2">
-              Quick search
-              <kbd className="rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-medium text-slate-500">
-                ⌘K
-              </kbd>
+      <div className="mx-auto max-w-6xl px-4 py-3">
+        <div className="flex items-center justify-between gap-3">
+          <Link href="/" className="flex min-w-0 shrink-0 items-center gap-2.5">
+            <span className="flex h-8 w-8 items-center justify-center rounded border border-[var(--ke-border-strong)] bg-[var(--ke-navy)] font-display text-[11px] font-bold tracking-wide text-[#f7f4ee]">
+              {brand.shortName}
             </span>
-          </button>
-          {primaryLinks.map((link) => {
+            <span className="truncate font-display text-lg font-semibold tracking-tight text-[var(--ke-ink)] md:max-w-none">
+              {brand.name}
+            </span>
+          </Link>
+
+          <nav className="flex items-center gap-1" aria-label="Primary">
+            <button
+              type="button"
+              className="btn-ghost px-2 text-xs sm:px-3 sm:text-sm"
+              onClick={openQuickSearch}
+              aria-label="Open quick search (Ctrl+K or Cmd+K)"
+            >
+              <span className="hidden items-center gap-2 sm:flex">
+                Quick search
+                <kbd className="rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-medium text-slate-500">
+                  ⌘K
+                </kbd>
+              </span>
+              <span className="sm:hidden">Search</span>
+            </button>
+
+            {primaryLinks.map((link) => {
+              const active = linkIsActive(pathname, link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`hidden md:inline-flex ${linkClass(active)}`}
+                  aria-current={active ? "page" : undefined}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+
+            <div className="relative" ref={moreRef}>
+              <button
+                type="button"
+                className={
+                  moreOpen || moreActive
+                    ? "inline-flex items-center rounded-lg bg-brand-50 px-2.5 py-1.5 text-xs font-semibold text-brand-700 md:rounded-xl md:px-3 md:py-2 md:text-sm"
+                    : "btn-ghost px-2.5 text-xs md:px-3 md:text-sm"
+                }
+                aria-expanded={moreOpen}
+                aria-haspopup="menu"
+                onClick={() => setMoreOpen((value) => !value)}
+              >
+                <span className="md:hidden">Menu</span>
+                <span className="hidden md:inline">More</span>
+              </button>
+              {moreOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 z-50 mt-2 max-h-[70vh] min-w-56 overflow-y-auto rounded-xl border border-slate-200 bg-white p-2 shadow-lg"
+                >
+                  {visibleMoreGroups.map((group, index) => (
+                    <div
+                      key={group.label}
+                      className={index > 0 ? "mt-2 border-t border-slate-100 pt-2" : undefined}
+                    >
+                      <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                        {group.label}
+                      </p>
+                      {group.links.map((link) => {
+                        const active = linkIsActive(pathname, link.href);
+                        return (
+                          <Link
+                            key={link.href}
+                            href={link.href}
+                            role="menuitem"
+                            className={
+                              active
+                                ? "block rounded-lg bg-brand-50 px-3 py-2 text-sm font-semibold text-brand-700"
+                                : "block rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                            }
+                            aria-current={active ? "page" : undefined}
+                            onClick={() => setMoreOpen(false)}
+                          >
+                            {link.label}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </nav>
+        </div>
+
+        <nav
+          className="-mx-1 mt-2 flex gap-1 overflow-x-auto pb-1 md:hidden"
+          aria-label="Mobile quick links"
+        >
+          {mobileQuickLinks.map((link) => {
             const active = linkIsActive(pathname, link.href);
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={
-                  active
-                    ? "inline-flex items-center justify-center rounded-xl bg-brand-50 px-3 py-2 text-sm font-semibold text-brand-700"
-                    : "btn-ghost px-3"
-                }
+                className={linkClass(active, true)}
                 aria-current={active ? "page" : undefined}
               >
                 {link.label}
               </Link>
             );
           })}
-
-          <div className="relative" ref={moreRef}>
-            <button
-              type="button"
-              className={
-                moreOpen || moreActive
-                  ? "inline-flex items-center justify-center rounded-xl bg-brand-50 px-3 py-2 text-sm font-semibold text-brand-700"
-                  : "btn-ghost px-3"
-              }
-              aria-expanded={moreOpen}
-              aria-haspopup="menu"
-              onClick={() => setMoreOpen((value) => !value)}
-            >
-              More
-            </button>
-            {moreOpen && (
-              <div
-                role="menu"
-                className="absolute right-0 z-50 mt-2 min-w-56 rounded-xl border border-slate-200 bg-white p-2 shadow-lg"
-              >
-                {visibleMoreGroups.map((group, index) => (
-                  <div
-                    key={group.label}
-                    className={index > 0 ? "mt-2 border-t border-slate-100 pt-2" : undefined}
-                  >
-                    <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                      {group.label}
-                    </p>
-                    {group.links.map((link) => {
-                      const active = linkIsActive(pathname, link.href);
-                      return (
-                        <Link
-                          key={link.href}
-                          href={link.href}
-                          role="menuitem"
-                          className={
-                            active
-                              ? "block rounded-lg bg-brand-50 px-3 py-2 text-sm font-semibold text-brand-700"
-                              : "block rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                          }
-                          aria-current={active ? "page" : undefined}
-                          onClick={() => setMoreOpen(false)}
-                        >
-                          {link.label}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
         </nav>
       </div>
     </header>

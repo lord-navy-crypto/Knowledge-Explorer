@@ -9,6 +9,9 @@ import {
 } from "@/lib/ai-site-search";
 import { loadManagedContent, normalizeManagedContent, type ManagedContent } from "@/lib/managed-store";
 
+/** Cloud AI routes: cap blocking site-search so provider call can start sooner. */
+const AI_SITE_SEARCH_SERVER_DEADLINE_MS = 350;
+
 export { appendAiSiteContext };
 export type { AiSiteSearchPrefer };
 
@@ -105,7 +108,18 @@ export async function buildServerAiSiteContext(
 ): Promise<string> {
   void _enabled;
   try {
-    return (await runServerAiSiteSearch(query, AI_SITE_SEARCH_LIMIT, prefer)).context;
+    const searchPromise = runServerAiSiteSearch(query, AI_SITE_SEARCH_LIMIT, prefer).then(
+      (result) => result.context
+    );
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    const timedOut = new Promise<string>((resolve) => {
+      timeoutId = setTimeout(() => resolve(""), AI_SITE_SEARCH_SERVER_DEADLINE_MS);
+    });
+    try {
+      return await Promise.race([searchPromise, timedOut]);
+    } finally {
+      if (timeoutId) clearTimeout(timeoutId);
+    }
   } catch {
     return "";
   }

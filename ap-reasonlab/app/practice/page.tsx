@@ -101,7 +101,7 @@ function PracticeContent() {
           <Link href="/ap" className="text-sm text-brand-600 hover:underline">
             ← AP Area
           </Link>
-          <h1 className="mt-2 text-3xl font-bold">Practice</h1>
+          <h1 className="mt-2 text-2xl font-bold sm:text-3xl">Practice</h1>
           <p className="mt-2 text-slate-600">
             Open a subject for generated FRQ sets, drills, and exam &amp; paper materials. Use{" "}
             <strong>+ Add subject folder</strong> to create a new subject.
@@ -168,7 +168,7 @@ function PracticeContent() {
         <Link href="/practice" className="text-sm text-brand-600 hover:underline">
           ← All subject folders
         </Link>
-        <h1 className="mt-2 text-3xl font-bold">Practice · {subject}</h1>
+        <h1 className="mt-2 text-2xl font-bold sm:text-3xl">Practice · {subject}</h1>
         <p className="mt-2 text-slate-600">
           Generated sets, half-process drills, and exam &amp; paper materials for this subject. Hints
           only — use <strong>+ Add generated practice set</strong> to create a new FRQ set.
@@ -297,7 +297,7 @@ function PracticeContent() {
 
       {mounted && tab === "sets" && (
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 overflow-x-auto pb-1">
             <span className="text-sm font-medium text-slate-600">Difficulty:</span>
             {TIER_OPTIONS.map((option) => (
               <button
