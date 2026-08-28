@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import OfficialResourceLinks from "@/components/OfficialResourceLinks";
@@ -8,8 +9,35 @@ import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import { howToEmbedEditors, standardSnippets } from "@/data/code-snippets";
 import { CODE_LANG_FAMILIES } from "@/data/code-language-hub";
 import { CODE_HUB_OFFICIAL } from "@/data/official-resources";
+import { codeLangSearchHaystack } from "@/lib/toolbox-search";
 
 export default function CodePage() {
+  const [query, setQuery] = useState("");
+  const q = query.trim().toLowerCase();
+  const langHay = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const row of codeLangSearchHaystack()) {
+      map.set(row.href, `${row.title} ${row.body} ${row.detail}`);
+    }
+    return map;
+  }, []);
+  const families = useMemo(() => {
+    if (!q) return CODE_LANG_FAMILIES;
+    return CODE_LANG_FAMILIES.map((family) => ({
+      ...family,
+      langs: family.langs.filter((lang) => {
+        const hay = `${langHay.get(lang.href) || ""} ${family.label} ${family.blurb}`.toLowerCase();
+        return q.split(/\s+/).every((token) => hay.includes(token));
+      }),
+    })).filter((family) => family.langs.length > 0);
+  }, [q, langHay]);
+
+  const snippetHits = useMemo(() => {
+    if (!q) return standardSnippets.slice(0, 4);
+    return standardSnippets.filter((s) =>
+      `${s.title} ${s.language} ${s.description} ${s.code}`.toLowerCase().includes(q)
+    );
+  }, [q]);
   return (
     <div className="space-y-8">
       <Breadcrumbs
@@ -41,6 +69,16 @@ export default function CodePage() {
       <OfficialResourceLinks block={CODE_HUB_OFFICIAL} tone="slate" />
       <RecentPlaygrounds />
 
+      <label className="block rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm">
+        <span className="sr-only">Search playgrounds</span>
+        <input
+          className="input w-full"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Filter playgrounds: python, sql, java, markdown, playground, official docs…"
+        />
+      </label>
+
       <section className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white px-5 py-5 shadow-sm">
         <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800">
           Keep reusable code
@@ -62,7 +100,12 @@ export default function CodePage() {
         </div>
       </section>
 
-      {CODE_LANG_FAMILIES.map((family) => (
+      {families.length === 0 ? (
+        <p className="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-500">
+          No playgrounds match “{query.trim()}”. Try python, java, sql, html, or a keyword like json / regex / graph.
+        </p>
+      ) : (
+        families.map((family) => (
         <section key={family.id} className="space-y-3">
           <div>
             <h2 className="text-lg font-semibold">{family.label}</h2>
@@ -105,7 +148,8 @@ export default function CodePage() {
             ))}
           </div>
         </section>
-      ))}
+        ))
+      )}
 
       <UnifiedMediaFrame
         alsoShow={["document", "folder"]}
@@ -127,11 +171,22 @@ export default function CodePage() {
             Full library + adder →
           </Link>
         </div>
+        {snippetHits.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-slate-200 px-4 py-6 text-center text-sm text-slate-500">
+            No snippets match this filter. Clear search or open the code block adder.
+          </p>
+        ) : (
         <div className="grid gap-3 md:grid-cols-2">
-          {standardSnippets.slice(0, 4).map((s) => (
+          {snippetHits.map((s) => (
             <article key={s.id} className="card space-y-2">
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="badge">{s.language}</span>
+                <Link
+                  href={`/code/${s.language === "html" ? "web" : s.language}`}
+                  className="text-xs font-medium text-brand-700 hover:underline"
+                >
+                  Open playground
+                </Link>
               </div>
               <h3 className="font-semibold">{s.title}</h3>
               <p className="text-sm text-slate-600">{s.description}</p>
@@ -141,6 +196,7 @@ export default function CodePage() {
             </article>
           ))}
         </div>
+        )}
       </section>
     </div>
   );

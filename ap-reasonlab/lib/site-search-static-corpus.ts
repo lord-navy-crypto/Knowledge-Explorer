@@ -21,6 +21,11 @@ import { listedStudyTools, STUDY_TOOL_CATEGORIES } from "@/data/study-tools";
 import { USER_GUIDE_SECTIONS } from "@/data/user-guide";
 import { writingFrameworks } from "@/data/humanities-writing-frameworks";
 import { SITE_SECTION_FOLDERS } from "@/lib/site-media-map";
+import {
+  codeLangSearchHaystack,
+  FORUM_SEARCH_LANES,
+  toolSearchHaystack,
+} from "@/lib/toolbox-search";
 
 export type StaticCorpusRow = {
   id: string;
@@ -31,6 +36,18 @@ export type StaticCorpusRow = {
   href: string;
   body: string;
 };
+
+function playgroundHrefForSnippet(language: string): string {
+  if (language === "python") return "/code/python";
+  if (language === "java") return "/code/java";
+  if (language === "html") return "/code/web";
+  if (language === "javascript") return "/code/javascript";
+  if (language === "typescript") return "/code/typescript";
+  if (language === "sql") return "/code/sql";
+  if (language === "markdown") return "/code/markdown";
+  if (language === "csharp") return "/code/csharp";
+  return "/code";
+}
 
 let cachedCorpus: StaticCorpusRow[] | null = null;
 
@@ -56,8 +73,9 @@ const CORE_STATIC_PAGES: Array<Omit<StaticCorpusRow, "body">> = [
   { id: "forum", type: "page", title: "Forum", subject: "Community", detail: "Discussions, shared library, My box", href: "/forum" },
   { id: "forum-shared", type: "page", title: "Shared library", subject: "Community", detail: "Public materials in Forum", href: "/forum?tab=shared" },
   { id: "forum-box", type: "page", title: "My box", subject: "Community", detail: "Private notes and pictures", href: "/forum?tab=box" },
-  { id: "code", type: "page", title: "Code Resource", subject: "Code", detail: "Python, Java, web playgrounds", href: "/code" },
-  { id: "tools", type: "page", title: "Convenient Tools", subject: "Tools", detail: "Everyday study utilities hub", href: "/tools" },
+  { id: "code", type: "page", title: "Code Resource", subject: "Code", detail: "Python, JavaScript, SQL, Java, C# playgrounds", href: "/code" },
+  { id: "code-board-page", type: "tool", title: "Long code block adder", subject: "Code", detail: "Save reusable snippets and open playgrounds", href: "/tools/code-board" },
+  { id: "tools", type: "page", title: "Convenient Tools", subject: "Tools", detail: "Searchable catalog of browser utilities", href: "/tools" },
   { id: "english", type: "page", title: "English Learning", subject: "English", detail: "TOEFL SAT vocabulary writing", href: "/english" },
   { id: "ap", type: "page", title: "AP Subject Library", subject: "AP", detail: "Choose an AP subject", href: "/ap" },
   { id: "concepts", type: "page", title: "Concepts", subject: "AP", detail: "Topic and concept library", href: "/concepts" },
@@ -117,7 +135,35 @@ export function getStaticSearchCorpus(): StaticCorpusRow[] {
         subject: categoryLabel[tool.category] || "Tools",
         detail: tool.blurb,
         href: tool.href,
-        body: `${tool.title} ${tool.blurb} ${tool.category} ${tool.href} tool`,
+        body: toolSearchHaystack(tool),
+      })
+    );
+  }
+
+  for (const lane of FORUM_SEARCH_LANES) {
+    rows.push(
+      row({
+        id: lane.id,
+        type: "forum",
+        title: lane.title,
+        subject: "Forum",
+        detail: lane.detail,
+        href: lane.href,
+        body: `${lane.title} ${lane.detail} ${lane.body}`,
+      })
+    );
+  }
+
+  for (const lang of codeLangSearchHaystack()) {
+    rows.push(
+      row({
+        id: lang.id,
+        type: "code",
+        title: lang.title,
+        subject: "Code",
+        detail: lang.detail,
+        href: lang.href,
+        body: lang.body,
       })
     );
   }
@@ -313,8 +359,8 @@ export function getStaticSearchCorpus(): StaticCorpusRow[] {
         title: snip.title,
         subject: snip.language,
         detail: snip.description,
-        href: "/code",
-        body: `${snip.title} ${snip.language} ${snip.description} ${snip.code}`,
+        href: playgroundHrefForSnippet(snip.language),
+        body: `${snip.title} ${snip.language} ${snip.description} ${snip.code} playground snippet`,
       })
     );
   }

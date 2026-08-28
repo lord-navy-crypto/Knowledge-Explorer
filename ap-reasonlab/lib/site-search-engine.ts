@@ -3,6 +3,7 @@
  * Indexes built-in catalogs + live managed content for /search and AI site search.
  */
 import { AP_CATALOG } from "@/data/ap-catalog";
+import { detectSearchLane, laneTypeBoosts } from "@/lib/toolbox-search";
 import { getStaticSearchCorpus } from "@/lib/site-search-static-corpus";
 import type { ManagedContent } from "@/lib/managed-types";
 
@@ -128,15 +129,15 @@ const TYPE_BOOST: Record<string, number> = {
   document: 1.5,
   content: 1.5,
   english: 1.5,
-  tool: 2.8,
-  code: 1.2,
+  tool: 3.2,
+  code: 2.4,
   subject: 1,
   learning: 1,
   file: 0.6,
   folder: 0.5,
   page: 0.4,
   member: 0.3,
-  forum: 0.8,
+  forum: 1.8,
   checklist: 0.5,
 };
 
@@ -151,6 +152,10 @@ const NAV_QUERY_TERMS = new Set([
   "flashcards",
   "toolbox",
   "hints",
+  "json",
+  "base64",
+  "playground",
+  "python",
   "forum",
   "search",
   "guide",
@@ -359,8 +364,10 @@ export function searchSiteEngine(
   const boosts = { ...TYPE_BOOST, ...(options?.typeBoosts || {}) };
   const navQuery = isNavQuery(tokens);
   const examQuery = isExamQuery(tokens);
+  const lane = detectSearchLane(tokens);
   if (navQuery) Object.assign(boosts, navTypeBoosts());
   else if (examQuery) Object.assign(boosts, examTypeBoosts());
+  if (lane) Object.assign(boosts, laneTypeBoosts(lane));
   const bag = new Map<string, SiteSearchHit>();
   const subjects = managed?.subjects || [];
   const excerpt = (text: string) => bestClip(text, tokens, detailMax);
@@ -516,15 +523,22 @@ export function searchSiteEngine(
     });
   }
   for (const item of managed?.forumPosts || []) {
-    const replies = (item.replies || []).map((r) => r.body).join(" ");
+    const replies = (item.replies || [])
+      .map((r) => `${r.author || ""} ${r.body || ""}`)
+      .join(" ");
+    const attach = (item.attachments || []).map((a) => a.name || "").join(" ");
     pushHit(bag, {
       id: item.id,
       type: "forum",
       title: item.title,
       subject: item.author || "Forum",
       detail: excerpt(item.body),
-      href: "/forum",
-      score: scoreFields(tokens, item.title, `${item.author} ${item.body} ${replies}`),
+      href: `/forum?thread=${encodeURIComponent(item.id)}`,
+      score: scoreFields(
+        tokens,
+        item.title,
+        `${item.author} ${item.body} ${replies} ${attach} forum discussion thread`
+      ),
     });
   }
   for (const item of managed?.contentItems || []) {

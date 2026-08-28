@@ -319,6 +319,8 @@ export function ForumDiscussions({
   useEffect(() => {
     const thread = searchParams.get("thread");
     if (thread) setExpandedId(thread);
+    const qParam = searchParams.get("q");
+    if (qParam !== null) setQuery(qParam);
   }, [searchParams]);
 
   const filtered = useMemo(() => {
@@ -326,15 +328,14 @@ export function ForumDiscussions({
     const q = query.trim().toLowerCase();
     let list = posts.filter((p) => cat.match(p));
     if (q) {
-      list = list.filter(
-        (p) =>
-          p.title.toLowerCase().includes(q) ||
-          p.body.toLowerCase().includes(q) ||
-          p.author.toLowerCase().includes(q) ||
-          (p.replies || []).some(
-            (r) => r.body.toLowerCase().includes(q) || r.author.toLowerCase().includes(q)
-          )
-      );
+      list = list.filter((p) => {
+        const attach = (p.attachments || []).map((a) => a.name || "").join(" ");
+        const replyText = (p.replies || [])
+          .map((r) => `${r.author} ${r.body} ${(r.attachments || []).map((a) => a.name || "").join(" ")}`)
+          .join(" ");
+        const hay = `${p.title} ${p.body} ${p.author} ${attach} ${replyText}`.toLowerCase();
+        return q.split(/\s+/).every((token) => hay.includes(token));
+      });
     }
     list = [...list].sort((a, b) => {
       if (sort === "newest") {
@@ -565,9 +566,16 @@ export function ForumDiscussions({
         <div className="flex flex-wrap items-center gap-2">
           <input
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search threads…"
-            className="input min-w-[10rem] flex-1 sm:flex-none sm:w-48"
+            onChange={(e) => {
+              setQuery(e.target.value);
+              const params = new URLSearchParams(searchParams.toString());
+              if (e.target.value.trim()) params.set("q", e.target.value.trim());
+              else params.delete("q");
+              const qs = params.toString();
+              router.replace(qs ? `/forum?${qs}` : "/forum", { scroll: false });
+            }}
+            placeholder="Search title, body, author, file names…"
+            className="input min-w-[12rem] flex-1 sm:flex-none sm:w-64"
           />
           <select
             value={sort}

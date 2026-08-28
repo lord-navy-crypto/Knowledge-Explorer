@@ -26,6 +26,21 @@ test("search page surfaces TOEFL english content", async ({ page }) => {
   await expect(toeflHit).toBeVisible({ timeout: 10000 });
 });
 
+test("search page ranks JSON formatter for json pretty", async ({ page }) => {
+  await page.goto("/search?q=json%20pretty");
+  const hit = page.locator("a.card-hover").first();
+  await expect(hit).toBeVisible({ timeout: 10000 });
+  await expect(hit).toHaveAttribute("href", /json-formatter/);
+});
+
+test("search page ranks python playground", async ({ page }) => {
+  await page.goto("/search?q=python%20playground");
+  const hit = page.locator("a.card-hover").first();
+  await expect(hit).toBeVisible({ timeout: 10000 });
+  await expect(hit).toHaveAttribute("href", "/code/python");
+});
+
+
 test("TOEFL hub shows playable MCQ bank", async ({ page }) => {
   await page.goto("/english/toefl");
   await expect(page.getByRole("heading", { name: /in-site practice questions/i })).toBeVisible();

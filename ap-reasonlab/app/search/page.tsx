@@ -80,8 +80,8 @@ function SearchPageInner() {
       <div>
         <h1 className="text-3xl font-bold">Site search engine</h1>
         <p className="mt-2 text-slate-600">
-          Search pages, AP subjects, concepts, formulas, practice, guides, English, code, documents,
-          files, folders, forum, and more — ranked by relevance.
+          Search Convenient Tools, Code playgrounds, Forum threads, AP subjects, English, and more.
+          Tool, code, and forum queries are ranked higher when the words match those lanes.
         </p>
       </div>
 
@@ -90,7 +90,7 @@ function SearchPageInner() {
           autoFocus
           type="search"
           className="input"
-          placeholder="Search the whole site (at least 2 characters)…"
+          placeholder="json pretty, python playground, my box, kinematics…"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
@@ -142,7 +142,7 @@ function SearchPageInner() {
         </div>
       ) : (
         <p className="text-sm text-slate-500">
-          Tip: try “kinematics”, “TOEFL”, “python”, a subject name, or a file title.
+          Tip: try “json pretty”, “python playground”, “my box”, “TOEFL”, or a subject name.
         </p>
       )}
 
@@ -186,11 +186,23 @@ function SearchPageInner() {
                 <Link href="/tools" className="font-medium text-brand-700 hover:underline">
                   Convenient Tools
                 </Link>{" "}
-                — timers, PDF, LaTeX, focus desk
+                — JSON, Base64, PDF, timers, write/convert
+              </li>
+              <li>
+                <Link href="/code" className="font-medium text-brand-700 hover:underline">
+                  Code playgrounds
+                </Link>{" "}
+                — Python, JavaScript, SQL, Java, C#
+              </li>
+              <li>
+                <Link href="/forum" className="font-medium text-brand-700 hover:underline">
+                  Forum
+                </Link>{" "}
+                — discussions, shared library, My box
               </li>
             </ul>
             <p className="text-xs text-slate-400">
-              Examples: kinematics, TOEFL reading, flashcards, Monte Carlo, AP Statistics
+              Examples: json pretty, python playground, my box, kinematics, TOEFL reading
             </p>
           </div>
         )}

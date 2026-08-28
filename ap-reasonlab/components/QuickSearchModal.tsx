@@ -61,7 +61,7 @@ export default function QuickSearchModal({ open, onClose }: Props) {
   const hits = useMemo<SiteSearchHit[]>(() => {
     const q = query.trim();
     if (q.length < 2) return [];
-    return searchSiteEngine(q, managed, { limit: 5 });
+    return searchSiteEngine(q, managed, { limit: 8 });
   }, [query, managed]);
 
   const goToSearch = useCallback(
@@ -139,7 +139,7 @@ export default function QuickSearchModal({ open, onClose }: Props) {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search Knowledge Explorer…"
+            placeholder="json pretty, python playground, my box…"
             className="flex-1 bg-transparent text-base text-slate-900 outline-none placeholder:text-slate-400"
             autoComplete="off"
             spellCheck={false}
@@ -151,8 +151,8 @@ export default function QuickSearchModal({ open, onClose }: Props) {
 
         {query.trim().length < 2 ? (
           <p className="px-4 py-6 text-sm text-slate-500">
-            Type at least 2 characters. Try <strong>calculator</strong>, <strong>TOEFL</strong>, or{" "}
-            <strong>explore</strong>.
+            Type at least 2 characters. Try <strong>json pretty</strong>, <strong>python playground</strong>,{" "}
+            <strong>my box</strong>, or <strong>TOEFL</strong>.
           </p>
         ) : hits.length === 0 ? (
           <div className="px-4 py-6">
@@ -166,7 +166,7 @@ export default function QuickSearchModal({ open, onClose }: Props) {
             </button>
           </div>
         ) : (
-          <ul className="max-h-[min(50vh,320px)] overflow-y-auto py-2" role="listbox">
+          <ul className="max-h-[min(60vh,420px)] overflow-y-auto py-2" role="listbox">
             {hits.map((hit, index) => (
               <li key={`${hit.type}:${hit.id}`}>
                 <button

@@ -16,6 +16,7 @@ import {
   togglePinnedTool,
 } from "@/lib/pinned-tools";
 import { readRecentTools, trackToolboxVisit, type RecentToolEntry } from "@/lib/recent-tools";
+import { toolSearchHaystack } from "@/lib/toolbox-search";
 
 function SecurityBadge({ level }: { level?: ToolSecurity }) {
   const key = level || "safe";
@@ -93,8 +94,8 @@ export default function ToolsCatalog({ tools }: { tools: StudyTool[] }) {
       const sec = tool.security || "safe";
       if (activeSecurity !== "all" && sec !== activeSecurity) return false;
       if (!q) return true;
-      const hay = [tool.title, tool.blurb, tool.category, tool.badge || ""].join(" ").toLowerCase();
-      return hay.includes(q);
+      const hay = toolSearchHaystack(tool).toLowerCase();
+      return q.split(/\s+/).every((token) => hay.includes(token));
     });
   }, [tools, query, activeCat, activeSecurity]);
 
@@ -133,7 +134,7 @@ export default function ToolsCatalog({ tools }: { tools: StudyTool[] }) {
                 setQuery(e.target.value);
                 syncUrl({ q: e.target.value });
               }}
-              placeholder="Search tools by name or topic…"
+              placeholder="Search tools, aliases, workflows… (json, base64, pdf, timer)"
             />
           </label>
           <p className="text-xs tabular-nums text-slate-500">
@@ -252,7 +253,7 @@ export default function ToolsCatalog({ tools }: { tools: StudyTool[] }) {
 
       {filtered.length === 0 ? (
         <p className="rounded-xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500">
-          No tools match. Try another search or category.
+          No tools match. Try aliases like json, base64, pretty, pdf, pomodoro, or a workflow name.
         </p>
       ) : (
         STUDY_TOOL_CATEGORIES.map((category) => {
