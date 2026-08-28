@@ -376,6 +376,15 @@ export const STUDY_TOOLS: StudyTool[] = [
     security: "safe",
   },
   {
+    id: "json-formatter",
+    href: "/tools/json-formatter",
+    title: "JSON formatter",
+    blurb: "Validate, pretty-print, and minify JSON locally — pair with text comparator or code board.",
+    category: "utilities",
+    security: "safe",
+    badge: "New",
+  },
+  {
     id: "text-diff",
     href: "/tools/text-diff",
     title: "Text diff",

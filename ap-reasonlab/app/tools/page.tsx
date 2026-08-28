@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import LocalAiRecommendation from "@/components/LocalAiRecommendation";
 import RecommendedStudyTools from "@/components/RecommendedStudyTools";
+import ToolClusters from "@/components/ToolClusters";
 import ToolsCatalog from "@/components/ToolsCatalog";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import { TOOL_SECURITY_LABELS, listedStudyTools, type ToolSecurity } from "@/data/study-tools";
@@ -73,6 +74,8 @@ export default function ToolsPage() {
       <Suspense fallback={<div className="card text-sm text-slate-500">Loading catalog…</div>}>
         <ToolsCatalog tools={tools} />
       </Suspense>
+
+      <ToolClusters />
 
       <RecommendedStudyTools context="tools" />
 

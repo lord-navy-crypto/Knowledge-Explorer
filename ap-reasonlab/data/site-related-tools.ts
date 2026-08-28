@@ -62,7 +62,7 @@ export const SITE_RELATED_PACKS = {
   }),
   code: withShortCode({
     title: "Code · related tools",
-    toolIds: ["ai", "code-board", "text-diff", "markdown-plain", "text-comparator"],
+    toolIds: ["ai", "code-board", "text-comparator", "json-formatter", "markdown-plain"],
     externalIds: ["mdn", "python-docs", "stackoverflow"],
   }),
   tools: withShortCode({

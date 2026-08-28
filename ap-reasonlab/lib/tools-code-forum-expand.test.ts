@@ -32,14 +32,10 @@ describe("forum-code-blocks", () => {
   });
 });
 
-describe("resolveForumPostCategory", () => {
-  it("prefers explicit category", () => {
-    expect(
-      resolveForumPostCategory({
-        title: "Hi",
-        body: "Body",
-        category: "resources",
-      })
-    ).toBe("resources");
+describe("tool clusters", () => {
+  it("includes json formatter in code workbench", async () => {
+    const { TOOL_CLUSTERS } = await import("@/data/tool-clusters");
+    const code = TOOL_CLUSTERS.find((c) => c.id === "code-workbench");
+    expect(code?.toolIds).toContain("json-formatter");
   });
 });

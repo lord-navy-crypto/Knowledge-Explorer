@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import StudyToolShell from "@/components/StudyToolShell";
+import RelatedToolboxLinks from "@/components/RelatedToolboxLinks";
 import {
   CODE_BOARD_LANGUAGES,
   seedCodeBlocks,
@@ -471,6 +472,7 @@ export default function CodeBoardTool() {
           </div>
         </>
       ) : null}
+      <RelatedToolboxLinks clusterId="code-workbench" currentToolId="code-board" className="pt-2" />
     </StudyToolShell>
   );
 }

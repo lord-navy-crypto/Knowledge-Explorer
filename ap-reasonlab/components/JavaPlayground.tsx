@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import CodeLangOfficialStrip from "@/components/CodeLangOfficialStrip";
 import { appendToCodeBoard } from "@/lib/code-board-store";
 import { usePlaygroundHandoffNotice } from "@/lib/use-playground-handoff";
 import { usePlaygroundShortcuts } from "@/lib/use-playground-shortcuts";
@@ -174,6 +175,7 @@ export default function JavaPlayground({
 
   return (
     <section className="card space-y-4">
+      <CodeLangOfficialStrip langId="java" compact />
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-brand-600">

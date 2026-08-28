@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import PlaygroundExtras from "@/components/PlaygroundExtras";
+import CodeLangOfficialStrip from "@/components/CodeLangOfficialStrip";
 import { usePlaygroundHandoffNotice } from "@/lib/use-playground-handoff";
 import { usePlaygroundShortcuts } from "@/lib/use-playground-shortcuts";
 import { copySource } from "@/lib/playground-export";
@@ -138,6 +139,7 @@ export default function JsPlayground({
 
   return (
     <section className="card space-y-4">
+      <CodeLangOfficialStrip langId="javascript" compact />
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-brand-600">
