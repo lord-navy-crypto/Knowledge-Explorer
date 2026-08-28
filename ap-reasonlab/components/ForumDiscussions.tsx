@@ -8,14 +8,23 @@ import { saveLearningItem } from "@/lib/storage";
 import RichContent from "@/components/RichContent";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
 import type { ManagedForumAttachment, ManagedForumPost } from "@/lib/managed-types";
+import {
+  readForumDisplayName,
+  writeForumDisplayName,
+} from "@/lib/forum-display-name";
 
-const NAME_KEY = "results-forum-display-name";
 const MAX_POST_ATTACH = 4;
 const MAX_REPLY_ATTACH = 2;
 const MAX_ATTACH_BYTES = 650_000;
 const POSTS_PER_PAGE = 8;
 
-type Category = "all" | "questions" | "resources" | "announcements";
+type Category = "all" | "questions" | "resources" | "announcements" | "beta-feedback";
+
+export function parseForumDiscussionCategory(tag: string | null): Category {
+  if (tag === "beta-feedback" || tag === "beta") return "beta-feedback";
+  if (tag === "questions" || tag === "resources" || tag === "announcements") return tag;
+  return "all";
+}
 type DraftAttachment = {
   localId: string;
   name: string;
@@ -40,6 +49,11 @@ const CATEGORIES: { id: Category; label: string; match: (p: ManagedForumPost) =>
     id: "announcements",
     label: "Announcements",
     match: (p) => /announce|update|news|notice|important/i.test(`${p.title} ${p.body}`),
+  },
+  {
+    id: "beta-feedback",
+    label: "Beta feedback",
+    match: (p) => /#beta-feedback|\[beta feedback\]/i.test(`${p.title} ${p.body}`),
   },
 ];
 
@@ -231,7 +245,13 @@ function ForumImage({ fileId, name }: { fileId: string; name: string }) {
   );
 }
 
-export function ForumDiscussions({ embedded = false }: { embedded?: boolean }) {
+export function ForumDiscussions({
+  embedded = false,
+  initialCategory = "all",
+}: {
+  embedded?: boolean;
+  initialCategory?: Category;
+}) {
   const { unlocked } = useEditorMode();
   const [posts, setPosts] = useState<ManagedForumPost[]>([]);
   const [displayName, setDisplayName] = useState("");
@@ -248,7 +268,7 @@ export function ForumDiscussions({ embedded = false }: { embedded?: boolean }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [category, setCategory] = useState<Category>("all");
+  const [category, setCategory] = useState<Category>(initialCategory);
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<"newest" | "active">("newest");
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -275,7 +295,11 @@ export function ForumDiscussions({ embedded = false }: { embedded?: boolean }) {
   }, []);
 
   useEffect(() => {
-    setDisplayName(localStorage.getItem(NAME_KEY) || "");
+    setCategory(initialCategory);
+  }, [initialCategory]);
+
+  useEffect(() => {
+    setDisplayName(readForumDisplayName());
     void refresh();
   }, [refresh]);
 
@@ -346,7 +370,7 @@ export function ForumDiscussions({ embedded = false }: { embedded?: boolean }) {
       setError("Display name must be 2–40 characters.");
       return;
     }
-    localStorage.setItem(NAME_KEY, next);
+    writeForumDisplayName(next);
     setDisplayName(next);
     setNameOpen(false);
     if (pendingAction) continueAction(pendingAction);

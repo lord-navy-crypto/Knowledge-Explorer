@@ -1,24 +1,23 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
-
-const STORAGE_NAME = "ke-beta-feedback-name";
+import {
+  readForumDisplayName,
+  writeForumDisplayName,
+} from "@/lib/forum-display-name";
 
 export default function BetaFeedbackForm() {
   const [name, setName] = useState("");
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_NAME);
-      if (saved) setName(saved);
-    } catch {
-      /* ignore storage errors */
-    }
-  }, []);
   const [topic, setTopic] = useState("");
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const saved = readForumDisplayName();
+    if (saved) setName(saved);
+  }, []);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -50,11 +49,7 @@ export default function BetaFeedbackForm() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not submit feedback");
-      try {
-        localStorage.setItem(STORAGE_NAME, author);
-      } catch {
-        /* ignore */
-      }
+      writeForumDisplayName(author);
       setStatus("sent");
       setTopic("");
       setMessage("");
@@ -66,15 +61,20 @@ export default function BetaFeedbackForm() {
 
   if (status === "sent") {
     return (
-      <section className="card space-y-2">
+      <section className="card space-y-3">
         <h2 className="text-lg font-semibold text-slate-900">Thanks for the feedback</h2>
         <p className="text-sm text-slate-600">
           Your note was posted to the Forum with the <strong>#beta-feedback</strong> tag. Editors
           and other students can reply there.
         </p>
-        <button type="button" className="btn-secondary" onClick={() => setStatus("idle")}>
-          Send another
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/forum?tag=beta-feedback" className="btn-primary">
+            View beta feedback threads
+          </Link>
+          <button type="button" className="btn-secondary" onClick={() => setStatus("idle")}>
+            Send another
+          </button>
+        </div>
       </section>
     );
   }
@@ -85,7 +85,10 @@ export default function BetaFeedbackForm() {
         <h2 className="text-lg font-semibold text-slate-900">Beta tester feedback</h2>
         <p className="mt-1 text-sm text-slate-600">
           Share bugs, UX ideas, or content requests. Posts go to the Forum tagged{" "}
-          <strong>#beta-feedback</strong>.
+          <strong>#beta-feedback</strong>.{" "}
+          <Link href="/forum?tag=beta-feedback" className="font-medium text-brand-700 hover:underline">
+            Browse existing feedback
+          </Link>
         </p>
       </div>
       <form className="space-y-3" onSubmit={submit}>

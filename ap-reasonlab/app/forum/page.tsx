@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ForumDiscussions } from "@/components/ForumDiscussions";
+import { ForumDiscussions, parseForumDiscussionCategory } from "@/components/ForumDiscussions";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import PrivateLearningBoxPanel, {
   type LearningBoxView,
@@ -46,6 +46,10 @@ function ForumHub() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const tab = useMemo(() => parseTab(searchParams.get("tab")), [searchParams]);
+  const discussionCategory = useMemo(
+    () => parseForumDiscussionCategory(searchParams.get("tag")),
+    [searchParams]
+  );
   const boxView = useMemo(() => parseBoxView(searchParams.get("view")), [searchParams]);
   const sharedSpaceKey = useMemo(
     () =>
@@ -124,7 +128,7 @@ function ForumHub() {
       {!mounted ? (
         <div className="card text-sm text-slate-500">Loading Forum…</div>
       ) : tab === "discussions" ? (
-        <ForumDiscussions embedded />
+        <ForumDiscussions embedded initialCategory={discussionCategory} />
       ) : tab === "shared" ? (
         <section className="space-y-4">
           <div>
