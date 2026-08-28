@@ -1,4 +1,5 @@
 import { extraSatQuestions, extraToeflQuestions } from "./english-questions-extra";
+import { batch3SatQuestions, batch3ToeflQuestions } from "./english-questions-batch3";
 
 export type EnglishPracticeQuestion = {
   id: string;
@@ -122,6 +123,7 @@ const baseToeflQuestions: EnglishPracticeQuestion[] = [
 export const toeflQuestions: EnglishPracticeQuestion[] = [
   ...baseToeflQuestions,
   ...extraToeflQuestions,
+  ...batch3ToeflQuestions,
 ];
 
 const baseSatQuestions: EnglishPracticeQuestion[] = [
@@ -140,5 +142,6 @@ const baseSatQuestions: EnglishPracticeQuestion[] = [
 export const satQuestions: EnglishPracticeQuestion[] = [
   ...baseSatQuestions,
   ...extraSatQuestions,
+  ...batch3SatQuestions,
 ];
 

@@ -33,6 +33,6 @@ test("forum post validation rejects short display name", async ({ request }) => 
 
 test("writing frameworks page is reachable", async ({ page }) => {
   await page.goto("/ap/writing-frameworks");
-  await expect(page.getByRole("heading", { name: /writing frameworks/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /AP writing frameworks/i })).toBeVisible();
   await expect(page.getByRole("link", { name: /Concepts/i }).first()).toBeVisible();
 });

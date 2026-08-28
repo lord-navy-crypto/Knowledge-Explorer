@@ -3,6 +3,7 @@ import { macroQuestionnaires } from "@/data/ap-macro";
 import { microQuestionnaires } from "@/data/ap-micro";
 import { physics2Questionnaires } from "@/data/ap-physics2";
 import { statsQuestionnaires } from "@/data/ap-stats";
+import { humanitiesQuestionnaires } from "@/data/ap-humanities-practice";
 import managed from "@/data/managed-content.json";
 
 /**
@@ -518,6 +519,7 @@ export const questionnaires: Questionnaire[] = [
   ...macroQuestionnaires,
   ...physics2Questionnaires,
   ...statsQuestionnaires,
+  ...humanitiesQuestionnaires,
   ...(((managed as { questionnaires?: Questionnaire[] }).questionnaires ||
     []) as Questionnaire[]),
 ];

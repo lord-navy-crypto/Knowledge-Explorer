@@ -8,6 +8,7 @@ import { loadManagedContent } from "@/lib/managed-store";
 import RichContent, { FormulaMath } from "@/components/RichContent";
 import ConceptAskAi from "@/components/ConceptAskAi";
 import ConceptAiLinks from "@/components/ConceptAiLinks";
+import LearningResourceStructuredData from "@/components/LearningResourceStructuredData";
 
 export default async function ConceptDetailPage({
   params,
@@ -30,6 +31,13 @@ export default async function ConceptDetailPage({
 
   return (
     <div className="space-y-6">
+      <LearningResourceStructuredData
+        title={concept.title}
+        description={concept.summary}
+        url={`/concepts/${concept.id}`}
+        subject={concept.subject}
+        type="Concept"
+      />
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Link href="/concepts" className="text-sm text-brand-600 hover:underline">
           ← Back to concepts

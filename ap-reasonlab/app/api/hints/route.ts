@@ -69,7 +69,8 @@ Return JSON with hints, equations, keyFormulas, knownsUnknowns, checkpoints, pro
       const siteSearch = body.siteSearch !== false;
       const siteContext = await buildServerAiSiteContext(
         `${subject}\n${question}\n${notes}`,
-        siteSearch
+        siteSearch,
+        "formulas"
       );
       const userWithSite = appendAiSiteContext(user, siteContext);
 

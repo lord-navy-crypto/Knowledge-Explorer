@@ -3,6 +3,8 @@ import { AP_CATALOG } from "@/data/ap-catalog";
 import { concepts } from "@/data/content";
 import { listedStudyTools } from "@/data/study-tools";
 import { keyConceptGuides } from "@/data/key-concepts";
+import { writingFrameworks } from "@/data/humanities-writing-frameworks";
+import { questionnaires } from "@/data/questionnaires";
 
 const BASE = process.env.NEXT_PUBLIC_SITE_URL || "https://ap-webside.vercel.app";
 
@@ -40,6 +42,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/english/vocabulary",
     "/english/grammar",
     "/english/ai",
+    "/hints?tool=calculator",
+    "/hints?tool=grapher",
+    "/hints?section=ai-for-ap",
   ];
 
   const entries: MetadataRoute.Sitemap = staticRoutes.map((path) => ({
@@ -61,10 +66,28 @@ export default function sitemap(): MetadataRoute.Sitemap {
   for (const tool of listedStudyTools()) {
     if (!tool.href.startsWith("/")) continue;
     entries.push({
-      url: `${BASE}${tool.href.split("?")[0]}`,
+      url: `${BASE}${tool.href}`,
       lastModified: now,
       changeFrequency: "monthly",
       priority: 0.6,
+    });
+  }
+
+  for (const framework of writingFrameworks) {
+    entries.push({
+      url: `${BASE}/ap/writing-frameworks#${framework.id}`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.65,
+    });
+  }
+
+  for (const quiz of questionnaires.filter((q) => !q.id.startsWith("m-quiz"))) {
+    entries.push({
+      url: `${BASE}/questionnaires/${quiz.id}`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.55,
     });
   }
 

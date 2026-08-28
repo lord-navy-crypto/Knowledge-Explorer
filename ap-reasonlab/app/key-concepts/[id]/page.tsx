@@ -5,6 +5,7 @@ import { toolboxLinkForGuide } from "@/lib/ai-for-ap-guides";
 import { toolboxHref } from "@/lib/ai-toolbox-url";
 import GuideToolboxActions from "@/components/GuideToolboxActions";
 import RichContent from "@/components/RichContent";
+import LearningResourceStructuredData from "@/components/LearningResourceStructuredData";
 
 const categoryLabel = {
   ap_content: "AP Content",
@@ -25,6 +26,13 @@ export default async function KeyConceptDetailPage({
 
   return (
     <div className="space-y-6">
+      <LearningResourceStructuredData
+        title={guide.title}
+        description={guide.introduction}
+        url={`/key-concepts/${guide.id}`}
+        subject={guide.subject}
+        type="Guide"
+      />
       <Link
         href={guide.category === "ai_for_ap" ? "/hints?section=ai-for-ap" : "/key-concepts"}
         className="text-sm text-brand-600 hover:underline"

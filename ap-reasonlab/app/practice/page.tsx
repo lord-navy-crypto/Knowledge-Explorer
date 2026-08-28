@@ -16,8 +16,15 @@ import { ROOT_SPACE, spaceFromSearchParams } from "@/lib/storage-space";
 import { subjectsMatch } from "@/lib/managed-types";
 import RichContent from "@/components/RichContent";
 import type { Questionnaire } from "@/lib/types";
+import type { DifficultyTier } from "@/lib/types";
 
 type Tab = "drills" | "sets";
+const TIER_OPTIONS: Array<{ value: "all" | DifficultyTier; label: string }> = [
+  { value: "all", label: "All tiers" },
+  { value: 1, label: "Intro" },
+  { value: 2, label: "Standard" },
+  { value: 3, label: "Challenge" },
+];
 
 function PracticeContent() {
   const searchParams = useSearchParams();
@@ -25,6 +32,7 @@ function PracticeContent() {
   const folderParam = searchParams.get("folder");
   const spaceKey = spaceFromSearchParams({ subject, folder: folderParam });
   const [tab, setTab] = useState<Tab>("sets");
+  const [tierFilter, setTierFilter] = useState<"all" | DifficultyTier>("all");
   const [mounted, setMounted] = useState(false);
   const [managedSubjects, setManagedSubjects] = useState<string[]>([]);
   const [managedQuizzes, setManagedQuizzes] = useState<Questionnaire[]>([]);
@@ -116,7 +124,10 @@ function PracticeContent() {
   const sets = [
     ...builtInSets,
     ...managedSets.filter((q) => !seen.has(q.id)),
-  ];
+  ].filter((q) => {
+    if (tierFilter === "all") return true;
+    return q.difficultyTier === tierFilter || q.items?.some((item) => item.difficultyTier === tierFilter);
+  });
 
   return (
     <div className="space-y-6">
@@ -252,6 +263,24 @@ function PracticeContent() {
       )}
 
       {mounted && tab === "sets" && (
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-medium text-slate-600">Difficulty:</span>
+            {TIER_OPTIONS.map((option) => (
+              <button
+                key={String(option.value)}
+                type="button"
+                onClick={() => setTierFilter(option.value)}
+                className={
+                  tierFilter === option.value
+                    ? "rounded-full border border-brand-400 bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-800"
+                    : "rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 hover:border-slate-300"
+                }
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
         <div className="grid gap-4 md:grid-cols-2">
           {sets.length === 0 ? (
             <div className="card text-sm text-slate-500">
@@ -263,6 +292,11 @@ function PracticeContent() {
                 <div className="flex flex-wrap gap-2">
                   <span className="badge-generated">GENERATED</span>
                   <span className="badge">~{q.estimatedMinutes} min</span>
+                  {q.difficultyTier ? (
+                    <span className="badge">
+                      Tier {q.difficultyTier === 1 ? "Intro" : q.difficultyTier === 3 ? "Challenge" : "Standard"}
+                    </span>
+                  ) : null}
                   {q.id.startsWith("m-quiz") && <span className="badge">UI-added</span>}
                 </div>
                 <h2 className="mt-3 text-xl font-semibold text-slate-900">{q.title}</h2>
@@ -273,6 +307,7 @@ function PracticeContent() {
               </Link>
             ))
           )}
+        </div>
         </div>
       )}
     </div>

@@ -3,6 +3,7 @@ import { macroFormulas } from "@/data/ap-macro";
 import { microFormulas } from "@/data/ap-micro";
 import { physics2Formulas } from "@/data/ap-physics2";
 import { expandedApFormulas } from "@/data/ap-expanded";
+import { chemBioFormulas } from "@/data/ap-chem-bio-formulas";
 import { statsFormulas } from "@/data/ap-stats";
 import managed from "@/data/managed-content.json";
 
@@ -497,6 +498,7 @@ const builtInFormulas: Formula[] = [
   ...macroFormulas,
   ...physics2Formulas,
   ...expandedApFormulas,
+  ...chemBioFormulas,
   ...statsFormulas,
 ];
 

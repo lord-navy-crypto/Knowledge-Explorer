@@ -35,7 +35,7 @@ export default function ExploreGatewayHub({ gateway }: { gateway: HomeGateway })
           </Link>
         </section>
       ) : (
-        <section className="grid gap-4 sm:grid-cols-2">
+        <section className="grid gap-4 sm:grid-cols-2" aria-label={`${gateway.title} links`}>
           {(gateway.links || []).map((link) => (
             <Link
               key={link.href}
