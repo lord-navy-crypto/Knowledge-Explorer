@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import PlaygroundExtras from "@/components/PlaygroundExtras";
 import { usePlaygroundHandoffNotice } from "@/lib/use-playground-handoff";
+import { usePlaygroundShortcuts } from "@/lib/use-playground-shortcuts";
+import { copySource } from "@/lib/playground-export";
 
 type Example = { id: string; title: string; code: string };
 
@@ -14,10 +17,11 @@ type SqlJsDatabase = {
   run: (sql: string) => void;
   exec: (sql: string) => Array<{ columns: string[]; values: unknown[][] }>;
   close: () => void;
+  export: () => Uint8Array;
 };
 
 type SqlJsStatic = {
-  Database: new () => SqlJsDatabase;
+  Database: new (data?: Uint8Array) => SqlJsDatabase;
 };
 
 declare global {
@@ -28,6 +32,7 @@ declare global {
 
 const SQL_JS_VERSION = "1.12.0";
 const SQL_CDN = `https://cdn.jsdelivr.net/npm/sql.js@${SQL_JS_VERSION}/dist`;
+const DB_KEY = "ke-code-sql-db-v1";
 
 const DEFAULT_SQL = `CREATE TABLE demo (id INTEGER, label TEXT);
 INSERT INTO demo VALUES (1, 'alpha'), (2, 'beta');
@@ -73,19 +78,53 @@ function formatTables(tables: Array<{ columns: string[]; values: unknown[][] }>)
     .join("\n\n");
 }
 
+function persistDatabase(db: SqlJsDatabase) {
+  try {
+    const bytes = db.export();
+    let binary = "";
+    for (let i = 0; i < bytes.length; i += 1) binary += String.fromCharCode(bytes[i]!);
+    localStorage.setItem(DB_KEY, btoa(binary));
+  } catch {
+    // ignore persistence errors
+  }
+}
+
+function loadDatabaseBytes(): Uint8Array | null {
+  try {
+    const raw = localStorage.getItem(DB_KEY);
+    if (!raw) return null;
+    const binary = atob(raw);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+    return bytes;
+  } catch {
+    return null;
+  }
+}
+
 export default function SqlPlayground({
   examples,
   storageKey = "ke-code-sql-draft",
 }: Props) {
   const starter = examples[0]?.code || DEFAULT_SQL;
   const [code, setCode] = useState(starter);
-  const [output, setOutput] = useState("Ready. Press Run to execute SQL in the browser (sql.js).");
+  const [output, setOutput] = useState(
+    "Ready. Press Run — SQL runs against a persistent in-memory DB (saved in this browser)."
+  );
   const [selected, setSelected] = useState(examples[0]?.id || "default");
   const [note, setNote] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "running" | "error">("idle");
   const sqlRef = useRef<SqlJsStatic | null>(null);
+  const dbRef = useRef<SqlJsDatabase | null>(null);
 
   usePlaygroundHandoffNotice((msg) => setNote(msg));
+
+  usePlaygroundShortcuts({
+    onRun: () => void run(),
+    onCopy: () => {
+      void copySource(code).then((ok) => setNote(ok ? "Source copied." : "Copy failed."));
+    },
+  });
 
   useEffect(() => {
     const stored = localStorage.getItem(storageKey);
@@ -113,25 +152,38 @@ export default function SqlPlayground({
     return SQL;
   }
 
+  async function ensureDb(SQL: SqlJsStatic): Promise<SqlJsDatabase> {
+    if (dbRef.current) return dbRef.current;
+    const bytes = loadDatabaseBytes();
+    dbRef.current = bytes ? new SQL.Database(bytes) : new SQL.Database();
+    return dbRef.current;
+  }
+
   async function run() {
     setNote("");
     try {
       const SQL = await ensureSql();
+      const db = await ensureDb(SQL);
       setStatus("running");
-      const db = new SQL.Database();
-      try {
-        const tables = db.exec(code);
-        setOutput(formatTables(tables));
-        setNote("Query finished.");
-        setStatus("idle");
-      } finally {
-        db.close();
-      }
+      const tables = db.exec(code);
+      setOutput(formatTables(tables));
+      persistDatabase(db);
+      setNote("Query finished — database state kept for the next Run.");
+      setStatus("idle");
     } catch (err) {
       setStatus("error");
       setOutput(String(err));
       setNote("SQL error.");
     }
+  }
+
+  function resetDatabase() {
+    dbRef.current?.close();
+    dbRef.current = null;
+    localStorage.removeItem(DB_KEY);
+    setOutput("Database reset. Next Run starts with an empty SQLite file.");
+    setNote("Database cleared.");
+    setStatus("idle");
   }
 
   function loadExample(id: string) {
@@ -146,8 +198,8 @@ export default function SqlPlayground({
   function resetStarter() {
     setCode(starter);
     setSelected(examples[0]?.id || "default");
-    setOutput("Ready. Press Run to execute SQL in the browser (sql.js).");
-    setNote("Reset to starter example.");
+    setOutput("Editor reset to starter SQL (database unchanged).");
+    setNote("Reset editor text only.");
     setStatus(sqlRef.current ? "idle" : "idle");
   }
 
@@ -160,8 +212,8 @@ export default function SqlPlayground({
           </p>
           <h2 className="text-xl font-bold">SQL playground</h2>
           <p className="mt-1 text-sm text-slate-600">
-            SQLite via sql.js in your browser — create tables, insert, select. Each Run starts a
-            fresh in-memory database. Draft auto-saves on this device.
+            SQLite via sql.js — CREATE / INSERT / SELECT against a session database that persists in
+            this browser until you reset it. Draft SQL auto-saves separately.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -180,8 +232,12 @@ export default function SqlPlayground({
             </select>
           </label>
           <button type="button" className="btn-secondary self-end" onClick={resetStarter}>
-            Reset
+            Reset editor
           </button>
+          <button type="button" className="btn-secondary self-end" onClick={resetDatabase}>
+            Reset database
+          </button>
+          <PlaygroundExtras code={code} language="sql" filename="playground.sql" onNote={setNote} />
           <button
             type="button"
             className="btn-primary self-end"

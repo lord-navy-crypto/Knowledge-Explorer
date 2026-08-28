@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import LocalAiRecommendation from "@/components/LocalAiRecommendation";
 import RecommendedStudyTools from "@/components/RecommendedStudyTools";
@@ -69,7 +70,9 @@ export default function ToolsPage() {
         </div>
       </section>
 
-      <ToolsCatalog tools={tools} />
+      <Suspense fallback={<div className="card text-sm text-slate-500">Loading catalog…</div>}>
+        <ToolsCatalog tools={tools} />
+      </Suspense>
 
       <RecommendedStudyTools context="tools" />
 

@@ -4,6 +4,7 @@ import Link from "next/link";
 import OfficialResourceLinks from "@/components/OfficialResourceLinks";
 import { getCodeLangOfficial } from "@/data/official-resources";
 import JavaPlayground from "@/components/JavaPlayground";
+import TrackToolboxVisit from "@/components/TrackToolboxVisit";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import { javaExamples } from "@/data/java-examples";
 
@@ -11,6 +12,7 @@ export default function CodeJavaPage() {
   const official = getCodeLangOfficial("java");
   return (
     <div className="space-y-6">
+      <TrackToolboxVisit href="/code/java" title="Java" />
       <Link href="/code" className="text-sm text-brand-600 hover:underline">
         ← Back to Code Resource
       </Link>

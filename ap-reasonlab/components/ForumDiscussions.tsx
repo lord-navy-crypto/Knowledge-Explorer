@@ -9,7 +9,13 @@ import { saveLearningItem } from "@/lib/storage";
 import RichContent from "@/components/RichContent";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
 import type { ManagedForumAttachment, ManagedForumPost, ForumPostCategory } from "@/lib/managed-types";
-import { forumPostMatchesCategory } from "@/lib/forum-api";
+import {
+  forumPostMatchesCategory,
+  FORUM_CATEGORY_LABELS,
+  resolveForumPostCategory,
+} from "@/lib/forum-api";
+import { extractForumCodeBlocks } from "@/lib/forum-code-blocks";
+import { preloadPlaygroundDraft } from "@/lib/code-draft-bridge";
 import {
   readForumDisplayName,
   writeForumDisplayName,
@@ -59,6 +65,48 @@ const CATEGORIES: { id: Category; label: string; match: (p: ManagedForumPost) =>
     match: (p) => forumPostMatchesCategory(p, "beta-feedback"),
   },
 ];
+
+function quoteSnippet(author: string, body: string): string {
+  const excerpt = body.trim().split(/\r?\n/).slice(0, 8).join("\n").slice(0, 480);
+  const quoted = excerpt
+    .split(/\r?\n/)
+    .map((line) => `> ${line}`)
+    .join("\n");
+  return `> **${author}** wrote:\n${quoted}\n\n`;
+}
+
+function ForumCategoryBadge({ post }: { post: ManagedForumPost }) {
+  const cat = resolveForumPostCategory(post);
+  if (!cat) return null;
+  return (
+    <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+      {FORUM_CATEGORY_LABELS[cat]}
+    </span>
+  );
+}
+
+function ForumCodeLaunchers({ body }: { body: string }) {
+  const router = useRouter();
+  const blocks = useMemo(() => extractForumCodeBlocks(body), [body]);
+  if (!blocks.length) return null;
+  return (
+    <div className="flex flex-wrap gap-2">
+      {blocks.map((block, index) => (
+        <button
+          key={`${block.language}-${index}`}
+          type="button"
+          className="rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-900 hover:bg-emerald-100"
+          onClick={() => {
+            const href = preloadPlaygroundDraft(block.language, block.code);
+            if (href) router.push(href);
+          }}
+        >
+          Run {block.label} in playground
+        </button>
+      ))}
+    </div>
+  );
+}
 
 function relativeTime(value: string | number): string {
   const t = typeof value === "number" ? value : new Date(value).getTime();
@@ -735,6 +783,7 @@ export function ForumDiscussions({
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
                       <h3 className="font-semibold text-slate-900">{post.title}</h3>
+                      <ForumCategoryBadge post={post} />
                       <span className="text-[11px] text-slate-500">
                         {replyCount} {replyCount === 1 ? "reply" : "replies"}
                         {attachCount ? ` · ${attachCount} file${attachCount === 1 ? "" : "s"}` : ""}
@@ -765,6 +814,7 @@ export function ForumDiscussions({
                       </button>
                     </div>
                     <RichContent className="text-sm text-slate-700">{post.body}</RichContent>
+                    <ForumCodeLaunchers body={post.body} />
                     <AttachmentList items={post.attachments} />
                     <div className="flex flex-wrap gap-3 text-xs">
                       <button
@@ -773,6 +823,17 @@ export function ForumDiscussions({
                         onClick={() => void copyThreadLink(post.id)}
                       >
                         Copy link
+                      </button>
+                      <button
+                        type="button"
+                        className="text-brand-600 hover:underline"
+                        onClick={() => {
+                          setReplyBody(quoteSnippet(post.author, post.body));
+                          setReplyingTo(post.id);
+                          setExpandedId(post.id);
+                        }}
+                      >
+                        Quote
                       </button>
                       <button
                         type="button"
@@ -812,6 +873,17 @@ export function ForumDiscussions({
                                 </button>
                               </div>
                               <RichContent className="mt-2 text-sm text-slate-700">{reply.body}</RichContent>
+                              <ForumCodeLaunchers body={reply.body} />
+                              <button
+                                type="button"
+                                className="mt-2 text-[11px] text-brand-600 hover:underline"
+                                onClick={() => {
+                                  setReplyBody(quoteSnippet(reply.author, reply.body));
+                                  setReplyingTo(post.id);
+                                }}
+                              >
+                                Quote reply
+                              </button>
                               <AttachmentList items={reply.attachments} />
                             </div>
                           </div>

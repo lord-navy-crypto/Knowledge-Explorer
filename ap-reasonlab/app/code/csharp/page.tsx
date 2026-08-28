@@ -4,6 +4,7 @@ import Link from "next/link";
 import OfficialResourceLinks from "@/components/OfficialResourceLinks";
 import { getCodeLangOfficial } from "@/data/official-resources";
 import CsharpPlayground from "@/components/CsharpPlayground";
+import TrackToolboxVisit from "@/components/TrackToolboxVisit";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import { csharpExamples } from "@/data/csharp-examples";
 
@@ -11,6 +12,7 @@ export default function CodeCsharpPage() {
   const official = getCodeLangOfficial("csharp");
   return (
     <div className="space-y-6">
+      <TrackToolboxVisit href="/code/csharp" title="C#" />
       <Link href="/code" className="text-sm text-brand-600 hover:underline">
         ← Back to Code Resource
       </Link>

@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import RecentPlaygrounds from "@/components/RecentPlaygrounds";
+import TrackToolboxVisit from "@/components/TrackToolboxVisit";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import OfficialResourceLinks from "@/components/OfficialResourceLinks";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
@@ -75,6 +77,7 @@ const langs: {
 export default function CodePage() {
   return (
     <div className="space-y-8">
+      <TrackToolboxVisit href="/code" title="Code hub" />
       <Breadcrumbs
         items={[
           { label: "Home", href: "/" },
@@ -104,6 +107,8 @@ export default function CodePage() {
           .
         </p>
       </div>
+
+      <RecentPlaygrounds />
 
       <OfficialResourceLinks block={CODE_HUB_OFFICIAL} tone="slate" />
 

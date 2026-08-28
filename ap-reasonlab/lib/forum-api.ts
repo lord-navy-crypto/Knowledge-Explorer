@@ -74,3 +74,30 @@ export function forumPostMatchesCategory(
   }
   return false;
 }
+
+export const FORUM_CATEGORY_LABELS: Record<ForumPostCategory, string> = {
+  questions: "Question",
+  resources: "Resource",
+  announcements: "Announcement",
+  "beta-feedback": "Beta feedback",
+};
+
+const CATEGORY_ORDER: ForumPostCategory[] = [
+  "questions",
+  "resources",
+  "announcements",
+  "beta-feedback",
+];
+
+/** Explicit category or best heuristic match for legacy posts. */
+export function resolveForumPostCategory(post: {
+  title: string;
+  body: string;
+  category?: ForumPostCategory;
+}): ForumPostCategory | null {
+  if (post.category) return post.category;
+  for (const cat of CATEGORY_ORDER) {
+    if (forumPostMatchesCategory(post, cat)) return cat;
+  }
+  return null;
+}
