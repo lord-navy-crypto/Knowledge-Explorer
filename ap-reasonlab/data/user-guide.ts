@@ -47,11 +47,12 @@ export const USER_GUIDE_SECTIONS: UserGuideSection[] = [
       },
     ],
     body:
-      "Desktop: sticky header with AI Toolbox + More dropdown (boxes, quick links, admin links). Mobile: bottom bar with AI Toolbox, More, and jump-to-chat on toolbox pages. The tomato cloud and random-page buttons are optional extras — they do not change your study content.",
+      "Desktop: sticky header with AI Toolbox + Search, plus More dropdown (boxes, quick links, editor login). Mobile: four-button bottom bar — Home · Search · AI Toolbox · More. Jump-to-chat appears on toolbox pages. Themes and night mode live in the style window (palette icon).",
     steps: [
       "Open Home → choose a box (AP, Tools, Simulation, Forum).",
-      "Use More → Quick links for /ap, /english, /tools, /code, /search, or this User Guide.",
-      "On concept or formula pages, scroll to related tools strip at the bottom for quick jumps.",
+      "Desktop: use Search in the header. Mobile: tap Search on the bottom bar.",
+      "More → Quick links for /ap, /english, /tools, /user-guide.",
+      "Editors only: More shows full admin links after unlock at /login.",
     ],
     links: [
       { href: "/", label: "Home", detail: "Four gateway boxes" },
@@ -83,7 +84,7 @@ export const USER_GUIDE_SECTIONS: UserGuideSection[] = [
       { href: "/formulas", label: "Formulas (all subjects)" },
       { href: "/practice", label: "Practice sets" },
       { href: "/questionnaires", label: "Questionnaires" },
-      { href: "/key-concepts", label: "Key concepts & AI-for-AP guides" },
+      { href: "/key-concepts", label: "Key concepts & guides" },
     ],
   },
   {

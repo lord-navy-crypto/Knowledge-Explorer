@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import AiForApToolboxSection from "@/components/AiForApToolboxSection";
@@ -8,8 +9,6 @@ import LocalAiRecommendation from "@/components/LocalAiRecommendation";
 import RecommendedStudyTools from "@/components/RecommendedStudyTools";
 import UnifiedAiPanel from "@/components/UnifiedAiPanel";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
-import TICalculator from "@/components/TICalculator";
-import TIGrapher from "@/components/TIGrapher";
 import {
   loadToolboxExtraTool,
   saveToolboxExtraTool,
@@ -17,6 +16,13 @@ import {
 } from "@/lib/ai-toolbox-prefs";
 import { legacyToolToApTask, migrateEnglishTask } from "@/lib/ai-toolbox-url";
 import { decodeSpecialPrompt } from "@/lib/ai-special-features";
+
+const TICalculator = dynamic(() => import("@/components/TICalculator"), {
+  loading: () => <div className="card text-sm text-slate-500">Loading calculator…</div>,
+});
+const TIGrapher = dynamic(() => import("@/components/TIGrapher"), {
+  loading: () => <div className="card text-sm text-slate-500">Loading grapher…</div>,
+});
 
 type ExtraTool = ToolboxExtraTool;
 
@@ -149,7 +155,7 @@ function ToolboxContent() {
 
       <EthicsBanner />
 
-      <div className="sticky top-0 z-20 -mx-1 flex flex-wrap gap-2 bg-slate-50/95 px-1 py-2 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80 md:static md:bg-transparent md:p-0 md:backdrop-blur-none">
+      <div className="sticky top-16 z-20 -mx-1 flex flex-wrap gap-2 scroll-mt-24 bg-slate-50/95 px-1 py-2 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80 md:static md:top-auto md:bg-transparent md:p-0 md:backdrop-blur-none" role="tablist" aria-label="Toolbox tools">
         {(
           [
             { id: "ai", label: "Unified AI" },
@@ -160,6 +166,8 @@ function ToolboxContent() {
           <button
             key={item.id}
             type="button"
+            role="tab"
+            aria-selected={extra === item.id}
             onClick={() => selectExtra(item.id)}
             className={`rounded-full border px-3 py-1.5 text-sm font-medium ${
               extra === item.id

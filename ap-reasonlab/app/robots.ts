@@ -7,5 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/login", "/manage", "/manage-guide", "/admin", "/ai-developer"],
     },
+    sitemap: `${process.env.NEXT_PUBLIC_SITE_URL || "https://ap-webside.vercel.app"}/sitemap.xml`,
   };
 }
