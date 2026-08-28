@@ -32,8 +32,24 @@ const fontDisplay = Source_Serif_4({
 });
 
 export const metadata: Metadata = {
-  title: `${brand.name} — Academic Box & Platform`,
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://ap-webside.vercel.app"),
+  title: {
+    default: `${brand.name} — Academic Box & Platform`,
+    template: `%s — ${brand.name}`,
+  },
   description: brand.description,
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    siteName: brand.name,
+    title: brand.name,
+    description: brand.description,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: brand.name,
+    description: brand.description,
+  },
   // Discourage Chrome auto-translate — it mutates the DOM and causes React
   // NotFoundError: Failed to execute 'insertBefore' on 'Node'.
   other: {

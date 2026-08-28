@@ -1273,7 +1273,7 @@ export default function UnifiedAiPanel({
           onApply={applySpecialFeature}
         />
 
-        <div className="grid gap-2 sm:grid-cols-3">
+        <div className="grid gap-2 sm:grid-cols-3" role="tablist" aria-label="AI category">
           {(
             [
               { id: "ap", label: "AP / Learning", detail: "Hints, concepts, extensions, formulas, practice" },
@@ -1284,6 +1284,9 @@ export default function UnifiedAiPanel({
             <button
               key={item.id}
               type="button"
+              role="tab"
+              aria-selected={category === item.id}
+              aria-pressed={category === item.id}
               onClick={() => {
                 setCategory(item.id);
                 setError("");
@@ -1422,6 +1425,7 @@ export default function UnifiedAiPanel({
           <div className="flex gap-1">
             <button
               type="button"
+              aria-pressed={budgetMode === "speed"}
               className={`rounded-lg px-2.5 py-1 text-xs font-medium ${
                 budgetMode === "speed"
                   ? "bg-brand-600 text-white"
@@ -1434,6 +1438,7 @@ export default function UnifiedAiPanel({
             </button>
             <button
               type="button"
+              aria-pressed={budgetMode === "complete"}
               className={`rounded-lg px-2.5 py-1 text-xs font-medium ${
                 budgetMode === "complete"
                   ? "bg-brand-600 text-white"
@@ -1558,6 +1563,11 @@ export default function UnifiedAiPanel({
           <div className="relative">
             <div
               ref={chatRef}
+              role="log"
+              aria-live="polite"
+              aria-relevant="additions"
+              aria-label="AI dialogue"
+              aria-busy={loading}
               className="flex max-h-[min(28rem,55vh)] min-h-[12rem] flex-col gap-3 overflow-y-auto overscroll-contain bg-white p-3 md:max-h-[28rem] md:min-h-[14rem]"
             >
               {messages.length === 0 ? (

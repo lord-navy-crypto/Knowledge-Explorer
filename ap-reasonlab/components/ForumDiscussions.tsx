@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useEditorMode } from "@/components/EditorModeProvider";
 import { saveLearningItem } from "@/lib/storage";
 import RichContent from "@/components/RichContent";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
@@ -11,6 +12,7 @@ const NAME_KEY = "results-forum-display-name";
 const MAX_POST_ATTACH = 4;
 const MAX_REPLY_ATTACH = 2;
 const MAX_ATTACH_BYTES = 650_000;
+const POSTS_PER_PAGE = 8;
 
 type Category = "all" | "questions" | "resources" | "announcements";
 type DraftAttachment = {
@@ -96,11 +98,13 @@ function AttachmentPicker({
   max,
   onChange,
   disabled,
+  onError,
 }: {
   drafts: DraftAttachment[];
   max: number;
   onChange: (next: DraftAttachment[]) => void;
   disabled?: boolean;
+  onError?: (message: string) => void;
 }) {
   return (
     <div className="space-y-2">
@@ -124,7 +128,7 @@ function AttachmentPicker({
                 }
                 onChange(next);
               })().catch((err) => {
-                window.alert(err instanceof Error ? err.message : "Attach failed");
+                onError?.(err instanceof Error ? err.message : "Attach failed");
               });
             }}
           />
@@ -226,6 +230,7 @@ function ForumImage({ fileId, name }: { fileId: string; name: string }) {
 }
 
 export function ForumDiscussions({ embedded = false }: { embedded?: boolean }) {
+  const { unlocked } = useEditorMode();
   const [posts, setPosts] = useState<ManagedForumPost[]>([]);
   const [displayName, setDisplayName] = useState("");
   const [nameDraft, setNameDraft] = useState("");
@@ -245,6 +250,14 @@ export function ForumDiscussions({ embedded = false }: { embedded?: boolean }) {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<"newest" | "active">("newest");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [notice, setNotice] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<{
+    target: "forum_post" | "forum_reply";
+    id: string;
+    postId?: string;
+  } | null>(null);
+  const [deleteCode, setDeleteCode] = useState("");
 
   const refresh = useCallback(async () => {
     try {
@@ -295,6 +308,13 @@ export function ForumDiscussions({ embedded = false }: { embedded?: boolean }) {
     });
     return list;
   }, [posts, category, query, sort]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [category, query, sort]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / POSTS_PER_PAGE));
+  const paged = filtered.slice((page - 1) * POSTS_PER_PAGE, page * POSTS_PER_PAGE);
 
   function requestIdentity(action: "post" | string) {
     setError("");
@@ -394,19 +414,38 @@ export function ForumDiscussions({ embedded = false }: { embedded?: boolean }) {
     }
   }
 
-  async function deleteContent(target: "forum_post" | "forum_reply", id: string, postId?: string) {
-    const changeCode = window.prompt("Enter a content or master change code to delete:");
-    if (!changeCode) return;
-    if (!window.confirm("Delete this Forum content? Attached files will be removed too.")) return;
+  async function confirmDelete() {
+    if (!deleteTarget) return;
+    if (!unlocked && !deleteCode.trim()) {
+      setError("Enter the content change code to delete shared Forum content.");
+      return;
+    }
     setError("");
     const response = await fetch("/api/edit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "delete", target, id, postId, changeCode }),
+      body: JSON.stringify({
+        action: "delete",
+        target: deleteTarget.target,
+        id: deleteTarget.id,
+        postId: deleteTarget.postId,
+        changeCode: unlocked ? undefined : deleteCode.trim(),
+      }),
     });
     const data = await response.json();
-    if (!response.ok) return setError(data.error || "Delete failed");
+    if (!response.ok) {
+      setError(data.error || "Delete failed");
+      return;
+    }
     setPosts(Array.isArray(data.content?.forumPosts) ? data.content.forumPosts : []);
+    setDeleteTarget(null);
+    setDeleteCode("");
+  }
+
+  async function deleteContent(target: "forum_post" | "forum_reply", id: string, postId?: string) {
+    setDeleteTarget({ target, id, postId });
+    setDeleteCode("");
+    setError("");
   }
 
   async function saveToMyBox(post: ManagedForumPost) {
@@ -415,7 +454,8 @@ export function ForumDiscussions({ embedded = false }: { embedded?: boolean }) {
       content: `${post.body}\n\n— ${post.author}`,
       category: "Forum",
     });
-    window.alert("Saved to My box (this browser only — private).");
+    setNotice("Saved to My box (private in this browser).");
+    window.setTimeout(() => setNotice(""), 4000);
   }
 
   return (
@@ -534,6 +574,7 @@ export function ForumDiscussions({ embedded = false }: { embedded?: boolean }) {
             max={MAX_POST_ATTACH}
             onChange={setPostAttachments}
             disabled={saving}
+            onError={setError}
           />
           <div className="flex items-center justify-between gap-3 text-xs text-slate-500">
             <span>Posting publicly as {displayName}</span>
@@ -546,6 +587,9 @@ export function ForumDiscussions({ embedded = false }: { embedded?: boolean }) {
       )}
 
       {error && <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+      {notice ? (
+        <p className="rounded-xl bg-emerald-50 p-3 text-sm text-emerald-800">{notice}</p>
+      ) : null}
 
       {loading ? (
         <div className="card text-sm text-slate-500">Loading discussions…</div>
@@ -557,7 +601,7 @@ export function ForumDiscussions({ embedded = false }: { embedded?: boolean }) {
         </div>
       ) : (
         <ul className="space-y-3">
-          {filtered.map((post) => {
+          {paged.map((post) => {
             const open = expandedId === post.id;
             const replyCount = (post.replies || []).length;
             const attachCount = (post.attachments || []).length;
@@ -668,6 +712,7 @@ export function ForumDiscussions({ embedded = false }: { embedded?: boolean }) {
                           max={MAX_REPLY_ATTACH}
                           onChange={setReplyAttachments}
                           disabled={saving}
+                          onError={setError}
                         />
                         <div className="flex gap-2">
                           <button type="submit" className="btn-primary" disabled={saving}>
@@ -686,6 +731,32 @@ export function ForumDiscussions({ embedded = false }: { embedded?: boolean }) {
           })}
         </ul>
       )}
+
+      {!loading && filtered.length > POSTS_PER_PAGE ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-slate-600">
+          <span>
+            Page {page} of {totalPages} · {filtered.length} threads
+          </span>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              className="btn-ghost text-xs"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              ← Previous
+            </button>
+            <button
+              type="button"
+              className="btn-ghost text-xs"
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            >
+              Next →
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       {nameOpen && (
         <div
@@ -729,6 +800,56 @@ export function ForumDiscussions({ embedded = false }: { embedded?: boolean }) {
           </form>
         </div>
       )}
+
+      {deleteTarget ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="forum-delete-title"
+        >
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+            <h2 id="forum-delete-title" className="text-xl font-semibold text-slate-900">
+              Delete Forum content?
+            </h2>
+            <p className="mt-2 text-sm text-slate-600">
+              This removes the thread or reply and any attached files from the public discussions.
+            </p>
+            {unlocked ? (
+              <p className="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+                Editor session active — no change code needed.
+              </p>
+            ) : (
+              <label className="mt-4 block text-sm font-medium text-slate-700">
+                Content change code
+                <input
+                  type="password"
+                  className="input mt-1"
+                  value={deleteCode}
+                  onChange={(event) => setDeleteCode(event.target.value)}
+                  placeholder="Required to delete others’ posts"
+                  autoFocus
+                />
+              </label>
+            )}
+            <div className="mt-5 flex gap-2">
+              <button type="button" className="btn-primary bg-red-600 hover:bg-red-700" onClick={() => void confirmDelete()}>
+                Delete permanently
+              </button>
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() => {
+                  setDeleteTarget(null);
+                  setDeleteCode("");
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

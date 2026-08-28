@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import EnglishResourcePanel from "@/components/EnglishResourcePanel";
 import {
   englishExamAreas,
@@ -9,15 +10,21 @@ import {
 export default function EnglishHubPage() {
   return (
     <div className="space-y-10">
-      <div
-        role="status"
-        className="rounded-2xl border-2 border-amber-400 bg-amber-50 px-5 py-4 text-center shadow-sm"
-      >
-        <p className="text-2xl font-bold tracking-wide text-amber-900 md:text-3xl">
-          正在施工 · 正在施工 · 正在施工 · 正在施工
+      <Breadcrumbs
+        items={[
+          { label: "Home", href: "/" },
+          { label: "AP & English", href: "/explore/ap-english" },
+          { label: "English" },
+        ]}
+      />
+
+      <section className="rounded-2xl border border-sky-200 bg-sky-50/80 px-5 py-4 text-sm text-sky-950">
+        <p className="font-semibold">TOEFL &amp; SAT lanes are live</p>
+        <p className="mt-1 text-sky-900/85">
+          Exam folders, vocabulary, grammar, and English AI are ready. Some SAT question banks are
+          still expanding — use AI Toolbox or Forum to request more practice sets.
         </p>
-        <p className="mt-1 text-sm text-amber-800/80">Under construction — English Learning Hub</p>
-      </div>
+      </section>
 
       <section className="overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950 via-blue-900 to-brand-700 px-6 py-10 text-white shadow-xl md:px-10">
         <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wider">

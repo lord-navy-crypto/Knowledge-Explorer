@@ -243,14 +243,14 @@ export const MANAGE_GUIDE_SECTIONS: ManageGuideSection[] = [
   },
   {
     id: "publish",
-    title: "Publish, site copy & changing features",
+    title: "Publish, SEO, site copy & changing features",
     preview:
-      "Content edits publish to the connected GitHub repo when GITHUB_TOKEN is set. Updating User Guide sections, nav labels, or new tools requires repo edits (or your team’s deploy flow) — Manage covers managed content, not all React components.",
+      "Content edits publish to GitHub when GITHUB_TOKEN is set. Public search indexes tools and User Guide sections; /robots.txt and noindex protect admin routes. Updating nav or React features still requires repo deploy.",
     conversation: [
-      { speaker: "you", text: "How do I change what the User Guide says?" },
+      { speaker: "you", text: "Will Manage pages appear on Google?" },
       {
         speaker: "guide",
-        text: "User Guide copy lives in data/user-guide.ts in the repo. Editors update via pull request or agent deploy. Manage is for AP concepts, files, and managed JSON — not every static page string.",
+        text: "/login, /manage, /admin, /ai-developer, and /manage-guide use noindex. robots.txt disallows them too. Students use /user-guide and /search instead.",
       },
     ],
     steps: [
@@ -258,7 +258,7 @@ export const MANAGE_GUIDE_SECTIONS: ManageGuideSection[] = [
       "Verify on live site after deploy (Vercel rebuild).",
       "Use History undo for bad publishes when available.",
       "Static UI/features: edit repo, run checklist, open PR — see /guide.",
-      "Keep Manage Guide and User Guide in sync when adding major features.",
+      "After major nav changes, update User Guide + search corpus in data files.",
     ],
     links: [
       { href: "/guide", label: "Developer / deploy guide" },
