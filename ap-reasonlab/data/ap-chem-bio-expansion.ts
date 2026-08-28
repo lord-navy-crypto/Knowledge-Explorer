@@ -70,4 +70,38 @@ export const chemBioConcepts: Concept[] = [
     ],
     example: "Blocking photosystem II stops ATP/NADPH production and eventually stops Calvin cycle.",
   },
+  {
+    id: "chem-kinetics",
+    title: "Reaction Kinetics",
+    subject: "AP Chemistry",
+    summary:
+      "Rate laws express reaction speed as a function of concentration. Activation energy controls temperature sensitivity.",
+    keyPoints: [
+      "Rate = k[A]^m[B]^n from experimental data.",
+      "Higher T increases fraction of collisions exceeding E_a.",
+      "Catalysts lower activation energy without changing ΔG.",
+    ],
+    commonMistakes: [
+      "Confusing coefficients in balanced equation with reaction orders.",
+      "Assuming rate doubles whenever temperature rises slightly without context.",
+    ],
+    example: "If rate doubles when [A] doubles and order in A is 1, doubling [A] doubles rate.",
+  },
+  {
+    id: "bio-gene-expression",
+    title: "Gene Expression & Regulation",
+    subject: "AP Biology",
+    summary:
+      "DNA → RNA → protein with multiple control points. Operons and transcription factors regulate prokaryotic and eukaryotic expression.",
+    keyPoints: [
+      "Transcription and translation can be regulated separately.",
+      "lac operon model: repressor vs inducer.",
+      "Mutations in regulatory regions affect expression level.",
+    ],
+    commonMistakes: [
+      "Assuming every gene is always transcribed.",
+      "Confusing gene regulation with DNA replication.",
+    ],
+    example: "Lactose presence inactivates the lac repressor, allowing transcription of lac genes.",
+  },
 ];

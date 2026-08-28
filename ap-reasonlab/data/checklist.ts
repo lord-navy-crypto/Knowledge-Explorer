@@ -46,17 +46,17 @@ export const checklistItems: ChecklistItem[] = [
   {
     id: "english-lanes",
     status: "done",
-    title: "Expand English TOEFL/SAT practice banks (90+ each)",
+    title: "Expand English TOEFL/SAT practice banks (120+ each)",
     description:
-      "Hand-curated MCQ banks with skill filters, pagination, and localStorage resume on TOEFL/SAT hubs.",
+      "120+ hand-curated and challenge-tier MCQs per exam; skill filters, pagination, localStorage resume, and section timers.",
     link: "/english",
   },
   {
     id: "ap-practice-b",
     status: "done",
-    title: "AP generated FRQ Set A + Set B per subject lane",
+    title: "AP generated FRQ Set A–D per STEM lane",
     description:
-      "21 subject/topic lanes now have two starter FRQ sets (Physics, Calc, Chem, Bio, humanities, CS, and more).",
+      "Physics 1, Calc, Chem, Bio have Sets A–D; other subjects have A–B. Practice page groups by Set label.",
     link: "/practice",
   },
   {

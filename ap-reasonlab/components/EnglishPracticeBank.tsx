@@ -10,6 +10,8 @@ type SavedState = {
   skill: string;
   page: number;
   answers: Record<string, number>;
+  timerSecondsLeft?: number | null;
+  timerRunning?: boolean;
 };
 
 type Props = {
@@ -18,6 +20,8 @@ type Props = {
   questions: EnglishPracticeQuestion[];
   /** Unique key for localStorage resume (e.g. toefl-hub, sat-reading). */
   storageKey: string;
+  /** Exam-style countdown in minutes (section pages). */
+  timedMinutes?: number;
 };
 
 function loadSaved(key: string): SavedState | null {
@@ -35,7 +39,19 @@ function loadSaved(key: string): SavedState | null {
   }
 }
 
-export default function EnglishPracticeBank({ title, description, questions, storageKey }: Props) {
+function formatTimer(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
+export default function EnglishPracticeBank({
+  title,
+  description,
+  questions,
+  storageKey,
+  timedMinutes,
+}: Props) {
   const skills = useMemo(
     () => [...new Set(questions.map((q) => q.skill))].sort(),
     [questions]
@@ -44,6 +60,8 @@ export default function EnglishPracticeBank({ title, description, questions, sto
   const [page, setPage] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [restored, setRestored] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
+  const [timerRunning, setTimerRunning] = useState(false);
 
   useEffect(() => {
     const saved = loadSaved(storageKey);
@@ -51,19 +69,43 @@ export default function EnglishPracticeBank({ title, description, questions, sto
       setSkill(saved.skill);
       setPage(saved.page);
       setAnswers(saved.answers);
+      if (timedMinutes && typeof saved.timerSecondsLeft === "number") {
+        setSecondsLeft(saved.timerSecondsLeft);
+        setTimerRunning(Boolean(saved.timerRunning));
+      }
+    } else if (timedMinutes) {
+      setSecondsLeft(timedMinutes * 60);
     }
     setRestored(true);
-  }, [storageKey]);
+  }, [storageKey, timedMinutes]);
 
   useEffect(() => {
     if (!restored) return;
-    const payload: SavedState = { skill, page, answers };
+    const payload: SavedState = {
+      skill,
+      page,
+      answers,
+      timerSecondsLeft: secondsLeft,
+      timerRunning,
+    };
     try {
       localStorage.setItem(`ke-english-bank:${storageKey}`, JSON.stringify(payload));
     } catch {
       /* quota */
     }
-  }, [skill, page, answers, storageKey, restored]);
+  }, [skill, page, answers, storageKey, restored, secondsLeft, timerRunning]);
+
+  useEffect(() => {
+    if (!timerRunning || secondsLeft === null) return;
+    if (secondsLeft <= 0) {
+      setTimerRunning(false);
+      return;
+    }
+    const id = window.setInterval(() => {
+      setSecondsLeft((prev) => (prev === null ? prev : Math.max(0, prev - 1)));
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [timerRunning, secondsLeft]);
 
   const filtered = useMemo(() => {
     if (skill === "all") return questions;
@@ -82,12 +124,16 @@ export default function EnglishPracticeBank({ title, description, questions, sto
     setAnswers({});
     setPage(0);
     setSkill("all");
+    setTimerRunning(false);
+    if (timedMinutes) setSecondsLeft(timedMinutes * 60);
     try {
       localStorage.removeItem(`ke-english-bank:${storageKey}`);
     } catch {
       /* ignore */
     }
-  }, [storageKey]);
+  }, [storageKey, timedMinutes]);
+
+  const timeUp = timedMinutes != null && secondsLeft === 0;
 
   return (
     <section className="card space-y-4" aria-labelledby="english-practice-bank-title">
@@ -102,6 +148,40 @@ export default function EnglishPracticeBank({ title, description, questions, sto
           {answeredCount > 0 ? ` · ${answeredCount} answered (saved in this browser)` : ""}
         </p>
       </div>
+
+      {timedMinutes != null && secondsLeft != null ? (
+        <div
+          className={`flex flex-wrap items-center gap-3 rounded-xl border px-3 py-2 text-sm ${
+            timeUp
+              ? "border-amber-300 bg-amber-50 text-amber-950"
+              : "border-slate-200 bg-slate-50 text-slate-800"
+          }`}
+        >
+          <span className="font-semibold tabular-nums" aria-live="polite">
+            {timeUp ? "Time's up" : `Timer ${formatTimer(secondsLeft)}`}
+          </span>
+          <span className="text-slate-600">· {timedMinutes} min section pace</span>
+          {!timeUp ? (
+            <button
+              type="button"
+              className="font-semibold text-brand-700 underline"
+              onClick={() => setTimerRunning((r) => !r)}
+            >
+              {timerRunning ? "Pause" : secondsLeft === timedMinutes * 60 ? "Start timer" : "Resume"}
+            </button>
+          ) : null}
+          <button
+            type="button"
+            className="text-slate-600 underline"
+            onClick={() => {
+              setSecondsLeft(timedMinutes * 60);
+              setTimerRunning(false);
+            }}
+          >
+            Reset timer
+          </button>
+        </div>
+      ) : null}
 
       {answeredCount > 0 ? (
         <div className="flex flex-wrap items-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-3 py-2 text-sm text-brand-900">

@@ -4,6 +4,7 @@ import {
   curatedExtendedSatQuestions,
   curatedExtendedToeflQuestions,
 } from "./english-questions-curated-extended";
+import { hardSatQuestions, hardToeflQuestions } from "./english-questions-hard";
 
 export type EnglishPracticeQuestion = {
   id: string;
@@ -127,6 +128,7 @@ const baseToeflQuestions: EnglishPracticeQuestion[] = [
 export const toeflQuestions: EnglishPracticeQuestion[] = [
   ...curatedToeflQuestions,
   ...curatedExtendedToeflQuestions,
+  ...hardToeflQuestions,
   ...baseToeflQuestions,
   ...extraToeflQuestions,
 ];
@@ -147,6 +149,7 @@ const baseSatQuestions: EnglishPracticeQuestion[] = [
 export const satQuestions: EnglishPracticeQuestion[] = [
   ...curatedSatQuestions,
   ...curatedExtendedSatQuestions,
+  ...hardSatQuestions,
   ...baseSatQuestions,
   ...extraSatQuestions,
 ];

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEditorMode } from "@/components/EditorModeProvider";
 import { useToast } from "@/components/ToastProvider";
 import { saveLearningItem } from "@/lib/storage";
@@ -252,6 +253,8 @@ export function ForumDiscussions({
   embedded?: boolean;
   initialCategory?: Category;
 }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { unlocked } = useEditorMode();
   const [posts, setPosts] = useState<ManagedForumPost[]>([]);
   const [displayName, setDisplayName] = useState("");
@@ -341,6 +344,16 @@ export function ForumDiscussions({
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / POSTS_PER_PAGE));
   const paged = filtered.slice((page - 1) * POSTS_PER_PAGE, page * POSTS_PER_PAGE);
+
+  function selectCategory(next: Category) {
+    setCategory(next);
+    if (!embedded) return;
+    const params = new URLSearchParams(searchParams.toString());
+    if (next === "all") params.delete("tag");
+    else params.set("tag", next === "beta-feedback" ? "beta-feedback" : next);
+    const qs = params.toString();
+    router.replace(qs ? `/forum?${qs}` : "/forum", { scroll: false });
+  }
 
   function requestIdentity(action: "post" | string) {
     setError("");
@@ -523,7 +536,7 @@ export function ForumDiscussions({
               type="button"
               role="tab"
               aria-selected={category === c.id}
-              onClick={() => setCategory(c.id)}
+              onClick={() => selectCategory(c.id)}
               className={
                 category === c.id
                   ? "rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white"

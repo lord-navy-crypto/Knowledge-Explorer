@@ -400,6 +400,34 @@ export const practiceQuestions: PracticeQuestion[] = [
       "L2: dV/dr = 4πr².",
     ],
   },
+  {
+    id: "p1-007",
+    subject: "AP Physics 1",
+    topic: "Simple Harmonic Motion",
+    question:
+      "A 0.50 kg mass on a spring (k = 50 N/m) oscillates on a frictionless surface. Find the period of oscillation.",
+    visibleSteps: ["Use T = 2π√(m/k).", "Substitute m and k."],
+    blankSteps: ["T = ______ s"],
+    hints: [
+      "L1: Period depends on m and k, not amplitude (ideal spring).",
+      "L2: T = 2π√(0.50/50).",
+    ],
+  },
+  {
+    id: "calc-004",
+    subject: "AP Calculus AB/BC",
+    topic: "Differential Equations",
+    question: "Solve dy/dx = 2y with y(0) = 3.",
+    visibleSteps: [
+      "Separate variables: dy/y = 2 dx.",
+      "Integrate and apply the initial condition.",
+    ],
+    blankSteps: ["y = ______"],
+    hints: [
+      "L1: ln|y| = 2x + C.",
+      "L2: Exponential form: y = Ce^{2x}.",
+    ],
+  },
 ];
 
 export function getConceptById(id: string): Concept | undefined {

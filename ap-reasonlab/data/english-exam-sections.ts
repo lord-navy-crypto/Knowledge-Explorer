@@ -67,7 +67,7 @@ export const englishExamConfigs: Record<EnglishExamId, EnglishExamConfig> = {
     title: "SAT",
     hubHref: "/english/sat",
     blurb:
-      "Four subject folders plus an in-site MCQ bank (80+ questions). Upload practice files per subject or use built-in multiple-choice sets filtered by skill.",
+      "Four subject folders plus an in-site MCQ bank (120+ questions). Upload practice files per subject or use built-in multiple-choice sets filtered by skill.",
     sections: [
       {
         id: "english",

@@ -17,6 +17,11 @@ import { subjectsMatch } from "@/lib/managed-types";
 import RichContent from "@/components/RichContent";
 import type { Questionnaire } from "@/lib/types";
 import type { DifficultyTier } from "@/lib/types";
+import {
+  groupPracticeSets,
+  isGeneratedPracticeSet,
+  practiceSetLabel,
+} from "@/lib/practice-set-group";
 
 type Tab = "drills" | "sets";
 const TIER_OPTIONS: Array<{ value: "all" | DifficultyTier; label: string }> = [
@@ -128,6 +133,34 @@ function PracticeContent() {
     if (tierFilter === "all") return true;
     return q.difficultyTier === tierFilter || q.items?.some((item) => item.difficultyTier === tierFilter);
   });
+
+  const generatedSets = sets.filter((q) => isGeneratedPracticeSet(q));
+  const otherSets = sets.filter((q) => !isGeneratedPracticeSet(q));
+  const setGroups = groupPracticeSets(generatedSets);
+
+  function renderSetCard(q: Questionnaire) {
+    const setLabel = practiceSetLabel(q.title);
+    return (
+      <Link key={q.id} href={`/questionnaires/${q.id}`} className="card-hover block">
+        <div className="flex flex-wrap gap-2">
+          <span className="badge-generated">GENERATED</span>
+          {setLabel ? <span className="badge">{setLabel}</span> : null}
+          <span className="badge">~{q.estimatedMinutes} min</span>
+          {q.difficultyTier ? (
+            <span className="badge">
+              Tier {q.difficultyTier === 1 ? "Intro" : q.difficultyTier === 3 ? "Challenge" : "Standard"}
+            </span>
+          ) : null}
+          {q.id.startsWith("m-quiz") && <span className="badge">UI-added</span>}
+        </div>
+        <h2 className="mt-3 text-xl font-semibold text-slate-900">{q.title}</h2>
+        <RichContent clampLines={3} className="mt-2 text-sm text-slate-600">{q.description}</RichContent>
+        <p className="mt-3 text-xs text-slate-400">
+          {q.items?.length || 0} items · {q.generationNote}
+        </p>
+      </Link>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -281,31 +314,36 @@ function PracticeContent() {
               </button>
             ))}
           </div>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-8">
           {sets.length === 0 ? (
             <div className="card text-sm text-slate-500">
               No generated sets yet. Use + Add generated practice set above.
             </div>
           ) : (
-            sets.map((q) => (
-              <Link key={q.id} href={`/questionnaires/${q.id}`} className="card-hover block">
-                <div className="flex flex-wrap gap-2">
-                  <span className="badge-generated">GENERATED</span>
-                  <span className="badge">~{q.estimatedMinutes} min</span>
-                  {q.difficultyTier ? (
-                    <span className="badge">
-                      Tier {q.difficultyTier === 1 ? "Intro" : q.difficultyTier === 3 ? "Challenge" : "Standard"}
-                    </span>
-                  ) : null}
-                  {q.id.startsWith("m-quiz") && <span className="badge">UI-added</span>}
+            <>
+              {setGroups.length > 0 ? (
+                <div className="space-y-6">
+                  {setGroups.map((group) => (
+                    <section key={group.key} className="space-y-3">
+                      <h3 className="text-lg font-semibold text-slate-800">{group.baseTitle}</h3>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        {group.sets.map((q) => renderSetCard(q))}
+                      </div>
+                    </section>
+                  ))}
                 </div>
-                <h2 className="mt-3 text-xl font-semibold text-slate-900">{q.title}</h2>
-                <RichContent clampLines={3} className="mt-2 text-sm text-slate-600">{q.description}</RichContent>
-                <p className="mt-3 text-xs text-slate-400">
-                  {q.items?.length || 0} items · {q.generationNote}
-                </p>
-              </Link>
-            ))
+              ) : null}
+              {otherSets.length > 0 ? (
+                <section className="space-y-3">
+                  {setGroups.length > 0 ? (
+                    <h3 className="text-lg font-semibold text-slate-800">Other practice sets</h3>
+                  ) : null}
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {otherSets.map((q) => renderSetCard(q))}
+                  </div>
+                </section>
+              ) : null}
+            </>
           )}
         </div>
         </div>

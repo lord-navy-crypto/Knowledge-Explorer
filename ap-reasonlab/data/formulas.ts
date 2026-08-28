@@ -405,6 +405,29 @@ const builtInFormulas: Formula[] = [
     relatedConceptId: "derivatives-basics",
     sourceNote: "AP Calculus AB CED",
   },
+  // ── AP Calculus AB — Contextual & Analytical Applications (Units 4–5) ──
+  {
+    id: "calc-avg-value",
+    subject: "AP Calculus AB/BC",
+    unit: "Unit 4: Contextual Applications",
+    name: "Average value of a function",
+    expression: "f_avg = (1/(b−a)) ∫ₐᵇ f(x) dx",
+    variables: "a, b = interval endpoints",
+    whenToUse: "Mean value of a continuous quantity over an interval.",
+    relatedConceptId: "related-rates",
+    sourceNote: "AP Calculus AB CED",
+  },
+  {
+    id: "calc-critical-points",
+    subject: "AP Calculus AB/BC",
+    unit: "Unit 5: Analytical Applications",
+    name: "Critical points",
+    expression: "Solve f′(x) = 0 or f′ undefined",
+    variables: "Critical points candidate for local extrema",
+    whenToUse: "Optimization and curve analysis on an interval.",
+    relatedConceptId: "related-rates",
+    sourceNote: "AP Calculus AB CED",
+  },
   // ── AP Calculus AB — Integrals (Unit 6) ──
   {
     id: "calc-ftc1",

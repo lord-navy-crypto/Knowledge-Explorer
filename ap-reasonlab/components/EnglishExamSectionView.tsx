@@ -9,6 +9,7 @@ import ToeflSpeakShadow from "@/components/ToeflSpeakShadow";
 import ToeflWritingTimers from "@/components/ToeflWritingTimers";
 import type { EnglishExamConfig, EnglishExamSection } from "@/data/english-exam-sections";
 import { getExamSectionOfficial } from "@/data/official-resources";
+import { sectionTimerMinutes } from "@/lib/english-section-timers";
 
 type LaneCopy = {
   eyebrow: string;
@@ -82,6 +83,7 @@ export default function EnglishExamSectionView({
   const lane = isToefl ? toeflLaneCopy(section.id) : null;
   const official = getExamSectionOfficial(exam.id, section.id);
   const sectionMcqs = questionsForSection(exam.id, section.id);
+  const timedMinutes = sectionTimerMinutes(exam.id, section.id);
 
   return (
     <div className="space-y-8">
@@ -151,6 +153,7 @@ export default function EnglishExamSectionView({
           description={`${sectionMcqs.length} in-site MCQ items tagged for ${section.title}. Upload lanes below for your own materials.`}
           questions={sectionMcqs}
           storageKey={`${exam.id}-${section.id}`}
+          timedMinutes={timedMinutes}
         />
       ) : null}
 

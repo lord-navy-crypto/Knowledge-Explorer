@@ -7,6 +7,8 @@ import { humanitiesQuestionnaires } from "@/data/ap-humanities-practice";
 import { apPracticeExpansion } from "@/data/ap-practice-expansion";
 import { apPracticeBySubject } from "@/data/ap-practice-by-subject";
 import { apPracticeSetB } from "@/data/ap-practice-set-b";
+import { apPracticeSetC } from "@/data/ap-practice-set-c";
+import { apPracticeSetD } from "@/data/ap-practice-set-d";
 import managed from "@/data/managed-content.json";
 
 /**
@@ -526,6 +528,8 @@ export const questionnaires: Questionnaire[] = [
   ...apPracticeExpansion,
   ...apPracticeBySubject,
   ...apPracticeSetB,
+  ...apPracticeSetC,
+  ...apPracticeSetD,
   ...(((managed as { questionnaires?: Questionnaire[] }).questionnaires ||
     []) as Questionnaire[]),
 ];
