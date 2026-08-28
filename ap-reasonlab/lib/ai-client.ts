@@ -27,6 +27,7 @@ import {
   type SiteModelChoice,
 } from "@/lib/ai-site-models";
 import { stripReasoningTrace } from "@/lib/ai-reasoning-strip";
+import { callOpenAiCompatibleStream } from "@/lib/ai-openai-stream";
 
 export type { AiProvider, SiteModelChoice } from "@/lib/ai-site-models";
 export { SITE_INSTANT_MODELS } from "@/lib/ai-site-models";
@@ -55,6 +56,8 @@ export type ChatJsonResult = {
   model: string;
   note: string;
 };
+
+export type StreamTokenCallback = (delta: string, fullText: string) => void;
 
 function modelsForTier(tier: CloudSpendTier, provider: AiProvider): string {
   if (tier === "public") {
@@ -558,4 +561,317 @@ export function parseAiProvider(value: unknown): AiProvider {
 export function parseSiteModelChoice(value: unknown): SiteModelChoice {
   if (value === "auto" || value === undefined || value === null || value === "") return "auto";
   return parseAiProvider(value);
+}
+
+async function callGroqStream(
+  apiKey: string,
+  system: string,
+  user: string,
+  maxTokens: number,
+  onToken: StreamTokenCallback,
+  signal?: AbortSignal,
+  model = GROQ_INSTANT_MODEL
+): Promise<ChatJsonResult> {
+  return callOpenAiCompatibleStream({
+    url: "https://api.groq.com/openai/v1/chat/completions",
+    apiKey,
+    model,
+    system,
+    user,
+    maxTokens,
+    provider: "groq",
+    onToken,
+    signal,
+  });
+}
+
+async function callGroqStreamWithFallback(
+  apiKey: string,
+  system: string,
+  user: string,
+  maxTokens: number,
+  onToken: StreamTokenCallback,
+  signal?: AbortSignal,
+  preferredModel = GROQ_INSTANT_MODEL
+): Promise<ChatJsonResult> {
+  try {
+    return await callGroqStream(apiKey, system, user, maxTokens, onToken, signal, preferredModel);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    if (!/groq API error (400|404|410)/i.test(message)) throw error;
+    const fallback =
+      preferredModel === GROQ_INSTANT_MODEL ? GROQ_FALLBACK_MODEL : GROQ_INSTANT_MODEL;
+    return callGroqStream(apiKey, system, user, maxTokens, onToken, signal, fallback);
+  }
+}
+
+function buildSiteStreamChannels(
+  system: string,
+  user: string,
+  maxTokens: number,
+  tier: "public" | "author",
+  onToken: StreamTokenCallback,
+  signal?: AbortSignal
+): Array<{ name: AiProvider; run: () => Promise<ChatJsonResult> }> {
+  const groqKey = process.env.GROQ_API_KEY;
+  const githubModelsKey = process.env.CONTENT_GITHUB_TOKEN;
+  const kimiKey = process.env.KIMI_API_KEY || process.env.MOONSHOT_API_KEY;
+  const openRouterKey = process.env.OPENROUTER_API_KEY;
+  const deepSeekKey = process.env.DEEPSEEK_API_KEY;
+  const badge = tier === "author" ? "Advanced Default" : "Instant (lowest)";
+  const channels: Array<{ name: AiProvider; run: () => Promise<ChatJsonResult> }> = [];
+
+  if (groqKey) {
+    const model = modelsForTier(tier, "groq");
+    channels.push({
+      name: "groq",
+      run: () =>
+        callGroqStreamWithFallback(groqKey, system, user, maxTokens, onToken, signal, model).then(
+          (r) => ({ ...r, note: `${badge} · Groq stream (${r.model}).` })
+        ),
+    });
+  }
+  if (githubModelsKey) {
+    const model = modelsForTier(tier, "githubmodels");
+    channels.push({
+      name: "githubmodels",
+      run: () =>
+        callOpenAiCompatibleStream({
+          url: "https://models.github.ai/inference/chat/completions",
+          apiKey: githubModelsKey,
+          model,
+          system,
+          user,
+          maxTokens,
+          provider: "githubmodels",
+          extraHeaders: {
+            Accept: "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+          },
+          onToken,
+          signal,
+          includeResponseFormat: true,
+        }).then((r) => ({ ...r, note: `${badge} · GitHub Models stream (${model}).` })),
+    });
+  }
+  if (kimiKey) {
+    const model = modelsForTier(tier, "kimi");
+    const bases = Array.from(
+      new Set([KIMI_API_BASE, "https://api.moonshot.cn/v1", "https://api.moonshot.ai/v1"])
+    );
+    channels.push({
+      name: "kimi",
+      run: async () => {
+        let lastError: Error | null = null;
+        for (const base of bases) {
+          try {
+            const result = await callOpenAiCompatibleStream({
+              url: `${base}/chat/completions`,
+              apiKey: kimiKey,
+              model,
+              system,
+              user,
+              maxTokens,
+              provider: "kimi",
+              onToken,
+              signal,
+            });
+            return { ...result, note: `${badge} · Kimi stream (${model}).` };
+          } catch (error) {
+            lastError = error instanceof Error ? error : new Error(String(error));
+            if (!/kimi API error (401|403|404)/i.test(lastError.message)) throw lastError;
+          }
+        }
+        throw lastError || new Error("Kimi stream failed");
+      },
+    });
+  }
+  if (openRouterKey) {
+    const model = modelsForTier(tier, "openrouter");
+    channels.push({
+      name: "openrouter",
+      run: () =>
+        callOpenAiCompatibleStream({
+          url: "https://openrouter.ai/api/v1/chat/completions",
+          apiKey: openRouterKey,
+          model,
+          system,
+          user,
+          maxTokens,
+          provider: "openrouter",
+          extraHeaders: {
+            "HTTP-Referer": process.env.OPENROUTER_SITE_URL || "https://results-academic.vercel.app",
+            "X-Title": process.env.OPENROUTER_APP_NAME || "Knowledge Explorer",
+          },
+          onToken,
+          signal,
+        }).then((r) => ({ ...r, note: `${badge} · OpenRouter stream (${model}).` })),
+    });
+  }
+  if (deepSeekKey) {
+    const model = modelsForTier(tier, "deepseek");
+    channels.push({
+      name: "deepseek",
+      run: () =>
+        callOpenAiCompatibleStream({
+          url: "https://api.deepseek.com/chat/completions",
+          apiKey: deepSeekKey,
+          model,
+          system,
+          user,
+          maxTokens,
+          provider: "deepseek",
+          onToken,
+          signal,
+        }).then((r) => ({ ...r, note: `${badge} · DeepSeek stream (${model}).` })),
+    });
+  }
+
+  return channels;
+}
+
+/** Stream tokens from OpenAI-compatible providers; parse JSON at end. Gemini uses non-stream fallback. */
+export async function runChatJsonStream(options: {
+  system: string;
+  user: string;
+  maxTokens?: number;
+  userApiKey?: string;
+  provider?: AiProvider;
+  siteModel?: SiteModelChoice;
+  onToken: StreamTokenCallback;
+  signal?: AbortSignal;
+}): Promise<ChatJsonResult> {
+  const userKey = options.userApiKey?.trim();
+  const tier: CloudSpendTier = userKey ? "byok" : await resolveSiteCloudTier();
+  const maxTokens = capMaxTokens(options.maxTokens, tier);
+  const onToken = options.onToken;
+  const signal = options.signal;
+
+  if (userKey) {
+    const provider = options.provider || "groq";
+    const model = modelsForTier("byok", provider);
+    if (provider === "githubmodels") {
+      return callOpenAiCompatibleStream({
+        url: "https://models.github.ai/inference/chat/completions",
+        apiKey: userKey,
+        model,
+        system: options.system,
+        user: options.user,
+        maxTokens,
+        provider: "githubmodels",
+        extraHeaders: {
+          Accept: "application/vnd.github+json",
+          "X-GitHub-Api-Version": "2022-11-28",
+        },
+        onToken,
+        signal,
+      });
+    }
+    if (provider === "kimi") {
+      return callOpenAiCompatibleStream({
+        url: `${KIMI_API_BASE}/chat/completions`,
+        apiKey: userKey,
+        model,
+        system: options.system,
+        user: options.user,
+        maxTokens,
+        provider: "kimi",
+        onToken,
+        signal,
+      });
+    }
+    if (provider === "openrouter") {
+      return callOpenAiCompatibleStream({
+        url: "https://openrouter.ai/api/v1/chat/completions",
+        apiKey: userKey,
+        model,
+        system: options.system,
+        user: options.user,
+        maxTokens,
+        provider: "openrouter",
+        onToken,
+        signal,
+      });
+    }
+    if (provider === "deepseek") {
+      return callOpenAiCompatibleStream({
+        url: "https://api.deepseek.com/chat/completions",
+        apiKey: userKey,
+        model,
+        system: options.system,
+        user: options.user,
+        maxTokens,
+        provider: "deepseek",
+        onToken,
+        signal,
+      });
+    }
+    if (provider === "gemini") {
+      const result = await callGeminiJson(userKey, options.system, options.user, maxTokens, model);
+      const raw = JSON.stringify(result.data);
+      onToken(raw, raw);
+      return result;
+    }
+    return callGroqStreamWithFallback(
+      userKey,
+      options.system,
+      options.user,
+      maxTokens,
+      onToken,
+      signal,
+      model
+    );
+  }
+
+  const siteTier = tier === "author" ? "author" : "public";
+  const channels = buildSiteStreamChannels(
+    options.system,
+    options.user,
+    maxTokens,
+    siteTier,
+    onToken,
+    signal
+  );
+  const siteModel = options.siteModel || "auto";
+
+  if (siteModel !== "auto") {
+    const chosen = channels.find((channel) => channel.name === siteModel);
+    if (!chosen) {
+      throw new Error(
+        `Official model “${siteModel}” is not configured on this site (missing API key). Pick Auto or another model.`
+      );
+    }
+    return chosen.run();
+  }
+
+  const errors: string[] = [];
+  for (const channel of channels) {
+    try {
+      return await channel.run();
+    } catch (e) {
+      errors.push(`${channel.name}: ${e instanceof Error ? e.message : "failed"}`);
+    }
+  }
+
+  // Gemini-only or no OpenAI-compatible stream support — fall back to buffered JSON.
+  const geminiKey = process.env.GEMINI_API_KEY;
+  if (geminiKey) {
+    const model = modelsForTier(siteTier, "gemini");
+    const result = await callGeminiJson(
+      geminiKey,
+      options.system,
+      options.user,
+      maxTokens,
+      model
+    );
+    const raw = JSON.stringify(result.data);
+    onToken(raw, raw);
+    return result;
+  }
+
+  throw new Error(
+    errors.length
+      ? `All AI stream channels failed: ${errors.join(" | ")}`
+      : "No site AI keys configured for streaming."
+  );
 }

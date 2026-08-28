@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { asStringList, parseAiProvider, parseSiteModelChoice, runChatJson } from "@/lib/ai-client";
 import { codingAiSystem } from "@/lib/ai-coding-prompt";
 import { appendAiSiteContext, buildServerAiSiteContext } from "@/lib/ai-site-context-server";
+import { createCloudAiSseResponse } from "@/lib/ai-route-stream";
 
 function mockCoding(language: string, task: string) {
   return {
@@ -17,6 +18,23 @@ function mockCoding(language: string, task: string) {
       : "",
     aiMayBeWrong: "Demo advice is generic — verify with docs or a teacher.",
     note: "⚠️ Mock demo — no website AI key configured. Switch to Local AI or add an API key.",
+  };
+}
+
+function mapCodingDone(
+  data: Record<string, unknown>,
+  meta: { note: string; model: string; provider: string }
+) {
+  return {
+    refused: Boolean(data.refused),
+    reply: String(data.reply || data.raw || "").trim(),
+    steps: asStringList(data.steps).slice(0, 6),
+    snippet: String(data.snippet || "").trim(),
+    aiMayBeWrong:
+      String(data.aiMayBeWrong || "AI coding advice may be wrong. Test and verify.").trim(),
+    note: meta.note,
+    model: meta.model,
+    provider: meta.provider,
   };
 }
 
@@ -49,10 +67,23 @@ ${code || "(none)"}
 
 Return Coding AI JSON.`;
 
+    const siteSearch = body.siteSearch !== false;
+    const siteContext = await buildServerAiSiteContext(`${language}\n${task}\n${code}`, siteSearch, "code");
+    const userWithSite = appendAiSiteContext(user, siteContext);
+
+    if (body.stream === true) {
+      return createCloudAiSseResponse({
+        system: codingAiSystem(focus),
+        user: userWithSite,
+        maxTokens: 4096,
+        userApiKey: userApiKey || undefined,
+        provider,
+        siteModel,
+        mapDone: mapCodingDone,
+      });
+    }
+
     try {
-      const siteSearch = body.siteSearch !== false;
-      const siteContext = await buildServerAiSiteContext(`${language}\n${task}\n${code}`, siteSearch, "code");
-      const userWithSite = appendAiSiteContext(user, siteContext);
       const result = await runChatJson({
         system: codingAiSystem(focus),
         user: userWithSite,
@@ -61,18 +92,7 @@ Return Coding AI JSON.`;
         provider,
         siteModel,
       });
-      const data = result.data;
-      return NextResponse.json({
-        refused: Boolean(data.refused),
-        reply: String(data.reply || data.raw || "").trim(),
-        steps: asStringList(data.steps).slice(0, 6),
-        snippet: String(data.snippet || "").trim(),
-        aiMayBeWrong:
-          String(data.aiMayBeWrong || "AI coding advice may be wrong. Test and verify.").trim(),
-        note: result.note,
-        model: result.model,
-        provider: result.provider,
-      });
+      return NextResponse.json(mapCodingDone(result.data, result));
     } catch (error) {
       if (userApiKey) {
         return NextResponse.json(

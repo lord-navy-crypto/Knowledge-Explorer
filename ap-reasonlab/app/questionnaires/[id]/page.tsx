@@ -25,6 +25,7 @@ export default function QuestionnaireDetailPage() {
   const [changeCode, setChangeCode] = useState("");
   const [itemPrompt, setItemPrompt] = useState("");
   const [itemHint, setItemHint] = useState("");
+  const [itemAnswerKey, setItemAnswerKey] = useState("");
   const [saving, setSaving] = useState(false);
   const [note, setNote] = useState("");
 
@@ -78,6 +79,7 @@ export default function QuestionnaireDetailPage() {
           item: {
             prompt: itemPrompt.trim(),
             hint: itemHint.trim() || "Try yourself first.",
+            answerKey: itemAnswerKey.trim() || undefined,
             format: "concept_check",
           },
         }),
@@ -90,6 +92,7 @@ export default function QuestionnaireDetailPage() {
       if (updated) setQuiz(updated);
       setItemPrompt("");
       setItemHint("");
+      setItemAnswerKey("");
       setNote("Item added.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Save failed");
@@ -171,7 +174,8 @@ export default function QuestionnaireDetailPage() {
         <section className="card space-y-3 border-brand-200">
           <h2 className="font-semibold text-slate-900">+ Add item to this set</h2>
           <p className="text-sm text-slate-600">
-            Paste an original FRQ prompt (no College Board text). Hints only — no answer key.
+            Paste an original FRQ prompt (no College Board text). Hints always show; optional sample
+            answer reveals only when you click Reveal.
           </p>
           <form onSubmit={addItem} className="space-y-3">
             <MarkdownLatexField
@@ -190,6 +194,15 @@ export default function QuestionnaireDetailPage() {
               minHeightClass="min-h-[5rem]"
               placeholder="Strategy hint…"
               showPreview={Boolean(itemHint.trim())}
+            />
+            <MarkdownLatexField
+              label="Sample answer (optional, hidden until reveal)"
+              help="Self-check only — students must click Reveal sample answer."
+              value={itemAnswerKey}
+              onChange={setItemAnswerKey}
+              minHeightClass="min-h-[5rem]"
+              placeholder="Optional sample answer for self-check…"
+              showPreview={Boolean(itemAnswerKey.trim())}
             />
             <input
               type="password"

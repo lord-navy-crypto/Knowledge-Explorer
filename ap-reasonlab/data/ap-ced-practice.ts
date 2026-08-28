@@ -25,6 +25,7 @@ export const apCedPractice: Questionnaire[] = [
         prompt:
           "Which has the larger first ionization energy: Na or Mg? Explain in one sentence using periodic trends.",
         hints: ["Same period: higher Z_eff generally increases IE.", "Mg has one more proton in same shell."],
+        answerKey: "Mg — same period, higher effective nuclear charge → harder to remove an electron.",
       },
       {
         id: "chem-ced-e2",
@@ -36,6 +37,8 @@ export const apCedPractice: Questionnaire[] = [
         visibleSteps: ["Write target reaction.", "Manipulate given equations and add ΔH values."],
         blankSteps: ["ΔH = ______ kJ/mol"],
         hints: ["Reverse second equation if needed.", "Watch sign when reversing."],
+        blankAnswers: ["+110 kJ/mol"],
+        answerKey: "Reverse CO₂ formation: CO₂ → CO + ½O₂, ΔH = +283. Add to first: −394 + 283 = −111 kJ/mol for C + ½O₂ → CO (sign convention may vary by ±).",
       },
       {
         id: "chem-ced-e3",
@@ -50,6 +53,8 @@ export const apCedPractice: Questionnaire[] = [
           "D) H₂SO₄ and K₂SO₄",
         ],
         hints: ["Need weak acid + conjugate base.", "Strong acids/bases do not buffer."],
+        mcqAnswer: 1,
+        answerKey: "B) weak acid + conjugate base.",
       },
       {
         id: "chem-ced-e4",
@@ -60,6 +65,8 @@ export const apCedPractice: Questionnaire[] = [
           "In a galvanic cell with Zn(s) | Zn²⁺ || Cu²⁺ | Cu(s), which electrode is the anode and which ion is reduced?",
         blankSteps: ["Anode: ______", "Ion reduced: ______"],
         hints: ["Zn loses electrons (oxidation).", "Cu²⁺ gains electrons."],
+        blankAnswers: ["Zn (anode)", "Cu²⁺"],
+        answerKey: "Anode = Zn (oxidation); Cu²⁺ is reduced at the cathode.",
       },
     ],
   },
@@ -83,6 +90,8 @@ export const apCedPractice: Questionnaire[] = [
           "A pea plant with yellow seeds (dominant) is testcrossed with green. Half the offspring are yellow, half green. What was the parent genotype?",
         blankSteps: ["Genotype = ______"],
         hints: ["50/50 ratio suggests heterozygous dominant.", "Homozygous dominant would give all yellow."],
+        blankAnswers: ["Yy (heterozygous)"],
+        answerKey: "Yy — testcross with yy gives 50% Yy (yellow) and 50% yy (green).",
       },
       {
         id: "bio-ced-e2",
@@ -92,6 +101,7 @@ export const apCedPractice: Questionnaire[] = [
         prompt:
           "A population is in Hardy–Weinberg equilibrium with p = 0.6 for allele A. What is the expected frequency of genotype Aa?",
         hints: ["2pq for heterozygote.", "q = 1 − p."],
+        answerKey: "2pq = 2(0.6)(0.4) = 0.48",
       },
       {
         id: "bio-ced-e3",
@@ -101,6 +111,8 @@ export const apCedPractice: Questionnaire[] = [
         prompt: "If producers have 10,000 kJ/m² available, about how much energy reaches tertiary consumers (~10% rule)?",
         choices: ["A) 10,000 kJ", "B) 1,000 kJ", "C) 100 kJ", "D) 10 kJ"],
         hints: ["Each level ~10% of level below.", "Three transfers: prod → 1° → 2° → 3°."],
+        mcqAnswer: 3,
+        answerKey: "D) ~10 kJ (10,000 × 0.1³).",
       },
       {
         id: "bio-ced-e4",
@@ -111,6 +123,8 @@ export const apCedPractice: Questionnaire[] = [
           "Name two events in meiosis I that increase genetic variation among gametes.",
         blankSteps: ["Event 1: ______", "Event 2: ______"],
         hints: ["Crossing over in prophase I.", "Independent assortment at metaphase I."],
+        blankAnswers: ["Crossing over (prophase I)", "Independent assortment (metaphase I)"],
+        answerKey: "Crossing over and independent assortment shuffle alleles into new combinations.",
       },
     ],
   },
@@ -133,6 +147,7 @@ export const apCedPractice: Questionnaire[] = [
         prompt:
           "Low serotonin activity is often linked to which domain of behavior? (mood, balance, muscle contraction, or vision)",
         hints: ["Serotonin relates to mood and sleep.", "Acetylcholine → muscle at neuromuscular junction."],
+        answerKey: "Mood (and sleep regulation).",
       },
       {
         id: "psych-ced-e2",
@@ -143,6 +158,8 @@ export const apCedPractice: Questionnaire[] = [
           "A student learns vocabulary in a quiet library but takes the test in a noisy gym. How might context-dependent memory affect performance?",
         blankSteps: ["Predicted effect: ______"],
         hints: ["Mismatch of learning and test context can hurt recall.", "State/context-dependent memory."],
+        blankAnswers: ["Lower recall / performance"],
+        answerKey: "Context mismatch often lowers recall compared with matching study and test environments.",
       },
       {
         id: "psych-ced-e3",
@@ -158,6 +175,8 @@ export const apCedPractice: Questionnaire[] = [
           "D) mere exposure effect",
         ],
         hints: ["Overemphasize disposition, ignore situation."],
+        mcqAnswer: 0,
+        answerKey: "A) fundamental attribution error",
       },
       {
         id: "psych-ced-e4",
@@ -167,6 +186,7 @@ export const apCedPractice: Questionnaire[] = [
         prompt:
           "A child does chores to stop parents' nagging. Is this positive reinforcement, negative reinforcement, punishment, or extinction?",
         hints: ["Behavior increases.", "Aversive stimulus (nagging) is removed."],
+        answerKey: "Negative reinforcement — behavior increases because an aversive stimulus is removed.",
       },
     ],
   },
@@ -191,6 +211,8 @@ export const apCedPractice: Questionnaire[] = [
         visibleSteps: ["Use doubling time ≈ 70/r with r in percent."],
         blankSteps: ["Doubling time ≈ ______ years"],
         hints: ["70 / 2.1 ≈ 33 years."],
+        blankAnswers: ["≈ 33 years"],
+        answerKey: "70 ÷ 2.1 ≈ 33 years.",
       },
       {
         id: "apes-ced-e2",
@@ -200,6 +222,7 @@ export const apCedPractice: Questionnaire[] = [
         prompt:
           "Why does methane (CH₄) contribute strongly to warming despite lower atmospheric concentration than CO₂?",
         hints: ["Compare per-molecule warming potential.", "Methane is potent but shorter-lived."],
+        answerKey: "Higher per-molecule greenhouse effect (GWP) despite lower concentration.",
       },
       {
         id: "apes-ced-e3",
@@ -209,6 +232,8 @@ export const apCedPractice: Questionnaire[] = [
         prompt: "DDT is found at highest concentration in which trophic level?",
         choices: ["A) Producers", "B) Primary consumers", "C) Secondary consumers", "D) Top predators"],
         hints: ["Fat-soluble toxins increase up the food chain."],
+        mcqAnswer: 3,
+        answerKey: "D) Top predators — biomagnification concentrates DDT.",
       },
     ],
   },
@@ -231,6 +256,7 @@ export const apCedPractice: Questionnaire[] = [
         prompt:
           "Give one push factor and one pull factor that might move rural workers to a primate city.",
         hints: ["Push: limited jobs, drought.", "Pull: wages, services."],
+        answerKey: "Example push: crop failure; pull: factory wages in primate city.",
       },
       {
         id: "hug-ced-e2",
@@ -241,6 +267,8 @@ export const apCedPractice: Questionnaire[] = [
           "Why might a luxury department store locate in the CBD while a warehouse locates farther out?",
         blankSteps: ["CBD reason: ______", "Warehouse reason: ______"],
         hints: ["Accessibility vs land cost tradeoff.", "Retail benefits from foot traffic."],
+        blankAnswers: ["High accessibility / foot traffic", "Lower land cost / space needs"],
+        answerKey: "Retail pays premium for CBD access; warehouses trade distance for cheaper land.",
       },
       {
         id: "hug-ced-e3",
@@ -255,6 +283,8 @@ export const apCedPractice: Questionnaire[] = [
           "D) Total fertility rate",
         ],
         hints: ["Human Development Index."],
+        mcqAnswer: 1,
+        answerKey: "B) HDI",
       },
     ],
   },
@@ -278,6 +308,8 @@ export const apCedPractice: Questionnaire[] = [
           "int[] scores = {10, 20, 30}; What is scores[scores.length - 1] and what happens if you access scores[3]?",
         blankSteps: ["scores[scores.length - 1] = ______", "scores[3]: ______"],
         hints: ["Last index is length−1 = 2.", "Index 3 is out of bounds."],
+        blankAnswers: ["30", "ArrayIndexOutOfBoundsException"],
+        answerKey: "scores[2] = 30; scores[3] throws ArrayIndexOutOfBoundsException.",
       },
       {
         id: "csa-ced-e2",
@@ -287,6 +319,7 @@ export const apCedPractice: Questionnaire[] = [
         prompt:
           "Why does factorial(n) need if (n <= 1) return 1; before the recursive call?",
         hints: ["Without base case, infinite recursion.", "Stack overflow."],
+        answerKey: "Stops recursion at n ≤ 1; otherwise infinite calls overflow the stack.",
       },
       {
         id: "csa-ced-e3",
@@ -296,6 +329,8 @@ export const apCedPractice: Questionnaire[] = [
         prompt: "Animal a = new Dog(); a.speak(); // Dog overrides speak. Which method runs?",
         choices: ["A) Animal.speak()", "B) Dog.speak()", "C) Compile error", "D) Runtime error always"],
         hints: ["Dynamic dispatch uses actual object type."],
+        mcqAnswer: 1,
+        answerKey: "B) Dog.speak() — runtime polymorphism.",
       },
     ],
   },
@@ -318,6 +353,7 @@ export const apCedPractice: Questionnaire[] = [
         prompt:
           "Why is PNG preferred over heavy JPEG for a diagram with sharp text edges?",
         hints: ["Lossless preserves exact pixels.", "JPEG lossy blurs edges."],
+        answerKey: "PNG is lossless — sharp text/diagram edges stay crisp; JPEG compression blurs edges.",
       },
       {
         id: "csp-ced-e2",
@@ -328,6 +364,8 @@ export const apCedPractice: Questionnaire[] = [
           "List the comparisons to find 7 in sorted [2, 5, 7, 11, 14] using binary search.",
         blankSteps: ["Comparison sequence: ______"],
         hints: ["Check middle (7) first — found immediately.", "Or trace: mid=11, then mid=5, then 7."],
+        blankAnswers: ["Compare to 7 at middle — found on first step"],
+        answerKey: "Middle element is 7 — found immediately (or trace left/right if starting elsewhere).",
       },
       {
         id: "csp-ced-e3",
@@ -337,6 +375,7 @@ export const apCedPractice: Questionnaire[] = [
         prompt:
           "How can unrepresentative training data cause unfair facial recognition errors?",
         hints: ["Model learns patterns from training set.", "Underrepresented faces → higher error rates."],
+        answerKey: "Training set skew → model underfits minority groups → higher false negatives for them.",
       },
     ],
   },
@@ -361,6 +400,8 @@ export const apCedPractice: Questionnaire[] = [
         visibleSteps: ["Write τ = Iα.", "Substitute I = ½MR²."],
         blankSteps: ["α = ______ rad/s²"],
         hints: ["I = 0.5 × 2 × 0.25 = 0.25 kg·m².", "α = 4/0.25 = 16 rad/s²."],
+        blankAnswers: ["16 rad/s²"],
+        answerKey: "I = ½MR² = 0.25 kg·m²; α = τ/I = 4/0.25 = 16 rad/s².",
       },
       {
         id: "physc-m-e2",
@@ -370,6 +411,7 @@ export const apCedPractice: Questionnaire[] = [
         prompt:
           "A sphere rolls without slipping down a ramp. Which energy forms are present at the bottom?",
         hints: ["Both ½mv² and ½Iω².", "No slipping: v = rω."],
+        answerKey: "Translational KE (½mv²) and rotational KE (½Iω²).",
       },
     ],
   },
@@ -394,6 +436,8 @@ export const apCedPractice: Questionnaire[] = [
         visibleSteps: ["R_eq = R₁ + R₂.", "I = V / R_eq."],
         blankSteps: ["I = ______ A"],
         hints: ["R_eq = 12 Ω.", "I = 1 A."],
+        blankAnswers: ["1 A"],
+        answerKey: "R_eq = 12 Ω; I = V/R = 12/12 = 1 A.",
       },
       {
         id: "physc-em-e2",
@@ -403,6 +447,7 @@ export const apCedPractice: Questionnaire[] = [
         prompt:
           "A magnet approaches a coil. Does the induced current create a field that attracts or repels the magnet?",
         hints: ["Induced field opposes increasing flux.", "Repels approaching north pole."],
+        answerKey: "Repels — induced current creates field opposing the approaching magnet (Lenz's law).",
       },
     ],
   },
@@ -427,6 +472,8 @@ export const apCedPractice: Questionnaire[] = [
         visibleSteps: ["Compute dx/dt and dy/dt.", "Evaluate ratio at t = 1."],
         blankSteps: ["dy/dx at t=1 = ______"],
         hints: ["dx/dt = 2t, dy/dt = 3t².", "At t=1: 3/2."],
+        blankAnswers: ["3/2"],
+        answerKey: "dy/dx = (3t²)/(2t) = 3t/2 → 3/2 at t = 1.",
       },
       {
         id: "calc-bc-e2",
@@ -438,6 +485,8 @@ export const apCedPractice: Questionnaire[] = [
         visibleSteps: ["A = ½∫₀^{2π} 4 dθ."],
         blankSteps: ["Area = ______"],
         hints: ["Integral of 4 over full circle.", "Area = 4π."],
+        blankAnswers: ["4π"],
+        answerKey: "A = ½∫₀^{2π} 4 dθ = 4π.",
       },
       {
         id: "calc-bc-e3",
@@ -447,6 +496,7 @@ export const apCedPractice: Questionnaire[] = [
         prompt:
           "If r(t) = ⟨3t, t²⟩, what is the speed at t = 2?",
         hints: ["v = ⟨3, 2t⟩.", "Speed = √(9 + 16) = 5 at t=2."],
+        answerKey: "Speed = |v(2)| = √(3² + 4²) = 5.",
       },
     ],
   },
@@ -469,6 +519,7 @@ export const apCedPractice: Questionnaire[] = [
         prompt:
           "Name one technology that facilitated Indian Ocean trade and one cultural exchange along Silk Roads.",
         hints: ["Lateen sails, monsoon knowledge.", "Buddhism, Islam, paper."],
+        answerKey: "Example: lateen sails; cultural exchange: spread of Buddhism along Silk Roads.",
       },
       {
         id: "whap-ced-e2",
@@ -479,6 +530,8 @@ export const apCedPractice: Questionnaire[] = [
           "How did Enlightenment ideas about natural rights appear in one Atlantic revolution's declaration or constitution?",
         blankSteps: ["Example + connection: ______"],
         hints: ["US Declaration, French Declaration of Rights.", "Link specific phrase to Enlightenment thinker."],
+        blankAnswers: ["e.g. 'unalienable rights' ↔ Locke"],
+        answerKey: "Example: US Declaration 'unalienable rights' reflects Locke's natural rights ideas.",
       },
       {
         id: "whap-ced-e3",
@@ -488,6 +541,7 @@ export const apCedPractice: Questionnaire[] = [
         prompt:
           "Why was the Cold War called 'cold' despite many regional conflicts?",
         hints: ["No direct large-scale US–USSR war.", "Proxy conflicts in Korea, Vietnam, etc."],
+        answerKey: "Superpowers avoided direct war; fought indirectly through allies and proxies.",
       },
     ],
   },
@@ -511,6 +565,8 @@ export const apCedPractice: Questionnaire[] = [
           "An ideal gas is compressed isothermally. Is ΔU zero, positive, or negative? Is Q positive or negative?",
         blankSteps: ["ΔU = ______", "Q = ______"],
         hints: ["Isothermal ideal gas: ΔU = 0.", "Work done ON gas → Q = W > 0 leaves gas."],
+        blankAnswers: ["0", "positive (heat enters gas)"],
+        answerKey: "Isothermal ideal gas: ΔU = 0; compression adds work so Q > 0 into gas.",
       },
       {
         id: "phys2-ced-e2",
@@ -520,6 +576,7 @@ export const apCedPractice: Questionnaire[] = [
         prompt:
           "Light goes from air (n≈1) to water (n≈1.33) at 30° to normal. Does it bend toward or away from the normal?",
         hints: ["Slower medium → bend toward normal.", "n increases → angle in water smaller."],
+        answerKey: "Toward the normal — light slows in denser medium (higher n).",
       },
     ],
   },

@@ -71,7 +71,7 @@ import {
   type ContextBudgetMode,
 } from "@/lib/ai-context-budget";
 import { parsePracticeItems } from "@/lib/ai-practice-queue";
-import { fetchJsonWithAbort, revealTextProgressively } from "@/lib/ai-stream-reveal";
+import { fetchCloudAiWithAbort } from "@/lib/ai-stream-reveal";
 import { guidePromptsForSubject } from "@/lib/ai-guide-specials";
 import {
   encodeSpecialPrompt,
@@ -674,20 +674,6 @@ export default function UnifiedAiPanel({
     }
   }
 
-  async function paintCloudReply(
-    fullText: string,
-    onToken: ((token: string, fullText: string) => void) | undefined,
-    signal?: AbortSignal
-  ) {
-    if (!onToken || !fullText) return fullText;
-    await revealTextProgressively(fullText, (partial) => onToken("", partial), {
-      signal,
-      chunkSize: 28,
-      chunkMs: 12,
-    });
-    return fullText;
-  }
-
   async function runLocal(
     system: string,
     user: string,
@@ -790,13 +776,16 @@ export default function UnifiedAiPanel({
           aiMayBeWrong: "Local AI may be wrong — verify with your notes.",
         });
       }
-      const { ok, data } = await fetchJsonWithAbort(
+      const { ok, data } = await fetchCloudAiWithAbort(
         "/api/hints",
         {
           subject,
           question: stampedUser,
           notes: notes.trim(),
           ...localAI.cloudRequestFields,
+        },
+        (display) => {
+          if (onToken && display) onToken("", display);
         },
         signal
       );
@@ -825,7 +814,6 @@ export default function UnifiedAiPanel({
       ];
       const equations = finalizeAiAssistantMath("", lifted).equations;
       const text = formatAssistantText({ lists });
-      await paintCloudReply(text, onToken, signal);
       return {
         id: `a-${Date.now()}`,
         role: "assistant",
@@ -850,14 +838,16 @@ export default function UnifiedAiPanel({
           meta: "Site guide · Local",
         });
       }
-      const { ok, data } = await fetchJsonWithAbort(
+      const { ok, data } = await fetchCloudAiWithAbort(
         "/api/ai/guide",
         { question: stampedUser, ...localAI.cloudRequestFields },
+        (display) => {
+          if (onToken && display) onToken("", display);
+        },
         signal
       );
       if (!ok) throw new Error(String(data.error || "Guide failed"));
       const text = String(data.reply || "");
-      await paintCloudReply(text, onToken, signal);
       return {
         id: `a-${Date.now()}`,
         role: "assistant",
@@ -891,7 +881,7 @@ export default function UnifiedAiPanel({
           saveAsPractice: apTask === "generate-questions",
         });
       }
-      const { ok, data } = await fetchJsonWithAbort(
+      const { ok, data } = await fetchCloudAiWithAbort(
         "/api/ai/concept",
         {
           subject,
@@ -902,6 +892,9 @@ export default function UnifiedAiPanel({
           mode,
           question: stampedUser,
           ...localAI.cloudRequestFields,
+        },
+        (display) => {
+          if (onToken && display) onToken("", display);
         },
         signal
       );
@@ -914,7 +907,6 @@ export default function UnifiedAiPanel({
         data.equations as AiEquation[] | undefined,
         data.formulas as string[] | undefined
       );
-      await paintCloudReply(finalized.prose, onToken, signal);
       return {
         id: `a-${Date.now()}`,
         role: "assistant",
@@ -961,13 +953,16 @@ export default function UnifiedAiPanel({
           aiMayBeWrong: "Local AI language advice may be wrong — verify important points.",
         };
       }
-      const { ok, data } = await fetchJsonWithAbort(
+      const { ok, data } = await fetchCloudAiWithAbort(
         "/api/ai/english",
         {
           mode,
           target: englishTarget,
           input: englishUserCloud,
           ...localAI.cloudRequestFields,
+        },
+        (display) => {
+          if (onToken && display) onToken("", display);
         },
         signal
       );
@@ -1002,7 +997,6 @@ export default function UnifiedAiPanel({
             : "**Translation**";
         const body = [directionLine, translation || "(No translation returned.)"].join("\n\n");
         const cleanBody = normalizeAiDialogueText(body);
-        await paintCloudReply(cleanBody, onToken, signal);
         return {
           id: `a-${Date.now()}`,
           role: "assistant",
@@ -1030,7 +1024,6 @@ export default function UnifiedAiPanel({
             ? `**Next practice**\n${data.practicePrompt}`
             : "",
       });
-      await paintCloudReply(text, onToken, signal);
       return {
         id: `a-${Date.now()}`,
         role: "assistant",
@@ -1081,7 +1074,7 @@ export default function UnifiedAiPanel({
         aiMayBeWrong: "Local AI coding advice may be wrong — test and verify.",
       };
     }
-    const { ok, data } = await fetchJsonWithAbort(
+    const { ok, data } = await fetchCloudAiWithAbort(
       "/api/ai/coding",
       {
         language,
@@ -1089,6 +1082,9 @@ export default function UnifiedAiPanel({
         task: `${historyPrefix}Latest student message:\n${taskText}${runBlock}`,
         code: codePaste,
         ...localAI.cloudRequestFields,
+      },
+      (display) => {
+        if (onToken && display) onToken("", display);
       },
       signal
     );
@@ -1105,7 +1101,6 @@ export default function UnifiedAiPanel({
       snippet: String(data.snippet || ""),
       snippetAsCode: true,
     });
-    await paintCloudReply(text, onToken, signal);
     return {
       id: `a-${Date.now()}`,
       role: "assistant",

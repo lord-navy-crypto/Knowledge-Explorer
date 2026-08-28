@@ -45,6 +45,12 @@ export interface QuestionnaireItem {
   conceptIntro?: string;
   /** Future: 1 = intro, 2 = standard, 3 = challenge */
   difficultyTier?: DifficultyTier;
+  /** Reveal after attempt — sample / instructor reference, not College Board keys */
+  answerKey?: string;
+  /** MCQ: 0-based index into choices */
+  mcqAnswer?: number;
+  /** FRQ: sample fills aligned with blankSteps (same order) */
+  blankAnswers?: string[];
 }
 
 export interface Questionnaire {

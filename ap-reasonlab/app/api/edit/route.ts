@@ -71,6 +71,16 @@ function buildQuestionnaireItems(raw: unknown, fallbackHint?: string): Questionn
       conceptIntro: item.conceptIntro
         ? normalizeAuthoredText(String(item.conceptIntro))
         : undefined,
+      answerKey: item.answerKey
+        ? normalizeAuthoredText(String(item.answerKey))
+        : undefined,
+      mcqAnswer:
+        item.mcqAnswer != null && Number.isFinite(Number(item.mcqAnswer))
+          ? Number(item.mcqAnswer)
+          : undefined,
+      blankAnswers: Array.isArray(item.blankAnswers)
+        ? item.blankAnswers.map((s: unknown) => normalizeAuthoredText(String(s)))
+        : undefined,
     });
   }
   return out;
@@ -964,6 +974,16 @@ export async function POST(req: NextRequest) {
         choices: Array.isArray(item.choices) ? item.choices.map(String) : undefined,
         conceptIntro: item.conceptIntro
           ? normalizeAuthoredText(String(item.conceptIntro))
+          : undefined,
+        answerKey: item.answerKey
+          ? normalizeAuthoredText(String(item.answerKey))
+          : undefined,
+        mcqAnswer:
+          item.mcqAnswer != null && Number.isFinite(Number(item.mcqAnswer))
+            ? Number(item.mcqAnswer)
+            : undefined,
+        blankAnswers: Array.isArray(item.blankAnswers)
+          ? item.blankAnswers.map((s: unknown) => normalizeAuthoredText(String(s)))
           : undefined,
       });
     } else if (action === "add_formula") {

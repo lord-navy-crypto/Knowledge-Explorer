@@ -55,9 +55,9 @@ export const checklistItems: ChecklistItem[] = [
   {
     id: "ap-practice-b",
     status: "done",
-    title: "AP generated FRQ Set A–D (STEM + humanities)",
+    title: "AP generated FRQ Set A–E (STEM + humanities)",
     description:
-      "Physics 1, Calc, Chem, Bio, USH, World, Euro, English Lang/Lit have Sets A–D with concept links on /practice.",
+      "Physics 1, Calc, Chem, Bio, USH, World, Euro, English Lang/Lit have Sets A–E with concept links and optional sample-answer reveal on /practice.",
     link: "/practice",
   },
   {

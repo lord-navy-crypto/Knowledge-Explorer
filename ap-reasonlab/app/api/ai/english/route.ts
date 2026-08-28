@@ -3,6 +3,7 @@ import { asStringList, parseAiProvider, parseSiteModelChoice, runChatJson } from
 import { englishTutorSystem } from "@/lib/ai-prompts";
 import { appendAiSiteContext, buildServerAiSiteContext } from "@/lib/ai-site-context-server";
 import { migrateEnglishTask } from "@/lib/ai-toolbox-url";
+import { createCloudAiSseResponse } from "@/lib/ai-route-stream";
 
 function isClearlyOutsideEnglishScope(input: string, mode: string): boolean {
   if (
@@ -104,14 +105,39 @@ Student paste / input:
 ${input}
 
 Return the required English Tutor JSON.`;
+    const siteSearch = body.siteSearch !== false;
+    const siteContext = await buildServerAiSiteContext(`${mode}\n${target}\n${input}`, siteSearch, "language");
+    const userWithSite = appendAiSiteContext(user, siteContext);
+    const maxTokens = mode === "language-materials" || mode === "practice-generator" ? 6144 : 4096;
+
+    if (body.stream === true) {
+      return createCloudAiSseResponse({
+        system: englishTutorSystem(mode),
+        user: userWithSite,
+        maxTokens,
+        userApiKey: userApiKey || undefined,
+        provider,
+        siteModel,
+        mapDone: (data, meta) => ({
+          refused: Boolean(data.refused),
+          feedback: String(data.feedback || data.raw || "").trim(),
+          strengths: asStringList(data.strengths).slice(0, 3),
+          priorities: asStringList(data.priorities).slice(0, 4),
+          revisionExample: String(data.revisionExample || "").trim(),
+          practicePrompt: String(data.practicePrompt || "").trim(),
+          aiMayBeWrong: String(data.aiMayBeWrong || "AI language feedback may be wrong. Verify important advice.").trim(),
+          note: meta.note,
+          model: meta.model,
+          provider: meta.provider,
+        }),
+      });
+    }
+
     try {
-      const siteSearch = body.siteSearch !== false;
-      const siteContext = await buildServerAiSiteContext(`${mode}\n${target}\n${input}`, siteSearch, "language");
-      const userWithSite = appendAiSiteContext(user, siteContext);
       const result = await runChatJson({
         system: englishTutorSystem(mode),
         user: userWithSite,
-        maxTokens: mode === "language-materials" || mode === "practice-generator" ? 6144 : 4096,
+        maxTokens,
         userApiKey: userApiKey || undefined,
         provider,
         siteModel,

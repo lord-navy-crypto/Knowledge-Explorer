@@ -3,6 +3,95 @@ import { parseAiProvider, parseSiteModelChoice, runChatJson } from "@/lib/ai-cli
 import { conceptExplainSystem } from "@/lib/ai-prompts";
 import { appendAiSiteContext, buildServerAiSiteContext } from "@/lib/ai-site-context-server";
 import { finalizeAiAssistantMath, withFormulaAccuracy } from "@/lib/ai-latex-accuracy";
+import { createCloudAiSseResponse } from "@/lib/ai-route-stream";
+
+async function buildConceptPayload(body: Record<string, unknown>) {
+  const subject = String(body.subject || "").trim();
+  const conceptTitle = String(body.conceptTitle || body.concept || "").trim();
+  const conceptSummary = String(body.conceptSummary || "").trim();
+  const mode = String(body.mode || "explain").trim();
+  const question = String(body.question || "").trim();
+  const userApiKey = String(body.userApiKey || "").trim();
+  const provider = parseAiProvider(body.provider);
+  const siteModel = parseSiteModelChoice(body.siteModel);
+  const lockToConcept = Boolean(body.lockToConcept);
+  const siteSearch = body.siteSearch !== false;
+
+  const modeHint =
+    mode === "formula-derive"
+      ? "Mode focus: derive/explain the pasted formula or relation (assumptions, meaning). Do not finish a graded numeric answer."
+      : mode === "generate-questions"
+        ? "Mode focus: invent short original practice questions from the pasted topic/problem stem. No copyrighted exam items."
+        : mode === "concept-extension"
+          ? "Mode focus: treat the pasted text as a BASIC concept or formula. Spread outward into AP exam extension scenes — extension concepts, formulas, moves, and common stretch patterns. Not harder for hardness’ sake — richer / combined / constrained. Do not finish a graded numeric final answer."
+          : `Mode: ${mode}`;
+
+  const defaultQuestion =
+    mode === "quiz" || mode === "generate-questions"
+      ? "Quiz me / generate practice on this concept."
+      : mode === "concept-extension"
+        ? "Extend this basic concept/formula into typical AP exam extension scenes."
+        : "Explain this concept clearly for AP study.";
+
+  const user = `Subject: ${subject || "AP"}
+Concept title: ${conceptTitle || "(user will name it in the question)"}
+Concept summary (may be empty): ${conceptSummary || "(none)"}
+${modeHint}
+Lock to this concept only: ${lockToConcept ? "yes" : "no — still must stay on learning/AP concepts"}
+User message:
+${question || defaultQuestion}
+
+Return JSON with refused, reply, equations, formulas, quizPrompt, aiMayBeWrong.`;
+
+  const siteContext = await buildServerAiSiteContext(
+    `${subject}\n${conceptTitle}\n${conceptSummary}\n${question}`,
+    siteSearch,
+    "formulas"
+  );
+  const userWithSite = appendAiSiteContext(user, siteContext);
+
+  return {
+    subject,
+    conceptTitle,
+    mode,
+    userApiKey,
+    provider,
+    siteModel,
+    system: withFormulaAccuracy(conceptExplainSystem(mode), subject),
+    user: userWithSite,
+    maxTokens: mode === "concept-extension" ? 4096 : 3072,
+  };
+}
+
+function mapConceptDone(
+  data: Record<string, unknown>,
+  meta: { note: string; model: string; provider: string }
+) {
+  const refused = Boolean(data.refused);
+  const replyRaw =
+    String(data.reply || "").trim() ||
+    (refused
+      ? "Sorry — that is unrelated to this concept or to learning, so I will not answer."
+      : "No response generated.");
+  const finalized = finalizeAiAssistantMath(
+    replyRaw,
+    data.equations,
+    data.formulas
+  );
+  return {
+    refused,
+    reply: finalized.prose,
+    quizPrompt: String(data.quizPrompt || "").trim(),
+    equations: finalized.equations.slice(0, 8),
+    formulas: Array.isArray(data.formulas) ? data.formulas.map(String).slice(0, 8) : [],
+    aiMayBeWrong:
+      String(data.aiMayBeWrong || "").trim() ||
+      "AI may be wrong. Verify with your notes or textbook.",
+    note: meta.note,
+    model: meta.model,
+    provider: meta.provider,
+  };
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,12 +99,7 @@ export async function POST(req: NextRequest) {
     const subject = String(body.subject || "").trim();
     const conceptTitle = String(body.conceptTitle || body.concept || "").trim();
     const conceptSummary = String(body.conceptSummary || "").trim();
-    const mode = String(body.mode || "explain").trim();
     const question = String(body.question || "").trim();
-    const userApiKey = String(body.userApiKey || "").trim();
-    const provider = parseAiProvider(body.provider);
-    const siteModel = parseSiteModelChoice(body.siteModel);
-    const lockToConcept = Boolean(body.lockToConcept);
 
     if (!conceptTitle && !question) {
       return NextResponse.json(
@@ -27,82 +111,37 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Concept request is too long" }, { status: 400 });
     }
 
-    const modeHint =
-      mode === "formula-derive"
-        ? "Mode focus: derive/explain the pasted formula or relation (assumptions, meaning). Do not finish a graded numeric answer."
-        : mode === "generate-questions"
-          ? "Mode focus: invent short original practice questions from the pasted topic/problem stem. No copyrighted exam items."
-          : mode === "concept-extension"
-            ? "Mode focus: treat the pasted text as a BASIC concept or formula. Spread outward into AP exam extension scenes — extension concepts, formulas, moves, and common stretch patterns. Not harder for hardness’ sake — richer / combined / constrained. Do not finish a graded numeric final answer."
-            : `Mode: ${mode}`;
+    const built = await buildConceptPayload(body);
 
-    const defaultQuestion =
-      mode === "quiz" || mode === "generate-questions"
-        ? "Quiz me / generate practice on this concept."
-        : mode === "concept-extension"
-          ? "Extend this basic concept/formula into typical AP exam extension scenes."
-          : "Explain this concept clearly for AP study.";
-
-    const user = `Subject: ${subject || "AP"}
-Concept title: ${conceptTitle || "(user will name it in the question)"}
-Concept summary (may be empty): ${conceptSummary || "(none)"}
-${modeHint}
-Lock to this concept only: ${lockToConcept ? "yes" : "no — still must stay on learning/AP concepts"}
-User message:
-${question || defaultQuestion}
-
-Return JSON with refused, reply, equations, formulas, quizPrompt, aiMayBeWrong.`;
+    if (body.stream === true) {
+      return createCloudAiSseResponse({
+        system: built.system,
+        user: built.user,
+        maxTokens: built.maxTokens,
+        userApiKey: built.userApiKey || undefined,
+        provider: built.provider,
+        siteModel: built.siteModel,
+        mapDone: mapConceptDone,
+      });
+    }
 
     try {
-      const siteSearch = body.siteSearch !== false;
-      const siteContext = await buildServerAiSiteContext(
-        `${subject}\n${conceptTitle}\n${conceptSummary}\n${question}`,
-        siteSearch,
-        "formulas"
-      );
-      const userWithSite = appendAiSiteContext(user, siteContext);
-
       const result = await runChatJson({
-        system: withFormulaAccuracy(conceptExplainSystem(mode), subject),
-        user: userWithSite,
-        maxTokens: mode === "concept-extension" ? 4096 : 3072,
-        userApiKey: userApiKey || undefined,
-        provider,
-        siteModel,
+        system: built.system,
+        user: built.user,
+        maxTokens: built.maxTokens,
+        userApiKey: built.userApiKey || undefined,
+        provider: built.provider,
+        siteModel: built.siteModel,
       });
-      const data = result.data;
-      const refused = Boolean(data.refused);
-      const replyRaw =
-        String(data.reply || "").trim() ||
-        (refused
-          ? "Sorry — that is unrelated to this concept or to learning, so I will not answer."
-          : "No response generated.");
-      const finalized = finalizeAiAssistantMath(
-        replyRaw,
-        data.equations,
-        data.formulas
-      );
-      return NextResponse.json({
-        refused,
-        reply: finalized.prose,
-        quizPrompt: String(data.quizPrompt || "").trim(),
-        equations: finalized.equations.slice(0, 8),
-        formulas: Array.isArray(data.formulas)
-          ? data.formulas.map(String).slice(0, 8)
-          : [],
-        aiMayBeWrong:
-          String(data.aiMayBeWrong || "").trim() ||
-          "AI may be wrong. Verify with your notes or textbook.",
-        note: result.note,
-        model: result.model,
-        provider: result.provider,
-      });
+      return NextResponse.json(mapConceptDone(result.data, result));
     } catch (error) {
-      if (userApiKey) {
+      if (built.userApiKey) {
         const message = error instanceof Error ? error.message : "AI call failed";
         return NextResponse.json({ error: message }, { status: 502 });
       }
       console.error(error);
+      const mode = String(body.mode || "explain").trim();
       const seed = conceptTitle || "your base concept/formula";
       if (mode === "concept-extension") {
         return NextResponse.json({

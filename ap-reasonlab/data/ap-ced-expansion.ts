@@ -801,6 +801,91 @@ export const cedExpansionConcepts: Concept[] = [
     ],
     example: "Maastricht Treaty (1993) deepened political and economic union.",
   },
+  {
+    id: "physc-mech-shm",
+    title: "Simple Harmonic Motion (Physics C)",
+    subject: "AP Physics C: Mechanics",
+    summary:
+      "Restoring force proportional to displacement gives sinusoidal motion: x(t) = A cos(ωt + φ).",
+    keyPoints: [
+      "ω = √(k/m) for mass–spring.",
+      "Period T = 2π/ω independent of amplitude (ideal SHM).",
+      "Energy oscillates between KE and PE; total mechanical energy constant.",
+    ],
+    commonMistakes: [
+      "Using kinematics equations for non-uniform acceleration.",
+      "Confusing angular frequency ω with angular velocity in rotation.",
+    ],
+    example: "Pendulum small-angle approximation: ω ≈ √(g/L).",
+  },
+  {
+    id: "csp-cybersecurity",
+    title: "Cybersecurity & Privacy (CSP)",
+    subject: "AP Computer Science Principles",
+    summary:
+      "Authentication, encryption, and access control protect data; users trade convenience for privacy.",
+    keyPoints: [
+      "Symmetric vs asymmetric encryption roles.",
+      "Phishing exploits human trust, not only technical flaws.",
+      "Multi-factor authentication raises attack cost.",
+    ],
+    commonMistakes: [
+      "Assuming HTTPS alone prevents all tracking.",
+      "Equating privacy with secrecy for all public posts.",
+    ],
+    example: "HTTPS encrypts transit; end-to-end encryption protects content from intermediaries.",
+  },
+  {
+    id: "csp-parallel",
+    title: "Parallel & Distributed Computing (CSP)",
+    subject: "AP Computer Science Principles",
+    summary:
+      "Breaking work across processors speeds solutions but introduces synchronization and load-balancing issues.",
+    keyPoints: [
+      "Speedup limited by sequential portions (Amdahl's intuition).",
+      "Race conditions when shared state lacks coordination.",
+      "Distributed systems add latency and partial-failure risk.",
+    ],
+    commonMistakes: [
+      "Assuming doubling cores always halves runtime.",
+      "Ignoring overhead of communication between nodes.",
+    ],
+    example: "MapReduce splits data processing across many workers.",
+  },
+  {
+    id: "euro-reformation",
+    title: "Reformation & Religious Division",
+    subject: "AP European History",
+    summary:
+      "Luther's challenge to church authority splintered Latin Christendom and reshaped politics.",
+    keyPoints: [
+      "Printing press spread reform ideas rapidly.",
+      "Peace of Augsburg: cuius regio, eius religio.",
+      "Catholic Reformation (Council of Trent) responded institutionally.",
+    ],
+    commonMistakes: [
+      "Treating Reformation as only theological without political context.",
+      "Ignoring role of princes and city councils.",
+    ],
+    example: "Henry VIII's break with Rome linked dynastic need to broader Reformation currents.",
+  },
+  {
+    id: "euro-industrial",
+    title: "Industrialization & Social Change",
+    subject: "AP European History",
+    summary:
+      "Factory production transformed labor, urban life, and class relations in the 19th century.",
+    keyPoints: [
+      "Steam/coal power enabled factory concentration.",
+      "Urbanization strained housing and sanitation.",
+      "Labor movements and reform bills responded to harsh conditions.",
+    ],
+    commonMistakes: [
+      "Assuming industrialization happened uniformly across Europe.",
+      "Ignoring women's and children's factory roles.",
+    ],
+    example: "British Factory Acts gradually limited child labor hours.",
+  },
 ];
 
 export const cedExpansionFormulas: Formula[] = [
@@ -1166,5 +1251,38 @@ export const cedExpansionFormulas: Formula[] = [
     whenToUse: "Explain APIs, protocols, and modularity.",
     relatedConceptId: "csp-abstraction",
     sourceNote: "AP CSP CED",
+  },
+  {
+    id: "physc-shm-period",
+    subject: "AP Physics C: Mechanics",
+    unit: "Oscillations",
+    name: "SHM period (spring)",
+    expression: "T = 2\\pi \\sqrt{\\frac{m}{k}}",
+    variables: "m mass, k spring constant",
+    whenToUse: "Mass–spring oscillator period.",
+    relatedConceptId: "physc-mech-shm",
+    sourceNote: "AP Physics C: Mechanics CED",
+  },
+  {
+    id: "csp-encryption",
+    subject: "AP Computer Science Principles",
+    unit: "Big Idea 5: Impact",
+    name: "Public-key idea",
+    expression: "Encrypt_{public} \\; Decrypt_{private}",
+    variables: "Asymmetric keys for secure exchange",
+    whenToUse: "Explain HTTPS / secure messaging at high level.",
+    relatedConceptId: "csp-cybersecurity",
+    sourceNote: "AP CSP CED",
+  },
+  {
+    id: "euro-nation-state",
+    subject: "AP European History",
+    unit: "19th Century",
+    name: "Nation-state formula (conceptual)",
+    expression: "Shared \\; language + territory + institutions \\Rightarrow nationalism",
+    variables: "Unification and separatist movements",
+    whenToUse: "Explain Italian/German unification or breakup of empires.",
+    relatedConceptId: "euro-industrial",
+    sourceNote: "AP European History CED",
   },
 ];

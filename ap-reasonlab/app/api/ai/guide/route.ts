@@ -2,6 +2,28 @@ import { NextRequest, NextResponse } from "next/server";
 import { parseAiProvider, parseSiteModelChoice, runChatJson } from "@/lib/ai-client";
 import { SITE_GUIDE_FACTS, SITE_GUIDE_SYSTEM } from "@/lib/ai-prompts";
 import { appendAiSiteContext, buildServerAiSiteContext } from "@/lib/ai-site-context-server";
+import { createCloudAiSseResponse } from "@/lib/ai-route-stream";
+
+function mapGuideDone(
+  data: Record<string, unknown>,
+  meta: { note: string; model: string; provider: string }
+) {
+  const refused = Boolean(data.refused);
+  return {
+    refused,
+    reply:
+      String(data.reply || "").trim() ||
+      (refused
+        ? "I only help with how to use this website. For study help, open Hint & Process or Concept Explainer."
+        : "No response generated."),
+    aiMayBeWrong:
+      String(data.aiMayBeWrong || "").trim() ||
+      "Guide answers can be incomplete — check About / Manage pages too.",
+    note: meta.note,
+    model: meta.model,
+    provider: meta.provider,
+  };
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,10 +48,22 @@ ${question}
 
 Return JSON with refused, reply, aiMayBeWrong.`;
 
+    const siteContext = await buildServerAiSiteContext(question, true, "nav");
+    const userWithSite = appendAiSiteContext(user, siteContext);
+
+    if (body.stream === true) {
+      return createCloudAiSseResponse({
+        system: SITE_GUIDE_SYSTEM,
+        user: userWithSite,
+        maxTokens: 2048,
+        userApiKey: userApiKey || undefined,
+        provider,
+        siteModel,
+        mapDone: mapGuideDone,
+      });
+    }
+
     try {
-      // Site Guide: soft-prefer nav/language materials (not AP formula packs).
-      const siteContext = await buildServerAiSiteContext(question, true, "nav");
-      const userWithSite = appendAiSiteContext(user, siteContext);
       const result = await runChatJson({
         system: SITE_GUIDE_SYSTEM,
         user: userWithSite,
@@ -38,22 +72,7 @@ Return JSON with refused, reply, aiMayBeWrong.`;
         provider,
         siteModel,
       });
-      const data = result.data;
-      const refused = Boolean(data.refused);
-      return NextResponse.json({
-        refused,
-        reply:
-          String(data.reply || "").trim() ||
-          (refused
-            ? "I only help with how to use this website. For study help, open Hint & Process or Concept Explainer."
-            : "No response generated."),
-        aiMayBeWrong:
-          String(data.aiMayBeWrong || "").trim() ||
-          "Guide answers can be incomplete — check About / Manage pages too.",
-        note: result.note,
-        model: result.model,
-        provider: result.provider,
-      });
+      return NextResponse.json(mapGuideDone(result.data, result));
     } catch (error) {
       if (userApiKey) {
         const message = error instanceof Error ? error.message : "AI call failed";

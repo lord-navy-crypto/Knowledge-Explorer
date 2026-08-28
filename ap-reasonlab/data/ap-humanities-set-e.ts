@@ -22,6 +22,8 @@ export const apHumanitiesSetE: Questionnaire[] = [
           "Provide one piece of context BEFORE 1933 and one consequence AFTER 1940 for evaluating the New Deal's legacy.",
         blankSteps: ["Before 1933: ______", "After 1940: ______"],
         hints: ["Before: Great Depression banking collapse.", "After: Social Security, stronger federal role."],
+        blankAnswers: ["Great Depression / banking crisis", "Social Security, expanded federal role"],
+        answerKey: "Before: Great Depression context; After: lasting programs like Social Security.",
       },
       {
         id: "ush-ced-e2",
@@ -31,6 +33,7 @@ export const apHumanitiesSetE: Questionnaire[] = [
         prompt:
           "Why was the 1964 Civil Rights Act not sufficient on its own to end discrimination in daily life?",
         hints: ["Implementation, local resistance, economic inequality persisted."],
+        answerKey: "Law changed formal rules; de facto segregation, enforcement gaps, and economic barriers remained.",
       },
       {
         id: "ush-ced-e3",
@@ -41,6 +44,8 @@ export const apHumanitiesSetE: Questionnaire[] = [
           "How did Cold War anxiety affect civil liberties in the United States in the 1950s? Give one example.",
         blankSteps: ["Example + effect: ______"],
         hints: ["McCarthyism, loyalty oaths, HUAC hearings."],
+        blankAnswers: ["McCarthy hearings → fear of dissent"],
+        answerKey: "Example: McCarthyism / loyalty programs chilled free speech and association.",
       },
     ],
   },
@@ -63,6 +68,7 @@ export const apHumanitiesSetE: Questionnaire[] = [
         prompt:
           "Give one way Enlightenment ideals coexisted with slavery or empire in the 18th century.",
         hints: ["Rights language excluded women, enslaved people, colonized subjects."],
+        answerKey: "Example: 'natural rights' rhetoric coexisted with Atlantic slavery and empire.",
       },
       {
         id: "euro-ced-e2",
@@ -73,6 +79,8 @@ export const apHumanitiesSetE: Questionnaire[] = [
           "Name one reform associated with Napoleonic rule and one region outside France affected by Napoleonic wars.",
         blankSteps: ["Reform: ______", "Region: ______"],
         hints: ["Napoleonic Code; Spain weakened → Latin American independence."],
+        blankAnswers: ["Napoleonic Code", "Spain / Latin America"],
+        answerKey: "Reform: Napoleonic Code; Region: Spain weakened → Latin American independence movements.",
       },
       {
         id: "euro-ced-e3",
@@ -83,6 +91,8 @@ export const apHumanitiesSetE: Questionnaire[] = [
           "Explain one economic motive for European imperial expansion in Africa after 1870.",
         blankSteps: ["Motive: ______"],
         hints: ["Raw materials, markets, strategic ports, investment."],
+        blankAnswers: ["Raw materials / markets"],
+        answerKey: "Industrial powers sought raw materials, markets, and strategic ports in Africa.",
       },
     ],
   },
@@ -105,6 +115,7 @@ export const apHumanitiesSetE: Questionnaire[] = [
         prompt:
           "A student writes: 'The author uses statistics.' Write one sentence of commentary that would strengthen this.",
         hints: ["Explain how the statistic supports the author's purpose or claim."],
+        answerKey: "Sample: 'This statistic shows rising teen phone use, supporting the author's call for school phone limits.'",
       },
       {
         id: "elang-ced-e2",
@@ -115,6 +126,8 @@ export const apHumanitiesSetE: Questionnaire[] = [
           "Two sources disagree on whether schools should ban phones. Write one sentence synthesizing them toward a qualified thesis.",
         blankSteps: ["Synthesis sentence: ______"],
         hints: ["Acknowledge both; explain which limitation matters more."],
+        blankAnswers: ["Qualified thesis acknowledging both sides"],
+        answerKey: "Sample: 'While phones distract, structured classroom use may work if policies limit social apps.'",
       },
       {
         id: "elang-ced-e3",
@@ -124,6 +137,7 @@ export const apHumanitiesSetE: Questionnaire[] = [
         prompt:
           "How might a writer arguing for later school start times address parents differently than administrators?",
         hints: ["Parents: health, family schedule; admins: buses, staffing, budgets."],
+        answerKey: "Parents: teen sleep/health; admins: bus routes, staffing, budget constraints.",
       },
     ],
   },
@@ -146,6 +160,7 @@ export const apHumanitiesSetE: Questionnaire[] = [
         prompt:
           "How can enjambment (line running over without pause) create tension in a poem about waiting?",
         hints: ["Unfinished lines mirror unresolved waiting; pace feels suspended."],
+        answerKey: "Run-on lines delay closure, mirroring the speaker's unresolved waiting.",
       },
       {
         id: "elit-ced-e2",
@@ -156,6 +171,8 @@ export const apHumanitiesSetE: Questionnaire[] = [
           "Write a thesis line analyzing how a first-person teenage narrator might critique adult hypocrisy through tone.",
         blankSteps: ["Thesis: ______"],
         hints: ["Topic + insight; avoid plot summary."],
+        blankAnswers: ["Thesis with insight on tone/voice"],
+        answerKey: "Sample thesis: 'The narrator's sarcastic tone exposes adult hypocrisy through understated observations.'",
       },
       {
         id: "elit-ced-e3",
@@ -165,6 +182,7 @@ export const apHumanitiesSetE: Questionnaire[] = [
         prompt:
           "Why might a playwright describe a character 'speaking quietly while others shout' in a public scene?",
         hints: ["Contrast shows control, intimidation, or hidden authority."],
+        answerKey: "Quiet delivery amid chaos signals power, control, or menace through contrast.",
       },
     ],
   },

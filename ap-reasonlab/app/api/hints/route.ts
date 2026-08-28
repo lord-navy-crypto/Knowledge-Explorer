@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  asStringList,
-  parseAiProvider,
-  parseSiteModelChoice,
-  runChatJson,
-} from "@/lib/ai-client";
+import { parseAiProvider, parseSiteModelChoice, runChatJson } from "@/lib/ai-client";
 import { HINT_PROCESS_SYSTEM } from "@/lib/ai-prompts";
 import { appendAiSiteContext, buildServerAiSiteContext } from "@/lib/ai-site-context-server";
-import { extractDollarMathToEquations, normalizeEquationItems, withFormulaAccuracy, type AiEquation } from "@/lib/ai-latex-accuracy";
+import { withFormulaAccuracy } from "@/lib/ai-latex-accuracy";
+import { createCloudAiSseResponse } from "@/lib/ai-route-stream";
+import { mapHintsResponse } from "@/lib/hints-map";
 
 function mockHints(question: string, subject: string) {
   return {
@@ -65,66 +62,37 @@ ${notes ? `Student notes / attempt (optional):\n${notes}` : ""}
 
 Return JSON with hints, equations, keyFormulas, knownsUnknowns, checkpoints, processOutline, workedPartial, aiMayBeWrong.`;
 
-    try {
-      const siteSearch = body.siteSearch !== false;
-      const siteContext = await buildServerAiSiteContext(
-        `${subject}\n${question}\n${notes}`,
-        siteSearch,
-        "formulas"
-      );
-      const userWithSite = appendAiSiteContext(user, siteContext);
+    const siteSearch = body.siteSearch !== false;
+    const siteContext = await buildServerAiSiteContext(
+      `${subject}\n${question}\n${notes}`,
+      siteSearch,
+      "formulas"
+    );
+    const userWithSite = appendAiSiteContext(user, siteContext);
+    const system = withFormulaAccuracy(HINT_PROCESS_SYSTEM, subject);
 
+    if (body.stream === true) {
+      return createCloudAiSseResponse({
+        system,
+        user: userWithSite,
+        maxTokens: 3072,
+        userApiKey: userApiKey || undefined,
+        provider,
+        siteModel,
+        mapDone: (data, meta) => mapHintsResponse(data, meta),
+      });
+    }
+
+    try {
       const result = await runChatJson({
-        system: withFormulaAccuracy(HINT_PROCESS_SYSTEM, subject),
+        system,
         user: userWithSite,
         maxTokens: 3072,
         userApiKey: userApiKey || undefined,
         provider,
         siteModel,
       });
-
-      const data = result.data;
-      const equations = normalizeEquationItems(data.equations).slice(0, 8);
-      const liftList = (items: string[]) => {
-        const out: string[] = [];
-        const extra: AiEquation[] = [];
-        for (const item of items) {
-          const lifted = extractDollarMathToEquations(item);
-          if (lifted.prose.trim()) out.push(lifted.prose.trim());
-          extra.push(...lifted.equations);
-        }
-        return { out, extra };
-      };
-      const hints = liftList(asStringList(data.hints).slice(0, 6));
-      const knowns = liftList(asStringList(data.knownsUnknowns).slice(0, 10));
-      const checks = liftList(asStringList(data.checkpoints).slice(0, 8));
-      const process = liftList(asStringList(data.processOutline).slice(0, 8));
-      const partial = liftList(asStringList(data.workedPartial).slice(0, 6));
-      const keyFormulas = liftList(asStringList(data.keyFormulas).slice(0, 8));
-      const allEq = normalizeEquationItems([
-        ...equations,
-        ...hints.extra,
-        ...knowns.extra,
-        ...checks.extra,
-        ...process.extra,
-        ...partial.extra,
-        ...keyFormulas.extra,
-      ]).slice(0, 12);
-      return NextResponse.json({
-        hints: hints.out,
-        equations: allEq,
-        keyFormulas: keyFormulas.out,
-        knownsUnknowns: knowns.out,
-        checkpoints: checks.out,
-        processOutline: process.out,
-        workedPartial: partial.out,
-        aiMayBeWrong:
-          String(data.aiMayBeWrong || "").trim() ||
-          "AI may make mistakes. Verify with your textbook or teacher.",
-        note: result.note,
-        model: result.model,
-        provider: result.provider,
-      });
+      return NextResponse.json(mapHintsResponse(result.data, result));
     } catch (error) {
       if (userApiKey) {
         const message = error instanceof Error ? error.message : "AI call failed";
