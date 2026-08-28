@@ -17,6 +17,10 @@ export default function SiteFooter() {
             Copyright &amp; disclaimers (home)
           </Link>
           {" · "}
+          <Link href="/user-guide" className="hover:underline">
+            User Guide
+          </Link>
+          {" · "}
           <Link href="/about" className="hover:underline">
             About
           </Link>

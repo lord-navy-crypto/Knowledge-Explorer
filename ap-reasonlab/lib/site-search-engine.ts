@@ -313,7 +313,21 @@ export function searchSiteEngine(
     { id: "search", title: "Search", subject: "Site", detail: "Full-site search", href: "/search" },
     { id: "about", title: "About", subject: "Site", detail: "About Knowledge Explorer", href: "/about" },
     { id: "partners", title: "Partners", subject: "Site", detail: "Knowledge Explorer roster", href: "/partners" },
-    { id: "guide", title: "Site Guide", subject: "Tools", detail: "How to use the site", href: "/guide" },
+    { id: "guide", title: "Site Guide", subject: "Tools", detail: "Developer deploy and setup guide", href: "/guide" },
+    {
+      id: "user-guide",
+      title: "User Guide",
+      subject: "Help",
+      detail: "Walkthrough of AP, English, AI Toolbox, tools, workshops, and forum",
+      href: "/user-guide",
+    },
+    {
+      id: "manage-guide",
+      title: "Manage Guide",
+      subject: "Admin",
+      detail: "Editor workflow — unlock, Manage, uploads, publish (locked until login)",
+      href: "/manage-guide",
+    },
     { id: "manage", title: "Manage", subject: "Admin", detail: "Manage content", href: "/manage" },
     { id: "hints", title: "AI Toolbox", subject: "Tools", detail: "Hints, AI for AP guides, calculator, grapher, Local AI", href: "/hints" },
     {

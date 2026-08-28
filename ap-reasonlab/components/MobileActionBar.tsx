@@ -26,6 +26,7 @@ const moreGroups = [
       { href: "/tools", label: "Convenient Tools" },
       { href: "/code", label: "Code" },
       { href: "/search", label: "Search" },
+      { href: "/user-guide", label: "User Guide" },
       { href: "/about", label: "About" },
       { href: "/partners", label: "Partners" },
     ],
@@ -34,6 +35,7 @@ const moreGroups = [
     label: "Admin & developer",
     links: [
       { href: "/manage", label: "Manage content" },
+      { href: "/manage-guide", label: "Manage Guide" },
       { href: "/admin", label: "Admin guide" },
       { href: "/login", label: "Editor login" },
     ],
