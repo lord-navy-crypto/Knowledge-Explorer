@@ -161,9 +161,24 @@ function AttachmentPicker({
 
 function AttachmentList({ items }: { items?: ManagedForumAttachment[] }) {
   const list = items || [];
+  const [downloadError, setDownloadError] = useState("");
   if (!list.length) return null;
   return (
     <ul className="mt-3 space-y-2">
+      {downloadError ? (
+        <li>
+          <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800">
+            {downloadError}
+            <button
+              type="button"
+              className="ml-2 font-semibold underline"
+              onClick={() => setDownloadError("")}
+            >
+              Dismiss
+            </button>
+          </p>
+        </li>
+      ) : null}
       {list.map((att) => (
         <li key={att.id}>
           {att.mime.startsWith("image/") ? (
@@ -185,7 +200,7 @@ function AttachmentList({ items }: { items?: ManagedForumAttachment[] }) {
                   a.download = att.name || data.file.name || "download";
                   a.click();
                 } catch (err) {
-                  window.alert(err instanceof Error ? err.message : "Download failed");
+                  setDownloadError(err instanceof Error ? err.message : "Download failed");
                 }
               }}
             >

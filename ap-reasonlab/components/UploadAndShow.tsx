@@ -6,6 +6,7 @@ import ChangePanel from "@/components/ChangePanel";
 import MediaFinderBrowser, { type MediaRow } from "@/components/MediaFinderBrowser";
 import MediaPreviewPane from "@/components/MediaPreviewPane";
 import ResourceEditor from "@/components/ResourceEditor";
+import { useSiteDialog } from "@/components/SiteDialog";
 import { useEditorMode } from "@/components/EditorModeProvider";
 import type {
   ManagedContent,
@@ -75,6 +76,7 @@ export default function UploadAndShow({
   allowPublicContributions = false,
   mediaOnly = false,
 }: Props) {
+  const { confirm, prompt, dialog } = useSiteDialog();
   const { active: editMode, unlocked } = useEditorMode();
   const [allFiles, setAllFiles] = useState<ManagedFile[]>([]);
   const [allDocuments, setAllDocuments] = useState<ManagedDocument[]>([]);
@@ -227,12 +229,23 @@ export default function UploadAndShow({
   ) {
     let code = changeCode.trim();
     if (!unlocked && !code) {
-      const prompted = window.prompt("Enter a content or master change code to delete:");
+      const prompted = await prompt({
+        title: "Change code required",
+        message: "Enter a content or master change code to delete this item.",
+        placeholder: "Change code",
+        confirmLabel: "Continue",
+      });
       if (!prompted) return;
       code = prompted.trim();
       setChangeCode(code);
     }
-    if (!confirm("Delete this item from this folder’s storage?")) return;
+    const ok = await confirm({
+      title: "Delete item?",
+      message: "Delete this item from this folder’s storage?",
+      confirmLabel: "Delete",
+      danger: true,
+    });
+    if (!ok) return;
     setDeletingId(id);
     setError("");
     try {
@@ -690,6 +703,7 @@ export default function UploadAndShow({
       </div>
         </>
       )}
+      {dialog}
     </div>
   );
 }

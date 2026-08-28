@@ -27,6 +27,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/questionnaires",
     "/checklist",
     "/guide",
+    "/explore",
     "/explore/ap-english",
     "/explore/tools-code",
     "/explore/workshops",

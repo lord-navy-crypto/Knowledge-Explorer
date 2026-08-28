@@ -8,6 +8,7 @@ export default function ExploreGatewayHub({ gateway }: { gateway: HomeGateway })
       <Breadcrumbs
         items={[
           { label: "Home", href: "/" },
+          { label: "Explore", href: "/explore" },
           { label: gateway.title },
         ]}
       />

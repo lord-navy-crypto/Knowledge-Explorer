@@ -27,6 +27,7 @@ import {
   spaceAliases,
 } from "@/lib/storage-space";
 import { MAX_PUBLIC_UPLOAD_DATA_URL_CHARS, MAX_UPLOAD_BATCH_DATA_URL_CHARS, MAX_UPLOAD_DATA_URL_CHARS } from "@/lib/upload-limits";
+import { validateForumPostInput, validateForumReplyInput } from "@/lib/forum-api";
 
 const forumWriteTimes = new Map<string, number>();
 
@@ -314,6 +315,19 @@ export async function POST(req: NextRequest) {
         { status: 429 }
       );
     }
+
+    if (action === "add_forum_post") {
+      const validated = validateForumPostInput(item);
+      if (!validated.ok) {
+        return NextResponse.json({ error: validated.error }, { status: 400 });
+      }
+    } else if (action === "add_forum_reply") {
+      const validated = validateForumReplyInput(item);
+      if (!validated.ok) {
+        return NextResponse.json({ error: validated.error }, { status: 400 });
+      }
+    }
+
     const levelFromCode = resolveChangeLevel(body.changeCode);
     const levelFromSession = await getContentEditorLevel();
     const level = levelFromCode || levelFromSession;
@@ -332,18 +346,11 @@ export async function POST(req: NextRequest) {
     let createdId: string | undefined;
 
     if (action === "add_forum_post") {
-      const author = String(item.author || "").trim();
-      const title = String(item.title || "").trim();
-      const postBody = String(item.body || "").trim();
-      if (author.length < 2 || author.length > 40) {
-        return NextResponse.json({ error: "Display name must be 2–40 characters" }, { status: 400 });
+      const validated = validateForumPostInput(item);
+      if (!validated.ok) {
+        return NextResponse.json({ error: validated.error }, { status: 400 });
       }
-      if (!title || title.length > 120) {
-        return NextResponse.json({ error: "Title must be 1–120 characters" }, { status: 400 });
-      }
-      if (!postBody || postBody.length > 8_000) {
-        return NextResponse.json({ error: "Post must be 1–8,000 characters" }, { status: 400 });
-      }
+      const { author, title, body: postBody } = validated;
       const attachments = sanitizeForumAttachments(item.attachments, 4);
       if (attachments.error) {
         return NextResponse.json({ error: attachments.error }, { status: 400 });
@@ -358,16 +365,13 @@ export async function POST(req: NextRequest) {
         attachments: persistForumAttachments(current, attachments.items),
       });
     } else if (action === "add_forum_reply") {
-      const author = String(item.author || "").trim();
-      const replyBody = String(item.body || "").trim();
-      const post = current.forumPosts.find((entry) => entry.id === String(item.postId || ""));
+      const validated = validateForumReplyInput(item);
+      if (!validated.ok) {
+        return NextResponse.json({ error: validated.error }, { status: 400 });
+      }
+      const { author, body: replyBody, postId } = validated;
+      const post = current.forumPosts.find((entry) => entry.id === postId);
       if (!post) return NextResponse.json({ error: "Post not found" }, { status: 404 });
-      if (author.length < 2 || author.length > 40) {
-        return NextResponse.json({ error: "Display name must be 2–40 characters" }, { status: 400 });
-      }
-      if (!replyBody || replyBody.length > 4_000) {
-        return NextResponse.json({ error: "Reply must be 1–4,000 characters" }, { status: 400 });
-      }
       const attachments = sanitizeForumAttachments(item.attachments, 2);
       if (attachments.error) {
         return NextResponse.json({ error: attachments.error }, { status: 400 });

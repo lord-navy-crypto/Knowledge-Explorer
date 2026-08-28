@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import ToeflPracticeTimer from "@/components/ToeflPracticeTimer";
+import InlineNotice from "@/components/InlineNotice";
 import {
   listEnglishVoices,
   speakEnglish,
@@ -85,6 +86,7 @@ export default function ToeflSpeakShadow() {
   const [listening, setListening] = useState(false);
   const [heard, setHeard] = useState("");
   const [score, setScore] = useState<number | null>(null);
+  const [notice, setNotice] = useState("");
   const recRef = useRef<SpeechRec | null>(null);
 
   const lines = useMemo(() => splitLines(corpus), [corpus]);
@@ -136,7 +138,7 @@ export default function ToeflSpeakShadow() {
       },
       onError: () => setSpeaking(false),
     });
-    if (!ok) window.alert("Speech synthesis is not available in this browser.");
+    if (!ok) setNotice("Speech synthesis is not available in this browser.");
   }
 
   function playCurrent() {
@@ -156,7 +158,7 @@ export default function ToeflSpeakShadow() {
   function startMicScore() {
     const Ctor = getSpeechRecognition();
     if (!Ctor || !current) {
-      window.alert("Live mic scoring needs Chrome or Edge.");
+      setNotice("Live mic scoring needs Chrome or Edge.");
       return;
     }
     stopMic();
@@ -184,12 +186,14 @@ export default function ToeflSpeakShadow() {
       setListening(true);
     } catch {
       setListening(false);
-      window.alert("Could not start the microphone.");
+      setNotice("Could not start the microphone.");
     }
   }
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_16rem]">
+    <div className="space-y-4">
+      <InlineNotice message={notice} onDismiss={() => setNotice("")} />
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_16rem]">
       <section className="space-y-4 rounded-2xl border border-violet-200 bg-violet-50/50 p-5">
         <div>
           <h2 className="text-lg font-semibold text-violet-950">
@@ -367,6 +371,7 @@ export default function ToeflSpeakShadow() {
         accent="violet"
         presets={[{ label: "40s response", seconds: 40 }]}
       />
+      </div>
     </div>
   );
 }
