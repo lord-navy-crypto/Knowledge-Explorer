@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { AdvancedModelMap, AiProvider, SiteModelChoice } from "@/lib/ai-site-models";
 import { siteModelOptionsForTier } from "@/lib/ai-site-models";
+import { loadAiSettingsOpen } from "@/lib/ai-toolbox-prefs";
 
 const byokOptions: Array<{ value: AiProvider; label: string; placeholder: string }> = [
   { value: "groq", label: "Groq mid · llama-3.3-70b-versatile", placeholder: "gsk_..." },
@@ -55,6 +56,11 @@ export default function AiApiChannel({
   const selected = byokOptions.find((option) => option.value === provider) || byokOptions[0];
   const [advancedDefault, setAdvancedDefault] = useState(false);
   const [advancedModels, setAdvancedModels] = useState<AdvancedModelMap | null>(null);
+  const [settingsVisible, setSettingsVisible] = useState(false);
+
+  useEffect(() => {
+    setSettingsVisible(loadAiSettingsOpen());
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -85,6 +91,10 @@ export default function AiApiChannel({
     () => siteModelOptionsForTier(advancedDefault, advancedModels),
     [advancedDefault, advancedModels]
   );
+
+  // LocalAIControls keeps the path chips mounted while the detailed settings wall is collapsed.
+  // Honor that persisted preference here so switching Website API / BYOK does not reopen the wall.
+  if (!settingsVisible) return null;
 
   if (path === "site") {
     return (
