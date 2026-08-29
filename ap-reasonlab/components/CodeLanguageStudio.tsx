@@ -27,6 +27,7 @@ import {
 } from "@/lib/code-editor-studio";
 import { classifyPaste } from "@/lib/code-paste-detect";
 import { preloadEncodeDecode, preloadJsonFormatter } from "@/lib/payload-handoff";
+import { preloadForumComposer } from "@/lib/forum-local";
 
 const LANG_IDS = ALL_CODE_LANGS.map((lang) => lang.id);
 
@@ -136,6 +137,26 @@ export default function CodeLanguageStudio({ initialLang = "python" }: { initial
     if (next.lang !== lang) router.replace(`/code/editor?lang=${next.lang}`);
   }
 
+  function postPasteToForum() {
+    const hit = classifyPaste(pasteBox);
+    const code = hit.body || pasteBox.trim();
+    if (!code) {
+      setNote("Paste a snippet first, then post it to Forum.");
+      return;
+    }
+    const fenceLang = hit.language === "web" ? "html" : hit.language || (lang === "web" ? "html" : lang);
+    const body =
+      hit.kind === "fence"
+        ? pasteBox.trim()
+        : "```" + fenceLang + "\n" + code + "\n```";
+    preloadForumComposer({
+      title: `${meta.title} snippet`,
+      body,
+      postCategory: "questions",
+    });
+    router.push("/forum");
+  }
+
   async function copyPermalink() {
     const url = `${window.location.origin}${href}`;
     await navigator.clipboard.writeText(url);
@@ -212,6 +233,9 @@ export default function CodeLanguageStudio({ initialLang = "python" }: { initial
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <button type="button" className="btn-primary text-xs" onClick={applyPaste}>
             Apply paste
+          </button>
+          <button type="button" className="btn-secondary text-xs" onClick={postPasteToForum}>
+            Post to Forum
           </button>
           {classified.kind === "json" ? (
             <Link href="/tools/json-formatter" className="btn-secondary text-xs" onClick={() => preloadJsonFormatter(classified.body)}>

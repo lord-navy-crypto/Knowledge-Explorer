@@ -200,7 +200,7 @@ function niceStep(span: number): number {
   return 10 * pow;
 }
 
-export default function TIGrapher() {
+export default function TIGrapher({ handoffY1 = "" }: { handoffY1?: string }) {
   const searchParams = useSearchParams();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const dragRef = useRef<{ x: number; y: number; range: Range } | null>(null);
@@ -236,6 +236,11 @@ export default function TIGrapher() {
     if (fromY1) setY1(fromY1);
     if (fromY2) setY2(fromY2);
   }, [searchParams]);
+
+  useEffect(() => {
+    const next = handoffY1.trim();
+    if (next) setY1(next);
+  }, [handoffY1]);
 
   const steps = hiRes ? 720 : 320;
 

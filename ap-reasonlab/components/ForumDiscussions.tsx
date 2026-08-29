@@ -16,11 +16,14 @@ import {
 import ForumCodeLaunchers from "@/components/ForumCodeLaunchers";
 import {
   clearForumComposerDraft,
+  clearForumReplyDraft,
   isForumSortMode,
   loadForumComposerDraft,
+  loadForumReplyDraft,
   loadForumSort,
   loadForumStars,
   saveForumComposerDraft,
+  saveForumReplyDraft,
   saveForumSort,
   toggleForumStar,
   type ForumSortMode,
@@ -349,6 +352,11 @@ export function ForumDiscussions({
   }, [title, body, postCategory, draftReady]);
 
   useEffect(() => {
+    if (!replyingTo) return;
+    saveForumReplyDraft(replyingTo, replyBody);
+  }, [replyingTo, replyBody]);
+
+  useEffect(() => {
     const thread = searchParams.get("thread");
     if (thread) setExpandedId(thread);
     const qParam = searchParams.get("q");
@@ -457,7 +465,7 @@ export function ForumDiscussions({
     if (action === "post") setComposerOpen(true);
     else {
       setReplyingTo(action);
-      setReplyBody("");
+      setReplyBody(loadForumReplyDraft(action));
       setReplyAttachments([]);
       setExpandedId(action);
     }
@@ -541,6 +549,7 @@ export function ForumDiscussions({
       setReplyBody("");
       setReplyAttachments([]);
       setReplyingTo(null);
+      clearForumReplyDraft(postId);
     }
   }
 
@@ -852,7 +861,7 @@ export function ForumDiscussions({
                         type="button"
                         className="text-brand-600 hover:underline"
                         onClick={() => {
-                          setReplyBody(quoteSnippet(post.author, post.body));
+                          saveForumReplyDraft(post.id, quoteSnippet(post.author, post.body));
                           requestIdentity(post.id);
                         }}
                       >
@@ -911,7 +920,7 @@ export function ForumDiscussions({
                                 type="button"
                                 className="mt-2 text-xs text-brand-600 hover:underline"
                                 onClick={() => {
-                                  setReplyBody(quoteSnippet(reply.author, reply.body));
+                                  saveForumReplyDraft(post.id, quoteSnippet(reply.author, reply.body));
                                   requestIdentity(post.id);
                                 }}
                               >

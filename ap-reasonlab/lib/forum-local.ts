@@ -71,3 +71,45 @@ export function saveForumSort(sort: ForumSortMode) {
   if (!isForumSortMode(sort)) return;
   storage()?.setItem(SORT_KEY, sort);
 }
+
+const REPLY_KEY = "ke-forum-reply-drafts";
+
+type ReplyDraftMap = Record<string, string>;
+
+function loadReplyMap(): ReplyDraftMap {
+  const ls = storage();
+  if (!ls) return {};
+  try {
+    const parsed = JSON.parse(ls.getItem(REPLY_KEY) || "{}") as unknown;
+    if (!parsed || typeof parsed !== "object") return {};
+    const out: ReplyDraftMap = {};
+    for (const [id, body] of Object.entries(parsed as Record<string, unknown>)) {
+      if (typeof body === "string") out[id] = body;
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+export function loadForumReplyDraft(postId: string): string {
+  return loadReplyMap()[postId] || "";
+}
+
+export function saveForumReplyDraft(postId: string, body: string) {
+  const map = loadReplyMap();
+  if (!body.trim()) delete map[postId];
+  else map[postId] = body;
+  storage()?.setItem(REPLY_KEY, JSON.stringify(map));
+}
+
+export function clearForumReplyDraft(postId: string) {
+  const map = loadReplyMap();
+  delete map[postId];
+  storage()?.setItem(REPLY_KEY, JSON.stringify(map));
+}
+
+/** Prefill the public composer (used by Code editor / tools). */
+export function preloadForumComposer(draft: ForumComposerDraft) {
+  saveForumComposerDraft(draft);
+}

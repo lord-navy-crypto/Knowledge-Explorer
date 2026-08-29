@@ -87,7 +87,7 @@ export function loadAiSettingsOpen(): boolean {
   const raw = browserStorage()?.getItem(SETTINGS_OPEN_KEY);
   if (raw === "0") return false;
   if (raw === "1") return true;
-  return true;
+  return false;
 }
 
 export function saveAiSettingsOpen(open: boolean) {

@@ -10,10 +10,10 @@ describe("AI Toolbox settings prefs", () => {
         store.set(k, v);
       },
     });
-    expect(loadAiSettingsOpen()).toBe(true);
-    saveAiSettingsOpen(false);
     expect(loadAiSettingsOpen()).toBe(false);
     saveAiSettingsOpen(true);
     expect(loadAiSettingsOpen()).toBe(true);
+    saveAiSettingsOpen(false);
+    expect(loadAiSettingsOpen()).toBe(false);
   });
 });

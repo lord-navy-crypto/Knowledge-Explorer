@@ -64,7 +64,7 @@ export default function LocalAIControls({ embedded = false }: Props) {
   const [loadError, setLoadError] = useState("");
   const [showSuitabilityGuide, setShowSuitabilityGuide] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(true);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const selected = localAI.models.find((model) => model.id === localAI.selectedModelId);
   const loaded = localAI.models.find((model) => model.id === localAI.loadedModelId);
   const target = localAI.models.find(
@@ -249,11 +249,21 @@ export default function LocalAIControls({ embedded = false }: Props) {
       <div className="rounded-xl border border-slate-200 bg-white p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Quick start</p>
-            <p className="mt-1 text-sm text-slate-600">
-              Enable Local AI in this browser. If Local is unavailable or not ready,{" "}
-              <strong>Website API</strong> is the automatic fallback for answers.
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              {settingsOpen ? "Quick start" : "Local model"}
             </p>
+            {settingsOpen ? (
+              <p className="mt-1 text-sm text-slate-600">
+                Enable Local AI in this browser. If Local is unavailable or not ready,{" "}
+                <strong>Website API</strong> is the automatic fallback for answers.
+              </p>
+            ) : (
+              <p className="mt-1 text-sm text-slate-600">
+                {localAI.ready
+                  ? "Local is on for this browser."
+                  : "Enable Local here, or open AI settings to switch path."}
+              </p>
+            )}
           </div>
           <span
             className={`rounded-full px-3 py-1 text-xs font-semibold ${

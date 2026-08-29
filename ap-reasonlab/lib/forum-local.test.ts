@@ -1,10 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   clearForumComposerDraft,
+  clearForumReplyDraft,
   loadForumComposerDraft,
+  loadForumReplyDraft,
   loadForumSort,
   loadForumStars,
+  preloadForumComposer,
   saveForumComposerDraft,
+  saveForumReplyDraft,
   saveForumSort,
   toggleForumStar,
 } from "@/lib/forum-local";
@@ -36,5 +40,14 @@ describe("forum local drafts and stars", () => {
     expect(loadForumSort()).toBe("replies");
     saveForumSort("active");
     expect(loadForumSort()).toBe("active");
+
+    expect(loadForumReplyDraft("t1")).toBe("");
+    saveForumReplyDraft("t1", "> quoted");
+    expect(loadForumReplyDraft("t1")).toBe("> quoted");
+    clearForumReplyDraft("t1");
+    expect(loadForumReplyDraft("t1")).toBe("");
+
+    preloadForumComposer({ title: "From editor", body: "```python\nprint(1)\n```", postCategory: "questions" });
+    expect(loadForumComposerDraft()?.title).toMatch(/editor/);
   });
 });
