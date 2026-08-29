@@ -380,7 +380,7 @@ export default function CodeLanguageStudio({ initialLang = "python" }: { initial
 
       {official && desk === "editor" ? <OfficialResourceLinks block={official} tone="slate" /> : null}
 
-      {desk === "editor" ? playground : null}
+      {desk === "editor" ? <div key={`${lang}-${importNonce}`}>{playground}</div> : null}
       {desk === "json" ? <JsonFormatterTool embedded /> : null}
       {desk === "encode" ? <EncodeDecodeTool embedded /> : null}
       {desk === "board" ? <CodeBoardTool embedded /> : null}
