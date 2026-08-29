@@ -453,13 +453,15 @@ export const physics2Questionnaires: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "p2-thermo",
         "conceptIntro": "Section II · Mathematical Routines. Q = mcΔT for sensible heat.",
-        "prompt": "A 0.5 kg aluminum block (c = 900 J/kg·K) cools from 80°C to 20°C. Find the magnitude of heat lost.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "A 0.5 kg aluminum block (c = 900 J/kg·K) cools from 80°C to 20°C. Find the magnitude of heat lost.\n\n(a) List known quantities and the unknown.\n(b) Write a symbolic equation relating them.\n(c) Calculate a numerical result with units.",
         "visibleSteps": [
           "Use Q = mcΔT with ΔT = 60 K.",
           "Substitute m, c, and ΔT."
         ],
         "blankSteps": [
-          "|Q| = ______ J"
+          "(a) ______",
+          "(b) ______",
+          "(c) ______"
         ],
         "hints": [
           "L1: ΔT in kelvin equals magnitude of Celsius change.",
@@ -490,13 +492,15 @@ export const physics2Questionnaires: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "p2-geometric-optics",
         "conceptIntro": "Section II · Mathematical Routines. Snell's law: n₁ sin θ₁ = n₂ sin θ₂.",
-        "prompt": "Light enters water (n = 1.33) from air (n = 1.00) at an angle of 30° to the normal. Find the angle of refraction in water.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "Light enters water (n = 1.33) from air (n = 1.00) at an angle of 30° to the normal. Find the angle of refraction in water.\n\n(a) List known quantities and the unknown.\n(b) Write a symbolic equation relating them.\n(c) Calculate a numerical result with units.",
         "visibleSteps": [
           "Write Snell's law with n_air and n_water.",
           "Solve for θ₂."
         ],
         "blankSteps": [
-          "θ₂ = ______°"
+          "(a) ______",
+          "(b) ______",
+          "(c) ______"
         ],
         "hints": [
           "L1: sin 30° = 0.5.",
@@ -526,13 +530,14 @@ export const physics2Questionnaires: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "p2-waves-optics",
         "conceptIntro": "Section II · Mathematical Routines. Closed pipe: f_n = nv/(4L), n = 1,3,5,…",
-        "prompt": "A pipe closed at one end has length 0.68 m and the speed of sound is 340 m/s. What is the fundamental frequency?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "A pipe closed at one end has length 0.68 m and the speed of sound is 340 m/s. What is the fundamental frequency?\n\n(a) List known quantities and the unknown.\n(b) Write a symbolic equation relating them.\n(c) Calculate a numerical result with units.",
         "hints": [
           "Use n = 1 in f_n = nv/(4L) for fundamental of closed pipe."
         ],
         "blankSteps": [
           "(a) ______",
-          "(b) ______"
+          "(b) ______",
+          "(c) ______"
         ],
         "visibleSteps": [
           "Answer each labeled part in AP free-response style."
@@ -561,13 +566,15 @@ export const physics2Questionnaires: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "p2-modern",
         "conceptIntro": "Section II · Mathematical Routines. K_max = hf − φ.",
-        "prompt": "Ultraviolet light with frequency 1.0 × 10¹⁵ Hz strikes a metal with work function φ = 3.0 × 10⁻¹⁹ J. Find K_max of ejected electrons. (h = 6.63 × 10⁻³⁴ J·s)\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "Ultraviolet light with frequency 1.0 × 10¹⁵ Hz strikes a metal with work function φ = 3.0 × 10⁻¹⁹ J. Find K_max of ejected electrons. (h = 6.63 × 10⁻³⁴ J·s)\n\n(a) List known quantities and the unknown.\n(b) Write a symbolic equation relating them.\n(c) Calculate a numerical result with units.",
         "visibleSteps": [
           "Compute photon energy E = hf.",
           "Apply K_max = E − φ."
         ],
         "blankSteps": [
-          "K_max = ______ J"
+          "(a) ______",
+          "(b) ______",
+          "(c) ______"
         ],
         "hints": [
           "L1: If E < φ, no electrons ejected.",

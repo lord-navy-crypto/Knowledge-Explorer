@@ -459,7 +459,7 @@ export const statsQuestionnaires: Questionnaire[] = [
         "conceptId": "stats-one-var",
         "conceptIntro": "Section II Part A · Exploring data. Five-number summary + 1.5×IQR outlier rule.",
         "difficultyTier": 2,
-        "prompt": "A random sample of 40 delivery times (minutes) for a campus food app has five-number summary: Min = 8, Q1 = 14, Median = 18, Q3 = 25, Max = 52. (i) Calculate the IQR and the 1.5×IQR outlier fences. (ii) Is 52 a potential outlier? Justify.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "A random sample of 40 delivery times (minutes) for a campus food app has five-number summary: Min = 8, Q1 = 14, Median = 18, Q3 = 25, Max = 52. (i) Calculate the IQR and the 1.5×IQR outlier fences. (ii) Is 52 a potential outlier? Justify.\n\n(a) State the parameter, hypotheses, or procedure in context.\n(b) Carry out the method or interpret the result in context.",
         "visibleSteps": [
           "IQR = Q3 − Q1.",
           "Lower fence = Q1 − 1.5·IQR; upper fence = Q3 + 1.5·IQR.",
@@ -483,14 +483,15 @@ export const statsQuestionnaires: Questionnaire[] = [
         "conceptId": "stats-one-var",
         "conceptIntro": "Section II Part B · Investigative Task. Mean/SD vs median/IQR under right skew.",
         "difficultyTier": 2,
-        "prompt": "Commute times for 200 workers are strongly skewed right with a few very long delays. Method A uses the 1.5×IQR rule; Method B flags points more than 2 sample SDs from the sample mean. Explain why Method A may flag more high outliers than Method B.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "Commute times for 200 workers are strongly skewed right with a few very long delays. Method A uses the 1.5×IQR rule; Method B flags points more than 2 sample SDs from the sample mean. Explain why Method A may flag more high outliers than Method B.\n\n(a) Describe an appropriate study design.\n(b) Identify a lurking variable or limitation if that design is not used.\n(c) State a conclusion that stays within the data.",
         "hints": [
           "Right skew pulls mean and SD upward.",
           "IQR/quartiles are resistant; fences stay lower than a 2-SD cutoff inflated by the tail."
         ],
         "blankSteps": [
           "(a) ______",
-          "(b) ______"
+          "(b) ______",
+          "(c) ______"
         ],
         "visibleSteps": [
           "Answer each labeled part in AP free-response style."
@@ -503,7 +504,7 @@ export const statsQuestionnaires: Questionnaire[] = [
         "conceptId": "stats-two-var",
         "conceptIntro": "Section II Part A · Inference. Interpret slope and r² in context.",
         "difficultyTier": 2,
-        "prompt": "For 15 hiking trails, a biologist fits ŷ = 4.2 + 0.85x predicting trail rating ŷ (1–10) from length x (km). Given r² = 0.64: (i) Interpret the slope. (ii) Interpret r².\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "For 15 hiking trails, a biologist fits ŷ = 4.2 + 0.85x predicting trail rating ŷ (1–10) from length x (km). Given r² = 0.64: (i) Interpret the slope. (ii) Interpret r².\n\n(a) State the parameter, hypotheses, or procedure in context.\n(b) Carry out the method or interpret the result in context.",
         "visibleSteps": [
           "Slope: predicted change in y per 1-unit increase in x.",
           "r²: percent of variation in y explained by the linear model with x."
@@ -525,7 +526,7 @@ export const statsQuestionnaires: Questionnaire[] = [
         "conceptId": "stats-two-var",
         "conceptIntro": "Section II Part A · Exploring data. Residual = observed − predicted.",
         "difficultyTier": 2,
-        "prompt": "Using ŷ = −16.5 + 35.0x for wolf weight (kg) from length x (m), one wolf with length 1.3 m has residual −8.2 kg. Find the wolf’s actual weight.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "Using ŷ = −16.5 + 35.0x for wolf weight (kg) from length x (m), one wolf with length 1.3 m has residual −8.2 kg. Find the wolf’s actual weight.\n\n(a) State the parameter, hypotheses, or procedure in context.\n(b) Carry out the method or interpret the result in context.",
         "visibleSteps": [
           "Compute ŷ at x = 1.3.",
           "Use residual = y − ŷ ⇒ y = ŷ + residual."
@@ -564,7 +565,7 @@ export const statsQuestionnaires: Questionnaire[] = [
         "conceptId": "stats-two-var",
         "conceptIntro": "Section II Part A · Inference. Changing one point: mean vs median.",
         "difficultyTier": 1,
-        "prompt": "Among 60 tip amounts, one tip of $9 is changed to $19. What happens to the mean and to the median? Justify briefly.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "Among 60 tip amounts, one tip of $9 is changed to $19. What happens to the mean and to the median? Justify briefly.\n\n(a) State the parameter, hypotheses, or procedure in context.\n(b) Carry out the method or interpret the result in context.",
         "hints": [
           "Mean uses the sum → increases.",
           "Median depends on middle order stats; one point moving within the same half often leaves median unchanged."
@@ -604,14 +605,15 @@ export const statsQuestionnaires: Questionnaire[] = [
         "conceptId": "stats-sampling-design",
         "conceptIntro": "Section II Part B · Investigative Task. Voluntary response vs SRS with follow-up.",
         "difficultyTier": 2,
-        "prompt": "A city wants to estimate average annual income of 12,000 alumni. Method 1: email all alumni an online form (expect ~800 replies). Method 2: select an SRS of 120 alumni and phone until all respond. Which method would you choose for estimating the mean income? Compare bias.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "A city wants to estimate average annual income of 12,000 alumni. Method 1: email all alumni an online form (expect ~800 replies). Method 2: select an SRS of 120 alumni and phone until all respond. Which method would you choose for estimating the mean income? Compare bias.\n\n(a) Describe an appropriate study design.\n(b) Identify a lurking variable or limitation if that design is not used.\n(c) State a conclusion that stays within the data.",
         "visibleSteps": [
           "Identify the sampling/response mechanism for each method.",
           "Link mechanism to bias in the income estimate."
         ],
         "blankSteps": [
-          "Preferred method: ______",
-          "Reasoning: ____________________"
+          "(a) ______",
+          "(b) ______",
+          "(c) ______"
         ],
         "hints": [
           "L1: Method 1 is voluntary response / nonresponse.",
@@ -626,7 +628,7 @@ export const statsQuestionnaires: Questionnaire[] = [
         "conceptId": "stats-sampling-design",
         "conceptIntro": "Section II Part A · Inference. Convenience sample bias.",
         "difficultyTier": 1,
-        "prompt": "To estimate the proportion of students satisfied with campus landscaping, an admin surveys the first 400 students entering a sold-out basketball game. Why might this be biased?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "To estimate the proportion of students satisfied with campus landscaping, an admin surveys the first 400 students entering a sold-out basketball game. Why might this be biased?\n\n(a) State the parameter, hypotheses, or procedure in context.\n(b) Carry out the method or interpret the result in context.",
         "hints": [
           "Game attendees are not a random cross-section of all students.",
           "Interest in athletics may correlate with opinions about grounds."
@@ -646,7 +648,7 @@ export const statsQuestionnaires: Questionnaire[] = [
         "conceptId": "stats-experiments",
         "conceptIntro": "Section II Part A · Exploring data. Identify treatments, units, response.",
         "difficultyTier": 1,
-        "prompt": "Researchers test four fungus concentrations (0, 1.0, 2.0, 3.0 ml/L) sprayed on beetles in 24 jars (6 jars each). After one week they record how many beetles remain alive in each jar. Identify treatments, experimental units, and response variable. Does the study have a control group?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "Researchers test four fungus concentrations (0, 1.0, 2.0, 3.0 ml/L) sprayed on beetles in 24 jars (6 jars each). After one week they record how many beetles remain alive in each jar. Identify treatments, experimental units, and response variable. Does the study have a control group?\n\n(a) State the parameter, hypotheses, or procedure in context.\n(b) Carry out the method or interpret the result in context.",
         "visibleSteps": [
           "Treatments = levels of the explanatory factor.",
           "Units = what is randomly assigned a treatment.",
@@ -670,14 +672,15 @@ export const statsQuestionnaires: Questionnaire[] = [
         "conceptId": "stats-experiments",
         "conceptIntro": "Section II Part B · Investigative Task. Matched pairs advantage.",
         "difficultyTier": 2,
-        "prompt": "A dermatologist recruits 30 pairs of identical twins with similar acne severity (severity differs across pairs). Why is a matched-pairs design (twins paired) statistically advantageous vs a completely randomized design?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "A dermatologist recruits 30 pairs of identical twins with similar acne severity (severity differs across pairs). Why is a matched-pairs design (twins paired) statistically advantageous vs a completely randomized design?\n\n(a) Describe an appropriate study design.\n(b) Identify a lurking variable or limitation if that design is not used.\n(c) State a conclusion that stays within the data.",
         "hints": [
           "Pairing controls genetic/severity similarity.",
           "Reduces variability → more power to detect treatment differences."
         ],
         "blankSteps": [
           "(a) ______",
-          "(b) ______"
+          "(b) ______",
+          "(c) ______"
         ],
         "visibleSteps": [
           "Answer each labeled part in AP free-response style."
@@ -690,7 +693,7 @@ export const statsQuestionnaires: Questionnaire[] = [
         "conceptId": "stats-experiments",
         "conceptIntro": "Section II Part A · Inference. Observational study + confounding.",
         "difficultyTier": 2,
-        "prompt": "A 20-year health study finds adults who drink ≥3 cups of coffee daily have 1.8× the rate of sleep complaints of non-coffee drinkers. (i) Explanatory and response variables? (ii) Observational study or experiment? (iii) Explain how “late work shifts” could be a confounding variable.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "A 20-year health study finds adults who drink ≥3 cups of coffee daily have 1.8× the rate of sleep complaints of non-coffee drinkers. (i) Explanatory and response variables? (ii) Observational study or experiment? (iii) Explain how “late work shifts” could be a confounding variable.\n\n(a) State the parameter, hypotheses, or procedure in context.\n(b) Carry out the method or interpret the result in context.",
         "visibleSteps": [
           "Explanatory predicts; response is the outcome.",
           "Was a treatment assigned by researchers?",
@@ -751,7 +754,7 @@ export const statsQuestionnaires: Questionnaire[] = [
         "conceptId": "stats-probability",
         "conceptIntro": "Section II Part A · Multi-skill. Two-way relative frequency table.",
         "difficultyTier": 2,
-        "prompt": "Relative frequencies for survey responses (Never / Sometimes / Always) by gender:\nNever∩Men=0.05, Never∩Women=0.07, Never total=0.12; Women total=0.55; Always∩Women=0.30; Always total=0.52.\nOne person selected at random. Find: (i) P(Never and Woman); (ii) P(Never or Woman); (iii) P(Never | Woman). Are Never and Woman independent?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "Relative frequencies for survey responses (Never / Sometimes / Always) by gender:\nNever∩Men=0.05, Never∩Women=0.07, Never total=0.12; Women total=0.55; Always∩Women=0.30; Always total=0.52.\nOne person selected at random. Find: (i) P(Never and Woman); (ii) P(Never or Woman); (iii) P(Never | Woman). Are Never and Woman independent?\n\n(a) State the parameter, hypotheses, or procedure in context.\n(b) Carry out the method or interpret the result in context.",
         "visibleSteps": [
           "Read joint from table for (i).",
           "P(A or B) = P(A)+P(B)−P(A and B).",
@@ -978,7 +981,7 @@ export const statsQuestionnaires: Questionnaire[] = [
         "conceptId": "stats-hypothesis-tests",
         "conceptIntro": "Section II Part A · Exploring data. Two-proportion z-test for an increase.",
         "difficultyTier": 3,
-        "prompt": "In 2022, 14 of 70 randomly sampled roadside weeds were herbicide-resistant. In 2025, 22 of 65 were resistant. Do the data provide convincing evidence at α=0.05 that the proportion resistant has increased?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "In 2022, 14 of 70 randomly sampled roadside weeds were herbicide-resistant. In 2025, 22 of 65 were resistant. Do the data provide convincing evidence at α=0.05 that the proportion resistant has increased?\n\n(a) State the parameter, hypotheses, or procedure in context.\n(b) Carry out the method or interpret the result in context.",
         "visibleSteps": [
           "H₀: p₂₅=p₂₂ vs Hₐ: p₂₅>p₂₂.",
           "Pooled ˆp_c=(14+22)/(70+65); compute z and p-value.",
@@ -1023,15 +1026,16 @@ export const statsQuestionnaires: Questionnaire[] = [
         "conceptId": "stats-hypothesis-tests",
         "conceptIntro": "Section II Part B · Investigative Task. Paired t-test on differences.",
         "difficultyTier": 3,
-        "prompt": "For 8 car models, one woman and one man bought the same equipped model from the same dealer. Differences (woman − man) have d̄ = $520 and s_d = $480. Do the data provide convincing evidence that women pay more on average (α=0.05)?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "For 8 car models, one woman and one man bought the same equipped model from the same dealer. Differences (woman − man) have d̄ = $520 and s_d = $480. Do the data provide convincing evidence that women pay more on average (α=0.05)?\n\n(a) Describe an appropriate study design.\n(b) Identify a lurking variable or limitation if that design is not used.\n(c) State a conclusion that stays within the data.",
         "visibleSteps": [
           "Paired data ⇒ one-sample t on differences.",
           "H₀: μ_d=0 vs Hₐ: μ_d>0.",
           "t = d̄ / (s_d/√n), df = n−1."
         ],
         "blankSteps": [
-          "t≈______ df=______",
-          "Conclusion: ____________________"
+          "(a) ______",
+          "(b) ______",
+          "(c) ______"
         ],
         "hints": [
           "L1: SE = 480/√8.",
@@ -1088,7 +1092,7 @@ export const statsQuestionnaires: Questionnaire[] = [
         "conceptId": "stats-chi-square",
         "conceptIntro": "Section II Part A · Probability / sampling distributions. Chi-square goodness-of-fit.",
         "difficultyTier": 2,
-        "prompt": "A bank’s acceptable wait-time probabilities are 0.30, 0.25, 0.20, 0.15, 0.10 across five categories. In a random sample of 100 customers the observed counts are 28, 22, 19, 18, 13. Conduct a χ² GOF test to see if wait times are inconsistent with the acceptable probabilities.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "A bank’s acceptable wait-time probabilities are 0.30, 0.25, 0.20, 0.15, 0.10 across five categories. In a random sample of 100 customers the observed counts are 28, 22, 19, 18, 13. Conduct a χ² GOF test to see if wait times are inconsistent with the acceptable probabilities.\n\n(a) State the parameter, hypotheses, or procedure in context.\n(b) Carry out the method or interpret the result in context.",
         "visibleSteps": [
           "H₀: true proportions equal the claimed ones; Hₐ: at least one differs.",
           "Expected = 100×p_i; χ²=Σ(O−E)²/E; df=4.",
@@ -1129,9 +1133,10 @@ export const statsQuestionnaires: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "stats-two-var",
         "conceptIntro": "Section II Part A · Multi-skill. r² template sentence.",
-        "prompt": "Complete: “About ____% of the variation in ______ is explained by the linear relationship with ______.” for a model predicting exam score from hours studied with r²=0.71.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "Complete: “About ____% of the variation in ______ is explained by the linear relationship with ______.” for a model predicting exam score from hours studied with r²=0.71.\n\n(a) State the parameter, hypotheses, or procedure in context.\n(b) Carry out the method or interpret the result in context.",
         "blankSteps": [
-          "71% / exam scores / hours studied (order may vary but must be correct)"
+          "(a) ______",
+          "(b) ______"
         ],
         "hints": [
           "r²×100 with response variable first, explanatory second."
@@ -1146,7 +1151,7 @@ export const statsQuestionnaires: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "stats-sampling-design",
         "conceptIntro": "Section II Part A · Inference. When stratification helps.",
-        "prompt": "A university has two campuses. When would stratifying by campus give a more precise estimate of overall satisfaction than stratifying by gender?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "A university has two campuses. When would stratifying by campus give a more precise estimate of overall satisfaction than stratifying by gender?\n\n(a) State the parameter, hypotheses, or procedure in context.\n(b) Carry out the method or interpret the result in context.",
         "hints": [
           "When satisfaction differs more between campuses than between genders (within-campus homogeneity)."
         ],
@@ -1181,7 +1186,7 @@ export const statsQuestionnaires: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "stats-experiments",
         "conceptIntro": "Section II Part A · Exploring data. Random assignment procedure.",
-        "prompt": "Describe a valid method to randomly assign 24 students to two equal lab groups (physical dissection vs simulation) for comparing learning gains.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "Describe a valid method to randomly assign 24 students to two equal lab groups (physical dissection vs simulation) for comparing learning gains.\n\n(a) State the parameter, hypotheses, or procedure in context.\n(b) Carry out the method or interpret the result in context.",
         "hints": [
           "Label 1–24, use RNG / shuffle, first 12 → Group A, rest → Group B.",
           "Mention equal size and chance assignment."
@@ -1201,13 +1206,14 @@ export const statsQuestionnaires: Questionnaire[] = [
         "conceptId": "stats-random-vars",
         "conceptIntro": "Section II Part A · Collecting data / methods. Geometric / “first success after”.",
         "difficultyTier": 2,
-        "prompt": "An airline upgrades a frequent flyer with probability 0.08 on each flight (independent). Find the probability that the flyer’s first upgrade occurs after the 4th flight (i.e., flights 1–4 are not upgrades).\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "An airline upgrades a frequent flyer with probability 0.08 on each flight (independent). Find the probability that the flyer’s first upgrade occurs after the 4th flight (i.e., flights 1–4 are not upgrades).\n\n(a) State the parameter, hypotheses, or procedure in context.\n(b) Carry out the method or interpret the result in context.",
         "visibleSteps": [
           "Need 4 consecutive non-upgrades.",
           "P(no upgrade)=0.92."
         ],
         "blankSteps": [
-          "P = ______"
+          "(a) ______",
+          "(b) ______"
         ],
         "hints": [
           "L1: (0.92)^4.",

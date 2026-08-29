@@ -25,8 +25,8 @@ export const apHumanitiesSetE: Questionnaire[] = [
         "conceptIntro": "Section I Part B · Short-Answer Question. Key concept: New Deal expanded federal economic role.",
         "prompt": "Provide one piece of context BEFORE 1933 and one consequence AFTER 1940 for evaluating the New Deal's legacy.\n\n(a) Identify or describe ONE relevant example.\n(b) Explain a cause, effect, or reason using specific evidence.",
         "blankSteps": [
-          "Before 1933: ______",
-          "After 1940: ______"
+          "(a) ______",
+          "(b) ______"
         ],
         "hints": [
           "Before: Great Depression banking collapse.",
@@ -54,8 +54,7 @@ export const apHumanitiesSetE: Questionnaire[] = [
         "answerKey": "Law changed formal rules; de facto segregation, enforcement gaps, and economic barriers remained.",
         "blankSteps": [
           "(a) ______",
-          "(b) ______",
-          "(c) ______"
+          "(b) ______"
         ],
         "visibleSteps": [
           "Answer each labeled part in AP free-response style."
@@ -70,8 +69,7 @@ export const apHumanitiesSetE: Questionnaire[] = [
         "prompt": "How did Cold War anxiety affect civil liberties in the United States in the 1950s? Give one example.\n\n(a) Identify or describe ONE relevant example.\n(b) Explain a cause, effect, or reason using specific evidence.",
         "blankSteps": [
           "(a) ______",
-          "(b) ______",
-          "(c) ______"
+          "(b) ______"
         ],
         "hints": [
           "McCarthyism, loyalty oaths, HUAC hearings."
@@ -115,8 +113,7 @@ export const apHumanitiesSetE: Questionnaire[] = [
         "answerKey": "Example: 'natural rights' rhetoric coexisted with Atlantic slavery and empire.",
         "blankSteps": [
           "(a) ______",
-          "(b) ______",
-          "(c) ______"
+          "(b) ______"
         ],
         "visibleSteps": [
           "Answer each labeled part in AP free-response style."
@@ -130,8 +127,8 @@ export const apHumanitiesSetE: Questionnaire[] = [
         "conceptIntro": "Section I Part B · Short-Answer Question. Key concept: Napoleonic reforms spread beyond France.",
         "prompt": "Name one reform associated with Napoleonic rule and one region outside France affected by Napoleonic wars.\n\n(a) Identify or describe ONE relevant example.\n(b) Explain a cause, effect, or reason using specific evidence.",
         "blankSteps": [
-          "Reform: ______",
-          "Region: ______"
+          "(a) ______",
+          "(b) ______"
         ],
         "hints": [
           "Napoleonic Code; Spain weakened → Latin American independence."
@@ -154,8 +151,7 @@ export const apHumanitiesSetE: Questionnaire[] = [
         "prompt": "Explain one economic motive for European imperial expansion in Africa after 1870.\n\n(a) Identify or describe ONE relevant example.\n(b) Explain a cause, effect, or reason using specific evidence.",
         "blankSteps": [
           "(a) ______",
-          "(b) ______",
-          "(c) ______"
+          "(b) ______"
         ],
         "hints": [
           "Raw materials, markets, strategic ports, investment."
@@ -214,7 +210,8 @@ export const apHumanitiesSetE: Questionnaire[] = [
         "conceptIntro": "Section II · Question 1 Synthesis. Key concept: sources must interact, not sit in separate paragraphs.",
         "prompt": "Two sources disagree on whether schools should ban phones. Write one sentence synthesizing them toward a qualified thesis.\n\n(a) State a defensible thesis.\n(b) Support it with specific evidence and commentary.",
         "blankSteps": [
-          "Synthesis sentence: ______"
+          "(a) ______",
+          "(b) ______"
         ],
         "hints": [
           "Acknowledge both; explain which limitation matters more."
@@ -271,7 +268,7 @@ export const apHumanitiesSetE: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "elit-poetry",
         "conceptIntro": "Section II · Poetry analysis. Key concept: form shapes meaning.",
-        "prompt": "Poem (original practice): “The shutters / did not wait for the sentence to end / the rain kept walking into the kitchen.”\n\nPoem (original practice): “The shutters / did not wait for the sentence to end / the rain kept walking into the kitchen.”\n\nHow can enjambment (line running over without pause) create tension in a poem about waiting?\n\n(a) Make a defensible claim about the passage.\n(b) Support it with TWO specific textual details.",
+        "prompt": "Poem (original practice): “The shutters / did not wait for the sentence to end / the rain kept walking into the kitchen.”\n\nPoem (original practice): “The shutters / did not wait for the sentence to end / the rain kept walking into the kitchen.”\n\nPoem (original practice): “The shutters / did not wait for the sentence to end / the rain kept walking into the kitchen.”\n\nHow can enjambment (line running over without pause) create tension in a poem about waiting?\n\n(a) Make a defensible claim about the passage.\n(b) Support it with TWO specific textual details.",
         "hints": [
           "Unfinished lines mirror unresolved waiting; pace feels suspended."
         ],
@@ -290,9 +287,10 @@ export const apHumanitiesSetE: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "elit-prose-voice",
         "conceptIntro": "Section II · Prose fiction analysis. Key concept: narrator voice affects theme.",
-        "prompt": "Passage (original practice): “She counted the clock’s ticks as if they were footsteps she still owed the hallway.”\n\nPassage (original practice): “She counted the clock’s ticks as if they were footsteps she still owed the hallway.”\n\nWrite a thesis line analyzing how a first-person teenage narrator might critique adult hypocrisy through tone.\n\n(a) Make a defensible claim about the passage.\n(b) Support it with TWO specific textual details.",
+        "prompt": "Passage (original practice): “She counted the clock’s ticks as if they were footsteps she still owed the hallway.”\n\nPassage (original practice): “She counted the clock’s ticks as if they were footsteps she still owed the hallway.”\n\nPassage (original practice): “She counted the clock’s ticks as if they were footsteps she still owed the hallway.”\n\nWrite a thesis line analyzing how a first-person teenage narrator might critique adult hypocrisy through tone.\n\n(a) Make a defensible claim about the passage.\n(b) Support it with TWO specific textual details.",
         "blankSteps": [
-          "Thesis: ______"
+          "(a) ______",
+          "(b) ______"
         ],
         "hints": [
           "Topic + insight; avoid plot summary."
@@ -311,7 +309,7 @@ export const apHumanitiesSetE: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "elit-drama-conflict",
         "conceptIntro": "Section II · Literary argument. Key concept: stage directions reveal power.",
-        "prompt": "Passage (original practice): “She counted the clock’s ticks as if they were footsteps she still owed the hallway.”\n\nPassage (original practice): “She counted the clock’s ticks as if they were footsteps she still owed the hallway.”\n\nWhy might a playwright describe a character 'speaking quietly while others shout' in a public scene?\n\n(a) Make a defensible claim about the passage.\n(b) Support it with TWO specific textual details.",
+        "prompt": "Passage (original practice): “She counted the clock’s ticks as if they were footsteps she still owed the hallway.”\n\nPassage (original practice): “She counted the clock’s ticks as if they were footsteps she still owed the hallway.”\n\nPassage (original practice): “She counted the clock’s ticks as if they were footsteps she still owed the hallway.”\n\nWhy might a playwright describe a character 'speaking quietly while others shout' in a public scene?\n\n(a) Make a defensible claim about the passage.\n(b) Support it with TWO specific textual details.",
         "hints": [
           "Contrast shows control, intimidation, or hidden authority."
         ],

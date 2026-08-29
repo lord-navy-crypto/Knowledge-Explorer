@@ -20,7 +20,7 @@ export const apPracticeBySubject: Questionnaire[] = [
         "id": "stats-inf-a1",
         "format": "frq_half",
         "conceptIntro": "Section II Part A · Inference. Key concept: interpret CI, not just compute.",
-        "prompt": "A one-proportion CI for seniors voting is 0.52 ± 0.04. What does 0.52 represent, and what does ±0.04 mean?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "A one-proportion CI for seniors voting is 0.52 ± 0.04. What does 0.52 represent, and what does ±0.04 mean?\n\n(a) State the parameter, hypotheses, or procedure in context.\n(b) Carry out the method or interpret the result in context.",
         "visibleSteps": [
           "Identify point estimate.",
           "Explain margin of error in context."
@@ -170,8 +170,8 @@ export const apPracticeBySubject: Questionnaire[] = [
           "Connect to reform movements."
         ],
         "blankSteps": [
-          "Context fact 1: ______",
-          "Context fact 2: ______"
+          "(a) ______",
+          "(b) ______"
         ],
         "hints": [
           "Progressive Era reforms.",
@@ -208,8 +208,9 @@ export const apPracticeBySubject: Questionnaire[] = [
           "Choose one political/economic category."
         ],
         "blankSteps": [
-          "Similarity: ______",
-          "Difference: ______"
+          "(a) Context: ______",
+          "(b) Thesis: ______",
+          "(c) Evidence: ______"
         ],
         "hints": [
           "Think Ottomans, Ming/Qing, Mughals."
@@ -238,7 +239,7 @@ export const apPracticeBySubject: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "elang-rhetoric",
         "conceptIntro": "Section II · Question 2 Rhetorical Analysis. Key concept: SOAPS + thesis.",
-        "prompt": "Excerpt (original practice): “Buses already idle at 6:50 a.m. A later bell would not erase homework; it would let teenagers meet the clock their bodies already keep.”\n\nExcerpt (original practice): “Buses already idle at 6:50 a.m. A later bell would not erase homework; it would let teenagers meet the clock their bodies already keep.”\n\nAnalyze how an op-ed about school start times uses evidence to appeal to parents.\n\n(a) Identify the rhetorical situation (speaker, audience, purpose).\n(b) Analyze TWO rhetorical choices and their effects.",
+        "prompt": "Excerpt (original practice): “Buses already idle at 6:50 a.m. A later bell would not erase homework; it would let teenagers meet the clock their bodies already keep.”\n\nExcerpt (original practice): “Buses already idle at 6:50 a.m. A later bell would not erase homework; it would let teenagers meet the clock their bodies already keep.”\n\nExcerpt (original practice): “Buses already idle at 6:50 a.m. A later bell would not erase homework; it would let teenagers meet the clock their bodies already keep.”\n\nAnalyze how an op-ed about school start times uses evidence to appeal to parents.\n\n(a) Identify the rhetorical situation (speaker, audience, purpose).\n(b) Analyze TWO rhetorical choices and their effects.",
         "visibleSteps": [
           "Identify audience and purpose.",
           "Choose two evidence types used."
@@ -274,13 +275,14 @@ export const apPracticeBySubject: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "elit-poetry",
         "conceptIntro": "Section II · Poetry analysis. Key concept: claim about effect of a device.",
-        "prompt": "Poem (original practice): “The shutters / did not wait for the sentence to end / the rain kept walking into the kitchen.”\n\nPoem (original practice): “The shutters / did not wait for the sentence to end / the rain kept walking into the kitchen.”\n\nA poem uses enjambment across three lines describing a storm. What effect might enjambment create for the reader?\n\n(a) Make a defensible claim about the passage.\n(b) Support it with TWO specific textual details.",
+        "prompt": "Poem (original practice): “The shutters / did not wait for the sentence to end / the rain kept walking into the kitchen.”\n\nPoem (original practice): “The shutters / did not wait for the sentence to end / the rain kept walking into the kitchen.”\n\nPoem (original practice): “The shutters / did not wait for the sentence to end / the rain kept walking into the kitchen.”\n\nA poem uses enjambment across three lines describing a storm. What effect might enjambment create for the reader?\n\n(a) Make a defensible claim about the passage.\n(b) Support it with TWO specific textual details.",
         "visibleSteps": [
           "Define enjambment.",
           "Link to storm imagery."
         ],
         "blankSteps": [
-          "Device effect claim: ______"
+          "(a) ______",
+          "(b) ______"
         ],
         "hints": [
           "Enjambment can increase momentum or tension."
@@ -448,12 +450,14 @@ export const apPracticeBySubject: Questionnaire[] = [
         "id": "phycm-r-a1",
         "format": "frq_half",
         "conceptIntro": "Section II · Free Response 2. Key concept: τ = Iα.",
-        "prompt": "A disk with I = 0.05 kg·m² has angular acceleration 12 rad/s². Find net torque.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "A disk with I = 0.05 kg·m² has angular acceleration 12 rad/s². Find net torque.\n\n(a) List known quantities and the unknown.\n(b) Write a symbolic equation relating them.\n(c) Calculate a numerical result with units.",
         "visibleSteps": [
           "Use τ_net = Iα."
         ],
         "blankSteps": [
-          "τ_net = ______ N·m"
+          "(a) ______",
+          "(b) ______",
+          "(c) ______"
         ],
         "hints": [
           "Direct substitution."
@@ -554,8 +558,8 @@ export const apPracticeBySubject: Questionnaire[] = [
         "conceptIntro": "Section I Part B · Short-Answer Question. Key concept: broader historical context before thesis.",
         "prompt": "Before writing about Enlightenment reforms, give two sentences of context from the 17th–18th centuries.\n\n(a) Identify or describe ONE relevant example.\n(b) Explain a cause, effect, or reason using specific evidence.",
         "blankSteps": [
-          "Context sentence 1: ______",
-          "Context sentence 2: ______"
+          "(a) ______",
+          "(b) ______"
         ],
         "hints": [
           "Scientific Revolution, absolute monarchy, print culture."

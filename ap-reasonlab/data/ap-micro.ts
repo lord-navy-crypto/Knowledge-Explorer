@@ -332,14 +332,15 @@ export const microQuestionnaires: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "micro-supply-demand",
         "conceptIntro": "Section II · Short free response. Binding price ceiling: set below equilibrium → shortage.",
-        "prompt": "A city sets a rent ceiling below the free-market equilibrium rent. What happens to quantity demanded, quantity supplied, and whether the ceiling is binding?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "A city sets a rent ceiling below the free-market equilibrium rent. What happens to quantity demanded, quantity supplied, and whether the ceiling is binding?\n\n(a) Identify the market, curve, or policy that is affected.\n(b) Describe the graph change (which curve shifts, or movement along a curve).\n(c) State the short-run effect on the relevant prices and quantities.",
         "hints": [
           "Qd rises and Qs falls when ceiling is below equilibrium.",
           "Shortage = Qd − Qs at the controlled price."
         ],
         "blankSteps": [
           "(a) ______",
-          "(b) ______"
+          "(b) ______",
+          "(c) ______"
         ],
         "visibleSteps": [
           "Answer each labeled part in AP free-response style."
@@ -351,14 +352,15 @@ export const microQuestionnaires: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "micro-supply-demand",
         "conceptIntro": "Section II · Short free response. Total revenue and elasticity: elastic → price cut raises TR.",
-        "prompt": "Demand for a good has |E_d| = 3. The firm lowers price by 5%. Predict the direction of change in total revenue and explain using elasticity.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "Demand for a good has |E_d| = 3. The firm lowers price by 5%. Predict the direction of change in total revenue and explain using elasticity.\n\n(a) Identify the market, curve, or policy that is affected.\n(b) Describe the graph change (which curve shifts, or movement along a curve).\n(c) State the short-run effect on the relevant prices and quantities.",
         "visibleSteps": [
           "|E_d| > 1 means demand is elastic.",
           "Relate %ΔQ to %ΔP using Ed."
         ],
         "blankSteps": [
-          "Quantity changes by about ______%",
-          "Total revenue will ______ (rise/fall)"
+          "(a) ______",
+          "(b) ______",
+          "(c) ______"
         ],
         "hints": [
           "L1: %ΔQ ≈ Ed × %ΔP in magnitude.",
@@ -388,13 +390,14 @@ export const microQuestionnaires: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "micro-production-costs",
         "conceptIntro": "Section II · Long free response. Shutdown rule: P < AVC in the short run.",
-        "prompt": "A competitive firm has P = $5, AVC = $6, ATC = $8. Should it produce in the short run? Explain.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "A competitive firm has P = $5, AVC = $6, ATC = $8. Should it produce in the short run? Explain.\n\n(a) Identify the market, curve, or policy that is affected.\n(b) Describe the graph change (which curve shifts, or movement along a curve).\n(c) State the short-run effect on the relevant prices and quantities.",
         "hints": [
           "Compare P to AVC for shutdown; P < ATC means loss but may still produce if P ≥ AVC."
         ],
         "blankSteps": [
           "(a) ______",
-          "(b) ______"
+          "(b) ______",
+          "(c) ______"
         ],
         "visibleSteps": [
           "Answer each labeled part in AP free-response style."

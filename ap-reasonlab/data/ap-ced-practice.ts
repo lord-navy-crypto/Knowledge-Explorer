@@ -28,7 +28,7 @@ export const apCedPractice: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "chem-atomic-structure",
         "conceptIntro": "Section II · Short free response. Key concept: periodic trends follow effective nuclear charge.",
-        "prompt": "Which has the larger first ionization energy: Na or Mg? Explain in one sentence using periodic trends.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "Which has the larger first ionization energy: Na or Mg? Explain in one sentence using periodic trends.\n\n(a) Identify the chemical species, process, or claim.\n(b) Justify using a calculation, periodic trend, or particulate model.",
         "hints": [
           "Same period: higher Z_eff generally increases IE.",
           "Mg has one more proton in same shell."
@@ -48,13 +48,15 @@ export const apCedPractice: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "chem-thermochemistry",
         "conceptIntro": "Section II · Long free response. Key concept: Hess's law combines step enthalpies.",
-        "prompt": "Given C(s) + O₂(g) → CO₂(g), ΔH = −394 kJ/mol and CO(g) + ½O₂(g) → CO₂(g), ΔH = −283 kJ/mol, find ΔH for C(s) + ½O₂(g) → CO(g).\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "Given C(s) + O₂(g) → CO₂(g), ΔH = −394 kJ/mol and CO(g) + ½O₂(g) → CO₂(g), ΔH = −283 kJ/mol, find ΔH for C(s) + ½O₂(g) → CO(g).\n\n(a) Write the relevant equation, identification, or particulate claim.\n(b) Show a calculation or chemical reasoning with units.\n(c) Justify a claim using evidence from the prompt.",
         "visibleSteps": [
           "Write target reaction.",
           "Manipulate given equations and add ΔH values."
         ],
         "blankSteps": [
-          "ΔH = ______ kJ/mol"
+          "(a) ______",
+          "(b) ______",
+          "(c) ______"
         ],
         "hints": [
           "Reverse second equation if needed.",
@@ -91,10 +93,11 @@ export const apCedPractice: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "chem-electrochemistry",
         "conceptIntro": "Section II · Long free response. Key concept: oxidation at anode, reduction at cathode.",
-        "prompt": "In a galvanic cell with Zn(s) | Zn²⁺ || Cu²⁺ | Cu(s), which electrode is the anode and which ion is reduced?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "In a galvanic cell with Zn(s) | Zn²⁺ || Cu²⁺ | Cu(s), which electrode is the anode and which ion is reduced?\n\n(a) Write the relevant equation, identification, or particulate claim.\n(b) Show a calculation or chemical reasoning with units.\n(c) Justify a claim using evidence from the prompt.",
         "blankSteps": [
-          "Anode: ______",
-          "Ion reduced: ______"
+          "(a) ______",
+          "(b) ______",
+          "(c) ______"
         ],
         "hints": [
           "Zn loses electrons (oxidation).",
@@ -135,9 +138,10 @@ export const apCedPractice: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "bio-heredity",
         "conceptIntro": "Section II · Short FRQ · Conceptual analysis. Key concept: testcross reveals unknown genotype.",
-        "prompt": "A pea plant with yellow seeds (dominant) is testcrossed with green. Half the offspring are yellow, half green. What was the parent genotype?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "A pea plant with yellow seeds (dominant) is testcrossed with green. Half the offspring are yellow, half green. What was the parent genotype?\n\n(a) Identify the biological concept or claim.\n(b) Explain using evidence from the model, data, or scenario.",
         "blankSteps": [
-          "Genotype = ______"
+          "(a) ______",
+          "(b) ______"
         ],
         "hints": [
           "50/50 ratio suggests heterozygous dominant.",
@@ -157,7 +161,7 @@ export const apCedPractice: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "bio-natural-selection",
         "conceptIntro": "Section II · Long FRQ · Experimental results with graphing. Key concept: Hardy–Weinberg requires no evolution.",
-        "prompt": "A population is in Hardy–Weinberg equilibrium with p = 0.6 for allele A. What is the expected frequency of genotype Aa?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "A population is in Hardy–Weinberg equilibrium with p = 0.6 for allele A. What is the expected frequency of genotype Aa?\n\n(a) Identify the independent and dependent variables or the claim supported by the data.\n(b) Predict or calculate from the results.\n(c) Justify using evidence from the experiment or model.",
         "hints": [
           "2pq for heterozygote.",
           "q = 1 − p."
@@ -165,7 +169,8 @@ export const apCedPractice: Questionnaire[] = [
         "answerKey": "2pq = 2(0.6)(0.4) = 0.48",
         "blankSteps": [
           "(a) ______",
-          "(b) ______"
+          "(b) ______",
+          "(c) ______"
         ],
         "visibleSteps": [
           "Answer each labeled part in AP free-response style."
@@ -197,7 +202,7 @@ export const apCedPractice: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "bio-cell-cycle",
         "conceptIntro": "Section II · Short FRQ · Conceptual analysis. Key concept: meiosis produces genetic variation.",
-        "prompt": "Name two events in meiosis I that increase genetic variation among gametes.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "Name two events in meiosis I that increase genetic variation among gametes.\n\n(a) Identify the biological concept or claim.\n(b) Explain using evidence from the model, data, or scenario.",
         "blankSteps": [
           "Event 1: ______",
           "Event 2: ______"
@@ -240,7 +245,7 @@ export const apCedPractice: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "psych-biological-bases",
         "conceptIntro": "Section II · Research-method FRQ. Key concept: neurotransmitters have specific roles.",
-        "prompt": "Low serotonin activity is often linked to which domain of behavior? (mood, balance, muscle contraction, or vision)\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "Low serotonin activity is often linked to which domain of behavior? (mood, balance, muscle contraction, or vision)\n\n(a) Apply the named psychological concept to the scenario.\n(b) Explain the application with a specific detail from the prompt.",
         "hints": [
           "Serotonin relates to mood and sleep.",
           "Acetylcholine → muscle at neuromuscular junction."
@@ -260,9 +265,10 @@ export const apCedPractice: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "psych-cognition",
         "conceptIntro": "Section II · Research-method FRQ. Key concept: encoding specificity improves recall.",
-        "prompt": "A student learns vocabulary in a quiet library but takes the test in a noisy gym. How might context-dependent memory affect performance?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "A student learns vocabulary in a quiet library but takes the test in a noisy gym. How might context-dependent memory affect performance?\n\n(a) Apply the named psychological concept to the scenario.\n(b) Explain the application with a specific detail from the prompt.",
         "blankSteps": [
-          "Predicted effect: ______"
+          "(a) ______",
+          "(b) ______"
         ],
         "hints": [
           "Mismatch of learning and test context can hurt recall.",
@@ -301,7 +307,7 @@ export const apCedPractice: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "psych-development",
         "conceptIntro": "Section II · Research-method FRQ. Key concept: negative reinforcement removes aversive stimulus.",
-        "prompt": "A child does chores to stop parents' nagging. Is this positive reinforcement, negative reinforcement, punishment, or extinction?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "A child does chores to stop parents' nagging. Is this positive reinforcement, negative reinforcement, punishment, or extinction?\n\n(a) Apply the named psychological concept to the scenario.\n(b) Explain the application with a specific detail from the prompt.",
         "hints": [
           "Behavior increases.",
           "Aversive stimulus (nagging) is removed."
@@ -340,12 +346,13 @@ export const apCedPractice: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "apes-population",
         "conceptIntro": "Section II · Analyze an environmental problem. Key concept: rule of 70 estimates doubling time.",
-        "prompt": "A country grows at 2.1% per year. Estimate its population doubling time using the rule of 70.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "A country grows at 2.1% per year. Estimate its population doubling time using the rule of 70.\n\n(a) Identify the environmental process or quantity.\n(b) Explain a cause, effect, or calculation using evidence from the prompt.",
         "visibleSteps": [
           "Use doubling time ≈ 70/r with r in percent."
         ],
         "blankSteps": [
-          "Doubling time ≈ ______ years"
+          "(a) ______",
+          "(b) ______"
         ],
         "hints": [
           "70 / 2.1 ≈ 33 years."
@@ -361,7 +368,7 @@ export const apCedPractice: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "apes-energy-resources",
         "conceptIntro": "Section II · Design an investigation. Key concept: greenhouse gases trap infrared radiation.",
-        "prompt": "Why does methane (CH₄) contribute strongly to warming despite lower atmospheric concentration than CO₂?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "Why does methane (CH₄) contribute strongly to warming despite lower atmospheric concentration than CO₂?\n\n(a) Identify the environmental process or quantity.\n(b) Explain a cause, effect, or calculation using evidence from the prompt.",
         "hints": [
           "Compare per-molecule warming potential.",
           "Methane is potent but shorter-lived."
@@ -419,7 +426,7 @@ export const apCedPractice: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "hug-population-migration",
         "conceptIntro": "Section II · Free Response 1. Key concept: push and pull factors drive migration.",
-        "prompt": "Give one push factor and one pull factor that might move rural workers to a primate city.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "Give one push factor and one pull factor that might move rural workers to a primate city.\n\n(a) Identify a relevant geographic process or scale.\n(b) Explain one specific effect using an example.",
         "hints": [
           "Push: limited jobs, drought.",
           "Pull: wages, services."
@@ -439,7 +446,7 @@ export const apCedPractice: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "hug-agriculture-urban",
         "conceptIntro": "Section II · Free Response 2. Key concept: bid-rent curve peaks at CBD.",
-        "prompt": "Why might a luxury department store locate in the CBD while a warehouse locates farther out?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "Why might a luxury department store locate in the CBD while a warehouse locates farther out?\n\n(a) Identify a relevant geographic process or scale.\n(b) Explain one specific effect using an example.",
         "blankSteps": [
           "CBD reason: ______",
           "Warehouse reason: ______"
@@ -501,7 +508,7 @@ export const apCedPractice: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "csa-arrays",
         "conceptIntro": "Section II · Methods and control structures. Key concept: array indices 0 to length−1.",
-        "prompt": "int[] scores = {10, 20, 30}; What is scores[scores.length - 1] and what happens if you access scores[3]?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "int[] scores = {10, 20, 30}; What is scores[scores.length - 1] and what happens if you access scores[3]?\n\n(a) Write the method signature or complete the required implementation.\n(b) Trace the result for a concrete input, or explain a correctness condition.",
         "blankSteps": [
           "scores[scores.length - 1] = ______",
           "scores[3]: ______"
@@ -525,7 +532,7 @@ export const apCedPractice: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "csa-recursion",
         "conceptIntro": "Section II · Array / ArrayList. Key concept: base case stops recursion.",
-        "prompt": "Why does factorial(n) need if (n <= 1) return 1; before the recursive call?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "Why does factorial(n) need if (n <= 1) return 1; before the recursive call?\n\n(a) Write the method signature or complete the required implementation.\n(b) Trace the result for a concrete input, or explain a correctness condition.",
         "hints": [
           "Without base case, infinite recursion.",
           "Stack overflow."
@@ -583,7 +590,7 @@ export const apCedPractice: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "csp-data-internet",
         "conceptIntro": "Create performance task · written responses (practice). Key concept: lossless vs lossy compression.",
-        "prompt": "Why is PNG preferred over heavy JPEG for a diagram with sharp text edges?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "Why is PNG preferred over heavy JPEG for a diagram with sharp text edges?\n\n(a) Identify the computing concept in the scenario.\n(b) Explain an effect, limitation, or trade-off.",
         "hints": [
           "Lossless preserves exact pixels.",
           "JPEG lossy blurs edges."
@@ -603,9 +610,10 @@ export const apCedPractice: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "csp-algorithms",
         "conceptIntro": "Create performance task · written responses (practice). Key concept: binary search needs sorted data.",
-        "prompt": "List the comparisons to find 7 in sorted [2, 5, 7, 11, 14] using binary search.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "List the comparisons to find 7 in sorted [2, 5, 7, 11, 14] using binary search.\n\n(a) Identify the computing concept in the scenario.\n(b) Explain an effect, limitation, or trade-off.",
         "blankSteps": [
-          "Comparison sequence: ______"
+          "(a) ______",
+          "(b) ______"
         ],
         "hints": [
           "Check middle (7) first — found immediately.",
@@ -625,7 +633,7 @@ export const apCedPractice: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "csp-impact",
         "conceptIntro": "Create performance task · written responses (practice). Key concept: algorithmic bias.",
-        "prompt": "How can unrepresentative training data cause unfair facial recognition errors?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "How can unrepresentative training data cause unfair facial recognition errors?\n\n(a) Identify the computing concept in the scenario.\n(b) Explain an effect, limitation, or trade-off.",
         "hints": [
           "Model learns patterns from training set.",
           "Underrepresented faces → higher error rates."
@@ -663,13 +671,15 @@ export const apCedPractice: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "physc-mech-rotation",
         "conceptIntro": "Section II · Free Response 2. Key concept: τ = Iα.",
-        "prompt": "A uniform disk (I = ½MR²) has M = 2 kg, R = 0.5 m, and net torque 4 N·m about its center. Find α.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "A uniform disk (I = ½MR²) has M = 2 kg, R = 0.5 m, and net torque 4 N·m about its center. Find α.\n\n(a) List known quantities and the unknown.\n(b) Write a symbolic equation relating them.\n(c) Calculate a numerical result with units.",
         "visibleSteps": [
           "Write τ = Iα.",
           "Substitute I = ½MR²."
         ],
         "blankSteps": [
-          "α = ______ rad/s²"
+          "(a) ______",
+          "(b) ______",
+          "(c) ______"
         ],
         "hints": [
           "I = 0.5 × 2 × 0.25 = 0.25 kg·m².",
@@ -686,7 +696,7 @@ export const apCedPractice: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "physc-mech-rotation",
         "conceptIntro": "Section II · Free Response 3. Key concept: rolling KE has translational + rotational parts.",
-        "prompt": "A sphere rolls without slipping down a ramp. Which energy forms are present at the bottom?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "A sphere rolls without slipping down a ramp. Which energy forms are present at the bottom?\n\n(a) List known quantities and the unknown.\n(b) Write a symbolic equation relating them.\n(c) Calculate a numerical result with units.",
         "hints": [
           "Both ½mv² and ½Iω².",
           "No slipping: v = rω."
@@ -694,7 +704,8 @@ export const apCedPractice: Questionnaire[] = [
         "answerKey": "Translational KE (½mv²) and rotational KE (½Iω²).",
         "blankSteps": [
           "(a) ______",
-          "(b) ______"
+          "(b) ______",
+          "(c) ______"
         ],
         "visibleSteps": [
           "Answer each labeled part in AP free-response style."
@@ -725,13 +736,15 @@ export const apCedPractice: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "physc-em-circuits",
         "conceptIntro": "Section II · Free Response 1. Key concept: resistors in series add.",
-        "prompt": "A 12 V battery connects to R₁ = 4 Ω and R₂ = 8 Ω in series. Find total current.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "A 12 V battery connects to R₁ = 4 Ω and R₂ = 8 Ω in series. Find total current.\n\n(a) List known quantities and the unknown.\n(b) Write a symbolic equation relating them.\n(c) Calculate a numerical result with units.",
         "visibleSteps": [
           "R_eq = R₁ + R₂.",
           "I = V / R_eq."
         ],
         "blankSteps": [
-          "I = ______ A"
+          "(a) ______",
+          "(b) ______",
+          "(c) ______"
         ],
         "hints": [
           "R_eq = 12 Ω.",
@@ -748,7 +761,7 @@ export const apCedPractice: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "physc-em-induction",
         "conceptIntro": "Section II · Free Response 3. Key concept: Lenz's law opposes flux change.",
-        "prompt": "A magnet approaches a coil. Does the induced current create a field that attracts or repels the magnet?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "A magnet approaches a coil. Does the induced current create a field that attracts or repels the magnet?\n\n(a) List known quantities and the unknown.\n(b) Write a symbolic equation relating them.\n(c) Calculate a numerical result with units.",
         "hints": [
           "Induced field opposes increasing flux.",
           "Repels approaching north pole."
@@ -756,7 +769,8 @@ export const apCedPractice: Questionnaire[] = [
         "answerKey": "Repels — induced current creates field opposing the approaching magnet (Lenz's law).",
         "blankSteps": [
           "(a) ______",
-          "(b) ______"
+          "(b) ______",
+          "(c) ______"
         ],
         "visibleSteps": [
           "Answer each labeled part in AP free-response style."
@@ -788,13 +802,15 @@ export const apCedPractice: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "calc-bc-parametric",
         "conceptIntro": "Section II · Free Response (calculator). Key concept: dy/dx = (dy/dt)/(dx/dt).",
-        "prompt": "For x(t) = t² and y(t) = t³, find dy/dx at t = 1.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "For x(t) = t² and y(t) = t³, find dy/dx at t = 1.\n\n(a) Set up the derivative, integral, or limit that answers the question.\n(b) Compute the value.\n(c) Interpret the result in the context of the problem.",
         "visibleSteps": [
           "Compute dx/dt and dy/dt.",
           "Evaluate ratio at t = 1."
         ],
         "blankSteps": [
-          "dy/dx at t=1 = ______"
+          "(a) ______",
+          "(b) ______",
+          "(c) ______"
         ],
         "hints": [
           "dx/dt = 2t, dy/dt = 3t².",
@@ -811,12 +827,14 @@ export const apCedPractice: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "calc-bc-parametric",
         "conceptIntro": "Section II · Free Response (calculator). Key concept: polar area A = ½∫ r² dθ.",
-        "prompt": "Find the area enclosed by r = 2 for 0 ≤ θ ≤ 2π.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "Find the area enclosed by r = 2 for 0 ≤ θ ≤ 2π.\n\n(a) Set up the derivative, integral, or limit that answers the question.\n(b) Compute the value.\n(c) Interpret the result in the context of the problem.",
         "visibleSteps": [
           "A = ½∫₀^{2π} 4 dθ."
         ],
         "blankSteps": [
-          "Area = ______"
+          "(a) ______",
+          "(b) ______",
+          "(c) ______"
         ],
         "hints": [
           "Integral of 4 over full circle.",
@@ -833,7 +851,7 @@ export const apCedPractice: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "calc-bc-vectors",
         "conceptIntro": "Section II · Free Response (calculator). Key concept: v(t) = r′(t).",
-        "prompt": "If r(t) = ⟨3t, t²⟩, what is the speed at t = 2?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "If r(t) = ⟨3t, t²⟩, what is the speed at t = 2?\n\n(a) Set up the derivative, integral, or limit that answers the question.\n(b) Compute the value.\n(c) Interpret the result in the context of the problem.",
         "hints": [
           "v = ⟨3, 2t⟩.",
           "Speed = √(9 + 16) = 5 at t=2."
@@ -841,7 +859,8 @@ export const apCedPractice: Questionnaire[] = [
         "answerKey": "Speed = |v(2)| = √(3² + 4²) = 5.",
         "blankSteps": [
           "(a) ______",
-          "(b) ______"
+          "(b) ______",
+          "(c) ______"
         ],
         "visibleSteps": [
           "Answer each labeled part in AP free-response style."
@@ -880,8 +899,7 @@ export const apCedPractice: Questionnaire[] = [
         "answerKey": "Example: lateen sails; cultural exchange: spread of Buddhism along Silk Roads.",
         "blankSteps": [
           "(a) ______",
-          "(b) ______",
-          "(c) ______"
+          "(b) ______"
         ],
         "visibleSteps": [
           "Answer each labeled part in AP free-response style."
@@ -896,8 +914,7 @@ export const apCedPractice: Questionnaire[] = [
         "prompt": "How did Enlightenment ideas about natural rights appear in one Atlantic revolution's declaration or constitution?\n\n(a) Identify or describe ONE relevant example.\n(b) Explain a cause, effect, or reason using specific evidence.",
         "blankSteps": [
           "(a) ______",
-          "(b) ______",
-          "(c) ______"
+          "(b) ______"
         ],
         "hints": [
           "US Declaration, French Declaration of Rights.",
@@ -925,8 +942,7 @@ export const apCedPractice: Questionnaire[] = [
         "answerKey": "Superpowers avoided direct war; fought indirectly through allies and proxies.",
         "blankSteps": [
           "(a) ______",
-          "(b) ______",
-          "(c) ______"
+          "(b) ______"
         ],
         "visibleSteps": [
           "Answer each labeled part in AP free-response style."
@@ -957,7 +973,7 @@ export const apCedPractice: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "phys2-thermo",
         "conceptIntro": "Section II · Qualitative/Quantitative Translation. Key concept: first law ΔU = Q − W.",
-        "prompt": "An ideal gas is compressed isothermally. Is ΔU zero, positive, or negative? Is Q positive or negative?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "An ideal gas is compressed isothermally. Is ΔU zero, positive, or negative? Is Q positive or negative?\n\n(a) Make a qualitative comparison or ranking and justify it.\n(b) Support the comparison with a calculation or derived relationship.",
         "blankSteps": [
           "ΔU = ______",
           "Q = ______"
@@ -974,14 +990,14 @@ export const apCedPractice: Questionnaire[] = [
         "visibleSteps": [
           "Answer each labeled part in AP free-response style."
         ],
-        "examSection": "Section II · Mathematical Routines"
+        "examSection": "Section II · Qualitative/Quantitative Translation"
       },
       {
         "id": "phys2-ced-e2",
         "format": "frq_half",
         "conceptId": "phys2-optics",
         "conceptIntro": "Section II · Qualitative/Quantitative Translation. Key concept: Snell's law at interface.",
-        "prompt": "Light goes from air (n≈1) to water (n≈1.33) at 30° to normal. Does it bend toward or away from the normal?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "Light goes from air (n≈1) to water (n≈1.33) at 30° to normal. Does it bend toward or away from the normal?\n\n(a) Make a qualitative comparison or ranking and justify it.\n(b) Support the comparison with a calculation or derived relationship.",
         "hints": [
           "Slower medium → bend toward normal.",
           "n increases → angle in water smaller."
@@ -994,7 +1010,7 @@ export const apCedPractice: Questionnaire[] = [
         "visibleSteps": [
           "Answer each labeled part in AP free-response style."
         ],
-        "examSection": "Section II · Mathematical Routines"
+        "examSection": "Section II · Qualitative/Quantitative Translation"
       }
     ],
     "examFormatNote": "Section I: 40 four-choice MCQ. Section II: 4 FRQs (mathematical routines, representations, experimental design, qualitative/quantitative translation)."

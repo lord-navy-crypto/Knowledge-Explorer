@@ -28,8 +28,9 @@ export const humanitiesQuestionnaires: Questionnaire[] = [
           "Draft a thesis with a defensible claim and 2–3 categories."
         ],
         "blankSteps": [
-          "Thesis: ________________________________________________",
-          "Outside evidence example: ________________________________"
+          "(a) Thesis: ______",
+          "(b) Document use: ______",
+          "(c) Outside evidence: ______"
         ],
         "hints": [
           "Qualify one document — explain a limitation or alternate reading.",
@@ -67,8 +68,9 @@ export const humanitiesQuestionnaires: Questionnaire[] = [
           "Write a thesis that compares AND explains a reason for difference/similarity."
         ],
         "blankSteps": [
-          "Thesis: ________________________________________________",
-          "One specific piece of evidence per region: ________________"
+          "(a) Context: ______",
+          "(b) Thesis: ______",
+          "(c) Evidence: ______"
         ],
         "hints": [
           "LEQ needs explicit comparison language (similarly, whereas, while).",
@@ -100,7 +102,7 @@ export const humanitiesQuestionnaires: Questionnaire[] = [
         "format": "frq_half",
         "difficultyTier": 2,
         "conceptId": "elang-rhetoric",
-        "prompt": "Excerpt (original practice): “I write not as a contractor but as a parent who walks this corridor at 7:40 a.m. You have heard cost estimates. Hear instead a child on a bike and a paint line that ends.”\n\nExcerpt (original practice): “I write not as a contractor but as a parent who walks this corridor at 7:40 a.m. You have heard cost estimates. Hear instead a child on a bike and a paint line that ends.”\n\nAnalyze how the author of a speech advocating for public parks uses rhetorical choices to build credibility with a city council audience.\n\n(a) Identify the rhetorical situation (speaker, audience, purpose).\n(b) Analyze TWO rhetorical choices and their effects.",
+        "prompt": "Excerpt (original practice): “I write not as a contractor but as a parent who walks this corridor at 7:40 a.m. You have heard cost estimates. Hear instead a child on a bike and a paint line that ends.”\n\nExcerpt (original practice): “I write not as a contractor but as a parent who walks this corridor at 7:40 a.m. You have heard cost estimates. Hear instead a child on a bike and a paint line that ends.”\n\nExcerpt (original practice): “I write not as a contractor but as a parent who walks this corridor at 7:40 a.m. You have heard cost estimates. Hear instead a child on a bike and a paint line that ends.”\n\nAnalyze how the author of a speech advocating for public parks uses rhetorical choices to build credibility with a city council audience.\n\n(a) Identify the rhetorical situation (speaker, audience, purpose).\n(b) Analyze TWO rhetorical choices and their effects.",
         "visibleSteps": [
           "Identify speaker, occasion, audience, purpose, and tone (SOAPS).",
           "Choose 2–3 rhetorical choices (evidence, structure, style) to analyze."

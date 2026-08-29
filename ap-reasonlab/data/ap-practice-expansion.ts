@@ -22,13 +22,15 @@ export const apPracticeExpansion: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "energy-work",
         "conceptIntro": "Section II · Mathematical Routines. Key concept: W_net = ΔK.",
-        "prompt": "A 2.0 kg block slides on a frictionless table and speeds up from 3.0 m/s to 7.0 m/s. Find the net work on the block.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "A 2.0 kg block slides on a frictionless table and speeds up from 3.0 m/s to 7.0 m/s. Find the net work on the block.\n\n(a) List known quantities and the unknown.\n(b) Write a symbolic equation relating them.\n(c) Calculate a numerical result with units.",
         "visibleSteps": [
           "Recall W_net = ΔK.",
           "Compute initial and final kinetic energy."
         ],
         "blankSteps": [
-          "W_net = ______ J"
+          "(a) ______",
+          "(b) ______",
+          "(c) ______"
         ],
         "hints": [
           "K = ½mv².",
@@ -59,13 +61,15 @@ export const apPracticeExpansion: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "momentum",
         "conceptIntro": "Section II · Mathematical Routines. Key concept: J = Δp.",
-        "prompt": "A 0.50 kg ball changes velocity from +6.0 m/s to −2.0 m/s. Find the impulse magnitude.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "A 0.50 kg ball changes velocity from +6.0 m/s to −2.0 m/s. Find the impulse magnitude.\n\n(a) List known quantities and the unknown.\n(b) Write a symbolic equation relating them.\n(c) Calculate a numerical result with units.",
         "visibleSteps": [
           "Define positive direction.",
           "Compute Δp = m(v_f − v_i)."
         ],
         "blankSteps": [
-          "|Δp| = ______ kg·m/s"
+          "(a) ______",
+          "(b) ______",
+          "(c) ______"
         ],
         "hints": [
           "Include sign change in velocity.",
@@ -96,13 +100,15 @@ export const apPracticeExpansion: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "integrals-basics",
         "conceptIntro": "Section II · Free Response (no calculator). Key concept: ∫ₐᵇ f(x) dx = F(b) − F(a).",
-        "prompt": "Evaluate ∫₀² (3x² + 1) dx.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "Evaluate ∫₀² (3x² + 1) dx.\n\n(a) Set up the derivative, integral, or limit that answers the question.\n(b) Compute the value.\n(c) Interpret the result in the context of the problem.",
         "visibleSteps": [
           "Find antiderivative.",
           "Apply FTC at bounds 0 and 2."
         ],
         "blankSteps": [
-          "Integral = ______"
+          "(a) ______",
+          "(b) ______",
+          "(c) ______"
         ],
         "hints": [
           "Antiderivative of 3x² is x³.",
@@ -132,7 +138,7 @@ export const apPracticeExpansion: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "chem-stoichiometry",
         "conceptIntro": "Section II · Short free response. Key concept: coefficients give mole ratios.",
-        "prompt": "For 2 H₂ + O₂ → 2 H₂O, which reactant limits if you start with 4 mol H₂ and 1 mol O₂?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "For 2 H₂ + O₂ → 2 H₂O, which reactant limits if you start with 4 mol H₂ and 1 mol O₂?\n\n(a) Identify the chemical species, process, or claim.\n(b) Justify using a calculation, periodic trend, or particulate model.",
         "hints": [
           "Compare mole ratio needed vs available.",
           "O₂ needs 2 mol H₂ per mol O₂."
@@ -169,7 +175,7 @@ export const apPracticeExpansion: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "bio-cell-membrane",
         "conceptIntro": "Section II · Short FRQ · Data analysis. Key concept: water moves toward higher solute concentration.",
-        "prompt": "A plant cell is placed in a hypertonic solution. Will it gain or lose water? Explain in one sentence.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "A plant cell is placed in a hypertonic solution. Will it gain or lose water? Explain in one sentence.\n\n(a) Identify the biological concept or claim.\n(b) Explain using evidence from the model, data, or scenario.",
         "hints": [
           "Hypertonic means higher solute outside.",
           "Water leaves the cell by osmosis."

@@ -310,13 +310,14 @@ export const macroQuestionnaires: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "macro-ad-as",
         "conceptIntro": "Section II · Short free response. Recessionary gap: equilibrium Y below LRAS.",
-        "prompt": "An economy is in short-run equilibrium below potential output. Is this a recessionary or inflationary gap? Which direction could expansionary fiscal policy shift AD?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "An economy is in short-run equilibrium below potential output. Is this a recessionary or inflationary gap? Which direction could expansionary fiscal policy shift AD?\n\n(a) Identify the market, curve, or policy that is affected.\n(b) Describe the graph change (which curve shifts, or movement along a curve).\n(c) State the short-run effect on the relevant prices and quantities.",
         "hints": [
           "Below potential → recessionary gap; expansionary policy shifts AD right."
         ],
         "blankSteps": [
           "(a) ______",
-          "(b) ______"
+          "(b) ______",
+          "(c) ______"
         ],
         "visibleSteps": [
           "Answer each labeled part in AP free-response style."
@@ -328,14 +329,15 @@ export const macroQuestionnaires: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "macro-ad-as",
         "conceptIntro": "Section II · Short free response. Spending multiplier k = 1 / (1 − MPC).",
-        "prompt": "MPC = 0.75 and government purchases increase by $20 billion. Find the predicted change in equilibrium GDP (ceteris paribus, simplified multiplier model).\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "MPC = 0.75 and government purchases increase by $20 billion. Find the predicted change in equilibrium GDP (ceteris paribus, simplified multiplier model).\n\n(a) Identify the market, curve, or policy that is affected.\n(b) Describe the graph change (which curve shifts, or movement along a curve).\n(c) State the short-run effect on the relevant prices and quantities.",
         "visibleSteps": [
           "Compute k = 1 / (1 − MPC).",
           "Multiply ΔG by k."
         ],
         "blankSteps": [
-          "k = ______",
-          "ΔY = ______ billion"
+          "(a) ______",
+          "(b) ______",
+          "(c) ______"
         ],
         "hints": [
           "L1: MPS = 1 − MPC.",
@@ -366,12 +368,14 @@ export const macroQuestionnaires: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "macro-indicators",
         "conceptIntro": "Section II · Long free response. Inflation rate from CPI.",
-        "prompt": "CPI was 240 last year and 252 this year. Calculate the inflation rate.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "prompt": "CPI was 240 last year and 252 this year. Calculate the inflation rate.\n\n(a) Identify the market, curve, or policy that is affected.\n(b) Describe the graph change (which curve shifts, or movement along a curve).\n(c) State the short-run effect on the relevant prices and quantities.",
         "visibleSteps": [
           "Use π = (CPI_t − CPI_{t−1}) / CPI_{t−1} × 100%."
         ],
         "blankSteps": [
-          "Inflation rate = ______%"
+          "(a) ______",
+          "(b) ______",
+          "(c) ______"
         ],
         "hints": [
           "L1: Subtract old CPI from new, divide by old.",

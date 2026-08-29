@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { questionnaires } from "@/data/questionnaires";
-import { AP_EXAM_BLUEPRINT } from "@/lib/ap-exam-format";
+import { AP_EXAM_BLUEPRINT, shapeApItem } from "@/lib/ap-exam-format";
+import type { QuestionnaireItem } from "@/lib/types";
 
 describe("AP official exam-format pass", () => {
   it("labels every AP-subject item with an exam section", () => {
@@ -100,6 +101,18 @@ describe("AP official exam-format pass", () => {
     }
   });
 
+  it("has no generic principle wrapper in AP questionnaire source files", async () => {
+    const { readFileSync, readdirSync } = await import("node:fs");
+    const { fileURLToPath } = await import("node:url");
+    const path = await import("node:path");
+    const data = path.join(path.dirname(fileURLToPath(import.meta.url)), "../data");
+    const files = readdirSync(data).filter((name) => name.startsWith("ap-") && name.endsWith(".ts"));
+    for (const name of files) {
+      const source = readFileSync(path.join(data, name), "utf8");
+      expect(source.includes("Identify the relevant principle, quantity, or claim"), name).toBe(false);
+    }
+  });
+
   it("adds a stimulus to history MCQs", () => {
     const mcq = questionnaires
       .filter((q) => /History/.test(q.subject))
@@ -107,5 +120,67 @@ describe("AP official exam-format pass", () => {
       .filter((i) => i.format === "mcq");
     expect(mcq.length).toBeGreaterThan(0);
     expect(mcq.every((i) => /Stimulus \(original\)|excerpt|Source/i.test(i.prompt))).toBe(true);
+  });
+
+  it("replaces the generic principle wrapper with subject-official FRQ parts", () => {
+    const item: QuestionnaireItem = {
+      id: "phys-generic-wrap",
+      format: "frq_half",
+      prompt:
+        "A 3.0 kg crate on a frictionless floor is pulled by a horizontal rope with tension 9.0 N. Find the acceleration.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+      hints: [],
+    };
+    const shaped = shapeApItem("AP Physics 1", item);
+    expect(shaped.prompt).not.toMatch(/Identify the relevant principle, quantity, or claim/);
+    expect(shaped.prompt).toMatch(/List known quantities and the unknown/);
+    expect(shaped.prompt).toMatch(/Write a symbolic equation/);
+    expect(shaped.format).toBe("frq_half");
+    expect(shaped.examSection).toBe("Section II · Mathematical Routines");
+  });
+
+  it("labels qualitative physics prompts as Qualitative/Quantitative Translation", () => {
+    const item: QuestionnaireItem = {
+      id: "phys-qual",
+      format: "frq_half",
+      prompt:
+        "A runner goes +40 m then −10 m in 20 s. Which is larger: distance or |displacement|? Explain in one sentence.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+      hints: [],
+    };
+    const shaped = shapeApItem("AP Physics 1", item);
+    expect(shaped.examSection).toBe("Section II · Qualitative/Quantitative Translation");
+    expect(shaped.prompt).toMatch(/Make a qualitative comparison or ranking/);
+    expect(shaped.prompt).not.toMatch(/List known quantities and the unknown/);
+  });
+
+  it("leaves no generic principle wrapper on served AP FRQs", () => {
+    const hits = questionnaires
+      .filter((q) => q.subject.startsWith("AP "))
+      .flatMap((q) => q.items.map((item) => ({ set: q.id, item })))
+      .filter(({ item }) => /Identify the relevant principle, quantity, or claim/i.test(item.prompt));
+    expect(hits.map((h) => `${h.set}/${h.item.id}`)).toEqual([]);
+  });
+
+  it("gives physics and calculus FRQs labeled parts that match the exam task type", () => {
+    const physics = questionnaires
+      .filter((q) => q.subject.startsWith("AP Physics"))
+      .flatMap((q) => q.items)
+      .filter((i) => i.format === "frq_half");
+    expect(physics.length).toBeGreaterThan(20);
+    const officialish = physics.filter((i) =>
+      /List known quantities|Describe a procedure|Sketch or describe the requested graph|Make a qualitative comparison/i.test(
+        i.prompt
+      )
+    );
+    expect(officialish.length).toBeGreaterThan(20);
+
+    const calc = questionnaires
+      .filter((q) => q.subject.startsWith("AP Calculus"))
+      .flatMap((q) => q.items)
+      .filter((i) => i.format === "frq_half");
+    expect(calc.length).toBeGreaterThan(10);
+    const calcOfficial = calc.filter((i) =>
+      /Set up the derivative, integral, or limit|Compute the value|Interpret the result in the context/i.test(i.prompt)
+    );
+    expect(calcOfficial.length).toBeGreaterThan(10);
   });
 });

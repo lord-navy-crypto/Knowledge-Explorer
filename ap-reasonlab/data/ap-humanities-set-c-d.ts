@@ -25,8 +25,7 @@ export const apHumanitiesSetC: Questionnaire[] = [
         "prompt": "Two documents disagree on whether the New Deal ended the Depression. List one way to corroborate with outside evidence.\n\n(a) Identify or describe ONE relevant example.\n(b) Explain a cause, effect, or reason using specific evidence.",
         "blankSteps": [
           "(a) ______",
-          "(b) ______",
-          "(c) ______"
+          "(b) ______"
         ],
         "hints": [
           "Use unemployment stats, WPA programs, or court challenges."
@@ -47,8 +46,7 @@ export const apHumanitiesSetC: Questionnaire[] = [
         ],
         "blankSteps": [
           "(a) ______",
-          "(b) ______",
-          "(c) ______"
+          "(b) ______"
         ],
         "visibleSteps": [
           "Answer each labeled part in AP free-response style."
@@ -80,8 +78,8 @@ export const apHumanitiesSetC: Questionnaire[] = [
         "conceptIntro": "Section I Part B · Short-Answer Question. Key concept: decolonization ≠ instant stability.",
         "prompt": "Compare one similarity and one difference in decolonization outcomes in Africa and South Asia, 1945–1975.\n\n(a) Identify or describe ONE relevant example.\n(b) Explain a cause, effect, or reason using specific evidence.",
         "blankSteps": [
-          "Similarity: ______",
-          "Difference: ______"
+          "(a) ______",
+          "(b) ______"
         ],
         "hints": [
           "Both faced border/ethnic challenges; paths differed (partition vs gradual transition)."
@@ -102,8 +100,7 @@ export const apHumanitiesSetC: Questionnaire[] = [
         ],
         "blankSteps": [
           "(a) ______",
-          "(b) ______",
-          "(c) ______"
+          "(b) ______"
         ],
         "visibleSteps": [
           "Answer each labeled part in AP free-response style."
@@ -134,8 +131,8 @@ export const apHumanitiesSetC: Questionnaire[] = [
         "conceptIntro": "Section I Part B · Short-Answer Question. Key concept: Enlightenment ideas vs Old Regime institutions.",
         "prompt": "Give two sentences of context before arguing whether Enlightenment thought caused the French Revolution.\n\n(a) Identify or describe ONE relevant example.\n(b) Explain a cause, effect, or reason using specific evidence.",
         "blankSteps": [
-          "Context 1: ______",
-          "Context 2: ______"
+          "(a) ______",
+          "(b) ______"
         ],
         "hints": [
           "Fiscal crisis, estate system, American Revolution example."
@@ -156,8 +153,7 @@ export const apHumanitiesSetC: Questionnaire[] = [
         ],
         "blankSteps": [
           "(a) ______",
-          "(b) ______",
-          "(c) ______"
+          "(b) ______"
         ],
         "visibleSteps": [
           "Answer each labeled part in AP free-response style."
@@ -186,7 +182,7 @@ export const apHumanitiesSetC: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "elang-audience-purpose",
         "conceptIntro": "Section II · Question 2 Rhetorical Analysis. Key concept: audience shapes evidence choice.",
-        "prompt": "Excerpt (original practice): “Buses already idle at 6:50 a.m. A later bell would not erase homework; it would let teenagers meet the clock their bodies already keep.”\n\nExcerpt (original practice): “Buses already idle at 6:50 a.m. A later bell would not erase homework; it would let teenagers meet the clock their bodies already keep.”\n\nA mayor addresses parents about phone bans in schools. Identify audience, purpose, and one likely appeal.\n\n(a) Identify the rhetorical situation (speaker, audience, purpose).\n(b) Analyze TWO rhetorical choices and their effects.",
+        "prompt": "Excerpt (original practice): “Buses already idle at 6:50 a.m. A later bell would not erase homework; it would let teenagers meet the clock their bodies already keep.”\n\nExcerpt (original practice): “Buses already idle at 6:50 a.m. A later bell would not erase homework; it would let teenagers meet the clock their bodies already keep.”\n\nExcerpt (original practice): “Buses already idle at 6:50 a.m. A later bell would not erase homework; it would let teenagers meet the clock their bodies already keep.”\n\nA mayor addresses parents about phone bans in schools. Identify audience, purpose, and one likely appeal.\n\n(a) Identify the rhetorical situation (speaker, audience, purpose).\n(b) Analyze TWO rhetorical choices and their effects.",
         "blankSteps": [
           "Audience: ______",
           "Purpose: ______",
@@ -205,7 +201,7 @@ export const apHumanitiesSetC: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "elang-evidence-types",
         "conceptIntro": "Section II · Question 2 Rhetorical Analysis. Key concept: statistics vs anecdote serve different roles.",
-        "prompt": "Excerpt (original practice): “You have the budget spreadsheet. I am asking you to hear the daily sequence the spreadsheet does not show.”\n\nExcerpt (original practice): “You have the budget spreadsheet. I am asking you to hear the daily sequence the spreadsheet does not show.”\n\nWhen is an anecdote stronger than a statistic in a local policy op-ed?\n\n(a) Identify the rhetorical situation (speaker, audience, purpose).\n(b) Analyze TWO rhetorical choices and their effects.",
+        "prompt": "Excerpt (original practice): “You have the budget spreadsheet. I am asking you to hear the daily sequence the spreadsheet does not show.”\n\nExcerpt (original practice): “You have the budget spreadsheet. I am asking you to hear the daily sequence the spreadsheet does not show.”\n\nExcerpt (original practice): “You have the budget spreadsheet. I am asking you to hear the daily sequence the spreadsheet does not show.”\n\nWhen is an anecdote stronger than a statistic in a local policy op-ed?\n\n(a) Identify the rhetorical situation (speaker, audience, purpose).\n(b) Analyze TWO rhetorical choices and their effects.",
         "hints": [
           "Humanizes issue; less persuasive for broad causal claims alone."
         ],
@@ -240,7 +236,7 @@ export const apHumanitiesSetC: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "elit-prose-voice",
         "conceptIntro": "Section II · Prose fiction analysis. Key concept: narrator reliability affects theme.",
-        "prompt": "Passage (original practice): “She counted the clock’s ticks as if they were footsteps she still owed the hallway.”\n\nPassage (original practice): “She counted the clock’s ticks as if they were footsteps she still owed the hallway.”\n\nA first-person narrator admits they 'might remember wrong.' How could that affect the reader's trust?\n\n(a) Make a defensible claim about the passage.\n(b) Support it with TWO specific textual details.",
+        "prompt": "Passage (original practice): “She counted the clock’s ticks as if they were footsteps she still owed the hallway.”\n\nPassage (original practice): “She counted the clock’s ticks as if they were footsteps she still owed the hallway.”\n\nPassage (original practice): “She counted the clock’s ticks as if they were footsteps she still owed the hallway.”\n\nA first-person narrator admits they 'might remember wrong.' How could that affect the reader's trust?\n\n(a) Make a defensible claim about the passage.\n(b) Support it with TWO specific textual details.",
         "blankSteps": [
           "Effect on trust: ______",
           "Link to theme: ______"
@@ -258,7 +254,7 @@ export const apHumanitiesSetC: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "elit-drama-conflict",
         "conceptIntro": "Section II · Literary argument. Key concept: external vs internal conflict.",
-        "prompt": "Passage (original practice): “She counted the clock’s ticks as if they were footsteps she still owed the hallway.”\n\nPassage (original practice): “She counted the clock’s ticks as if they were footsteps she still owed the hallway.”\n\nDistinguish external and internal conflict in a play where a character hides a secret from family.\n\n(a) Make a defensible claim about the passage.\n(b) Support it with TWO specific textual details.",
+        "prompt": "Passage (original practice): “She counted the clock’s ticks as if they were footsteps she still owed the hallway.”\n\nPassage (original practice): “She counted the clock’s ticks as if they were footsteps she still owed the hallway.”\n\nPassage (original practice): “She counted the clock’s ticks as if they were footsteps she still owed the hallway.”\n\nDistinguish external and internal conflict in a play where a character hides a secret from family.\n\n(a) Make a defensible claim about the passage.\n(b) Support it with TWO specific textual details.",
         "hints": [
           "External: family confrontation; internal: guilt or fear."
         ],
@@ -300,8 +296,8 @@ export const apHumanitiesSetD: Questionnaire[] = [
         "conceptIntro": "Section I Part B · Short-Answer Question. Key concept: qualify thesis with limits.",
         "prompt": "Write a two-sentence thesis: To what extent did Gilded Age industrialization benefit American workers?\n\n(a) Identify or describe ONE relevant example.\n(b) Explain a cause, effect, or reason using specific evidence.",
         "blankSteps": [
-          "Thesis sentence 1: ______",
-          "Thesis sentence 2: ______"
+          "(a) ______",
+          "(b) ______"
         ],
         "hints": [
           "Acknowledge wages/jobs vs harsh conditions and inequality."
@@ -322,8 +318,7 @@ export const apHumanitiesSetD: Questionnaire[] = [
         ],
         "blankSteps": [
           "(a) ______",
-          "(b) ______",
-          "(c) ______"
+          "(b) ______"
         ],
         "visibleSteps": [
           "Answer each labeled part in AP free-response style."
@@ -354,8 +349,8 @@ export const apHumanitiesSetD: Questionnaire[] = [
         "conceptIntro": "Section I Part B · Short-Answer Question. Key concept: technology accelerates exchange.",
         "prompt": "Explain one cause and one effect of increased global trade, 1900–present.\n\n(a) Identify or describe ONE relevant example.\n(b) Explain a cause, effect, or reason using specific evidence.",
         "blankSteps": [
-          "Cause: ______",
-          "Effect: ______"
+          "(a) ______",
+          "(b) ______"
         ],
         "hints": [
           "Container shipping, WTO; supply chains, cultural diffusion."
@@ -376,8 +371,7 @@ export const apHumanitiesSetD: Questionnaire[] = [
         ],
         "blankSteps": [
           "(a) ______",
-          "(b) ______",
-          "(c) ______"
+          "(b) ______"
         ],
         "visibleSteps": [
           "Answer each labeled part in AP free-response style."
@@ -408,8 +402,8 @@ export const apHumanitiesSetD: Questionnaire[] = [
         "conceptIntro": "Section I Part B · Short-Answer Question. Key concept: revolution exports ideas and war.",
         "prompt": "Compare how the French Revolution influenced one European state and one Latin American movement.\n\n(a) Identify or describe ONE relevant example.\n(b) Explain a cause, effect, or reason using specific evidence.",
         "blankSteps": [
-          "European example: ______",
-          "Latin American example: ______"
+          "(a) ______",
+          "(b) ______"
         ],
         "hints": [
           "Legal codes, nationalism, independence wars."
@@ -430,8 +424,7 @@ export const apHumanitiesSetD: Questionnaire[] = [
         ],
         "blankSteps": [
           "(a) ______",
-          "(b) ______",
-          "(c) ______"
+          "(b) ______"
         ],
         "visibleSteps": [
           "Answer each labeled part in AP free-response style."
@@ -513,7 +506,7 @@ export const apHumanitiesSetD: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "elit-theme",
         "conceptIntro": "Section II · Literary argument. Key concept: theme is arguable insight, not topic.",
-        "prompt": "Passage (original practice): “She counted the clock’s ticks as if they were footsteps she still owed the hallway.”\n\nPassage (original practice): “She counted the clock’s ticks as if they were footsteps she still owed the hallway.”\n\nWrite a theme statement for a novel where characters repeatedly fail to communicate.\n\n(a) Make a defensible claim about the passage.\n(b) Support it with TWO specific textual details.",
+        "prompt": "Passage (original practice): “She counted the clock’s ticks as if they were footsteps she still owed the hallway.”\n\nPassage (original practice): “She counted the clock’s ticks as if they were footsteps she still owed the hallway.”\n\nPassage (original practice): “She counted the clock’s ticks as if they were footsteps she still owed the hallway.”\n\nWrite a theme statement for a novel where characters repeatedly fail to communicate.\n\n(a) Make a defensible claim about the passage.\n(b) Support it with TWO specific textual details.",
         "blankSteps": [
           "Theme: ______",
           "Evidence direction: ______"
@@ -531,7 +524,7 @@ export const apHumanitiesSetD: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "elit-poetry",
         "conceptIntro": "Section II · Poetry analysis. Key concept: form reinforces meaning.",
-        "prompt": "Poem (original practice): “The shutters / did not wait for the sentence to end / the rain kept walking into the kitchen.”\n\nPoem (original practice): “The shutters / did not wait for the sentence to end / the rain kept walking into the kitchen.”\n\nHow can a poem's short, end-stopped lines affect pacing in a grief narrative?\n\n(a) Make a defensible claim about the passage.\n(b) Support it with TWO specific textual details.",
+        "prompt": "Poem (original practice): “The shutters / did not wait for the sentence to end / the rain kept walking into the kitchen.”\n\nPoem (original practice): “The shutters / did not wait for the sentence to end / the rain kept walking into the kitchen.”\n\nPoem (original practice): “The shutters / did not wait for the sentence to end / the rain kept walking into the kitchen.”\n\nHow can a poem's short, end-stopped lines affect pacing in a grief narrative?\n\n(a) Make a defensible claim about the passage.\n(b) Support it with TWO specific textual details.",
         "hints": [
           "Creates pauses, weight, finality."
         ],

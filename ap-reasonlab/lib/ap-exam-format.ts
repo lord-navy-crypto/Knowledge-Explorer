@@ -154,7 +154,8 @@ function hashId(id: string): number {
 function pickFrqLabel(subject: string, item: QuestionnaireItem, set?: Questionnaire): string {
   const spec = AP_EXAM_BLUEPRINT[subject];
   const labels = spec?.frq ?? ["Section II · Free Response"];
-  const itemText = `${item.id} ${item.prompt} ${item.conceptIntro ?? ""}`.toLowerCase();
+  const prompt = stripGenericWrapper(item.prompt);
+  const itemText = `${item.id} ${prompt}`.toLowerCase();
   const title = (set?.title ?? "").toLowerCase();
   const text = `${itemText} ${title}`;
 
@@ -186,6 +187,9 @@ function pickFrqLabel(subject: string, item: QuestionnaireItem, set?: Questionna
   }
   if (subject.startsWith("AP Physics") && !subject.includes("C:")) {
     if (/experiment|procedure|design a/.test(text)) return "Section II · Experimental Design and Analysis";
+    if (/which is larger|explain in one sentence|compare |rank |qualitative/.test(text)) {
+      return "Section II · Qualitative/Quantitative Translation";
+    }
     if (/graph|sketch|represent/.test(text)) return "Section II · Translation Between Representations";
     if (/calculate|find |determine |how far|speed/.test(text)) return "Section II · Mathematical Routines";
     return "Section II · Qualitative/Quantitative Translation";
@@ -203,6 +207,93 @@ function prefixIntro(existing: string | undefined, label: string): string {
 
 function alreadyHasParts(prompt: string): boolean {
   return /\(\s*a\s*\)|\ba\)\s+/i.test(prompt) && /\(\s*b\s*\)|\bb\)\s+/i.test(prompt);
+}
+
+const GENERIC_WRAPPER =
+  /\s*\(?\s*a\s*\)\s*Identify the relevant principle, quantity, or claim\.?\s*\(?\s*b\s*\)\s*Explain or calculate using evidence from the prompt\.?\s*/gi;
+
+function stripGenericWrapper(prompt: string): string {
+  return prompt.replace(GENERIC_WRAPPER, "\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+function officialScienceParts(subject: string, label: string): string {
+  if (label.includes("Experimental Design")) {
+    return `(a) Describe a procedure, including equipment and what you would measure.
+(b) Explain how you would graph or analyze the data.
+(c) Identify one source of experimental uncertainty and how it affects the result.`;
+  }
+  if (label.includes("Translation Between Representations")) {
+    return `(a) Sketch or describe the requested graph, diagram, or equation.
+(b) Explain how that representation is consistent with the physical situation.`;
+  }
+  if (label.includes("Qualitative/Quantitative")) {
+    return `(a) Make a qualitative comparison or ranking and justify it.
+(b) Support the comparison with a calculation or derived relationship.`;
+  }
+  if (label.includes("Mathematical Routines") || subject.startsWith("AP Physics C")) {
+    return `(a) List known quantities and the unknown.
+(b) Write a symbolic equation relating them.
+(c) Calculate a numerical result with units.`;
+  }
+  if (subject === "AP Chemistry") {
+    if (/Long/i.test(label)) {
+      return `(a) Write the relevant equation, identification, or particulate claim.
+(b) Show a calculation or chemical reasoning with units.
+(c) Justify a claim using evidence from the prompt.`;
+    }
+    return `(a) Identify the chemical species, process, or claim.
+(b) Justify using a calculation, periodic trend, or particulate model.`;
+  }
+  if (subject === "AP Biology") {
+    if (/graphing|experimental results/i.test(label)) {
+      return `(a) Identify the independent and dependent variables or the claim supported by the data.
+(b) Predict or calculate from the results.
+(c) Justify using evidence from the experiment or model.`;
+    }
+    return `(a) Identify the biological concept or claim.
+(b) Explain using evidence from the model, data, or scenario.`;
+  }
+  if (subject === "AP Statistics") {
+    if (/Investigative/i.test(label)) {
+      return `(a) Describe an appropriate study design.
+(b) Identify a lurking variable or limitation if that design is not used.
+(c) State a conclusion that stays within the data.`;
+    }
+    return `(a) State the parameter, hypotheses, or procedure in context.
+(b) Carry out the method or interpret the result in context.`;
+  }
+  if (subject.startsWith("AP Calculus")) {
+    return `(a) Set up the derivative, integral, or limit that answers the question.
+(b) Compute the value.
+(c) Interpret the result in the context of the problem.`;
+  }
+  if (subject === "AP Psychology") {
+    return `(a) Apply the named psychological concept to the scenario.
+(b) Explain the application with a specific detail from the prompt.`;
+  }
+  if (subject === "AP Microeconomics" || subject === "AP Macroeconomics") {
+    return `(a) Identify the market, curve, or policy that is affected.
+(b) Describe the graph change (which curve shifts, or movement along a curve).
+(c) State the short-run effect on the relevant prices and quantities.`;
+  }
+  if (subject === "AP Environmental Science") {
+    return `(a) Identify the environmental process or quantity.
+(b) Explain a cause, effect, or calculation using evidence from the prompt.`;
+  }
+  if (subject === "AP Computer Science A") {
+    return `(a) Write the method signature or complete the required implementation.
+(b) Trace the result for a concrete input, or explain a correctness condition.`;
+  }
+  if (subject === "AP Computer Science Principles") {
+    return `(a) Identify the computing concept in the scenario.
+(b) Explain an effect, limitation, or trade-off.`;
+  }
+  if (subject === "AP Human Geography") {
+    return `(a) Identify a relevant geographic process or scale.
+(b) Explain one specific effect using an example.`;
+  }
+  return `(a) State the relevant principle or identification.
+(b) Support it with a calculation, model, or evidence from the prompt.`;
 }
 
 function alreadyHasDocs(prompt: string): boolean {
@@ -283,14 +374,21 @@ function litExcerpt(prompt: string): string {
   return `Passage (original practice): “She counted the clock’s ticks as if they were footsteps she still owed the hallway.”`;
 }
 
-function defaultBlanks(label: string, existing?: string[]): string[] | undefined {
-  if (existing && existing.length >= 2) return existing;
+function partCountFromPrompt(prompt: string): number {
+  const found = prompt.match(/^\([a-c]\)/gim);
+  return found?.length ?? 0;
+}
+
+function defaultBlanks(label: string, prompt: string, existing?: string[]): string[] | undefined {
   if (label.includes("DBQ")) return ["(a) Thesis: ______", "(b) Document use: ______", "(c) Outside evidence: ______"];
   if (label.includes("Long Essay") || label.includes("LEQ")) {
     return ["(a) Context: ______", "(b) Thesis: ______", "(c) Evidence: ______"];
   }
-  if (label.includes("Short-Answer")) return ["(a) ______", "(b) ______", "(c) ______"];
-  return existing && existing.length ? existing : ["(a) ______", "(b) ______"];
+  if (label.includes("Short-Answer")) return ["(a) ______", "(b) ______"];
+  const n = Math.max(2, partCountFromPrompt(prompt));
+  const generic = existing?.join(" ").includes("Identify the relevant principle");
+  if (existing && existing.length >= n && !generic) return existing;
+  return Array.from({ length: n }, (_, i) => `(${String.fromCharCode(97 + i)}) ______`);
 }
 
 function defaultVisible(label: string, existing?: string[]): string[] | undefined {
@@ -310,14 +408,16 @@ function expandOfficialFrq(
   label: string,
   item: QuestionnaireItem
 ): Pick<QuestionnaireItem, "prompt" | "blankSteps" | "visibleSteps"> {
-  const original = item.prompt.trim();
+  const original = stripGenericWrapper(item.prompt.trim());
   let prompt = original;
 
   if (label.includes("DBQ") && !alreadyHasDocs(prompt)) {
     prompt = `${dbqDocuments(original)}\n\nPrompt: ${original}`;
   }
   if (
-    (subject === "AP English Language" && /Rhetorical Analysis/i.test(label) && !alreadyHasStimulus(prompt))
+    subject === "AP English Language" &&
+    /Rhetorical Analysis/i.test(label) &&
+    !alreadyHasStimulus(prompt)
   ) {
     prompt = `${langExcerpt(original)}\n\n${prompt}`;
   }
@@ -329,7 +429,8 @@ function expandOfficialFrq(
     prompt = `${litExcerpt(original)}\n\n${prompt}`;
   }
 
-  if (!alreadyHasParts(prompt)) {
+  const needsParts = !alreadyHasParts(prompt);
+  if (needsParts) {
     if (label.includes("DBQ")) {
       prompt = `${prompt}\n\n(a) Write a thesis that responds to the prompt.\n(b) Use TWO documents, explaining how each supports your argument.\n(c) Provide ONE piece of outside evidence.`;
     } else if (label.includes("Long Essay") || /\bLEQ\b/.test(label)) {
@@ -343,13 +444,13 @@ function expandOfficialFrq(
     } else if (/Synthesis|Argument/i.test(label) && subject === "AP English Language") {
       prompt = `${prompt}\n\n(a) State a defensible thesis.\n(b) Support it with specific evidence and commentary.`;
     } else {
-      prompt = `${prompt}\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.`;
+      prompt = `${prompt}\n\n${officialScienceParts(subject, label)}`;
     }
   }
 
   return {
     prompt,
-    blankSteps: defaultBlanks(label, item.blankSteps),
+    blankSteps: defaultBlanks(label, prompt, item.blankSteps),
     visibleSteps: defaultVisible(label, item.visibleSteps),
   };
 }
