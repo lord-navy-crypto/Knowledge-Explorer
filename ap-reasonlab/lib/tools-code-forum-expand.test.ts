@@ -40,13 +40,14 @@ describe("tool clusters", () => {
     const code = TOOL_CLUSTERS.find((c) => c.id === "code-workbench");
     expect(code?.toolIds).toContain("json-formatter");
     expect(code?.toolIds).toContain("encode-decode");
+    expect(code?.blurb.toLowerCase()).toMatch(/json|base64|editor/);
   });
 
   it("includes math-pad in math cluster", async () => {
     const { TOOL_CLUSTERS } = await import("@/data/tool-clusters");
     const math = TOOL_CLUSTERS.find((c) => c.id === "math-science");
     expect(math?.toolIds).toContain("math-pad");
-    expect(math?.blurb.toLowerCase()).toMatch(/calc lab|d\/dx|integral|table|zeros/);
+    expect(math?.blurb.toLowerCase()).toMatch(/calc lab|d\/dx|integral|table|zeros|latex/);
   });
 });
 

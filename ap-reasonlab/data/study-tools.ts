@@ -115,7 +115,7 @@ export const STUDY_TOOLS: StudyTool[] = [
     href: "/hints?tool=calculator",
     title: "Calc + Graph pad",
     blurb:
-      "Calculator + grapher + numeric d/dx, ∫, Σ, table, zeros, units, sci notation, and vectors in one desk.",
+      "Calculator + grapher + numeric d/dx, ∫, Σ, table, zeros, units, sci notation, vectors, and LaTeX in one desk.",
     category: "math",
     security: "safe",
   },

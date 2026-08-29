@@ -10,6 +10,15 @@ import RichContent from "@/components/RichContent";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
 import type { ManagedForumAttachment, ManagedForumPost } from "@/lib/managed-types";
 import {
+  forumAskAiPrompt,
+  forumPostHasCode,
+  forumPostHasFiles,
+  forumThreadMarkdown,
+  isForumPayloadFilter,
+  type ForumPayloadFilter,
+} from "@/lib/forum-thread";
+import { openToolboxWithPrefill } from "@/lib/ai-toolbox-prefill";
+import {
   readForumDisplayName,
   writeForumDisplayName,
 } from "@/lib/forum-display-name";
@@ -301,6 +310,7 @@ export function ForumDiscussions({
   const [sort, setSort] = useState<ForumSortMode>("newest");
   const [stars, setStars] = useState<string[]>([]);
   const [starredOnly, setStarredOnly] = useState(false);
+  const [payloadFilter, setPayloadFilter] = useState<ForumPayloadFilter>("all");
   const [draftReady, setDraftReady] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -366,6 +376,8 @@ export function ForumDiscussions({
     const starredParam = searchParams.get("starred");
     if (starredParam === "1") setStarredOnly(true);
     if (starredParam === "0") setStarredOnly(false);
+    const payloadParam = searchParams.get("payload");
+    if (isForumPayloadFilter(payloadParam)) setPayloadFilter(payloadParam);
     const reply = searchParams.get("reply");
     if (reply) {
       window.setTimeout(() => {
@@ -379,6 +391,8 @@ export function ForumDiscussions({
     const q = query.trim().toLowerCase();
     let list = posts.filter((p) => cat.match(p));
     if (starredOnly) list = list.filter((p) => stars.includes(p.id));
+    if (payloadFilter === "code") list = list.filter(forumPostHasCode);
+    if (payloadFilter === "files") list = list.filter(forumPostHasFiles);
     if (q) {
       list = list.filter((p) => {
         const attach = (p.attachments || []).map((a) => a.name || "").join(" ");
@@ -407,11 +421,11 @@ export function ForumDiscussions({
       return bLast - aLast;
     });
     return list;
-  }, [posts, category, query, sort, starredOnly, stars]);
+  }, [posts, category, query, sort, starredOnly, stars, payloadFilter]);
 
   useEffect(() => {
     setPage(1);
-  }, [category, query, sort, starredOnly]);
+  }, [category, query, sort, starredOnly, payloadFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / POSTS_PER_PAGE));
   const paged = filtered.slice((page - 1) * POSTS_PER_PAGE, page * POSTS_PER_PAGE);
@@ -448,6 +462,11 @@ export function ForumDiscussions({
       patchForumQuery({ starred: next ? "1" : null });
       return next;
     });
+  }
+
+  function changePayload(next: ForumPayloadFilter) {
+    setPayloadFilter(next);
+    patchForumQuery({ payload: next === "all" ? null : next });
   }
 
   function requestIdentity(action: "post" | string) {
@@ -628,6 +647,13 @@ export function ForumDiscussions({
         material you do not have rights to share.
       </div>
 
+      <p className="text-xs text-slate-500">
+        {posts.length} thread{posts.length === 1 ? "" : "s"} ·{" "}
+        {posts.reduce((n, p) => n + (p.replies || []).length, 0)}{" "}
+        {posts.reduce((n, p) => n + (p.replies || []).length, 0) === 1 ? "reply" : "replies"}
+        {filtered.length !== posts.length ? ` · showing ${filtered.length}` : ""}
+      </p>
+
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-wrap gap-1.5" role="tablist" aria-label="Discussion categories">
           {CATEGORIES.map((c) => (
@@ -670,6 +696,16 @@ export function ForumDiscussions({
             <option value="newest">Newest</option>
             <option value="active">Most active</option>
             <option value="replies">Most replies</option>
+          </select>
+          <select
+            value={payloadFilter}
+            onChange={(e) => changePayload(e.target.value as ForumPayloadFilter)}
+            className="input py-1.5 text-xs"
+            aria-label="Filter by attachments"
+          >
+            <option value="all">All payloads</option>
+            <option value="code">Has code fence</option>
+            <option value="files">Has files</option>
           </select>
           <button
             type="button"
@@ -781,7 +817,7 @@ export function ForumDiscussions({
         <div className="card text-sm text-slate-500">Loading discussions…</div>
       ) : filtered.length === 0 ? (
         <div className="card border-dashed text-center text-sm text-slate-500">
-          {query || category !== "all" || starredOnly
+          {query || category !== "all" || starredOnly || payloadFilter !== "all"
             ? "No threads match this filter. Try another search or clear Starred."
             : "No shared discussions yet. Start the first one."}
         </div>
@@ -885,6 +921,30 @@ export function ForumDiscussions({
                         }}
                       >
                         Copy permalink
+                      </button>
+                      <button
+                        type="button"
+                        className="text-slate-500 hover:underline"
+                        onClick={() => {
+                          void navigator.clipboard.writeText(forumThreadMarkdown(post));
+                          setNotice("Thread copied as Markdown.");
+                          window.setTimeout(() => setNotice(""), 1500);
+                        }}
+                      >
+                        Copy as Markdown
+                      </button>
+                      <button
+                        type="button"
+                        className="text-brand-600 hover:underline"
+                        onClick={() =>
+                          openToolboxWithPrefill({
+                            category: "ap",
+                            apTask: "advice",
+                            prompt: forumAskAiPrompt(post),
+                          })
+                        }
+                      >
+                        Ask AI about this
                       </button>
                       <Link href="/forum?tab=box" className="text-slate-500 hover:underline">
                         Open My box →

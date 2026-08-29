@@ -28,11 +28,20 @@ import {
 import { classifyPaste } from "@/lib/code-paste-detect";
 import { preloadEncodeDecode, preloadJsonFormatter } from "@/lib/payload-handoff";
 import { preloadForumComposer } from "@/lib/forum-local";
+import JsonFormatterTool from "@/components/JsonFormatterTool";
+import EncodeDecodeTool from "@/components/EncodeDecodeTool";
 
 const LANG_IDS = ALL_CODE_LANGS.map((lang) => lang.id);
 
 function isLangId(value: string | null): value is string {
   return Boolean(value && LANG_IDS.includes(value));
+}
+
+type DeskTab = "editor" | "json" | "encode";
+
+function parseDesk(raw: string | null): DeskTab {
+  if (raw === "json" || raw === "encode") return raw;
+  return "editor";
 }
 
 const RELATED = [
@@ -52,6 +61,7 @@ export default function CodeLanguageStudio({ initialLang = "python" }: { initial
   const [note, setNote] = useState("");
   const [copiedLink, setCopiedLink] = useState(false);
   const [pasteBox, setPasteBox] = useState("");
+  const desk = parseDesk(searchParams.get("desk"));
   const lang = isLangId(fromUrl)
     ? fromUrl
     : isLangId(initialLang)
@@ -60,6 +70,14 @@ export default function CodeLanguageStudio({ initialLang = "python" }: { initial
   const meta = ALL_CODE_LANGS.find((row) => row.id === lang) ?? ALL_CODE_LANGS[0]!;
   const official = getCodeLangOfficial(lang);
   const href = `/code/editor?lang=${lang}`;
+
+  function setDesk(next: DeskTab) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("lang", lang);
+    if (next === "editor") params.delete("desk");
+    else params.set("desk", next);
+    router.replace(`/code/editor?${params.toString()}`, { scroll: false });
+  }
 
   useEffect(() => {
     if (!fromUrl && typeof window !== "undefined") {
@@ -187,7 +205,11 @@ export default function CodeLanguageStudio({ initialLang = "python" }: { initial
             <select
               className="input mt-1 min-w-[12rem]"
               value={lang}
-              onChange={(event) => router.replace(`/code/editor?lang=${event.target.value}`)}
+              onChange={(event) => {
+                const params = new URLSearchParams(searchParams.toString());
+                params.set("lang", event.target.value);
+                router.replace(`/code/editor?${params.toString()}`);
+              }}
             >
               {ALL_CODE_LANGS.map((row) => (
                 <option key={row.id} value={row.id}>
@@ -238,18 +260,28 @@ export default function CodeLanguageStudio({ initialLang = "python" }: { initial
             Post to Forum
           </button>
           {classified.kind === "json" ? (
-            <Link href="/tools/json-formatter" className="btn-secondary text-xs" onClick={() => preloadJsonFormatter(classified.body)}>
-              Open JSON formatter
-            </Link>
+            <button
+              type="button"
+              className="btn-secondary text-xs"
+              onClick={() => {
+                preloadJsonFormatter(classified.body);
+                setDesk("json");
+              }}
+            >
+              Open JSON on this desk
+            </button>
           ) : null}
           {classified.kind === "base64" ? (
-            <Link
-              href="/tools/encode-decode"
+            <button
+              type="button"
               className="btn-secondary text-xs"
-              onClick={() => preloadEncodeDecode(classified.body, "base64-decode")}
+              onClick={() => {
+                preloadEncodeDecode(classified.body, "base64-decode");
+                setDesk("encode");
+              }}
             >
-              Open Base64 / URL
-            </Link>
+              Open Base64 on this desk
+            </button>
           ) : null}
           {classified.kind !== "plain" && classified.body ? (
             <span className="text-xs text-slate-500">Detected: {classified.kind}</span>
@@ -269,9 +301,34 @@ export default function CodeLanguageStudio({ initialLang = "python" }: { initial
         ))}
       </div>
 
-      {official ? <OfficialResourceLinks block={official} tone="slate" /> : null}
+      <div className="flex flex-wrap gap-2">
+        {(
+          [
+            ["editor", "Editor"],
+            ["json", "JSON"],
+            ["encode", "Base64 / URL"],
+          ] as const
+        ).map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => setDesk(id)}
+            className={
+              desk === id
+                ? "rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white"
+                : "rounded-lg bg-white px-3 py-2 text-sm font-semibold text-slate-600 ring-1 ring-slate-200"
+            }
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
-      {playground}
+      {official && desk === "editor" ? <OfficialResourceLinks block={official} tone="slate" /> : null}
+
+      {desk === "editor" ? playground : null}
+      {desk === "json" ? <JsonFormatterTool embedded /> : null}
+      {desk === "encode" ? <EncodeDecodeTool embedded /> : null}
 
       <UnifiedMediaFrame
         alsoShow={["document", "folder"]}

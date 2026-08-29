@@ -7,6 +7,7 @@ import MathCalcLab from "@/components/MathCalcLab";
 import UnitsConstants from "@/components/UnitsConstants";
 import SciNotationTool from "@/components/SciNotationTool";
 import VectorResolveTool from "@/components/VectorResolveTool";
+import LatexChecker from "@/components/LatexChecker";
 
 const TICalculator = dynamic(() => import("@/components/TICalculator"), {
   loading: () => <div className="card text-sm text-slate-500">Loading calculator…</div>,
@@ -15,14 +16,14 @@ const TIGrapher = dynamic(() => import("@/components/TIGrapher"), {
   loading: () => <div className="card text-sm text-slate-500">Loading grapher…</div>,
 });
 
-type PadTab = "calc" | "units" | "sci" | "vector";
+type PadTab = "calc" | "units" | "sci" | "vector" | "latex";
 
 type Props = {
   focus?: "calculator" | "grapher";
 };
 
 function parsePad(raw: string | null): PadTab {
-  if (raw === "units" || raw === "sci" || raw === "vector") return raw;
+  if (raw === "units" || raw === "sci" || raw === "vector" || raw === "latex") return raw;
   return "calc";
 }
 
@@ -77,6 +78,7 @@ export default function MathPad({ focus = "calculator" }: Props) {
               ["units", "Units"],
               ["sci", "Sci notation"],
               ["vector", "Vectors"],
+              ["latex", "LaTeX"],
             ] as const
           ).map(([id, label]) => (
             <button
@@ -115,6 +117,7 @@ export default function MathPad({ focus = "calculator" }: Props) {
       {pad === "units" ? <UnitsConstants embedded onInsert={sendToGraph} /> : null}
       {pad === "sci" ? <SciNotationTool embedded onInsert={sendToGraph} /> : null}
       {pad === "vector" ? <VectorResolveTool embedded onInsert={sendToGraph} /> : null}
+      {pad === "latex" ? <LatexChecker embedded onPlot={sendToGraph} /> : null}
 
       {pad === "calc" ? (
         <>

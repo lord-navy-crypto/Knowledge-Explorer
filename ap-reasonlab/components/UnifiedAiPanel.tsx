@@ -1255,7 +1255,7 @@ export default function UnifiedAiPanel({
           One panel · dialogue history · keep asking
         </h2>
         <p className="mt-1 text-sm text-slate-600">
-          Choose Local / Website API / Your own API, pick a task, then chat in the dialogue box.
+          Choose Local / Website API / Your own API from AI settings, pick a task, then chat.
           Follow-up questions stay in the same conversation.{" "}
           <strong>Always search Knowledge Explorer</strong> is on — AI teaches from site materials.
           Path and model sit in <strong>AI settings</strong> (collapsed by default so the dialogue stays
@@ -1284,27 +1284,6 @@ export default function UnifiedAiPanel({
 
       <div className="space-y-5 p-4 md:p-5">
         <LocalAIControls embedded />
-        <AiToolboxRelatedStrip />
-        {category === "ap" ? <OfficialResourceLinks block={AP_PROGRAM_OFFICIAL} tone="slate" /> : null}
-        {category === "english" ? (
-          <div className="grid gap-3 lg:grid-cols-2">
-            <OfficialResourceLinks block={SAT_HUB_OFFICIAL} tone="slate" />
-            <OfficialResourceLinks block={TOEFL_HUB_OFFICIAL} tone="slate" />
-          </div>
-        ) : null}
-        {category === "coding" ? <OfficialResourceLinks block={CODE_HUB_OFFICIAL} tone="slate" /> : null}
-        <AiSpecialFeatures
-          category={category}
-          apTask={apTask}
-          englishTask={englishTask}
-          codingTask={codingTask}
-          subject={subject}
-          guidePrompts={guidePrompts}
-          currentPrompt={input}
-          currentNotes={notes}
-          currentCode={code}
-          onApply={applySpecialFeature}
-        />
 
         <div className="grid gap-2 sm:grid-cols-3" role="tablist" aria-label="AI category">
           {(
@@ -1464,6 +1443,19 @@ export default function UnifiedAiPanel({
             </label>
           ) : null}
         </div>
+
+        <AiSpecialFeatures
+          category={category}
+          apTask={apTask}
+          englishTask={englishTask}
+          codingTask={codingTask}
+          subject={subject}
+          guidePrompts={guidePrompts}
+          currentPrompt={input}
+          currentNotes={notes}
+          currentCode={code}
+          onApply={applySpecialFeature}
+        />
 
         <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Context</p>
@@ -1890,6 +1882,16 @@ export default function UnifiedAiPanel({
             </div>
           </form>
         </div>
+
+        {category === "ap" ? <OfficialResourceLinks block={AP_PROGRAM_OFFICIAL} tone="slate" /> : null}
+        {category === "english" ? (
+          <div className="grid gap-3 lg:grid-cols-2">
+            <OfficialResourceLinks block={SAT_HUB_OFFICIAL} tone="slate" />
+            <OfficialResourceLinks block={TOEFL_HUB_OFFICIAL} tone="slate" />
+          </div>
+        ) : null}
+        {category === "coding" ? <OfficialResourceLinks block={CODE_HUB_OFFICIAL} tone="slate" /> : null}
+        <AiToolboxRelatedStrip />
       </div>
     </section>
   );

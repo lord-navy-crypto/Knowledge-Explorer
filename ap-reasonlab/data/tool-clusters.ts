@@ -13,7 +13,7 @@ export const TOOL_CLUSTERS: ToolCluster[] = [
   {
     id: "code-workbench",
     title: "Code workbench",
-    blurb: "Save blocks, compare text, format JSON, and jump to browser playgrounds.",
+    blurb: "Save blocks, format JSON, encode Base64, compare text, and jump to the one Code editor.",
     toolIds: ["code-board", "text-comparator", "short-code", "json-formatter", "encode-decode"],
     codeHrefs: ["/code", "/code/editor?lang=python", "/code/editor?lang=javascript"],
   },
@@ -38,7 +38,7 @@ export const TOOL_CLUSTERS: ToolCluster[] = [
   {
     id: "math-science",
     title: "Math & science pads",
-    blurb: "Calculator + grapher + calc lab (d/dx, ∫, Σ, table, zeros), plus units, sci notation, and vectors.",
+    blurb: "Calculator + grapher + calc lab (d/dx, ∫, Σ, table, zeros) plus units, sci notation, vectors, and LaTeX on one desk.",
     toolIds: ["math-pad", "latex", "formula-board", "units", "sci-notation", "vector-resolve"],
   },
   {
