@@ -29,12 +29,13 @@ function workbenchCards() {
 
 function documentHtml() {
   return `<!doctype html>
-<html lang="en">
+<html lang="en" translate="no" class="notranslate">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="color-scheme" content="light" />
   <meta name="theme-color" content="#f7f4ee" />
+  <meta name="google" content="notranslate" />
   <title>Convenient Tools &amp; Code — Knowledge Explorer</title>
   <meta name="description" content="Fast static launchpad for Knowledge Explorer workbenches and external tools." />
   <style>
@@ -78,7 +79,7 @@ function documentHtml() {
     @media(max-width:620px){.shell{padding:16px 14px 34px}.topbar{align-items:flex-start}.nav{justify-content:flex-end}.hero{padding-top:26px}.grid{grid-template-columns:1fr}.card{min-height:0}.section-head{align-items:flex-start;flex-direction:column}}
   </style>
 </head>
-<body>
+<body translate="no" class="notranslate">
   <main class="shell">
     <header class="topbar">
       <a class="brand" href="/"><span class="logo">KE</span><span>Knowledge Explorer</span></a>
