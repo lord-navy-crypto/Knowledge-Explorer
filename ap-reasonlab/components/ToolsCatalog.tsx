@@ -2,452 +2,144 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  STUDY_TOOL_CATEGORIES,
-  TOOL_SECURITY_LABELS,
-  type StudyTool,
-  type StudyToolCategory,
-  type ToolSecurity,
-} from "@/data/study-tools";
-import {
-  isPinnedTool,
-  readPinnedToolIds,
-  togglePinnedTool,
-} from "@/lib/pinned-tools";
-import { readRecentTools, trackToolboxVisit, type RecentToolEntry } from "@/lib/recent-tools";
-import { toolSearchHaystack } from "@/lib/toolbox-search";
+import { useEffect, useMemo, useState } from "react";
+import { getStudyTool, type StudyTool } from "@/data/study-tools";
+import { TOOL_WORKBENCHES, type ToolWorkbench } from "@/data/tool-workbenches";
 
-const COMBINED_PRIORITY = new Map<string, number>([
-  ["math-pad", 0],
-  ["code-workbench", 1],
-  ["write-convert", 2],
-  ["pdf-tools", 3],
-  ["image-compress", 4],
-  ["ai", 5],
-  ["focus-desk", 6],
-]);
-
-function isCombinedTool(tool: StudyTool): boolean {
-  return COMBINED_PRIORITY.has(tool.id);
+function searchText(workbench: ToolWorkbench): string {
+  const moduleText = workbench.moduleIds
+    .map((id) => getStudyTool(id))
+    .filter(Boolean)
+    .map((tool) => `${tool!.title} ${tool!.blurb}`)
+    .join(" ");
+  return `${workbench.title} ${workbench.blurb} ${workbench.capabilityLabel} ${moduleText}`.toLowerCase();
 }
 
-function buildCatalogTools(tools: StudyTool[]): StudyTool[] {
-  const codeSource =
-    tools.find((tool) => tool.id === "json-formatter") ||
-    tools.find((tool) => tool.id === "encode-decode") ||
-    tools.find((tool) => tool.id === "code-board");
+function WorkbenchCard({ workbench }: { workbench: ToolWorkbench }) {
+  const modules = workbench.moduleIds.map((id) => getStudyTool(id)).filter(Boolean);
 
-  const withWorkbenchLabels = tools.map((tool) => {
-    if (tool.id === "math-pad") {
-      return {
-        ...tool,
-        title: "Math workbench · Calc + Graph",
-        blurb:
-          "Calculator + grapher + calculus lab, with units, scientific notation, vectors, LaTeX checks, and formula references in one desk.",
-        badge: "Combined: Calc · Graph · Units · Vectors · LaTeX · Formulas",
-      };
-    }
-    if (tool.id === "write-convert") {
-      return {
-        ...tool,
-        title: "Write & convert workbench",
-        blurb:
-          "One draft pipeline for editing, word count, Markdown/plain cleanup, Word import, and PDF export.",
-        badge: "Combined: Edit · Count · Convert · Import · PDF",
-      };
-    }
-    if (tool.id === "pdf-tools") {
-      return {
-        ...tool,
-        title: "PDF workbench",
-        badge: "Combined: Merge · Split · Rotate · Compress",
-      };
-    }
-    if (tool.id === "image-compress") {
-      return {
-        ...tool,
-        title: "Image workbench",
-        badge: "Combined: Compress · Convert · Crop · Annotate",
-      };
-    }
-    if (tool.id === "focus-desk") {
-      return {
-        ...tool,
-        title: "Focus workbench",
-        badge: "Combined: Timer · Breaks · Noise",
-      };
-    }
-    if (tool.id === "ai") {
-      return {
-        ...tool,
-        title: "AI workbench",
-        badge: "Combined: AP · English · Coding · Math",
-      };
-    }
-    return tool;
-  });
-
-  if (!codeSource) return withWorkbenchLabels;
-
-  return [
-    ...withWorkbenchLabels,
-    {
-      ...codeSource,
-      id: "code-workbench",
-      title: "Code workbench",
-      href: "/code/editor?lang=python",
-      blurb:
-        "One editor for programming languages plus JSON formatting, Base64/URL encode-decode, and the saved Code board.",
-      badge: "Combined: Editor · JSON · Base64/URL · Code board",
-    },
-  ];
-}
-
-function SecurityBadge({ level }: { level?: ToolSecurity }) {
-  const key = level || "safe";
-  const meta = TOOL_SECURITY_LABELS[key];
-  return (
-    <span
-      className={`shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${meta.className}`}
-      title={meta.detail}
-    >
-      {meta.label}
-    </span>
-  );
-}
-
-function PinButton({ id, pinned, onToggle }: { id: string; pinned: boolean; onToggle: (id: string) => void }) {
-  return (
-    <button
-      type="button"
-      aria-label={pinned ? "Unpin tool" : "Pin tool"}
-      className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-amber-600"
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        onToggle(id);
-      }}
-    >
-      {pinned ? "★" : "☆"}
-    </button>
-  );
-}
-
-function ToolCard({
-  tool,
-  pinnedIds,
-  onPin,
-  combined = false,
-}: {
-  tool: StudyTool;
-  pinnedIds: string[];
-  onPin: (id: string) => void;
-  combined?: boolean;
-}) {
   return (
     <Link
-      href={tool.href}
-      onClick={() => trackToolboxVisit(tool.href, tool.title)}
-      className={
-        combined
-          ? "group relative flex min-h-[8rem] flex-col rounded-2xl border border-brand-200 bg-gradient-to-br from-brand-50 via-white to-sky-50 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md active:scale-[0.99]"
-          : "card-hover group relative flex min-h-[7.5rem] flex-col touch-manipulation active:scale-[0.99]"
-      }
+      href={workbench.href}
+      className="group flex min-h-[11rem] flex-col rounded-2xl border border-brand-200 bg-gradient-to-br from-brand-50 via-white to-sky-50 p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md active:scale-[0.99]"
     >
-      <div className="absolute right-2 top-2">
-        <PinButton
-          id={tool.id}
-          pinned={isPinnedTool(tool.id) || pinnedIds.includes(tool.id)}
-          onToggle={onPin}
-        />
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-brand-600">Workbench</p>
+          <h3 className="mt-1 font-display text-xl font-bold text-slate-900 group-hover:text-brand-800">
+            {workbench.title}
+          </h3>
+        </div>
+        <span className="rounded-full bg-brand-100 px-2.5 py-1 text-[10px] font-bold text-brand-800">
+          {modules.length} modules
+        </span>
       </div>
-      <div className="flex items-start justify-between gap-2 pr-8">
-        <h3 className="text-base font-bold text-slate-900 group-hover:text-brand-700">{tool.title}</h3>
-        <SecurityBadge level={tool.security} />
-      </div>
-      <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-600">{tool.blurb}</p>
-      {tool.badge ? <p className="mt-2 text-[11px] font-semibold text-brand-700">{tool.badge}</p> : null}
+      <p className="mt-2 text-sm leading-6 text-slate-600">{workbench.blurb}</p>
+      <p className="mt-3 text-xs font-semibold leading-5 text-brand-800">{workbench.capabilityLabel}</p>
+      <p className="mt-auto pt-4 text-sm font-semibold text-brand-700">Open workbench →</p>
     </Link>
   );
 }
 
 export default function ToolsCatalog({
-  tools,
-  basePath = "/tools",
+  basePath = "/explore/tools-code",
 }: {
-  tools: StudyTool[];
+  tools?: StudyTool[];
   basePath?: string;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [query, setQuery] = useState("");
-  const [activeCat, setActiveCat] = useState<StudyToolCategory | "all">("all");
-  const [activeSecurity, setActiveSecurity] = useState<ToolSecurity | "all">("all");
-  const [recent, setRecent] = useState<RecentToolEntry[]>([]);
-  const [pinnedIds, setPinnedIds] = useState<string[]>([]);
-  const catalogTools = useMemo(() => buildCatalogTools(tools), [tools]);
 
   useEffect(() => {
     setQuery(searchParams.get("q") || "");
-    const cat = searchParams.get("cat");
-    const validCat = STUDY_TOOL_CATEGORIES.some((c) => c.id === cat);
-    setActiveCat(validCat && cat ? (cat as StudyToolCategory) : "all");
-    const sec = searchParams.get("sec");
-    const validSec = sec && sec in TOOL_SECURITY_LABELS;
-    setActiveSecurity(validSec ? (sec as ToolSecurity) : "all");
-    setRecent(readRecentTools().filter((entry) => entry.href.startsWith("/tools/") || entry.href.startsWith("/code/")));
-    setPinnedIds(readPinnedToolIds());
   }, [searchParams]);
-
-  const syncUrl = useCallback(
-    (next: { q?: string; cat?: StudyToolCategory | "all"; sec?: ToolSecurity | "all" }) => {
-      const params = new URLSearchParams(searchParams.toString());
-      const q = next.q !== undefined ? next.q : query;
-      const cat = next.cat !== undefined ? next.cat : activeCat;
-      const sec = next.sec !== undefined ? next.sec : activeSecurity;
-      if (q.trim()) params.set("q", q.trim());
-      else params.delete("q");
-      if (cat !== "all") params.set("cat", cat);
-      else params.delete("cat");
-      if (sec !== "all") params.set("sec", sec);
-      else params.delete("sec");
-      const qs = params.toString();
-      router.replace(qs ? `${basePath}?${qs}` : basePath, { scroll: false });
-    },
-    [searchParams, query, activeCat, activeSecurity, router, basePath]
-  );
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return catalogTools.filter((tool) => {
-      if (activeCat !== "all" && tool.category !== activeCat) return false;
-      const sec = tool.security || "safe";
-      if (activeSecurity !== "all" && sec !== activeSecurity) return false;
-      if (!q) return true;
-      const hay = toolSearchHaystack(tool).toLowerCase();
-      return q.split(/\s+/).every((token) => hay.includes(token));
+    if (!q) return TOOL_WORKBENCHES;
+    const tokens = q.split(/\s+/);
+    return TOOL_WORKBENCHES.filter((workbench) => {
+      const haystack = searchText(workbench);
+      return tokens.every((token) => haystack.includes(token));
     });
-  }, [catalogTools, query, activeCat, activeSecurity]);
+  }, [query]);
 
-  const combinedTools = useMemo(
-    () =>
-      filtered
-        .filter(isCombinedTool)
-        .sort((a, b) => (COMBINED_PRIORITY.get(a.id) ?? 999) - (COMBINED_PRIORITY.get(b.id) ?? 999)),
-    [filtered]
-  );
+  const external = getStudyTool("external-hub");
+  const externalMatches = useMemo(() => {
+    if (!external) return false;
+    const q = query.trim().toLowerCase();
+    if (!q) return true;
+    const haystack = `${external.title} ${external.blurb} external connection tools`.toLowerCase();
+    return q.split(/\s+/).every((token) => haystack.includes(token));
+  }, [external, query]);
 
-  const singleTools = useMemo(() => filtered.filter((tool) => !isCombinedTool(tool)), [filtered]);
-
-  const pinnedTools = useMemo(
-    () =>
-      pinnedIds
-        .map((id) => catalogTools.find((tool) => tool.id === id))
-        .filter((tool): tool is StudyTool => Boolean(tool)),
-    [pinnedIds, catalogTools]
-  );
-
-  const categories = STUDY_TOOL_CATEGORIES.filter((cat) =>
-    catalogTools.some((tool) => tool.category === cat.id)
-  );
-
-  const securityLevels = (Object.keys(TOOL_SECURITY_LABELS) as ToolSecurity[]).filter((key) =>
-    catalogTools.some((tool) => (tool.security || "safe") === key)
-  );
-
-  function handlePinToggle(id: string) {
-    setPinnedIds(togglePinnedTool(id));
+  function updateQuery(value: string) {
+    setQuery(value);
+    const params = new URLSearchParams(searchParams.toString());
+    if (value.trim()) params.set("q", value.trim());
+    else params.delete("q");
+    const qs = params.toString();
+    router.replace(qs ? `${basePath}?${qs}` : basePath, { scroll: false });
   }
 
-  const showShortcuts = !query.trim() && activeCat === "all" && activeSecurity === "all";
-
   return (
-    <div className="space-y-7">
-      <section className="space-y-3 rounded-xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
+    <div className="space-y-8">
+      <section className="rounded-xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <label className="block min-w-0 flex-1 text-sm">
-            <span className="sr-only">Search tools</span>
+            <span className="sr-only">Search workbenches</span>
             <input
               className="input w-full"
               value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                syncUrl({ q: e.target.value });
-              }}
-              placeholder="Search workbenches or single tools… (json, base64, pdf, timer, graph)"
+              onChange={(event) => updateQuery(event.target.value)}
+              placeholder="Search workbenches or included capabilities…"
             />
           </label>
-          <p className="text-xs tabular-nums text-slate-500">
-            {filtered.length} of {catalogTools.length} workbenches & tools
-          </p>
+          <p className="text-xs tabular-nums text-slate-500">{filtered.length} workbenches</p>
         </div>
-        <p className="text-xs text-slate-500">
-          Combined workbenches are always shown first. Individual tools stay available underneath.
+        <p className="mt-2 text-xs text-slate-500">
+          Clusters and covered single tools are no longer separate products. They are modules inside these workbenches.
         </p>
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              setActiveCat("all");
-              syncUrl({ cat: "all" });
-            }}
-            className={
-              activeCat === "all"
-                ? "rounded-full bg-brand-600 px-3 py-1 text-xs font-semibold text-white"
-                : "rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:border-brand-300"
-            }
-          >
-            All
-          </button>
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              type="button"
-              onClick={() => {
-                setActiveCat(cat.id);
-                syncUrl({ cat: cat.id });
-              }}
-              className={
-                activeCat === cat.id
-                  ? "rounded-full bg-brand-600 px-3 py-1 text-xs font-semibold text-white"
-                  : "rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:border-brand-300"
-              }
-            >
-              {cat.label}
-            </button>
-          ))}
-        </div>
-        <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-3">
-          <span className="self-center text-[10px] font-semibold uppercase tracking-wide text-slate-400">Security</span>
-          <button
-            type="button"
-            onClick={() => {
-              setActiveSecurity("all");
-              syncUrl({ sec: "all" });
-            }}
-            className={
-              activeSecurity === "all"
-                ? "rounded-full bg-slate-800 px-3 py-1 text-xs font-semibold text-white"
-                : "rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-50"
-            }
-          >
-            Any
-          </button>
-          {securityLevels.map((key) => {
-            const meta = TOOL_SECURITY_LABELS[key];
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => {
-                  setActiveSecurity(key);
-                  syncUrl({ sec: key });
-                }}
-                className={
-                  activeSecurity === key
-                    ? `rounded-full px-3 py-1 text-xs font-semibold ${meta.className}`
-                    : "rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-50"
-                }
-                title={meta.detail}
-              >
-                {meta.label}
-              </button>
-            );
-          })}
-        </div>
       </section>
 
-      {combinedTools.length > 0 ? (
-        <section className="space-y-3" aria-labelledby="combined-workbenches-heading">
-          <div className="flex items-end justify-between gap-3 border-b border-brand-200 pb-2">
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-brand-600">Start here</p>
-              <h2 id="combined-workbenches-heading" className="text-lg font-bold text-slate-900">
-                Combined workbenches
-              </h2>
-            </div>
-            <span className="text-[11px] tabular-nums text-brand-700">{combinedTools.length}</span>
+      {filtered.length ? (
+        <section className="space-y-3" aria-labelledby="workbenches-heading">
+          <div className="border-b border-brand-200 pb-2">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-brand-600">Primary tools</p>
+            <h2 id="workbenches-heading" className="text-xl font-bold text-slate-900">Workbenches</h2>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {combinedTools.map((tool) => (
-              <ToolCard
-                key={tool.id}
-                tool={tool}
-                pinnedIds={pinnedIds}
-                onPin={handlePinToggle}
-                combined
-              />
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {filtered.map((workbench) => (
+              <WorkbenchCard key={workbench.id} workbench={workbench} />
             ))}
           </div>
         </section>
       ) : null}
 
-      {showShortcuts && pinnedTools.length > 0 ? (
-        <section className="space-y-2">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-amber-700">Pinned</h2>
-          <div className="flex flex-wrap gap-2">
-            {pinnedTools.map((tool) => (
-              <Link
-                key={tool.id}
-                href={tool.href}
-                onClick={() => trackToolboxVisit(tool.href, tool.title)}
-                className="rounded-full border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-950 hover:bg-amber-100"
-              >
-                ★ {tool.title}
-              </Link>
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      {showShortcuts && recent.length > 0 ? (
-        <section className="space-y-2">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Recent</h2>
-          <div className="flex flex-wrap gap-2">
-            {recent.map((entry) => (
-              <Link
-                key={entry.href}
-                href={entry.href}
-                className="rounded-full border border-brand-200 bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-800 hover:bg-brand-100"
-              >
-                {entry.title}
-              </Link>
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      {filtered.length === 0 ? (
+      {!filtered.length && !externalMatches ? (
         <p className="rounded-xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500">
-          No tools match. Try json, base64, graph, pdf, pomodoro, writing, or another task name.
+          No workbench matches that search.
         </p>
       ) : null}
 
-      {singleTools.length > 0 ? (
-        <section id="single-tools" className="space-y-5 scroll-mt-28" aria-labelledby="single-tools-heading">
-          <div className="border-b border-slate-200 pb-2">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">More specific</p>
-            <h2 id="single-tools-heading" className="text-lg font-bold text-slate-900">Single tools</h2>
+      {external && externalMatches ? (
+        <section id="external-tools" className="scroll-mt-28 space-y-3 border-t border-slate-200 pt-7">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">Separate</p>
+            <h2 className="text-xl font-bold text-slate-900">External Connections & Tools</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Off-site resources stay separate because they cannot be absorbed into a local workbench.
+            </p>
           </div>
-          {STUDY_TOOL_CATEGORIES.map((category) => {
-            const items = singleTools.filter((tool) => tool.category === category.id);
-            if (!items.length) return null;
-            if (activeCat !== "all" && activeCat !== category.id) return null;
-            return (
-              <section key={category.id} id={`tools-${category.id}`} className="scroll-mt-28 space-y-3">
-                <div className="flex items-end justify-between gap-3 border-b border-slate-100 pb-2">
-                  <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">{category.label}</h3>
-                  <span className="text-[11px] tabular-nums text-slate-400">{items.length}</span>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                  {items.map((tool) => (
-                    <ToolCard key={tool.id} tool={tool} pinnedIds={pinnedIds} onPin={handlePinToggle} />
-                  ))}
-                </div>
-              </section>
-            );
-          })}
+          <Link
+            href={external.href}
+            className="group block rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-brand-300 hover:shadow-md"
+          >
+            <h3 className="font-display text-lg font-bold text-slate-900 group-hover:text-brand-800">{external.title}</h3>
+            <p className="mt-2 text-sm leading-6 text-slate-600">{external.blurb}</p>
+            <p className="mt-3 text-sm font-semibold text-brand-700">Open external connections →</p>
+          </Link>
         </section>
       ) : null}
     </div>
