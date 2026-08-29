@@ -231,12 +231,22 @@ export default function MathPad({ focus = "calculator" }: Props) {
             </section>
           </div>
 
-          <MathCalcLab
-            expr={labExpr}
-            onExprChange={setLabExpr}
-            onSendToGraph={sendToGraph}
-            onSendToCalc={sendToCalculator}
-          />
+          <details className="rounded-2xl border border-slate-200 bg-slate-50/60 p-3">
+            <summary className="cursor-pointer list-none rounded-xl px-2 py-2 font-semibold text-slate-800 hover:bg-white">
+              Advanced calculus & numerical analysis
+              <span className="ml-2 text-xs font-normal text-slate-500">
+                derivatives · integrals · roots · tables · intersections · Riemann · Euler
+              </span>
+            </summary>
+            <div className="mt-3">
+              <MathCalcLab
+                expr={labExpr}
+                onExprChange={setLabExpr}
+                onSendToGraph={sendToGraph}
+                onSendToCalc={sendToCalculator}
+              />
+            </div>
+          </details>
         </>
       ) : null}
     </div>
