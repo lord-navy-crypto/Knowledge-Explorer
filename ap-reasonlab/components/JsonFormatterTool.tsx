@@ -11,6 +11,7 @@ import {
   preloadEncodeDecode,
   preloadTextDiff,
 } from "@/lib/payload-handoff";
+import { openCodeEditorDesk } from "@/lib/code-draft-bridge";
 
 const SAMPLE = `{
   "name": "Knowledge Explorer",
@@ -18,7 +19,7 @@ const SAMPLE = `{
   "nested": { "ok": true }
 }`;
 
-export default function JsonFormatterTool() {
+export default function JsonFormatterTool({ embedded = false }: { embedded?: boolean }) {
   const router = useRouter();
   const [input, setInput] = useState(SAMPLE);
   const [indent, setIndent] = useState(2);
@@ -113,7 +114,7 @@ export default function JsonFormatterTool() {
   function sendToEncode() {
     const payload = output || input;
     preloadEncodeDecode(payload, "base64-encode");
-    router.push("/tools/encode-decode");
+    openCodeEditorDesk(router, "encode");
   }
 
   function saveToBoard() {
@@ -124,15 +125,10 @@ export default function JsonFormatterTool() {
       code: payload,
       comment: "Saved from JSON formatter",
     });
-    setNote("Saved to code block adder.");
+    setNote("Saved to the code board on this editor.");
   }
 
-  return (
-    <StudyToolShell
-      title="JSON formatter"
-      description="Validate, pretty-print, minify, sort keys, or pick a path — then compare, encode, or save the result."
-      tip="Pair with Text diff to compare two JSON exports, or send Base64 to the encoder."
-    >
+  const body = (
       <div className="card space-y-4">
         <div className="flex flex-wrap items-end gap-3">
           <label className="text-sm font-medium text-slate-600">
@@ -217,7 +213,17 @@ export default function JsonFormatterTool() {
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
         {note ? <p className="text-xs text-emerald-700">{note}</p> : null}
       </div>
+  );
 
+  if (embedded) return <div className="space-y-4">{body}</div>;
+
+  return (
+    <StudyToolShell
+      title="JSON formatter"
+      description="Validate, pretty-print, minify, sort keys, or pick a path — then compare, encode, or save the result."
+      tip="Pair with Text diff to compare two JSON exports, or send Base64 to the encoder."
+    >
+      {body}
       <RelatedToolboxLinks clusterId="code-workbench" currentToolId="json-formatter" />
     </StudyToolShell>
   );

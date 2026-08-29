@@ -5,6 +5,9 @@ import Link from "next/link";
 import { Press_Start_2P } from "next/font/google";
 import StudyToolShell from "@/components/StudyToolShell";
 import { useSiteTheme } from "@/components/ThemeProvider";
+import { openToolboxWithPrefill } from "@/lib/ai-toolbox-prefill";
+import { preloadForumComposer } from "@/lib/forum-local";
+import { useRouter } from "next/navigation";
 
 const pixelFont = Press_Start_2P({
   weight: "400",
@@ -279,6 +282,7 @@ function phaseLabel(phase: Phase): string {
 }
 
 export default function FocusDeskTool() {
+  const router = useRouter();
   const [tab, setTab] = useState<DeskTab>("timer");
   const [focusMins, setFocusMins] = useState(25);
   const [breakMins, setBreakMins] = useState(5);
@@ -760,6 +764,39 @@ export default function FocusDeskTool() {
               maxLength={120}
             />
           </label>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              className="btn-secondary text-xs"
+              onClick={() =>
+                openToolboxWithPrefill({
+                  category: "ap",
+                  apTask: "advice",
+                  prompt: [
+                    "Help me plan this original-practice study session (do not paste copyrighted exam text).",
+                    `Focus task: ${task.trim() || "(none yet)"}`,
+                    `Timer: ${focusMins} min focus / ${breakMins} min break.`,
+                  ].join("\n"),
+                })
+              }
+            >
+              Ask AI about this task
+            </button>
+            <button
+              type="button"
+              className="btn-secondary text-xs"
+              onClick={() => {
+                preloadForumComposer({
+                  title: task.trim() || "Focus session",
+                  body: `Studying: ${task.trim() || "a timed focus block"}\n\nTimer: ${focusMins} min focus / ${breakMins} min break.`,
+                  postCategory: "questions",
+                });
+                router.push("/forum");
+              }}
+            >
+              Post task to Forum
+            </button>
+          </div>
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <label className="block text-sm">

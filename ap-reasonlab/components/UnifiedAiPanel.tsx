@@ -44,10 +44,13 @@ import {
 } from "@/lib/ai-latex-accuracy";
 import { normalizeAiDialogueText } from "@/lib/unicode-math";
 import {
+  loadAiThreadsOpen,
   loadToolboxPanelPrefs,
+  saveAiThreadsOpen,
   saveToolboxPanelPrefs,
   type ToolboxCategory,
 } from "@/lib/ai-toolbox-prefs";
+import { codingAiPlaygroundHref } from "@/lib/code-editor-studio";
 import { takeToolboxPrefill } from "@/lib/ai-toolbox-prefill";
 import { migrateEnglishTask, toolboxHref } from "@/lib/ai-toolbox-url";
 import {
@@ -195,7 +198,44 @@ const CODING_TASKS: Array<{ value: CodingTask; label: string; hint: string }> = 
   },
 ];
 
-const LANGUAGES = ["Python", "Java", "HTML / CSS / JS", "General algorithms", "Other"] as const;
+const LANGUAGES = [
+  "Python",
+  "Java",
+  "C",
+  "C++",
+  "Go",
+  "Rust",
+  "JavaScript / TypeScript",
+  "HTML / CSS / JS",
+  "SQL",
+  "C#",
+  "PHP",
+  "Ruby",
+  "R",
+  "Swift",
+  "Kotlin",
+  "General algorithms",
+  "Other",
+] as const;
+
+const LANGUAGE_GROUPS: Array<{ label: string; items: (typeof LANGUAGES)[number][] }> = [
+  {
+    label: "Browser runtimes",
+    items: ["Python", "JavaScript / TypeScript", "HTML / CSS / JS", "SQL"],
+  },
+  {
+    label: "Training (JS stand-in)",
+    items: ["Java", "C#"],
+  },
+  {
+    label: "Practice (structure + download)",
+    items: ["C", "C++", "Go", "Rust", "PHP", "Ruby", "R", "Swift", "Kotlin"],
+  },
+  {
+    label: "Other",
+    items: ["General algorithms", "Other"],
+  },
+];
 
 type Props = {
   defaultCategory?: Category;
@@ -345,9 +385,12 @@ export default function UnifiedAiPanel({
   });
   const [subject, setSubject] = useState(defaultSubject || savedPrefs.subject || SUBJECT_OPTIONS[0]);
   const [englishTarget, setEnglishTarget] = useState(savedPrefs.englishTarget);
-  const [language, setLanguage] = useState<(typeof LANGUAGES)[number]>(
-    (savedPrefs.language as (typeof LANGUAGES)[number]) || "Python"
-  );
+  const [language, setLanguage] = useState<(typeof LANGUAGES)[number]>(() => {
+    const raw = savedPrefs.language;
+    return (LANGUAGES as readonly string[]).includes(raw)
+      ? (raw as (typeof LANGUAGES)[number])
+      : "Python";
+  });
   const [input, setInput] = useState("");
   const [code, setCode] = useState("");
   const [notes, setNotes] = useState("");
@@ -388,6 +431,10 @@ export default function UnifiedAiPanel({
   useEffect(() => {
     if (defaultCategory) setCategory(defaultCategory);
   }, [defaultCategory]);
+
+  useEffect(() => {
+    setShowThreads(loadAiThreadsOpen());
+  }, []);
 
   useEffect(() => {
     if (defaultSubject) setSubject(defaultSubject);
@@ -1255,9 +1302,10 @@ export default function UnifiedAiPanel({
           One panel · dialogue history · keep asking
         </h2>
         <p className="mt-1 text-sm text-slate-600">
-          Choose Local / Website API / Your own API, pick a task, then chat in the dialogue box.
+          Choose Local / Website API / Your own API from AI settings, pick a task, then chat.
           Follow-up questions stay in the same conversation.{" "}
           <strong>Always search Knowledge Explorer</strong> is on — AI teaches from site materials.
+          Path, model, and special-feature chips stay collapsed by default so the dialogue stays first.
         </p>
         {siteSearchNote ? (
           <div className="mt-2 space-y-1">
@@ -1282,27 +1330,6 @@ export default function UnifiedAiPanel({
 
       <div className="space-y-5 p-4 md:p-5">
         <LocalAIControls embedded />
-        <AiToolboxRelatedStrip />
-        {category === "ap" ? <OfficialResourceLinks block={AP_PROGRAM_OFFICIAL} tone="slate" /> : null}
-        {category === "english" ? (
-          <div className="grid gap-3 lg:grid-cols-2">
-            <OfficialResourceLinks block={SAT_HUB_OFFICIAL} tone="slate" />
-            <OfficialResourceLinks block={TOEFL_HUB_OFFICIAL} tone="slate" />
-          </div>
-        ) : null}
-        {category === "coding" ? <OfficialResourceLinks block={CODE_HUB_OFFICIAL} tone="slate" /> : null}
-        <AiSpecialFeatures
-          category={category}
-          apTask={apTask}
-          englishTask={englishTask}
-          codingTask={codingTask}
-          subject={subject}
-          guidePrompts={guidePrompts}
-          currentPrompt={input}
-          currentNotes={notes}
-          currentCode={code}
-          onApply={applySpecialFeature}
-        />
 
         <div className="grid gap-2 sm:grid-cols-3" role="tablist" aria-label="AI category">
           {(
@@ -1437,22 +1464,20 @@ export default function UnifiedAiPanel({
                 value={language}
                 onChange={(e) => setLanguage(e.target.value as (typeof LANGUAGES)[number])}
               >
-                {LANGUAGES.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
+                {LANGUAGE_GROUPS.map((group) => (
+                  <optgroup key={group.label} label={group.label}>
+                    {group.items.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
               <span id="ai-toolbox-language-hint" className="mt-1 block text-xs font-normal text-slate-500">
                 Open the{" "}
                 <Link
-                  href={
-                    language === "Java"
-                      ? "/code/editor?lang=java"
-                      : language.startsWith("HTML")
-                        ? "/code/editor?lang=web"
-                        : "/code/editor?lang=python"
-                  }
+                  href={codingAiPlaygroundHref(language)}
                   className="text-brand-700 hover:underline"
                 >
                   Code editor
@@ -1462,6 +1487,19 @@ export default function UnifiedAiPanel({
             </label>
           ) : null}
         </div>
+
+        <AiSpecialFeatures
+          category={category}
+          apTask={apTask}
+          englishTask={englishTask}
+          codingTask={codingTask}
+          subject={subject}
+          guidePrompts={guidePrompts}
+          currentPrompt={input}
+          currentNotes={notes}
+          currentCode={code}
+          onApply={applySpecialFeature}
+        />
 
         <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Context</p>
@@ -1568,7 +1606,13 @@ export default function UnifiedAiPanel({
             <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
-                onClick={() => setShowThreads((v) => !v)}
+                onClick={() =>
+                  setShowThreads((v) => {
+                    const next = !v;
+                    saveAiThreadsOpen(next);
+                    return next;
+                  })
+                }
                 className="text-xs font-medium text-brand-700 hover:underline"
               >
                 {showThreads ? "Hide chats" : `Saved chats (${threads.length})`}
@@ -1707,7 +1751,7 @@ export default function UnifiedAiPanel({
                   ) : null}
                   {message.role === "assistant" && category === "coding" && message.snippet ? (
                     <Link
-                      href={language === "Java" ? "/code/java" : "/code"}
+                      href={codingAiPlaygroundHref(language)}
                       className="mt-2 inline-block text-xs font-medium text-brand-700 hover:underline"
                     >
                       Open Code playground →
@@ -1838,7 +1882,7 @@ export default function UnifiedAiPanel({
                   <span className="mt-1 block text-xs font-normal text-slate-500">
                     Try snippets in{" "}
                     <Link
-                      href={language === "Java" ? "/code/java" : "/code"}
+                      href={codingAiPlaygroundHref(language)}
                       className="text-brand-700 hover:underline"
                     >
                       Code playground
@@ -1888,6 +1932,16 @@ export default function UnifiedAiPanel({
             </div>
           </form>
         </div>
+
+        {category === "ap" ? <OfficialResourceLinks block={AP_PROGRAM_OFFICIAL} tone="slate" /> : null}
+        {category === "english" ? (
+          <div className="grid gap-3 lg:grid-cols-2">
+            <OfficialResourceLinks block={SAT_HUB_OFFICIAL} tone="slate" />
+            <OfficialResourceLinks block={TOEFL_HUB_OFFICIAL} tone="slate" />
+          </div>
+        ) : null}
+        {category === "coding" ? <OfficialResourceLinks block={CODE_HUB_OFFICIAL} tone="slate" /> : null}
+        <AiToolboxRelatedStrip />
       </div>
     </section>
   );

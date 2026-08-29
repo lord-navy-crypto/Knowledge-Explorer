@@ -4,8 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import katex from "katex";
 import Link from "next/link";
 import StudyToolShell from "@/components/StudyToolShell";
+import MathDeskBanner from "@/components/MathDeskBanner";
 import { FORMULA_BOARD } from "@/data/formula-board";
 import { toLatexSource } from "@/lib/unicode-math";
+import { latexToGrapherY1 } from "@/lib/math-expr";
 
 const PRESETS = [
   { label: "Quadratic", src: "x = \\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}" },
@@ -15,7 +17,15 @@ const PRESETS = [
   { label: "Newton 2", src: "\\sum \\vec F = m\\vec a" },
 ];
 
-export default function LatexChecker() {
+export default function LatexChecker({
+  embedded = false,
+  onPlot,
+  handoffTex = "",
+}: {
+  embedded?: boolean;
+  onPlot?: (expr: string) => void;
+  handoffTex?: string;
+}) {
   const [source, setSource] = useState("E = \\frac{1}{2}mv^2");
   const [display, setDisplay] = useState(true);
   const [wrapDollars, setWrapDollars] = useState(true);
@@ -25,6 +35,10 @@ export default function LatexChecker() {
     const tex = new URLSearchParams(window.location.search).get("tex");
     if (tex?.trim()) setSource(tex);
   }, []);
+
+  useEffect(() => {
+    if (handoffTex.trim()) setSource(handoffTex);
+  }, [handoffTex]);
 
   const result = useMemo(() => {
     try {
@@ -55,12 +69,10 @@ export default function LatexChecker() {
     window.setTimeout(() => setCopied((c) => (c === id ? "" : c)), 1200);
   }
 
-  return (
-    <StudyToolShell
-      title="LaTeX checker"
-      description="Paste a formula (with or without $...$), check KaTeX rendering, copy wrapped $ / $$, and jump to Formula board presets — AP STEM note workflow."
-      tip="Unicode math like √ or · is normalized when possible. Prefer $...$ / $$...$$ in content editors."
-    >
+  const plotExpr = latexToGrapherY1(source);
+
+  const body = (
+    <>
       <div className="flex flex-wrap gap-2">
         {PRESETS.map((p) => (
           <button
@@ -119,6 +131,11 @@ export default function LatexChecker() {
             <button type="button" className="btn-secondary text-xs" onClick={() => copy(source, "raw")}>
               {copied === "raw" ? "Copied" : "Copy raw"}
             </button>
+            {onPlot && plotExpr ? (
+              <button type="button" className="btn-primary text-xs" onClick={() => onPlot(plotExpr)}>
+                Plot as Y1
+              </button>
+            ) : null}
           </div>
           <p className={`text-xs ${result.ok ? "text-emerald-700" : "text-red-600"}`}>
             {result.ok ? "Valid — ready to paste into a concept or document." : "Fix the source above."}
@@ -146,6 +163,21 @@ export default function LatexChecker() {
           )}
         </ul>
       </details>
+    </>
+  );
+
+  if (embedded) {
+    return <div className="space-y-4">{body}</div>;
+  }
+
+  return (
+    <StudyToolShell
+      title="LaTeX checker"
+      description="Paste a formula (with or without $...$), check KaTeX rendering, copy wrapped $ / $$, and jump to Formula board presets — AP STEM note workflow."
+      tip="Unicode math like √ or · is normalized when possible. Prefer $...$ / $$...$$ in content editors."
+    >
+      <MathDeskBanner pad="latex" />
+      {body}
     </StudyToolShell>
   );
 }

@@ -3,6 +3,7 @@
 const JSON_KEY = "ke-json-handoff-v1";
 const ENCODE_KEY = "ke-encode-handoff-v1";
 const DIFF_KEY = "ke-diff-handoff-v1";
+const EDITOR_PASTE_KEY = "ke-code-editor-paste-v1";
 
 export type EncodeHandoffMode =
   | "base64-encode"
@@ -68,6 +69,25 @@ export function consumeTextDiffHandoff(): { left: string; right: string } | null
     const parsed = JSON.parse(raw) as { left?: string; right?: string };
     if (typeof parsed.left !== "string" || typeof parsed.right !== "string") return null;
     return { left: parsed.left, right: parsed.right };
+  } catch {
+    return null;
+  }
+}
+
+/** Prefill the one Code editor paste/detect box. */
+export function preloadCodeEditorPaste(text: string): void {
+  if (typeof window === "undefined") return;
+  sessionStorage.setItem(EDITOR_PASTE_KEY, JSON.stringify({ text, at: Date.now() }));
+}
+
+export function consumeCodeEditorPaste(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(EDITOR_PASTE_KEY);
+    sessionStorage.removeItem(EDITOR_PASTE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { text?: string };
+    return typeof parsed.text === "string" ? parsed.text : null;
   } catch {
     return null;
   }

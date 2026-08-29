@@ -3,12 +3,21 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import StudyToolShell from "@/components/StudyToolShell";
+import MathDeskBanner from "@/components/MathDeskBanner";
 import RichContent from "@/components/RichContent";
 import { FORMULA_BOARD } from "@/data/formula-board";
 import { openToolboxWithPrefill } from "@/lib/ai-toolbox-prefill";
 import { looksLikeFunctionOfX } from "@/lib/math-expr";
 
-export default function FormulaBoardTool() {
+export default function FormulaBoardTool({
+  embedded = false,
+  onPlot,
+  onCheckLatex,
+}: {
+  embedded?: boolean;
+  onPlot?: (expr: string) => void;
+  onCheckLatex?: (latex: string) => void;
+}) {
   const [sectionId, setSectionId] = useState(FORMULA_BOARD[0]?.id || "physics");
   const [query, setQuery] = useState("");
   const [copied, setCopied] = useState("");
@@ -87,12 +96,8 @@ export default function FormulaBoardTool() {
     });
   }
 
-  return (
-    <StudyToolShell
-      title="Formula board"
-      description="Common AP / STEM formulas — one-click copy as LaTeX or plain text, star favorites, export a cheat sheet, or open in LaTeX checker / Grapher."
-      tip="LaTeX mode copies ready-to-paste math for $...$ / $$...$$ workflows. Plain mode is for quick handwriting / typed notes."
-    >
+  const body = (
+    <>
       <div className="flex flex-wrap items-center gap-2">
         {FORMULA_BOARD.map((s) => (
           <button
@@ -137,12 +142,16 @@ export default function FormulaBoardTool() {
         <Link href="/tools/latex" className="btn-secondary text-xs">
           LaTeX checker
         </Link>
-        <Link href="/hints?tool=math" className="btn-secondary text-xs">
-          Calc + Graph
-        </Link>
-        <Link href="/hints?tool=grapher" className="btn-secondary text-xs">
-          Grapher
-        </Link>
+        {!embedded ? (
+          <>
+            <Link href="/hints?tool=math" className="btn-secondary text-xs">
+              Calc + Graph
+            </Link>
+            <Link href="/hints?tool=calculator" className="btn-secondary text-xs">
+              Grapher
+            </Link>
+          </>
+        ) : null}
       </div>
 
       {favItems.length > 0 && (
@@ -199,25 +208,58 @@ export default function FormulaBoardTool() {
                 >
                   Ask AI
                 </button>
-                <Link
-                  href={`/tools/latex?tex=${encodeURIComponent(item.latex)}`}
-                  className="btn-secondary text-xs"
-                >
-                  Check LaTeX
-                </Link>
-                {canGraph ? (
+                {onCheckLatex ? (
+                  <button
+                    type="button"
+                    className="btn-secondary text-xs"
+                    onClick={() => onCheckLatex(item.latex)}
+                  >
+                    Check LaTeX
+                  </button>
+                ) : (
                   <Link
-                    href={`/hints?tool=grapher&y1=${encodeURIComponent(item.plain)}`}
+                    href={`/tools/latex?tex=${encodeURIComponent(item.latex)}`}
                     className="btn-secondary text-xs"
                   >
-                    → Graph
+                    Check LaTeX
                   </Link>
+                )}
+                {canGraph ? (
+                  onPlot ? (
+                    <button
+                      type="button"
+                      className="btn-secondary text-xs"
+                      onClick={() => onPlot(item.plain)}
+                    >
+                      → Graph
+                    </button>
+                  ) : (
+                    <Link
+                      href={`/hints?tool=calculator&y1=${encodeURIComponent(item.plain)}`}
+                      className="btn-secondary text-xs"
+                    >
+                      → Graph
+                    </Link>
+                  )
                 ) : null}
               </div>
             </li>
           );
         })}
       </ul>
+    </>
+  );
+
+  if (embedded) return <div className="space-y-4">{body}</div>;
+
+  return (
+    <StudyToolShell
+      title="Formula board"
+      description="Common AP / STEM formulas — one-click copy as LaTeX or plain text, star favorites, export a cheat sheet, or open in LaTeX checker / Grapher."
+      tip="LaTeX mode copies ready-to-paste math for $...$ / $$...$$ workflows. Plain mode is for quick handwriting / typed notes."
+    >
+      <MathDeskBanner pad="formulas" />
+      {body}
     </StudyToolShell>
   );
 }

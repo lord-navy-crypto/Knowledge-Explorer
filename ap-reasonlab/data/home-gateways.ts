@@ -52,9 +52,29 @@ export const HOME_GATEWAYS: HomeGateway[] = [
         description: "Timers, converters, Calc + Graph, PDF desk, and more.",
       },
       {
+        href: "/hints?tool=calculator",
+        title: "Calc + Graph",
+        description: "One math desk: calculator, grapher, units, LaTeX, and formulas.",
+      },
+      {
         href: "/code",
         title: "Code",
-        description: "Open one editor, then choose Python, JavaScript, TypeScript, Web, SQL, Java, or C#.",
+        description: "Language cards stay here; one editor is the fused workbench.",
+      },
+      {
+        href: "/code/editor?lang=python",
+        title: "One editor",
+        description: "Python, JS, TS, Web, SQL, Java, C# plus JSON / Base64 / code board tabs.",
+      },
+      {
+        href: "/hints",
+        title: "AI Toolbox",
+        description: "Unified AI — Local / Website API / Your own API, then chat.",
+      },
+      {
+        href: "/forum",
+        title: "Forum",
+        description: "Discussions, Shared library, and My box — run fenced code in the editor.",
       },
     ],
   },

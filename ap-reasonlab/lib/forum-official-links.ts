@@ -16,6 +16,15 @@ const LANG_TO_OFFICIAL_ID: Record<string, string> = {
   markdown: "markdown",
   java: "java",
   csharp: "csharp",
+  c: "c",
+  cpp: "cpp",
+  go: "go",
+  rust: "rust",
+  php: "php",
+  ruby: "ruby",
+  r: "r",
+  swift: "swift",
+  kotlin: "kotlin",
 };
 
 /** Known official doc domains → display label */
@@ -26,6 +35,14 @@ const OFFICIAL_DOMAIN_HINTS: Array<{ test: RegExp; label: string }> = [
   { test: /sqlite\.org/i, label: "SQLite" },
   { test: /oracle\.com.*java|dev\.java/i, label: "Java" },
   { test: /learn\.microsoft\.com|dotnet\.microsoft/i, label: "Microsoft / .NET" },
+  { test: /cppreference\.com/i, label: "cppreference" },
+  { test: /go\.dev|golang\.org/i, label: "Go" },
+  { test: /rust-lang\.org|doc\.rust-lang/i, label: "Rust" },
+  { test: /php\.net/i, label: "PHP" },
+  { test: /ruby-lang\.org/i, label: "Ruby" },
+  { test: /r-project\.org|cran\.r-project/i, label: "R" },
+  { test: /swift\.org/i, label: "Swift" },
+  { test: /kotlinlang\.org/i, label: "Kotlin" },
   { test: /apstudents\.collegeboard|apcentral\.collegeboard/i, label: "College Board AP" },
   { test: /ets\.org/i, label: "ETS" },
   { test: /commonmark\.org/i, label: "CommonMark" },
@@ -42,6 +59,13 @@ const TOPIC_SUGGESTIONS: Array<{ pattern: RegExp; langId: string; label: string 
   { pattern: /\bjava\b(?!script)/i, langId: "java", label: "Java tutorials" },
   { pattern: /\bc#\b|\bcsharp\b|\bdotnet\b/i, langId: "csharp", label: "C# docs" },
   { pattern: /\bmarkdown\b|\bcommonmark\b/i, langId: "markdown", label: "CommonMark" },
+  { pattern: /\bc\+\+\b|\bcpp\b/i, langId: "cpp", label: "C++ reference" },
+  { pattern: /\bgolang\b|\bgo lang\b/i, langId: "go", label: "Go tour" },
+  { pattern: /\brust\b/i, langId: "rust", label: "Rust Book" },
+  { pattern: /\bphp\b/i, langId: "php", label: "PHP manual" },
+  { pattern: /\bruby\b/i, langId: "ruby", label: "Ruby docs" },
+  { pattern: /\bswift\b/i, langId: "swift", label: "Swift Book" },
+  { pattern: /\bkotlin\b/i, langId: "kotlin", label: "Kotlin docs" },
 ];
 
 function addLink(

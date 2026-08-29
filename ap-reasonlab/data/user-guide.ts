@@ -253,7 +253,7 @@ export const USER_GUIDE_SECTIONS: UserGuideSection[] = [
     steps: [
       "Browse /tools — use sticky category chips on mobile, or scroll sections on desktop.",
       "Open a tool card; read the security badge (Safe, Local data, File permission, API key).",
-      "For coding, /code lists Python, JavaScript, TypeScript, Web, SQL, Markdown, Java, C#.",
+      "For coding, open /code then the one editor — Python, JS/TS, Web, SQL, Markdown, Java, C#, plus C, C++, Go, Rust, PHP, Ruby, R, Swift, Kotlin.",
       "Run code, then use Send to AI in Toolbox coding tab when available.",
     ],
     links: [
@@ -270,6 +270,9 @@ export const USER_GUIDE_SECTIONS: UserGuideSection[] = [
       { href: "/code/sql", label: "SQL (sql.js)" },
       { href: "/code/java", label: "Java editor" },
       { href: "/code/csharp", label: "C# editor" },
+      { href: "/code/c", label: "C editor" },
+      { href: "/code/go", label: "Go editor" },
+      { href: "/code/rust", label: "Rust editor" },
     ],
   },
   {

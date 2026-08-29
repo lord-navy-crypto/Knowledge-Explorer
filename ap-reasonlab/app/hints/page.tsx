@@ -180,14 +180,27 @@ function ToolboxContent() {
           </button>
           );
         })}
-        {extra === "ai" ? (
+        {extra !== "ai" ? (
+          <button
+            type="button"
+            onClick={() => {
+              selectExtra("ai");
+              window.setTimeout(() => {
+                document.getElementById("unified-ai-chat")?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }, 80);
+            }}
+            className="rounded-full border border-brand-200 bg-white px-3 py-1.5 text-sm font-medium text-brand-800 hover:bg-brand-50"
+          >
+            AI settings / chat
+          </button>
+        ) : (
           <a
             href="#unified-ai-chat"
             className="rounded-full border border-brand-200 bg-white px-3 py-1.5 text-sm font-medium text-brand-800 hover:bg-brand-50 md:hidden"
           >
             ↓ Chat
           </a>
-        ) : null}
+        )}
       </div>
 
       {extra === "ai" ? (

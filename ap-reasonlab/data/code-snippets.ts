@@ -85,4 +85,8 @@ Training editors (browser stand-in, no real JVM / .NET required):
 7) Java — /code/java — Practice Run (CSA subset → JS). Download .java for real JDK.
 8) C# — /code/csharp — Practice Run (intro subset → JS). Download .cs for real .NET.
    Optional real Java runner later: PISTON_URL → /api/code/run-java.
+
+More practice languages (structure check + download — not a compiler):
+9) C, C++, Go, Rust, PHP, Ruby, R, Swift, Kotlin — same one editor, Language menu.
+   Hub cards stay at /code/c, /code/rust, … and redirect into /code/editor?lang=.
 `;

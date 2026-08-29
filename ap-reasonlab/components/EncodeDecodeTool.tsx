@@ -22,6 +22,7 @@ import {
   preloadJsonFormatter,
   type EncodeHandoffMode,
 } from "@/lib/payload-handoff";
+import { openCodeEditorDesk } from "@/lib/code-draft-bridge";
 
 type Mode = EncodeHandoffMode;
 
@@ -39,7 +40,7 @@ const MODES: { id: Mode; label: string }[] = [
   { id: "jwt-peek", label: "JWT peek" },
 ];
 
-export default function EncodeDecodeTool() {
+export default function EncodeDecodeTool({ embedded = false }: { embedded?: boolean }) {
   const router = useRouter();
   const [input, setInput] = useState("Hello, Knowledge Explorer! 🎓");
   const [mode, setMode] = useState<Mode>("base64-encode");
@@ -91,7 +92,7 @@ export default function EncodeDecodeTool() {
   function sendToJson() {
     if (!result.out) return;
     preloadJsonFormatter(result.out);
-    router.push("/tools/json-formatter");
+    openCodeEditorDesk(router, "json");
   }
 
   function onFile(file: File) {
@@ -104,12 +105,7 @@ export default function EncodeDecodeTool() {
     reader.readAsDataURL(file);
   }
 
-  return (
-    <StudyToolShell
-      title="Base64 & URL encoder"
-      description="Encode or decode Base64, URL/URI, hex, HTML entities, or peek at a JWT — all locally in this browser."
-      tip="Never paste private passwords or live API keys into shared screenshots. JWT peek does not verify signatures."
-    >
+  const body = (
       <div className="card space-y-4">
         <div className="flex flex-wrap gap-2">
           {MODES.map((m) => (
@@ -176,7 +172,17 @@ export default function EncodeDecodeTool() {
         </div>
         {note ? <p className="text-xs text-emerald-700">{note}</p> : null}
       </div>
+  );
 
+  if (embedded) return <div className="space-y-4">{body}</div>;
+
+  return (
+    <StudyToolShell
+      title="Base64 & URL encoder"
+      description="Encode or decode Base64, URL/URI, hex, HTML entities, or peek at a JWT — all locally in this browser."
+      tip="Never paste private passwords or live API keys into shared screenshots. JWT peek does not verify signatures."
+    >
+      {body}
       <RelatedToolboxLinks clusterId="code-workbench" currentToolId="encode-decode" />
     </StudyToolShell>
   );

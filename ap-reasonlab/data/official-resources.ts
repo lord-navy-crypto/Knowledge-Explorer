@@ -393,6 +393,87 @@ export const CODE_LANG_OFFICIAL: Record<string, OfficialResourceBlock> = {
       },
     ],
   },
+  c: {
+    title: "Official C resources",
+    note: "cppreference is the widely used C language reference. Compile locally with gcc or clang.",
+    links: [
+      { href: "https://en.cppreference.com/w/c", label: "cppreference C" },
+      { href: "https://en.cppreference.com/w/c/language", label: "C language" },
+      { href: "https://www.gnu.org/software/gnu-c-manual/gnu-c-manual.html", label: "GNU C manual" },
+    ],
+  },
+  cpp: {
+    title: "Official C++ resources",
+    note: "cppreference and isocpp.org are the standard C++ references.",
+    links: [
+      { href: "https://en.cppreference.com/w/cpp", label: "cppreference C++" },
+      { href: "https://isocpp.org/", label: "Standard C++ Foundation" },
+      { href: "https://en.cppreference.com/w/cpp/language", label: "C++ language" },
+    ],
+  },
+  go: {
+    title: "Official Go resources",
+    note: "Start with the Go tour, then the language spec and effective Go.",
+    links: [
+      { href: "https://go.dev/tour/", label: "A Tour of Go" },
+      { href: "https://go.dev/doc/", label: "Go documentation" },
+      { href: "https://go.dev/doc/effective_go", label: "Effective Go" },
+    ],
+  },
+  rust: {
+    title: "Official Rust resources",
+    note: "The Rust Book is the official starting path.",
+    links: [
+      { href: "https://doc.rust-lang.org/book/", label: "The Rust Book" },
+      { href: "https://www.rust-lang.org/learn", label: "Learn Rust" },
+      { href: "https://doc.rust-lang.org/std/", label: "Rust std docs" },
+    ],
+  },
+  php: {
+    title: "Official PHP resources",
+    note: "php.net is the official language manual.",
+    links: [
+      { href: "https://www.php.net/manual/en/", label: "PHP manual" },
+      { href: "https://www.php.net/docs.php", label: "PHP documentation" },
+      { href: "https://www.php.net/manual/en/tutorial.php", label: "PHP tutorial" },
+    ],
+  },
+  ruby: {
+    title: "Official Ruby resources",
+    note: "ruby-lang.org hosts the official language docs.",
+    links: [
+      { href: "https://www.ruby-lang.org/en/documentation/", label: "Ruby documentation" },
+      { href: "https://docs.ruby-lang.org/en/", label: "Ruby core docs" },
+      { href: "https://www.ruby-lang.org/en/documentation/quickstart/", label: "Ruby quickstart" },
+    ],
+  },
+  r: {
+    title: "Official R resources",
+    note: "CRAN manuals are the official R language references.",
+    links: [
+      { href: "https://cran.r-project.org/manuals.html", label: "CRAN manuals" },
+      { href: "https://www.r-project.org/", label: "r-project.org" },
+      { href: "https://cran.r-project.org/doc/manuals/r-release/R-intro.html", label: "An Introduction to R" },
+    ],
+  },
+  swift: {
+    title: "Official Swift resources",
+    note: "The Swift Book is the official language guide.",
+    links: [
+      { href: "https://docs.swift.org/swift-book/", label: "The Swift Programming Language" },
+      { href: "https://www.swift.org/documentation/", label: "Swift documentation" },
+      { href: "https://www.swift.org/", label: "swift.org" },
+    ],
+  },
+  kotlin: {
+    title: "Official Kotlin resources",
+    note: "kotlinlang.org is the official language site.",
+    links: [
+      { href: "https://kotlinlang.org/docs/getting-started.html", label: "Kotlin getting started" },
+      { href: "https://kotlinlang.org/docs/home.html", label: "Kotlin docs" },
+      { href: "https://kotlinlang.org/", label: "kotlinlang.org" },
+    ],
+  },
 };
 
 export function getCodeLangOfficial(langId: string): OfficialResourceBlock | null {
@@ -415,6 +496,8 @@ export const CODE_HUB_OFFICIAL: OfficialResourceBlock = {
     },
     { href: "https://www.sqlite.org/docs.html", label: "SQLite docs" },
     { href: "https://docs.oracle.com/javase/tutorial/", label: "Java tutorials" },
+    { href: "https://go.dev/tour/", label: "A Tour of Go" },
+    { href: "https://doc.rust-lang.org/book/", label: "The Rust Book" },
     { href: "https://commonmark.org/help/", label: "CommonMark" },
   ],
 };

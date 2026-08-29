@@ -32,6 +32,11 @@ describe("forum-code-blocks", () => {
     expect(blocks[0]?.language).toBe("python");
     expect(blocks[0]?.code).toContain("print");
   });
+
+  it("extracts c++ and rust fences into the one editor langs", () => {
+    const blocks = extractForumCodeBlocks("```c++\nint x = 1;\n```\n```rust\nfn main() {}\n```");
+    expect(blocks.map((b) => b.language)).toEqual(["cpp", "rust"]);
+  });
 });
 
 describe("tool clusters", () => {
@@ -40,12 +45,14 @@ describe("tool clusters", () => {
     const code = TOOL_CLUSTERS.find((c) => c.id === "code-workbench");
     expect(code?.toolIds).toContain("json-formatter");
     expect(code?.toolIds).toContain("encode-decode");
+    expect(code?.blurb.toLowerCase()).toMatch(/json|base64|editor|board/);
   });
 
   it("includes math-pad in math cluster", async () => {
     const { TOOL_CLUSTERS } = await import("@/data/tool-clusters");
     const math = TOOL_CLUSTERS.find((c) => c.id === "math-science");
     expect(math?.toolIds).toContain("math-pad");
+    expect(math?.blurb.toLowerCase()).toMatch(/calc lab|d\/dx|integral|riemann|tangent|table|zeros|latex|formula|intersect|extrema|euler|simpson/);
   });
 });
 
@@ -140,6 +147,29 @@ describe("code-board update", () => {
     const id = appendToCodeBoard({ language: "python", title: "A", code: "print(1)" });
     expect(updateCodeBoardBlock(id, "print(2)")).toBe(true);
     expect(store.get("ke-code-board-v1")).toContain("print(2)");
+  });
+});
+
+describe("code editor fusion", () => {
+  it("sends playground handoffs to the one editor", async () => {
+    const { playgroundHref, codeEditorDeskHref } = await import("@/lib/code-draft-bridge");
+    expect(playgroundHref("python")).toBe("/code/editor?lang=python");
+    expect(playgroundHref("html")).toBe("/code/editor?lang=web");
+    expect(playgroundHref("javascript")).toBe("/code/editor?lang=javascript");
+    expect(playgroundHref("rust")).toBe("/code/editor?lang=rust");
+    expect(playgroundHref("go")).toBe("/code/editor?lang=go");
+    expect(playgroundHref("other")).toBeNull();
+    expect(codeEditorDeskHref("json")).toBe("/code/editor?desk=json");
+    expect(codeEditorDeskHref("encode", "python")).toBe("/code/editor?lang=python&desk=encode");
+    expect(codeEditorDeskHref("board")).toBe("/code/editor?desk=board");
+  });
+});
+
+describe("math desk catalog bridge", () => {
+  it("points standalone math tools at the fused calculator pad", async () => {
+    const { mathDeskHref } = await import("@/lib/math-desk");
+    expect(mathDeskHref("units")).toBe("/hints?tool=calculator&pad=units");
+    expect(mathDeskHref("formulas")).toContain("calculator");
   });
 });
 

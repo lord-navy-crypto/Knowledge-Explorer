@@ -99,6 +99,14 @@ describe("searchSiteEngine", () => {
     expect(hits[0]?.href).toBe("/code/python");
   });
 
+  it("indexes rust playground without stealing python rank", () => {
+    const rust = searchSiteEngine("rust playground", null, { limit: 8 });
+    expect(rust.some((h) => h.href === "/code/rust")).toBe(true);
+    expect(rust[0]?.href).toBe("/code/rust");
+    const py = searchSiteEngine("python playground", null, { limit: 8 });
+    expect(py[0]?.href).toBe("/code/python");
+  });
+
   it("ranks Forum My box for my box", () => {
     const hits = searchSiteEngine("my box", null, { limit: 8 });
     expect(hits.some((h) => h.href === "/forum?tab=box")).toBe(true);

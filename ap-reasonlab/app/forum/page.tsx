@@ -10,6 +10,7 @@ import PrivateLearningBoxPanel, {
 } from "@/components/PrivateLearningBoxPanel";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import ForumCompanionStrip from "@/components/ForumCompanionStrip";
+import { preloadForumComposer } from "@/lib/forum-local";
 import { spaceFromSearchParams } from "@/lib/storage-space";
 
 export type ForumTab = "discussions" | "shared" | "box";
@@ -94,8 +95,8 @@ function ForumHub() {
           Forum
         </h1>
         <p className="relative mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">
-          Discussions (post with a display name — no change code), a public Shared library, and My
-          box (private to this browser only).
+          Discussions (drafts and starred threads stay in this browser), a public Shared library, and
+          My box (private to this browser only). Fence code to run it in the one Code editor.
         </p>
       </header>
 
@@ -144,6 +145,20 @@ function ForumHub() {
               Uploads are visible to everyone. Do not share private information or material you do
               not have permission to publish.
             </p>
+            <button
+              type="button"
+              className="btn-secondary mt-3 text-sm"
+              onClick={() => {
+                preloadForumComposer({
+                  title: "Shared library file",
+                  body: "I found / uploaded a file in Shared library. Let’s discuss it.\n\n(Attach or name the file after you post.)",
+                  postCategory: "resources",
+                });
+                setTab("discussions");
+              }}
+            >
+              Discuss a Shared file
+            </button>
           </div>
           <UnifiedMediaFrame
             alsoShow={["document", "folder"]}

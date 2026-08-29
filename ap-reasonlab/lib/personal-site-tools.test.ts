@@ -25,13 +25,36 @@ describe("personal site tools and stems", () => {
   });
 
   it("points code languages at one editor with a language query", () => {
-    expect(ALL_CODE_LANGS.length).toBeGreaterThanOrEqual(7);
+    const ids = ALL_CODE_LANGS.map((row) => row.id);
+    expect(ALL_CODE_LANGS.length).toBeGreaterThanOrEqual(16);
     expect(ALL_CODE_LANGS.every((row) => row.href === `/code/${row.id}`)).toBe(true);
+    expect(ids).toEqual(
+      expect.arrayContaining([
+        "python",
+        "sql",
+        "markdown",
+        "javascript",
+        "typescript",
+        "web",
+        "java",
+        "csharp",
+        "c",
+        "cpp",
+        "go",
+        "rust",
+        "php",
+        "ruby",
+        "r",
+        "swift",
+        "kotlin",
+      ])
+    );
   });
 
   it("keeps math cluster on the fused pad and file lab on PDF desk", () => {
     const math = TOOL_CLUSTERS.find((c) => c.id === "math-science");
     expect(math?.toolIds[0]).toBe("math-pad");
+    expect(math?.blurb).toMatch(/d\/dx|∫|calc lab|table|zeros|latex|formula|extrema|euler/i);
     const files = TOOL_CLUSTERS.find((c) => c.id === "file-lab");
     expect(files?.toolIds).toContain("pdf-tools");
   });

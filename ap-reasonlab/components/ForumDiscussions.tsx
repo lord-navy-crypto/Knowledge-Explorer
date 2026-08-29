@@ -10,10 +10,34 @@ import RichContent from "@/components/RichContent";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
 import type { ManagedForumAttachment, ManagedForumPost } from "@/lib/managed-types";
 import {
+  forumAskAiPrompt,
+  forumPostHasCode,
+  forumPostHasFiles,
+  forumThreadMarkdown,
+  isForumPayloadFilter,
+  type ForumPayloadFilter,
+} from "@/lib/forum-thread";
+import { openToolboxWithPrefill } from "@/lib/ai-toolbox-prefill";
+import {
   readForumDisplayName,
   writeForumDisplayName,
 } from "@/lib/forum-display-name";
 import ForumCodeLaunchers from "@/components/ForumCodeLaunchers";
+import ForumFenceInsertBar from "@/components/ForumFenceInsertBar";
+import {
+  clearForumComposerDraft,
+  clearForumReplyDraft,
+  isForumSortMode,
+  loadForumComposerDraft,
+  loadForumReplyDraft,
+  loadForumSort,
+  loadForumStars,
+  saveForumComposerDraft,
+  saveForumReplyDraft,
+  saveForumSort,
+  toggleForumStar,
+  type ForumSortMode,
+} from "@/lib/forum-local";
 
 const MAX_POST_ATTACH = 4;
 const MAX_REPLY_ATTACH = 2;
@@ -284,7 +308,11 @@ export function ForumDiscussions({
   const [error, setError] = useState("");
   const [category, setCategory] = useState<Category>(initialCategory);
   const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<"newest" | "active">("newest");
+  const [sort, setSort] = useState<ForumSortMode>("newest");
+  const [stars, setStars] = useState<string[]>([]);
+  const [starredOnly, setStarredOnly] = useState(false);
+  const [payloadFilter, setPayloadFilter] = useState<ForumPayloadFilter>("all");
+  const [draftReady, setDraftReady] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [notice, setNotice] = useState("");
@@ -314,14 +342,43 @@ export function ForumDiscussions({
 
   useEffect(() => {
     setDisplayName(readForumDisplayName());
+    setStars(loadForumStars());
+    setSort(loadForumSort());
+    const draft = loadForumComposerDraft();
+    if (draft) {
+      setTitle(draft.title);
+      setBody(draft.body);
+      if (draft.postCategory === "questions" || draft.postCategory === "resources" || draft.postCategory === "announcements" || draft.postCategory === "beta-feedback") {
+        setPostCategory(draft.postCategory);
+      }
+      if (draft.title.trim() || draft.body.trim()) setComposerOpen(true);
+    }
+    setDraftReady(true);
     void refresh();
   }, [refresh]);
+
+  useEffect(() => {
+    if (!draftReady) return;
+    saveForumComposerDraft({ title, body, postCategory });
+  }, [title, body, postCategory, draftReady]);
+
+  useEffect(() => {
+    if (!replyingTo) return;
+    saveForumReplyDraft(replyingTo, replyBody);
+  }, [replyingTo, replyBody]);
 
   useEffect(() => {
     const thread = searchParams.get("thread");
     if (thread) setExpandedId(thread);
     const qParam = searchParams.get("q");
     if (qParam !== null) setQuery(qParam);
+    const sortParam = searchParams.get("sort");
+    if (isForumSortMode(sortParam)) setSort(sortParam);
+    const starredParam = searchParams.get("starred");
+    if (starredParam === "1") setStarredOnly(true);
+    if (starredParam === "0") setStarredOnly(false);
+    const payloadParam = searchParams.get("payload");
+    if (isForumPayloadFilter(payloadParam)) setPayloadFilter(payloadParam);
     const reply = searchParams.get("reply");
     if (reply) {
       window.setTimeout(() => {
@@ -334,6 +391,9 @@ export function ForumDiscussions({
     const cat = CATEGORIES.find((c) => c.id === category) || CATEGORIES[0];
     const q = query.trim().toLowerCase();
     let list = posts.filter((p) => cat.match(p));
+    if (starredOnly) list = list.filter((p) => stars.includes(p.id));
+    if (payloadFilter === "code") list = list.filter(forumPostHasCode);
+    if (payloadFilter === "files") list = list.filter(forumPostHasFiles);
     if (q) {
       list = list.filter((p) => {
         const attach = (p.attachments || []).map((a) => a.name || "").join(" ");
@@ -345,6 +405,9 @@ export function ForumDiscussions({
       });
     }
     list = [...list].sort((a, b) => {
+      if (sort === "replies") {
+        return (b.replies || []).length - (a.replies || []).length;
+      }
       if (sort === "newest") {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       }
@@ -359,11 +422,11 @@ export function ForumDiscussions({
       return bLast - aLast;
     });
     return list;
-  }, [posts, category, query, sort]);
+  }, [posts, category, query, sort, starredOnly, stars, payloadFilter]);
 
   useEffect(() => {
     setPage(1);
-  }, [category, query, sort]);
+  }, [category, query, sort, starredOnly, payloadFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / POSTS_PER_PAGE));
   const paged = filtered.slice((page - 1) * POSTS_PER_PAGE, page * POSTS_PER_PAGE);
@@ -376,6 +439,35 @@ export function ForumDiscussions({
     else params.set("tag", next === "beta-feedback" ? "beta-feedback" : next);
     const qs = params.toString();
     router.replace(qs ? `/forum?${qs}` : "/forum", { scroll: false });
+  }
+
+  function patchForumQuery(patch: Record<string, string | null>) {
+    const params = new URLSearchParams(searchParams.toString());
+    for (const [key, value] of Object.entries(patch)) {
+      if (!value) params.delete(key);
+      else params.set(key, value);
+    }
+    const qs = params.toString();
+    router.replace(qs ? `/forum?${qs}` : "/forum", { scroll: false });
+  }
+
+  function changeSort(next: ForumSortMode) {
+    setSort(next);
+    saveForumSort(next);
+    patchForumQuery({ sort: next === "newest" ? null : next });
+  }
+
+  function toggleStarredFilter() {
+    setStarredOnly((v) => {
+      const next = !v;
+      patchForumQuery({ starred: next ? "1" : null });
+      return next;
+    });
+  }
+
+  function changePayload(next: ForumPayloadFilter) {
+    setPayloadFilter(next);
+    patchForumQuery({ payload: next === "all" ? null : next });
   }
 
   function requestIdentity(action: "post" | string) {
@@ -393,7 +485,7 @@ export function ForumDiscussions({
     if (action === "post") setComposerOpen(true);
     else {
       setReplyingTo(action);
-      setReplyBody("");
+      setReplyBody(loadForumReplyDraft(action));
       setReplyAttachments([]);
       setExpandedId(action);
     }
@@ -460,6 +552,7 @@ export function ForumDiscussions({
       setBody("");
       setPostAttachments([]);
       setComposerOpen(false);
+      clearForumComposerDraft();
     }
   }
 
@@ -476,6 +569,7 @@ export function ForumDiscussions({
       setReplyBody("");
       setReplyAttachments([]);
       setReplyingTo(null);
+      clearForumReplyDraft(postId);
     }
   }
 
@@ -554,6 +648,13 @@ export function ForumDiscussions({
         material you do not have rights to share.
       </div>
 
+      <p className="text-xs text-slate-500">
+        {posts.length} thread{posts.length === 1 ? "" : "s"} ·{" "}
+        {posts.reduce((n, p) => n + (p.replies || []).length, 0)}{" "}
+        {posts.reduce((n, p) => n + (p.replies || []).length, 0) === 1 ? "reply" : "replies"}
+        {filtered.length !== posts.length ? ` · showing ${filtered.length}` : ""}
+      </p>
+
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-wrap gap-1.5" role="tablist" aria-label="Discussion categories">
           {CATEGORIES.map((c) => (
@@ -589,13 +690,52 @@ export function ForumDiscussions({
           />
           <select
             value={sort}
-            onChange={(e) => setSort(e.target.value as "newest" | "active")}
+            onChange={(e) => changeSort(e.target.value as ForumSortMode)}
             className="input py-1.5 text-xs"
             aria-label="Sort threads"
           >
             <option value="newest">Newest</option>
             <option value="active">Most active</option>
+            <option value="replies">Most replies</option>
           </select>
+          <select
+            value={payloadFilter}
+            onChange={(e) => changePayload(e.target.value as ForumPayloadFilter)}
+            className="input py-1.5 text-xs"
+            aria-label="Filter by attachments"
+          >
+            <option value="all">All payloads</option>
+            <option value="code">Has code fence</option>
+            <option value="files">Has files</option>
+          </select>
+          <button
+            type="button"
+            className={
+              starredOnly
+                ? "rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white"
+                : "rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 ring-1 ring-slate-200"
+            }
+            onClick={toggleStarredFilter}
+          >
+            Starred{stars.length ? ` (${stars.length})` : ""}
+          </button>
+          {stars.length ? (
+            <button
+              type="button"
+              className="rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 ring-1 ring-slate-200"
+              onClick={() => {
+                const md = posts
+                  .filter((p) => stars.includes(p.id))
+                  .map(forumThreadMarkdown)
+                  .join("\n\n---\n\n");
+                void navigator.clipboard.writeText(md || "(no starred threads loaded)");
+                setNotice("Starred threads copied as Markdown.");
+                window.setTimeout(() => setNotice(""), 1500);
+              }}
+            >
+              Export starred
+            </button>
+          ) : null}
           {displayName && (
             <button
               type="button"
@@ -621,9 +761,24 @@ export function ForumDiscussions({
         <form onSubmit={submitPost} className="card space-y-3 border-brand-200">
           <div className="flex items-center justify-between gap-3">
             <h3 className="text-lg font-semibold">New discussion</h3>
-            <button type="button" className="btn-ghost" onClick={() => setComposerOpen(false)}>
-              Cancel
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-[11px] text-slate-500">Draft saved in this browser</p>
+              <button
+                type="button"
+                className="btn-ghost text-xs"
+                onClick={() => {
+                  setTitle("");
+                  setBody("");
+                  setPostAttachments([]);
+                  clearForumComposerDraft();
+                }}
+              >
+                Discard draft
+              </button>
+              <button type="button" className="btn-ghost" onClick={() => setComposerOpen(false)}>
+                Cancel
+              </button>
+            </div>
           </div>
           <input
             className="input"
@@ -646,6 +801,30 @@ export function ForumDiscussions({
               <option value="beta-feedback">Beta feedback</option>
             </select>
           </label>
+          <ForumFenceInsertBar
+            onInsert={(fence) => setBody((prev) => (prev.trim() ? prev + fence : fence.trimStart()))}
+            extra={
+              <button
+                type="button"
+                className="rounded-md border border-brand-200 bg-brand-50 px-2 py-1 text-[11px] font-semibold text-brand-800 hover:bg-brand-100"
+                onClick={() =>
+                  openToolboxWithPrefill({
+                    category: "ap",
+                    apTask: "advice",
+                    prompt: [
+                      "Help me improve this Forum draft (original-practice only; do not paste copyrighted exam text).",
+                      title.trim() ? `Title: ${title.trim()}` : "",
+                      body.trim() || "(empty body)",
+                    ]
+                      .filter(Boolean)
+                      .join("\n\n"),
+                  })
+                }
+              >
+                Ask AI about this draft
+              </button>
+            }
+          />
           <MarkdownLatexField
             label="Discussion body"
             value={body}
@@ -680,8 +859,8 @@ export function ForumDiscussions({
         <div className="card text-sm text-slate-500">Loading discussions…</div>
       ) : filtered.length === 0 ? (
         <div className="card border-dashed text-center text-sm text-slate-500">
-          {query || category !== "all"
-            ? "No threads match this filter. Try another search."
+          {query || category !== "all" || starredOnly || payloadFilter !== "all"
+            ? "No threads match this filter. Try another search or clear Starred."
             : "No shared discussions yet. Start the first one."}
         </div>
       ) : (
@@ -692,15 +871,31 @@ export function ForumDiscussions({
             const attachCount = (post.attachments || []).length;
             return (
               <li key={post.id} id={`forum-thread-${post.id}`} className="card overflow-hidden !p-0 scroll-mt-28">
+                <div className="flex items-start gap-1">
                 <button
                   type="button"
                   onClick={() => setExpandedId(open ? null : post.id)}
-                  className="flex w-full items-start gap-3 px-4 py-3 text-left hover:bg-slate-50/80"
+                  className="flex min-w-0 flex-1 items-start gap-3 px-4 py-3 text-left hover:bg-slate-50/80"
                 >
                   <Avatar name={post.author} />
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
                       <h3 className="font-semibold text-slate-900">{post.title}</h3>
+                      {stars.includes(post.id) ? (
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-amber-700">
+                          starred
+                        </span>
+                      ) : null}
+                      {forumPostHasCode(post) ? (
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
+                          code
+                        </span>
+                      ) : null}
+                      {forumPostHasFiles(post) ? (
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-sky-700">
+                          files
+                        </span>
+                      ) : null}
                       <span className="text-[11px] text-slate-500">
                         {replyCount} {replyCount === 1 ? "reply" : "replies"}
                         {attachCount ? ` · ${attachCount} file${attachCount === 1 ? "" : "s"}` : ""}
@@ -717,6 +912,15 @@ export function ForumDiscussions({
                     {open ? "▾" : "▸"}
                   </span>
                 </button>
+                <button
+                  type="button"
+                  className={`mt-3 mr-3 shrink-0 text-lg ${stars.includes(post.id) ? "text-amber-500" : "text-slate-300"}`}
+                  aria-label={stars.includes(post.id) ? "Unstar thread" : "Star thread"}
+                  onClick={() => setStars(toggleForumStar(post.id))}
+                >
+                  ★
+                </button>
+                </div>
 
                 {open && (
                   <div className="space-y-4 border-t border-slate-100 px-4 py-4">
@@ -745,7 +949,7 @@ export function ForumDiscussions({
                         type="button"
                         className="text-brand-600 hover:underline"
                         onClick={() => {
-                          setReplyBody(quoteSnippet(post.author, post.body));
+                          saveForumReplyDraft(post.id, quoteSnippet(post.author, post.body));
                           requestIdentity(post.id);
                         }}
                       >
@@ -769,6 +973,30 @@ export function ForumDiscussions({
                         }}
                       >
                         Copy permalink
+                      </button>
+                      <button
+                        type="button"
+                        className="text-slate-500 hover:underline"
+                        onClick={() => {
+                          void navigator.clipboard.writeText(forumThreadMarkdown(post));
+                          setNotice("Thread copied as Markdown.");
+                          window.setTimeout(() => setNotice(""), 1500);
+                        }}
+                      >
+                        Copy as Markdown
+                      </button>
+                      <button
+                        type="button"
+                        className="text-brand-600 hover:underline"
+                        onClick={() =>
+                          openToolboxWithPrefill({
+                            category: "ap",
+                            apTask: "advice",
+                            prompt: forumAskAiPrompt(post),
+                          })
+                        }
+                      >
+                        Ask AI about this
                       </button>
                       <Link href="/forum?tab=box" className="text-slate-500 hover:underline">
                         Open My box →
@@ -804,7 +1032,7 @@ export function ForumDiscussions({
                                 type="button"
                                 className="mt-2 text-xs text-brand-600 hover:underline"
                                 onClick={() => {
-                                  setReplyBody(quoteSnippet(reply.author, reply.body));
+                                  saveForumReplyDraft(post.id, quoteSnippet(reply.author, reply.body));
                                   requestIdentity(post.id);
                                 }}
                               >
@@ -822,6 +1050,19 @@ export function ForumDiscussions({
                               >
                                 Copy reply link
                               </button>
+                              <button
+                                type="button"
+                                className="ml-3 mt-2 text-xs text-brand-600 hover:underline"
+                                onClick={() =>
+                                  openToolboxWithPrefill({
+                                    category: "ap",
+                                    apTask: "advice",
+                                    prompt: forumAskAiPrompt(post, { replyId: reply.id }),
+                                  })
+                                }
+                              >
+                                Ask AI about this reply
+                              </button>
                             </div>
                           </div>
                         ))}
@@ -833,6 +1074,30 @@ export function ForumDiscussions({
                         onSubmit={(event) => submitReply(event, post.id)}
                         className="space-y-2 rounded-xl border border-brand-100 bg-brand-50/40 p-3"
                       >
+                        <ForumFenceInsertBar
+                          onInsert={(fence) =>
+                            setReplyBody((prev) => (prev.trim() ? prev + fence : fence.trimStart()))
+                          }
+                          extra={
+                            <button
+                              type="button"
+                              className="rounded-md border border-brand-200 bg-brand-50 px-2 py-1 text-[11px] font-semibold text-brand-800 hover:bg-brand-100"
+                              onClick={() =>
+                                openToolboxWithPrefill({
+                                  category: "ap",
+                                  apTask: "advice",
+                                  prompt: [
+                                    "Help me improve this Forum reply draft (original-practice only; do not paste copyrighted exam text).",
+                                    `Thread: ${post.title}`,
+                                    replyBody.trim() || "(empty reply)",
+                                  ].join("\n\n"),
+                                })
+                              }
+                            >
+                              Ask AI about this reply draft
+                            </button>
+                          }
+                        />
                         <MarkdownLatexField
                           label="Reply"
                           help="Markdown + LaTeX supported. Attachments optional."

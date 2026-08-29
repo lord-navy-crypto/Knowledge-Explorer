@@ -15,6 +15,9 @@ export type ToolboxPanelPrefs = {
 
 const EXTRA_TOOL_KEY = "results-toolbox-extra";
 const PANEL_PREFS_KEY = "results-toolbox-panel";
+const SETTINGS_OPEN_KEY = "results-toolbox-settings-open";
+const SPECIAL_OPEN_KEY = "results-toolbox-special-open";
+const THREADS_OPEN_KEY = "results-toolbox-threads-open";
 
 const DEFAULT_PANEL_PREFS: ToolboxPanelPrefs = {
   category: "ap",
@@ -25,6 +28,14 @@ const DEFAULT_PANEL_PREFS: ToolboxPanelPrefs = {
   englishTarget: "General academic English",
   language: "Python",
 };
+
+function browserStorage(): Storage | null {
+  try {
+    return (globalThis as { localStorage?: Storage }).localStorage ?? null;
+  } catch {
+    return null;
+  }
+}
 
 function readJson<T>(raw: string | null): T | null {
   if (!raw) return null;
@@ -71,4 +82,37 @@ export function loadToolboxPanelPrefs(): ToolboxPanelPrefs {
 export function saveToolboxPanelPrefs(prefs: ToolboxPanelPrefs) {
   if (typeof window === "undefined") return;
   localStorage.setItem(PANEL_PREFS_KEY, JSON.stringify(prefs));
+}
+
+/** Whether the detailed AI path / model settings block is expanded. */
+export function loadAiSettingsOpen(): boolean {
+  const raw = browserStorage()?.getItem(SETTINGS_OPEN_KEY);
+  if (raw === "0") return false;
+  if (raw === "1") return true;
+  return false;
+}
+
+export function saveAiSettingsOpen(open: boolean) {
+  browserStorage()?.setItem(SETTINGS_OPEN_KEY, open ? "1" : "0");
+}
+
+/** Special-feature chip row — collapsed by default so the dialogue stays first. */
+export function loadAiSpecialOpen(): boolean {
+  const raw = browserStorage()?.getItem(SPECIAL_OPEN_KEY);
+  if (raw === "0") return false;
+  if (raw === "1") return true;
+  return false;
+}
+
+export function saveAiSpecialOpen(open: boolean) {
+  browserStorage()?.setItem(SPECIAL_OPEN_KEY, open ? "1" : "0");
+}
+
+/** Saved-chats drawer — collapsed by default so the current dialogue stays first. */
+export function loadAiThreadsOpen(): boolean {
+  return browserStorage()?.getItem(THREADS_OPEN_KEY) === "1";
+}
+
+export function saveAiThreadsOpen(open: boolean) {
+  browserStorage()?.setItem(THREADS_OPEN_KEY, open ? "1" : "0");
 }

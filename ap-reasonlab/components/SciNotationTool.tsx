@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import StudyToolShell from "@/components/StudyToolShell";
+import MathDeskBanner from "@/components/MathDeskBanner";
 
 function countSigFigs(raw: string): number | null {
   const s = raw.trim().replace(/^[+-]/, "");
@@ -31,7 +32,13 @@ function roundSig(n: number, sig: number): number {
   return Math.round(n * magnitude) / magnitude;
 }
 
-export default function SciNotationTool() {
+export default function SciNotationTool({
+  embedded = false,
+  onInsert,
+}: {
+  embedded?: boolean;
+  onInsert?: (value: string) => void;
+}) {
   const [input, setInput] = useState("0.003040");
   const [sigWanted, setSigWanted] = useState(3);
   const [a, setA] = useState("1.20e3");
@@ -65,12 +72,8 @@ export default function SciNotationTool() {
     };
   }, [a, b, op, sigWanted]);
 
-  return (
-    <StudyToolShell
-      title="Scientific notation & sig figs"
-      description="Convert numbers to scientific notation, estimate significant figures, and multiply/divide with sig-fig rounding for AP science labs."
-      tip="Sig-fig counting follows common classroom rules (trailing zeros after a decimal count). Always match your teacher’s convention."
-    >
+  const body = (
+    <>
       <div className="card grid gap-4 sm:grid-cols-2">
         <label className="block text-sm">
           <span className="font-medium">Number</span>
@@ -102,6 +105,11 @@ export default function SciNotationTool() {
         <div className="card">
           <p className="text-xs font-semibold uppercase text-slate-500">Scientific</p>
           <p className="mt-2 break-all font-mono text-lg font-bold">{parsed.sci}</p>
+          {onInsert && parsed.sci !== "—" ? (
+            <button type="button" className="mt-2 text-xs font-semibold text-brand-700" onClick={() => onInsert(parsed.sci)}>
+              Use in calc
+            </button>
+          ) : null}
         </div>
       </div>
       <div className="card">
@@ -137,6 +145,21 @@ export default function SciNotationTool() {
           <p className="text-sm text-slate-500">Enter finite A and B.</p>
         )}
       </div>
+    </>
+  );
+
+  if (embedded) {
+    return <div className="space-y-4">{body}</div>;
+  }
+
+  return (
+    <StudyToolShell
+      title="Scientific notation & sig figs"
+      description="Convert numbers to scientific notation, estimate significant figures, and multiply/divide with sig-fig rounding for AP science labs."
+      tip="Sig-fig counting follows common classroom rules (trailing zeros after a decimal count). Always match your teacher’s convention."
+    >
+      <MathDeskBanner pad="sci" />
+      {body}
     </StudyToolShell>
   );
 }

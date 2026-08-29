@@ -10,20 +10,46 @@ export const PLAYGROUND_DRAFT_KEYS: Record<CodeBoardLanguage, string> = {
   markdown: "ke-code-markdown-draft",
   java: "ke-code-java-draft",
   csharp: "ke-code-csharp-draft",
+  c: "ke-code-c-draft",
+  cpp: "ke-code-cpp-draft",
+  go: "ke-code-go-draft",
+  rust: "ke-code-rust-draft",
+  php: "ke-code-php-draft",
+  ruby: "ke-code-ruby-draft",
+  r: "ke-code-r-draft",
+  swift: "ke-code-swift-draft",
+  kotlin: "ke-code-kotlin-draft",
   other: "ke-code-other-draft",
 };
 
 export function playgroundHref(language: CodeBoardLanguage): string | null {
   if (language === "other") return null;
-  if (language === "python") return "/code/editor?lang=python";
-  if (language === "javascript") return "/code/editor?lang=javascript";
-  if (language === "typescript") return "/code/editor?lang=typescript";
   if (language === "html") return "/code/editor?lang=web";
-  if (language === "sql") return "/code/editor?lang=sql";
-  if (language === "markdown") return "/code/editor?lang=markdown";
-  if (language === "java") return "/code/editor?lang=java";
-  if (language === "csharp") return "/code/editor?lang=csharp";
-  return null;
+  return `/code/editor?lang=${language}`;
+}
+
+export type CodeEditorDesk = "json" | "encode" | "board";
+
+/** One-editor desk URL (JSON / Base64 / code board tabs). */
+export function codeEditorDeskHref(desk: CodeEditorDesk, lang?: string): string {
+  const params = new URLSearchParams();
+  if (lang) params.set("lang", lang);
+  params.set("desk", desk);
+  return `/code/editor?${params.toString()}`;
+}
+
+/** Stay on the fused editor when already there; otherwise open that desk. */
+export function openCodeEditorDesk(
+  router: { push: (href: string) => void; replace: (href: string, opts?: { scroll?: boolean }) => void },
+  desk: CodeEditorDesk
+) {
+  if (typeof window !== "undefined" && window.location.pathname.includes("/code/editor")) {
+    const params = new URLSearchParams(window.location.search);
+    params.set("desk", desk);
+    router.replace(`/code/editor?${params.toString()}`, { scroll: false });
+    return;
+  }
+  router.push(codeEditorDeskHref(desk));
 }
 
 const EDIT_ID_KEY = "ke-code-board-edit-id";
