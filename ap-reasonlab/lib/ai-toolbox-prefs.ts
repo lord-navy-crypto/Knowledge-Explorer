@@ -17,6 +17,7 @@ const EXTRA_TOOL_KEY = "results-toolbox-extra";
 const PANEL_PREFS_KEY = "results-toolbox-panel";
 const SETTINGS_OPEN_KEY = "results-toolbox-settings-open";
 const SPECIAL_OPEN_KEY = "results-toolbox-special-open";
+const THREADS_OPEN_KEY = "results-toolbox-threads-open";
 
 const DEFAULT_PANEL_PREFS: ToolboxPanelPrefs = {
   category: "ap",
@@ -105,4 +106,13 @@ export function loadAiSpecialOpen(): boolean {
 
 export function saveAiSpecialOpen(open: boolean) {
   browserStorage()?.setItem(SPECIAL_OPEN_KEY, open ? "1" : "0");
+}
+
+/** Saved-chats drawer — collapsed by default so the current dialogue stays first. */
+export function loadAiThreadsOpen(): boolean {
+  return browserStorage()?.getItem(THREADS_OPEN_KEY) === "1";
+}
+
+export function saveAiThreadsOpen(open: boolean) {
+  browserStorage()?.setItem(THREADS_OPEN_KEY, open ? "1" : "0");
 }

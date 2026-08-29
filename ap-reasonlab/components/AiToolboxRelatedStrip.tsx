@@ -4,7 +4,7 @@ import Link from "next/link";
 
 const LINKS = [
   { href: "/forum", label: "Forum" },
-  { href: "/hints?tool=math", label: "Calc + Graph" },
+  { href: "/hints?tool=calculator", label: "Calc + Graph" },
   { href: "/tools/formula-board", label: "Formula board" },
   { href: "/tools/latex", label: "LaTeX checker" },
   { href: "/tools/focus-desk", label: "Focus desk" },

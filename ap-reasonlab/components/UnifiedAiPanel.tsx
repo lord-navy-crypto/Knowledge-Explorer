@@ -44,7 +44,9 @@ import {
 } from "@/lib/ai-latex-accuracy";
 import { normalizeAiDialogueText } from "@/lib/unicode-math";
 import {
+  loadAiThreadsOpen,
   loadToolboxPanelPrefs,
+  saveAiThreadsOpen,
   saveToolboxPanelPrefs,
   type ToolboxCategory,
 } from "@/lib/ai-toolbox-prefs";
@@ -388,6 +390,10 @@ export default function UnifiedAiPanel({
   useEffect(() => {
     if (defaultCategory) setCategory(defaultCategory);
   }, [defaultCategory]);
+
+  useEffect(() => {
+    setShowThreads(loadAiThreadsOpen());
+  }, []);
 
   useEffect(() => {
     if (defaultSubject) setSubject(defaultSubject);
@@ -1561,7 +1567,13 @@ export default function UnifiedAiPanel({
             <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
-                onClick={() => setShowThreads((v) => !v)}
+                onClick={() =>
+                  setShowThreads((v) => {
+                    const next = !v;
+                    saveAiThreadsOpen(next);
+                    return next;
+                  })
+                }
                 className="text-xs font-medium text-brand-700 hover:underline"
               >
                 {showThreads ? "Hide chats" : `Saved chats (${threads.length})`}

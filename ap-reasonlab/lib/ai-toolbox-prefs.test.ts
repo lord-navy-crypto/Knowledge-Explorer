@@ -29,4 +29,18 @@ describe("AI Toolbox settings prefs", () => {
     saveAiSpecialOpen(true);
     expect(loadAiSpecialOpen()).toBe(true);
   });
+
+  it("keeps saved chats collapsed by default", async () => {
+    const { loadAiThreadsOpen, saveAiThreadsOpen } = await import("@/lib/ai-toolbox-prefs");
+    const store = new Map<string, string>();
+    vi.stubGlobal("localStorage", {
+      getItem: (k: string) => store.get(k) ?? null,
+      setItem: (k: string, v: string) => {
+        store.set(k, v);
+      },
+    });
+    expect(loadAiThreadsOpen()).toBe(false);
+    saveAiThreadsOpen(true);
+    expect(loadAiThreadsOpen()).toBe(true);
+  });
 });

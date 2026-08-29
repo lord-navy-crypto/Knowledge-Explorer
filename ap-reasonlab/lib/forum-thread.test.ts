@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  forumAskAiPrompt,
   forumPostHasCode,
   forumPostHasFiles,
   forumThreadMarkdown,
@@ -51,5 +52,27 @@ describe("forum thread helpers", () => {
     );
     expect(md).toMatch(/# Gauss help/);
     expect(md).toMatch(/Try Gauss/);
+  });
+
+  it("Ask AI prompt includes replies and can focus one reply", () => {
+    const prompt = forumAskAiPrompt(
+      post({
+        body: "How do I set this up?\n```python\nprint(1)\n```",
+        replies: [
+          {
+            id: "r1",
+            author: "Bo",
+            body: "Try Gauss's law.",
+            createdAt: 2,
+            attachments: [],
+          },
+        ],
+      }),
+      { replyId: "r1" }
+    );
+    expect(prompt).toMatch(/Gauss help/);
+    expect(prompt).toMatch(/Try Gauss/);
+    expect(prompt).toMatch(/Focus on this reply/);
+    expect(prompt).toMatch(/Python/);
   });
 });

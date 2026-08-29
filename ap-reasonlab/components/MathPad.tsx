@@ -34,8 +34,10 @@ export default function MathPad({ focus = "calculator" }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [paste, setPaste] = useState("");
+  const [labExpr, setLabExpr] = useState("x^2");
   const [graphY1, setGraphY1] = useState("");
   const [graphY2, setGraphY2] = useState("");
+  const [calcHandoff, setCalcHandoff] = useState("");
   const [latexHandoff, setLatexHandoff] = useState("");
   const [pad, setPad] = useState<PadTab>(() => parsePad(searchParams.get("pad")));
 
@@ -57,6 +59,7 @@ export default function MathPad({ focus = "calculator" }: Props) {
     const y2 = (overlay ?? "").trim();
     setGraphY1(next);
     setGraphY2(y2);
+    setLabExpr(next);
     const params = new URLSearchParams(searchParams.toString());
     params.set("tool", "calculator");
     params.set("y1", next);
@@ -117,6 +120,16 @@ export default function MathPad({ focus = "calculator" }: Props) {
             <button type="button" className="btn-primary" onClick={() => sendToGraph()}>
               Send to Graph
             </button>
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => {
+                const next = paste.trim();
+                if (next) setLabExpr(next);
+              }}
+            >
+              Use in calc lab
+            </button>
           </div>
         ) : null}
       </div>
@@ -138,7 +151,17 @@ export default function MathPad({ focus = "calculator" }: Props) {
 
       {pad === "calc" ? (
         <>
-          <MathCalcLab onSendToGraph={sendToGraph} />
+          <MathCalcLab
+            expr={labExpr}
+            onExprChange={setLabExpr}
+            onSendToGraph={sendToGraph}
+            onSendToCalc={(value) => {
+              setCalcHandoff(value);
+              window.setTimeout(() => {
+                document.getElementById("math-calculator")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+              }, 50);
+            }}
+          />
           <div className="grid gap-4 xl:grid-cols-2">
             <section
               id="math-calculator"
@@ -147,7 +170,7 @@ export default function MathPad({ focus = "calculator" }: Props) {
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Calculator
               </p>
-              <TICalculator />
+              <TICalculator handoffExpr={calcHandoff} />
             </section>
             <section id="math-grapher" className="min-w-0">
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">

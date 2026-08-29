@@ -844,6 +844,16 @@ export function ForumDiscussions({
                           starred
                         </span>
                       ) : null}
+                      {forumPostHasCode(post) ? (
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
+                          code
+                        </span>
+                      ) : null}
+                      {forumPostHasFiles(post) ? (
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-sky-700">
+                          files
+                        </span>
+                      ) : null}
                       <span className="text-[11px] text-slate-500">
                         {replyCount} {replyCount === 1 ? "reply" : "replies"}
                         {attachCount ? ` · ${attachCount} file${attachCount === 1 ? "" : "s"}` : ""}
@@ -997,6 +1007,19 @@ export function ForumDiscussions({
                                 }}
                               >
                                 Copy reply link
+                              </button>
+                              <button
+                                type="button"
+                                className="ml-3 mt-2 text-xs text-brand-600 hover:underline"
+                                onClick={() =>
+                                  openToolboxWithPrefill({
+                                    category: "ap",
+                                    apTask: "advice",
+                                    prompt: forumAskAiPrompt(post, { replyId: reply.id }),
+                                  })
+                                }
+                              >
+                                Ask AI about this reply
                               </button>
                             </div>
                           </div>

@@ -19,10 +19,15 @@ import {
 /** Numeric calculus extras fused into Calc + Graph — original-practice AP STEM, not a licensed ROM. */
 export default function MathCalcLab({
   onSendToGraph,
+  onSendToCalc,
+  expr,
+  onExprChange,
 }: {
   onSendToGraph: (expr: string, overlay?: string) => void;
+  onSendToCalc?: (expr: string) => void;
+  expr: string;
+  onExprChange: (next: string) => void;
 }) {
-  const [expr, setExpr] = useState("x^2");
   const [x0, setX0] = useState("2");
   const [a, setA] = useState("0");
   const [b, setB] = useState("2");
@@ -118,13 +123,22 @@ export default function MathCalcLab({
         <button type="button" className="btn-secondary text-xs" onClick={() => onSendToGraph(expr.trim() || "x")}>
           Plot f(x)
         </button>
+        {onSendToCalc ? (
+          <button
+            type="button"
+            className="btn-secondary text-xs"
+            onClick={() => onSendToCalc(expr.trim() || "x")}
+          >
+            → Calculator
+          </button>
+        ) : null}
       </div>
       <label className="mt-3 block text-sm font-medium text-slate-700">
         f(x) or a_n (use n for sums)
         <input
           className="input mt-1 font-mono"
           value={expr}
-          onChange={(e) => setExpr(e.target.value)}
+          onChange={(e) => onExprChange(e.target.value)}
           spellCheck={false}
         />
       </label>

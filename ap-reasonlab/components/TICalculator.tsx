@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { evalExpr, formatCalc, oneVarStats, type OneVarStats } from "@/lib/math-expr";
 import { openToolboxWithPrefill } from "@/lib/ai-toolbox-prefill";
 import {
@@ -205,7 +205,7 @@ function MatEditor({
   );
 }
 
-export default function TICalculator() {
+export default function TICalculator({ handoffExpr = "" }: { handoffExpr?: string }) {
   const [expr, setExpr] = useState("");
   const [display, setDisplay] = useState("0");
   const [ans, setAns] = useState(0);
@@ -221,6 +221,14 @@ export default function TICalculator() {
   const [stats, setStats] = useState<OneVarStats | null>(null);
   const [panel, setPanel] = useState<"hist" | "stats" | "vars">("hist");
   const [calcMode, setCalcMode] = useState<CalcMode>("COMP");
+
+  useEffect(() => {
+    const next = handoffExpr.trim();
+    if (!next) return;
+    setExpr(next);
+    setDisplay(next);
+    setError("");
+  }, [handoffExpr]);
 
   // COMPLEX
   const [cA, setCA] = useState("3+4i");

@@ -28,7 +28,7 @@ import {
 } from "@/lib/code-editor-studio";
 import { appendToCodeBoard } from "@/lib/code-board-store";
 import { classifyPaste } from "@/lib/code-paste-detect";
-import { preloadEncodeDecode, preloadJsonFormatter } from "@/lib/payload-handoff";
+import { preloadEncodeDecode, preloadJsonFormatter, consumeCodeEditorPaste } from "@/lib/payload-handoff";
 import { preloadForumComposer } from "@/lib/forum-local";
 import JsonFormatterTool from "@/components/JsonFormatterTool";
 import EncodeDecodeTool from "@/components/EncodeDecodeTool";
@@ -92,6 +92,14 @@ export default function CodeLanguageStudio({ initialLang = "python" }: { initial
   useEffect(() => {
     saveLastCodeLang(lang);
   }, [lang]);
+
+  useEffect(() => {
+    const handed = consumeCodeEditorPaste();
+    if (handed) {
+      setPasteBox(handed);
+      setNote("Loaded from Text comparator or another tool. Apply paste to send it into the editor.");
+    }
+  }, []);
 
   const playground = useMemo(() => {
     if (lang === "python") {

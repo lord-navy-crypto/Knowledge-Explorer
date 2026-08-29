@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import StudyToolShell from "@/components/StudyToolShell";
+import MathDeskBanner from "@/components/MathDeskBanner";
 
 type Vec = { x: number; y: number };
 
@@ -208,6 +209,7 @@ export default function VectorResolveTool({
       description="Resolve a 2D vector into components, or add/subtract two vectors — AP Physics free-body helper."
       tip="Resolve mode: angle from +x (or +y). Add mode: enter Ax,Ay and Bx,By to get A+B and |R|."
     >
+      <MathDeskBanner pad="vector" />
       {body}
     </StudyToolShell>
   );

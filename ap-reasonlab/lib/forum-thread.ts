@@ -26,12 +26,40 @@ export function forumThreadMarkdown(post: ManagedForumPost): string {
     .join("\n\n");
 }
 
-export function forumAskAiPrompt(post: ManagedForumPost): string {
-  const excerpt = post.body.trim().slice(0, 2500);
-  return [
+export function forumAskAiPrompt(
+  post: ManagedForumPost,
+  opts?: { replyId?: string; includeReplies?: boolean }
+): string {
+  const includeReplies = opts?.includeReplies !== false;
+  const replyFocus = opts?.replyId
+    ? (post.replies || []).find((r) => r.id === opts.replyId)
+    : undefined;
+  const excerpt = post.body.trim().slice(0, 1800);
+  const replyBits = includeReplies
+    ? (post.replies || [])
+        .slice(0, 8)
+        .map((r) => `${r.author}: ${r.body.trim().slice(0, 600)}`)
+        .join("\n\n")
+        .slice(0, 2200)
+    : "";
+  const parts = [
     "A student posted this Forum thread. Help them with original-practice guidance (do not paste copyrighted exam text).",
     `Title: ${post.title}`,
     `Author: ${post.author}`,
     excerpt,
-  ].join("\n\n");
+  ];
+  if (replyBits) parts.push("Replies:\n" + replyBits);
+  if (replyFocus) {
+    parts.push(`Focus on this reply by ${replyFocus.author}:\n${replyFocus.body.trim().slice(0, 1800)}`);
+  }
+  const fences = extractForumCodeBlocks([post.body, ...(post.replies || []).map((r) => r.body)].join("\n"));
+  if (fences.length) {
+    parts.push(
+      `Code fences in the thread: ${fences
+        .slice(0, 4)
+        .map((b) => b.label)
+        .join(", ")}.`
+    );
+  }
+  return parts.join("\n\n");
 }

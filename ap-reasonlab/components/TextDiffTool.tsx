@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import StudyToolShell from "@/components/StudyToolShell";
-import { consumeTextDiffHandoff } from "@/lib/payload-handoff";
+import { consumeTextDiffHandoff, preloadCodeEditorPaste } from "@/lib/payload-handoff";
+import { preloadForumComposer } from "@/lib/forum-local";
 
 type DiffLine = { type: "same" | "add" | "del"; text: string };
 type DiffToken = { type: "same" | "add" | "del"; text: string };
@@ -157,6 +159,7 @@ export default function TextDiffTool() {
   const [ignoreCase, setIgnoreCase] = useState(false);
   const [onlyChanged, setOnlyChanged] = useState(false);
   const [copied, setCopied] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const handed = consumeTextDiffHandoff();
@@ -233,6 +236,42 @@ export default function TextDiffTool() {
           }}
         >
           {copied ? "Copied" : "Copy unified diff"}
+        </button>
+        <button
+          type="button"
+          className="btn-secondary text-sm"
+          onClick={() => {
+            const body = [
+              "Text comparison",
+              "",
+              "```",
+              left.trim() || "(empty left)",
+              "```",
+              "",
+              "```",
+              right.trim() || "(empty right)",
+              "```",
+              analysis.unified ? `\nUnified diff:\n\`\`\`diff\n${analysis.unified.slice(0, 6000)}\n\`\`\`` : "",
+            ].join("\n");
+            preloadForumComposer({
+              title: "Text comparison",
+              body,
+              postCategory: "questions",
+            });
+            router.push("/forum");
+          }}
+        >
+          Post to Forum
+        </button>
+        <button
+          type="button"
+          className="btn-secondary text-sm"
+          onClick={() => {
+            preloadCodeEditorPaste(right.trim() || left.trim());
+            router.push("/code/editor");
+          }}
+        >
+          Open right in editor
         </button>
         <label className="flex items-center gap-1.5 text-sm text-slate-700">
           <input type="checkbox" checked={ignoreWs} onChange={(e) => setIgnoreWs(e.target.checked)} />

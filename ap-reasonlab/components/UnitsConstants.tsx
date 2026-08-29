@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import StudyToolShell from "@/components/StudyToolShell";
+import MathDeskBanner from "@/components/MathDeskBanner";
 
 type UnitDef = { label: string; toBase: number };
 
@@ -303,6 +304,7 @@ export default function UnitsConstants({
       description="Casio-style unit converter for AP Physics / Chemistry — length, mass, energy, force, pressure, charge, time, temperature — plus searchable constants with one-click copy for the calculator."
       tip="Copy a constant’s insert value, then paste into KE ClassWiz. Temperature uses exact °C/°F/K formulas (not a linear scale factor)."
     >
+      <MathDeskBanner pad="units" />
       {body}
     </StudyToolShell>
   );

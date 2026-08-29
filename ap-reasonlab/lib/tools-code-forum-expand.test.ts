@@ -157,6 +157,14 @@ describe("code editor fusion", () => {
   });
 });
 
+describe("math desk catalog bridge", () => {
+  it("points standalone math tools at the fused calculator pad", async () => {
+    const { mathDeskHref } = await import("@/lib/math-desk");
+    expect(mathDeskHref("units")).toBe("/hints?tool=calculator&pad=units");
+    expect(mathDeskHref("formulas")).toContain("calculator");
+  });
+});
+
 describe("write-convert return target", () => {
   it("stores a write-convert handoff", () => {
     const store = new Map<string, string>();

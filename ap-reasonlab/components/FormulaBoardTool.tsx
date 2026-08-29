@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import StudyToolShell from "@/components/StudyToolShell";
+import MathDeskBanner from "@/components/MathDeskBanner";
 import RichContent from "@/components/RichContent";
 import { FORMULA_BOARD } from "@/data/formula-board";
 import { openToolboxWithPrefill } from "@/lib/ai-toolbox-prefill";
@@ -257,6 +258,7 @@ export default function FormulaBoardTool({
       description="Common AP / STEM formulas — one-click copy as LaTeX or plain text, star favorites, export a cheat sheet, or open in LaTeX checker / Grapher."
       tip="LaTeX mode copies ready-to-paste math for $...$ / $$...$$ workflows. Plain mode is for quick handwriting / typed notes."
     >
+      <MathDeskBanner pad="formulas" />
       {body}
     </StudyToolShell>
   );

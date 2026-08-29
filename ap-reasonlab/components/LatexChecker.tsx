@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import katex from "katex";
 import Link from "next/link";
 import StudyToolShell from "@/components/StudyToolShell";
+import MathDeskBanner from "@/components/MathDeskBanner";
 import { FORMULA_BOARD } from "@/data/formula-board";
 import { toLatexSource } from "@/lib/unicode-math";
 import { latexToGrapherY1 } from "@/lib/math-expr";
@@ -175,6 +176,7 @@ export default function LatexChecker({
       description="Paste a formula (with or without $...$), check KaTeX rendering, copy wrapped $ / $$, and jump to Formula board presets — AP STEM note workflow."
       tip="Unicode math like √ or · is normalized when possible. Prefer $...$ / $$...$$ in content editors."
     >
+      <MathDeskBanner pad="latex" />
       {body}
     </StudyToolShell>
   );
