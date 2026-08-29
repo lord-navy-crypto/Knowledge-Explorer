@@ -18,6 +18,89 @@ import {
 import { readRecentTools, trackToolboxVisit, type RecentToolEntry } from "@/lib/recent-tools";
 import { toolSearchHaystack } from "@/lib/toolbox-search";
 
+const FUSED_CHILD_IDS = new Set([
+  "formula-board",
+  "latex",
+  "units",
+  "sci-notation",
+  "vector-resolve",
+  "code-board",
+  "json-formatter",
+  "encode-decode",
+  "dual",
+  "word-count",
+  "markdown-pdf",
+  "word-import",
+  "word-pdf",
+  "markdown-plain",
+]);
+
+const FUSED_CHILD_HREFS = new Set([
+  "/tools/formula-board",
+  "/tools/latex",
+  "/tools/units",
+  "/tools/sci-notation",
+  "/tools/vector-resolve",
+  "/tools/code-board",
+  "/tools/json-formatter",
+  "/tools/encode-decode",
+  "/tools/dual",
+  "/tools/word-count",
+  "/tools/markdown-pdf",
+  "/tools/word-import",
+  "/tools/word-pdf",
+  "/tools/markdown-plain",
+]);
+
+/**
+ * Keep old routes working, but stop advertising every sub-tool as a separate product.
+ * The catalog should lead with larger workbenches; embedded/hand-off tools remain reachable inside them.
+ */
+function fuseCatalogTools(tools: StudyTool[]): StudyTool[] {
+  const codeSource =
+    tools.find((tool) => tool.id === "json-formatter") ||
+    tools.find((tool) => tool.id === "encode-decode") ||
+    tools.find((tool) => tool.id === "code-board");
+
+  const fused = tools
+    .filter((tool) => !FUSED_CHILD_IDS.has(tool.id))
+    .map((tool) => {
+      if (tool.id === "math-pad") {
+        return {
+          ...tool,
+          title: "Math workbench · Calc + Graph",
+          blurb:
+            "Calculator + grapher + calculus lab, with units, scientific notation, vectors, LaTeX checks, and formula references in one desk.",
+          badge: "Fused: Calc · Graph · Units · Vectors · LaTeX · Formulas",
+        };
+      }
+      if (tool.id === "write-convert") {
+        return {
+          ...tool,
+          title: "Write & convert workbench",
+          blurb:
+            "One draft pipeline for editing, word count, Markdown/plain cleanup, Word import, and PDF export. Open the smaller steps from inside this workbench.",
+          badge: "Fused entry: Edit · Count · Convert · Import · PDF",
+        };
+      }
+      return tool;
+    });
+
+  if (!codeSource) return fused;
+  return [
+    ...fused,
+    {
+      ...codeSource,
+      id: "code-workbench",
+      title: "Code workbench",
+      href: "/code/editor?lang=python",
+      blurb:
+        "One editor for programming languages plus JSON formatting, Base64/URL encode-decode, and the saved Code board.",
+      badge: "Fused: Editor · JSON · Base64/URL · Code board",
+    },
+  ];
+}
+
 function SecurityBadge({ level }: { level?: ToolSecurity }) {
   const key = level || "safe";
   const meta = TOOL_SECURITY_LABELS[key];
@@ -56,6 +139,7 @@ export default function ToolsCatalog({ tools }: { tools: StudyTool[] }) {
   const [activeSecurity, setActiveSecurity] = useState<ToolSecurity | "all">("all");
   const [recent, setRecent] = useState<RecentToolEntry[]>([]);
   const [pinnedIds, setPinnedIds] = useState<string[]>([]);
+  const catalogTools = useMemo(() => fuseCatalogTools(tools), [tools]);
 
   useEffect(() => {
     setQuery(searchParams.get("q") || "");
@@ -65,7 +149,11 @@ export default function ToolsCatalog({ tools }: { tools: StudyTool[] }) {
     const sec = searchParams.get("sec");
     const validSec = sec && sec in TOOL_SECURITY_LABELS;
     setActiveSecurity(validSec ? (sec as ToolSecurity) : "all");
-    setRecent(readRecentTools().filter((e) => e.href.startsWith("/tools/")));
+    setRecent(
+      readRecentTools().filter(
+        (entry) => entry.href.startsWith("/tools/") && !FUSED_CHILD_HREFS.has(entry.href)
+      )
+    );
     setPinnedIds(readPinnedToolIds());
   }, [searchParams]);
 
@@ -89,7 +177,7 @@ export default function ToolsCatalog({ tools }: { tools: StudyTool[] }) {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return tools.filter((tool) => {
+    return catalogTools.filter((tool) => {
       if (activeCat !== "all" && tool.category !== activeCat) return false;
       const sec = tool.security || "safe";
       if (activeSecurity !== "all" && sec !== activeSecurity) return false;
@@ -97,22 +185,22 @@ export default function ToolsCatalog({ tools }: { tools: StudyTool[] }) {
       const hay = toolSearchHaystack(tool).toLowerCase();
       return q.split(/\s+/).every((token) => hay.includes(token));
     });
-  }, [tools, query, activeCat, activeSecurity]);
+  }, [catalogTools, query, activeCat, activeSecurity]);
 
   const pinnedTools = useMemo(
     () =>
       pinnedIds
-        .map((id) => tools.find((t) => t.id === id))
-        .filter((t): t is StudyTool => Boolean(t)),
-    [pinnedIds, tools]
+        .map((id) => catalogTools.find((tool) => tool.id === id))
+        .filter((tool): tool is StudyTool => Boolean(tool)),
+    [pinnedIds, catalogTools]
   );
 
   const categories = STUDY_TOOL_CATEGORIES.filter((cat) =>
-    tools.some((tool) => tool.category === cat.id)
+    catalogTools.some((tool) => tool.category === cat.id)
   );
 
   const securityLevels = (Object.keys(TOOL_SECURITY_LABELS) as ToolSecurity[]).filter((key) =>
-    tools.some((tool) => (tool.security || "safe") === key)
+    catalogTools.some((tool) => (tool.security || "safe") === key)
   );
 
   function handlePinToggle(id: string) {
@@ -134,13 +222,16 @@ export default function ToolsCatalog({ tools }: { tools: StudyTool[] }) {
                 setQuery(e.target.value);
                 syncUrl({ q: e.target.value });
               }}
-              placeholder="Search tools, aliases, workflows… (json, base64, pdf, timer)"
+              placeholder="Search workbenches or tasks… (json, base64, pdf, timer, graph)"
             />
           </label>
           <p className="text-xs tabular-nums text-slate-500">
-            {filtered.length} of {tools.length} tools
+            {filtered.length} of {catalogTools.length} workbenches & tools
           </p>
         </div>
+        <p className="text-xs text-slate-500">
+          Similar utilities are grouped into larger workbenches. Old direct tool URLs still work.
+        </p>
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
@@ -253,7 +344,7 @@ export default function ToolsCatalog({ tools }: { tools: StudyTool[] }) {
 
       {filtered.length === 0 ? (
         <p className="rounded-xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500">
-          No tools match. Try aliases like json, base64, pretty, pdf, pomodoro, or a workflow name.
+          No tools match. Try json, base64, graph, pdf, pomodoro, writing, or another task name.
         </p>
       ) : (
         STUDY_TOOL_CATEGORIES.map((category) => {
