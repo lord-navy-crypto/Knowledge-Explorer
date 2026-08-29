@@ -43,7 +43,7 @@ export const HOME_GATEWAYS: HomeGateway[] = [
     id: "tools-code",
     title: "Convenient Tools & Code",
     description:
-      "Combined workbenches first, then individual utilities: Calc + Graph, Code, AI, writing/file desks, and single-purpose tools.",
+      "One unified area: combined workbenches first, then single-purpose tools, code, AI, community, recommendations, and shared files.",
     href: "/explore/tools-code",
     links: [
       {
@@ -62,9 +62,9 @@ export const HOME_GATEWAYS: HomeGateway[] = [
         description: "Unified AI — Local / Website API / Your own API, with AP, English, Coding, and Math tools.",
       },
       {
-        href: "/tools",
-        title: "Convenient Tools",
-        description: "Browse all combined workbenches first, then the individual tools underneath.",
+        href: "/explore/tools-code#single-tools",
+        title: "Single Tools",
+        description: "Jump directly to the smaller utilities now embedded in the Tools & Code area.",
       },
       {
         href: "/forum",

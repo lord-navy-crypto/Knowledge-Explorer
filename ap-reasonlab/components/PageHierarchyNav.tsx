@@ -11,17 +11,18 @@ type ParentTarget = {
 function parentFor(pathname: string): ParentTarget | null {
   if (!pathname || pathname === "/") return null;
 
-  if (pathname === "/tools") return { href: "/explore/tools-code", label: "Tools & Code" };
-  if (pathname.startsWith("/tools/")) return { href: "/tools", label: "Convenient Tools" };
+  if (pathname === "/tools" || pathname.startsWith("/tools/")) {
+    return { href: "/explore/tools-code", label: "Convenient Tools & Code" };
+  }
 
   if (pathname === "/code" || pathname.startsWith("/code/")) {
-    return { href: "/explore/tools-code", label: "Tools & Code" };
+    return { href: "/explore/tools-code", label: "Convenient Tools & Code" };
   }
   if (pathname === "/hints" || pathname.startsWith("/hints/")) {
-    return { href: "/explore/tools-code", label: "Tools & Code" };
+    return { href: "/explore/tools-code", label: "Convenient Tools & Code" };
   }
   if (pathname === "/forum" || pathname.startsWith("/forum/")) {
-    return { href: "/explore/tools-code", label: "Tools & Code" };
+    return { href: "/explore/tools-code", label: "Convenient Tools & Code" };
   }
 
   if (pathname === "/ap") return { href: "/explore/ap-english", label: "AP & English" };
