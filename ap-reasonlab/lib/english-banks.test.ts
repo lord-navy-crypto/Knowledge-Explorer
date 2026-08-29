@@ -57,6 +57,27 @@ describe("legacy English items are reshaped", () => {
     expect(discussion.length).toBeGreaterThan(5);
     expect(discussion.every((q) => /Professor:|Student A:/i.test(q.passage || ""))).toBe(true);
   });
+
+  it("does not keep generator-template SAT passages or repeated reform choices", () => {
+    const math = new Set([
+      "Algebra",
+      "Advanced Math",
+      "Problem-Solving and Data Analysis",
+      "Geometry and Trigonometry",
+    ]);
+    for (const q of satQuestions) {
+      expect(q.passage || "", q.id).not.toMatch(/^Which detail best supports a claim that .+ reforms/i);
+      expect(q.passage || "", q.id).not.toMatch(/^Which sentence is correctly punctuated/i);
+      expect(q.passage || "", q.id).not.toMatch(/^Which option correctly punctuates/i);
+      expect(q.passage || "", q.id).not.toMatch(/^Which sentence uses a colon/i);
+      if (!math.has(q.skill)) {
+        expect(q.choices.join("\n"), q.id).not.toMatch(/Reforms happened recently/);
+      }
+    }
+    const extra8 = extraSatQuestions.find((q) => q.id === "sat-extra-8");
+    expect(extra8?.passage).toMatch(/_{2,}|___/);
+    expect(extra8?.prompt).toMatch(/conventions of Standard English/i);
+  });
 });
 
 describe("AP English exam-format sets", () => {

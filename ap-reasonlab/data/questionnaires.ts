@@ -15,6 +15,7 @@ import { apCedPractice } from "@/data/ap-ced-practice";
 import { apEnglishExamFormatQuestionnaires } from "@/data/ap-english-exam-format";
 import { apExamFormatAllQuestionnaires } from "@/data/ap-exam-format-all";
 import { apInlineQuestionnaires } from "@/data/ap-questionnaires-inline";
+import { apPracticeDrillQuestionnaires } from "@/data/ap-practice-drills";
 import { shapeApQuestionnaires } from "@/lib/ap-exam-format";
 import managed from "@/data/managed-content.json";
 
@@ -43,6 +44,7 @@ export const questionnaires: Questionnaire[] = shapeApQuestionnaires([
   ...apCedPractice,
   ...apEnglishExamFormatQuestionnaires,
   ...apExamFormatAllQuestionnaires,
+  ...apPracticeDrillQuestionnaires,
   ...(((managed as { questionnaires?: Questionnaire[] }).questionnaires ||
     []) as Questionnaire[]),
 ]);

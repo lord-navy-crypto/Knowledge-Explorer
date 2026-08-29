@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { questionnaires } from "@/data/questionnaires";
+import { practiceQuestions } from "@/data/ap-practice-drills";
 import { AP_EXAM_BLUEPRINT, shapeApItem } from "@/lib/ap-exam-format";
 import type { QuestionnaireItem } from "@/lib/types";
 
@@ -182,5 +183,20 @@ describe("AP official exam-format pass", () => {
       /Set up the derivative, integral, or limit|Compute the value|Interpret the result in the context/i.test(i.prompt)
     );
     expect(calcOfficial.length).toBeGreaterThan(10);
+  });
+
+  it("rewrites leftover AP practice drills into official MCQ and FRQ items", () => {
+    expect(questionnaires.some((q) => q.id === "phys1-exam-drills")).toBe(true);
+    expect(questionnaires.some((q) => q.id === "calc-exam-drills")).toBe(true);
+    expect(practiceQuestions.length).toBeGreaterThanOrEqual(11);
+    const frq = practiceQuestions.filter((q) => q.format !== "mcq");
+    expect(frq.length).toBeGreaterThanOrEqual(11);
+    for (const q of frq) {
+      expect(q.question, q.id).toMatch(/\(\s*a\s*\)/);
+      expect(q.examSection, q.id).toBeTruthy();
+    }
+    const mcq = practiceQuestions.filter((q) => q.format === "mcq");
+    expect(mcq.length).toBeGreaterThanOrEqual(2);
+    expect(mcq.every((q) => (q.choices?.length ?? 0) === 4)).toBe(true);
   });
 });

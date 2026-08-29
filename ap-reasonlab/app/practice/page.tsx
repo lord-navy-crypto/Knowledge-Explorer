@@ -220,7 +220,7 @@ function PracticeContent() {
                 : "rounded-xl bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100"
             }
           >
-            Half-Process Drills ({drills.length})
+            Exam-format drills ({drills.length})
           </button>
           <button
             type="button"
@@ -248,8 +248,24 @@ function PracticeContent() {
               <article key={q.id} className="card space-y-4">
                 <div className="flex flex-wrap gap-2">
                   <span className="badge">{q.topic}</span>
+                  {q.examSection ? <span className="badge">{q.examSection}</span> : null}
+                  {q.format === "mcq" ? <span className="badge">MCQ</span> : null}
+                  {q.format === "frq_half" ? <span className="badge">FRQ</span> : null}
                 </div>
                 <RichContent className="font-medium text-slate-900">{q.question}</RichContent>
+                {q.format === "mcq" && q.choices?.length ? (
+                  <ol className="list-none space-y-2 text-sm text-slate-700">
+                    {q.choices.map((choice) => (
+                      <li
+                        key={choice}
+                        className="rounded-xl border border-slate-200 bg-white px-4 py-3"
+                      >
+                        <RichContent>{choice}</RichContent>
+                      </li>
+                    ))}
+                  </ol>
+                ) : null}
+                {q.visibleSteps.length > 0 ? (
                 <div>
                   <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                     Visible steps
@@ -262,6 +278,8 @@ function PracticeContent() {
                     ))}
                   </ol>
                 </div>
+                ) : null}
+                {q.blankSteps.length > 0 ? (
                 <div>
                   <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                     Your turn (fill in)
@@ -277,6 +295,7 @@ function PracticeContent() {
                     ))}
                   </ul>
                 </div>
+                ) : null}
                 <div>
                   <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                     Hints (no final answer)

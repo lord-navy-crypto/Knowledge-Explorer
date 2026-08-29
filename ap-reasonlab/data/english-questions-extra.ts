@@ -667,14 +667,14 @@ export const extraSatQuestions: EnglishPracticeQuestion[] = [
     "skill": "Standard English Conventions",
     "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
     "choices": [
-      "The specimens which were stored at −80°C, remained viable for months.",
-      "The specimens, which were stored at −80°C, remained viable for months.",
-      "The specimens which were stored at −80°C remained viable, for months.",
-      "The specimens which, were stored at −80°C remained viable for months."
+      "which were stored at −80°C,",
+      ", which were stored at −80°C,",
+      "which were stored at −80°C remaining,",
+      "which, were stored at −80°C"
     ],
     "answer": 1,
     "explanation": "A nonessential clause is set off with commas: The specimens, which were stored at −80°C, remained viable.",
-    "passage": "Which sentence is correctly punctuated?"
+    "passage": "After the glacier team returned, the specimens ___ remained viable for months, so later assays used only those samples."
   },
   {
     "id": "sat-extra-9",
@@ -820,14 +820,14 @@ export const extraSatQuestions: EnglishPracticeQuestion[] = [
     "skill": "Standard English Conventions",
     "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
     "choices": [
-      "The kit includes: sensors, cables and a manual.",
-      "The kit includes sensors, cables, and a manual.",
-      "The kit includes sensors cables, and a manual.",
-      "The kit, includes sensors cables and a manual."
+      "includes: sensors, cables and a manual",
+      "includes sensors, cables, and a manual",
+      "includes sensors cables, and a manual",
+      ", includes sensors cables and a manual"
     ],
     "answer": 1,
     "explanation": "Items in a series are separated by commas, including before and in a three-item list.",
-    "passage": "Which option correctly punctuates a list within a sentence?"
+    "passage": "Volunteers pack the night before the field day. The kit ___ so nobody has to return to campus for missing parts."
   },
   {
     "id": "sat-extra-20",
@@ -972,14 +972,14 @@ export const extraSatQuestions: EnglishPracticeQuestion[] = [
     "skill": "Standard English Conventions",
     "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
     "choices": [
-      "The experiment requires: three trials.",
-      "The experiment requires three trials: baseline, intervention, and follow-up.",
-      "The experiment: requires three trials.",
-      "The experiment requires three trials baseline: intervention and follow-up."
+      "requires: three trials",
+      "requires three trials: baseline, intervention, and follow-up",
+      ": requires three trials",
+      "requires three trials baseline: intervention and follow-up"
     ],
     "answer": 1,
     "explanation": "A colon introduces an explanation after a complete independent clause.",
-    "passage": "Which sentence uses a colon correctly?"
+    "passage": "Before data collection starts, the protocol states that the experiment ___."
   },
   {
     "id": "sat-extra-31",
@@ -1012,7 +1012,7 @@ export const extraSatQuestions: EnglishPracticeQuestion[] = [
   {
     "id": "sat-extra-33",
     "skill": "Algebra",
-    "prompt": "Which value or expression is correct?",
+    "prompt": "Which point lies on the line y = 2x + 1?",
     "choices": [
       "(0, 0)",
       "(1, 3)",
@@ -1020,8 +1020,7 @@ export const extraSatQuestions: EnglishPracticeQuestion[] = [
       "(3, 5)"
     ],
     "answer": 1,
-    "explanation": "When x = 1, y = 2(1) + 1 = 3, so (1, 3) is on the line.",
-    "passage": "Which point lies on the line y = 2x + 1?"
+    "explanation": "When x = 1, y = 2(1) + 1 = 3, so (1, 3) is on the line."
   },
   {
     "id": "sat-extra-34",
@@ -1035,7 +1034,7 @@ export const extraSatQuestions: EnglishPracticeQuestion[] = [
     ],
     "answer": 1,
     "explanation": "The introductory phrase must modify the subject that follows: the student walked in.",
-    "passage": "Walking into the lab, ___"
+    "passage": "Walking into the lab, ___ on the bench before the morning safety briefing began."
   },
   {
     "id": "sat-extra-35",

@@ -134,9 +134,25 @@ function expandSatReadingPassage(q: EnglishPracticeQuestion, body: string): stri
   return body;
 }
 
+function isStemLikePassage(passage: string): boolean {
+  const t = passage.trim();
+  return /^(Which |What |Why |How |Choose |The writer wants)/i.test(t);
+}
+
+function stripGenericWriterGoal(passage: string): string {
+  return passage
+    .replace(/^Writer's goal: revise the draft for a stated rhetorical goal\.\s*/i, "")
+    .replace(/^Draft under revision:\s*/i, "")
+    .trim();
+}
+
 function shapeSat(q: EnglishPracticeQuestion, skill: string): EnglishPracticeQuestion {
   if (q.passage?.trim()) {
-    return { ...q, skill };
+    if (isStemLikePassage(q.passage)) {
+      q = { ...q, prompt: q.passage.trim(), passage: undefined };
+    } else {
+      return { ...q, skill, passage: stripGenericWriterGoal(q.passage) };
+    }
   }
 
   const { body, stem } = splitScenarioAndStem(q.prompt);
@@ -157,7 +173,17 @@ function shapeSat(q: EnglishPracticeQuestion, skill: string): EnglishPracticeQue
   }
 
   if (skill === "Standard English Conventions") {
-    const passage = body.replace(/\s+Which choice completes[\s\S]*$/i, "").trim() || q.prompt;
+    const raw = (body || q.prompt).trim();
+    const correct = q.choices[q.answer] ?? "";
+    if (isStemLikePassage(raw) && correct.length > 18) {
+      return {
+        ...q,
+        skill,
+        passage: `${ensurePeriod(correct)} A second trial used the same storage protocol.`,
+        prompt: SAT_SEC_STEM,
+      };
+    }
+    const passage = raw.replace(/\s+Which choice completes[\s\S]*$/i, "").trim() || q.prompt;
     return { ...q, skill, passage, prompt: SAT_SEC_STEM };
   }
 

@@ -193,4 +193,24 @@ describe("shapeOfficialEnglishQuestion SAT", () => {
     expect(shaped.passage).toMatch(/Writer's goal/i);
     expect(shaped.prompt).toMatch(/writer's goal/i);
   });
+
+  it("rebuilds a Digital SAT passage when the stored stimulus is still a stem", () => {
+    const shaped = shapeOfficialEnglishQuestion("sat", {
+      id: "sat-stem-passage",
+      skill: "Standard English Conventions",
+      prompt: "Which choice completes the text so that it conforms to the conventions of Standard English?",
+      passage: "Which sentence is correctly punctuated?",
+      choices: [
+        "The samples which were cold, survived.",
+        "The samples, which were cold, survived.",
+        "The samples which, were cold survived.",
+        "The samples which were cold survived, well.",
+      ],
+      answer: 1,
+      explanation: "Nonessential clauses take commas.",
+    });
+    expect(shaped.prompt).toMatch(/conventions of Standard English/i);
+    expect(shaped.passage).not.toMatch(/^Which sentence is correctly punctuated/);
+    expect(shaped.passage).toMatch(/which were cold/);
+  });
 });

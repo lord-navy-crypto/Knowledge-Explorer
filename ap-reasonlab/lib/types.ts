@@ -8,6 +8,13 @@ export interface Concept {
   example: string;
 }
 
+export type QuestionFormat =
+  | "mcq"
+  | "frq_half"
+  | "fill_blank"
+  | "concept_check"
+  | "open";
+
 export interface PracticeQuestion {
   id: string;
   subject: string;
@@ -16,6 +23,10 @@ export interface PracticeQuestion {
   visibleSteps: string[];
   blankSteps: string[];
   hints: string[];
+  /** Official AP exam section label when this drill is exam-shaped. */
+  examSection?: string;
+  format?: QuestionFormat;
+  choices?: string[];
 }
 
 export type HintLevel = 1 | 2 | 3;
@@ -25,13 +36,6 @@ export type QuestionSetKind = "generated";
 
 /** Optional future field — three difficulty tiers (not shown in UI yet). */
 export type DifficultyTier = 1 | 2 | 3;
-
-export type QuestionFormat =
-  | "mcq"
-  | "frq_half"
-  | "fill_blank"
-  | "concept_check"
-  | "open";
 
 export interface QuestionnaireItem {
   id: string;
