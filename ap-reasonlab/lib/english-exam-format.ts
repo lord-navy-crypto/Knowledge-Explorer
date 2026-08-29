@@ -49,18 +49,19 @@ export function remapEnglishSkill(skill: string, exam: "toefl" | "sat", id: stri
     if (TOEFL_READING.has(skill) || TOEFL_LISTENING.has(skill) || TOEFL_WRITING.has(skill) || TOEFL_SPEAKING.has(skill)) {
       return skill;
     }
-    if (skill === "Complete the Words" || skill === "Grammar in context") return "Complete the Words";
-    if (skill === "Academic Reading" || skill === "Reading detail" || skill === "Vocabulary in context") {
+    if (skill === "Complete the Words") return "Complete the Words";
+    if (skill === "Grammar in context") return "Build a Sentence";
+    if (skill === "Vocabulary in context") return "Read an Academic Passage";
+    if (skill === "Academic Reading" || skill === "Reading detail") {
       return hashId(id) % 2 === 0 ? "Read an Academic Passage" : "Read in Daily Life";
     }
     if (skill === "Listening inference" || skill === "Listening purpose") {
-      return TOEFL_OFFICIAL_SKILLS.listening[hashId(id) % 4]!;
+      // Legacy listening items are talks/conversations, not "choose a spoken reply".
+      return TOEFL_OFFICIAL_SKILLS.listening[1 + (hashId(id) % 3)]!;
     }
-    if (skill === "Writing coherence") return hashId(id) % 2 === 0 ? "Write an Email" : "Build a Sentence";
+    if (skill === "Writing coherence") return "Write for an Academic Discussion";
     if (skill === "Academic Discussion") return "Write for an Academic Discussion";
-    if (skill === "Speaking clarity") {
-      return hashId(id) % 2 === 0 ? "Take an Interview" : "Listen and Repeat";
-    }
+    if (skill === "Speaking clarity") return "Take an Interview";
     return skill;
   }
 

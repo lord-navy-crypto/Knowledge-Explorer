@@ -33,6 +33,21 @@ describe("legacy English items are reshaped", () => {
     expect(rw.length).toBeGreaterThan(50);
     expect(rw.every((q) => (q.passage?.trim().length ?? 0) > 0)).toBe(true);
   });
+
+  it("does not leave listening questions glued onto transcripts", () => {
+    const listening = toeflQuestions.filter((q) => q.skill.startsWith("Listen"));
+    expect(listening.length).toBeGreaterThan(10);
+    for (const q of listening) {
+      expect(q.passage, q.id).not.toMatch(/Follow-up:/);
+      expect(q.passage, q.id).not.toMatch(/\nWhat is the (TA|professor|speaker)/i);
+    }
+  });
+
+  it("stores academic discussion items as discussion-board stimuli", () => {
+    const discussion = toeflQuestions.filter((q) => q.skill === "Write for an Academic Discussion");
+    expect(discussion.length).toBeGreaterThan(5);
+    expect(discussion.every((q) => /Professor:|Student A:/i.test(q.passage || ""))).toBe(true);
+  });
 });
 
 describe("AP English exam-format sets", () => {

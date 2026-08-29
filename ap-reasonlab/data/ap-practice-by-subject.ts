@@ -38,10 +38,12 @@ export const apPracticeBySubject: Questionnaire[] = [
     items: [
       {
         id: "psych-rm-a1",
-        format: "concept_check",
+        format: "frq_half",
         conceptIntro: "Key concept: IV vs DV.",
         prompt:
-          "A study tests whether background music affects recall. Identify the independent and dependent variables.",
+          "A study tests whether background music affects recall.\n\n(a) Identify the independent variable.\n(b) Identify the dependent variable.\n(c) Operationally define one of the variables.",
+        visibleSteps: ["IV is manipulated; DV is measured.", "Operational definition is how it is measured."],
+        blankSteps: ["(a) IV: ______", "(b) DV: ______", "(c) Operational definition: ______"],
         hints: ["IV is manipulated; DV is measured outcome."],
       },
     ],
@@ -59,10 +61,12 @@ export const apPracticeBySubject: Questionnaire[] = [
     items: [
       {
         id: "micro-sd-a1",
-        format: "concept_check",
+        format: "frq_half",
         conceptIntro: "Key concept: price change vs shift.",
         prompt:
-          "A tax on producers of coffee is introduced. Does the demand curve shift, or does movement occur along supply? Explain briefly.",
+          "A tax on producers of coffee is introduced.\n\n(a) Identify whether supply or demand is directly affected.\n(b) Explain whether the curve shifts or the market moves along a curve.",
+        visibleSteps: ["Tax is a production cost.", "Supply shifts left."],
+        blankSteps: ["(a) ______", "(b) ______"],
         hints: ["Tax affects production cost — supply side."],
       },
     ],
@@ -80,10 +84,12 @@ export const apPracticeBySubject: Questionnaire[] = [
     items: [
       {
         id: "macro-ad-a1",
-        format: "concept_check",
+        format: "frq_half",
         conceptIntro: "Key concept: AD components.",
         prompt:
-          "Government increases infrastructure spending. Which component of aggregate demand increases first?",
+          "Government increases infrastructure spending.\n\n(a) Identify which component of aggregate demand increases first.\n(b) Describe the short-run AD-AS result for output and the price level.",
+        visibleSteps: ["G is a direct AD component.", "AD shifts right."],
+        blankSteps: ["(a) ______", "(b) ______"],
         hints: ["Government spending G is a direct AD component."],
       },
     ],
@@ -197,10 +203,12 @@ export const apPracticeBySubject: Questionnaire[] = [
     items: [
       {
         id: "es-eco-a1",
-        format: "concept_check",
+        format: "frq_half",
         conceptIntro: "Key concept: 10% rule.",
         prompt:
-          "If producers contain 10,000 kJ, approximately how much energy is available to tertiary consumers? Explain.",
+          "If producers contain 10,000 kJ, approximately how much energy is available to tertiary consumers?\n\n(a) State the 10% rule.\n(b) Calculate the energy at the tertiary-consumer level.",
+        visibleSteps: ["Each trophic level retains ~10%.", "Tertiary is three transfers from producers."],
+        blankSteps: ["(a) Rule: ______", "(b) Energy: ______ kJ"],
         hints: ["Each trophic level retains ~10% of energy."],
       },
     ],
@@ -218,10 +226,12 @@ export const apPracticeBySubject: Questionnaire[] = [
     items: [
       {
         id: "csa-m-a1",
-        format: "concept_check",
+        format: "frq_half",
         conceptIntro: "Key concept: parameters vs return.",
         prompt:
-          "Write a method signature (no body) that returns the larger of two integers a and b.",
+          "Write a method that returns the larger of two integers a and b.\n\n(a) Write the method signature.\n(b) Write the method body using a return statement.",
+        visibleSteps: ["Return type int; two int parameters.", "Compare a and b."],
+        blankSteps: ["(a) Signature: ______", "(b) Body: ______"],
         hints: ["Return type int; two int parameters."],
       },
     ],
@@ -239,10 +249,12 @@ export const apPracticeBySubject: Questionnaire[] = [
     items: [
       {
         id: "csp-d-a1",
-        format: "concept_check",
+        format: "frq_half",
         conceptIntro: "Key concept: sampling bias.",
         prompt:
-          "A survey about phone use is sent only to students in one honors class. Why might results be biased?",
+          "A survey about phone use is sent only to students in one honors class.\n\n(a) Identify the sampling problem.\n(b) Explain why results might not generalize.",
+        visibleSteps: ["The sample is not representative.", "Honors students may differ in phone use."],
+        blankSteps: ["(a) ______", "(b) ______"],
         hints: ["Sample may not represent all students."],
       },
     ],
@@ -260,10 +272,12 @@ export const apPracticeBySubject: Questionnaire[] = [
     items: [
       {
         id: "phys2-w-a1",
-        format: "concept_check",
+        format: "frq_half",
         conceptIntro: "Key concept: v = fλ.",
         prompt:
-          "A wave with frequency 500 Hz travels at 340 m/s in air. Find its wavelength.",
+          "A wave with frequency 500 Hz travels at 340 m/s in air. Find its wavelength.\n\n(a) Write the equation that relates v, f, and λ.\n(b) Calculate λ with units.",
+        visibleSteps: ["Rearrange v = fλ.", "λ = v/f."],
+        blankSteps: ["(a) Equation: ______", "(b) λ = ______ m"],
         hints: ["Rearrange v = fλ to solve for λ."],
       },
     ],
@@ -304,10 +318,12 @@ export const apPracticeBySubject: Questionnaire[] = [
     items: [
       {
         id: "phycem-g-a1",
-        format: "concept_check",
+        format: "frq_half",
         conceptIntro: "Key concept: Gauss's law symmetry.",
         prompt:
-          "Why is Gauss's law easiest to use for an infinite line charge with cylindrical symmetry?",
+          "Why is Gauss's law easiest to use for an infinite line charge with cylindrical symmetry?\n\n(a) State Gauss's law.\n(b) Explain which symmetry makes E constant on the Gaussian surface.",
+        visibleSteps: ["Φ = Q_enc/ε₀.", "Cylindrical symmetry ⇒ E ⊥ and constant on the curved surface."],
+        blankSteps: ["(a) ______", "(b) ______"],
         hints: ["E field magnitude constant on cylindrical surface."],
       },
     ],
@@ -325,10 +341,12 @@ export const apPracticeBySubject: Questionnaire[] = [
     items: [
       {
         id: "hg-pat-a1",
-        format: "concept_check",
+        format: "frq_half",
         conceptIntro: "Key concept: scale of analysis.",
         prompt:
-          "Explain one local effect and one global effect of urban sprawl.",
+          "Explain urban sprawl at two scales.\n\n(a) Identify one local effect.\n(b) Identify one global effect.",
+        visibleSteps: ["Local: traffic, land use.", "Global: resource use, emissions."],
+        blankSteps: ["(a) Local: ______", "(b) Global: ______"],
         hints: ["Local: traffic; global: resource use — examples vary."],
       },
     ],

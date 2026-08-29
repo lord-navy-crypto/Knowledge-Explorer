@@ -549,7 +549,7 @@ The excerpt is best used as evidence that New Deal recovery was`,
         "apush-fmt-dbq",
         "ush-periodization",
         "Section II · DBQ",
-        "Evaluate the extent to which the New Deal transformed the role of the federal government (1933–1941). Use the stimulus above plus outside evidence. (Original prompt — not a CB packet.)",
+        "Documents (original practice — not College Board):\nDoc 1 (1935, newspaper): “Factories hum again, yet breadlines remain in the mill towns.”\nDoc 2 (1937, worker letter): “The job is back, but the union meeting is why I keep it.”\nDoc 3 (1935, critic): “Relief agencies teach dependence, not recovery.”\n\nEvaluate the extent to which the New Deal transformed the role of the federal government (1933–1941). Use the documents plus outside evidence.\n\n(a) Write a thesis that responds to the prompt.\n(b) Use TWO documents, explaining how each supports your argument.\n(c) Provide ONE piece of outside evidence.",
         ["Thesis with extent.", "Group evidence.", "Outside evidence + complexity."],
         ["Thesis: ______", "Outside evidence: ______"]
       ),
@@ -603,9 +603,17 @@ The pattern is best explained by`,
         "apwh-fmt-leq",
         "whap-industrial",
         "Section II · Long Essay Question",
-        "In 1750–1900, compare the effects of industrialization on TWO regions.",
+        "In 1750–1900, compare the effects of industrialization on TWO regions.\n\n(a) Contextualize the topic (1–2 sentences).\n(b) Write a thesis that takes a position.\n(c) Support with TWO specific examples.",
         ["Valid comparison category.", "Specific evidence per region."],
-        ["Thesis: ______"]
+        ["(a) Context: ______", "(b) Thesis: ______", "(c) Evidence: ______"]
+      ),
+      frq(
+        "apwh-fmt-dbq",
+        "whap-industrial",
+        "Section II · DBQ",
+        "Documents (original practice — not College Board):\nDoc 1 (1880s export table): Raw staples leave; factory cloth returns on the same ships.\nDoc 2 (official gazette): “Rail and telegraph will make the provinces legible.”\nDoc 3 (artisan petition): “Machine cloth undersells the workshop but not the tax.”\n\nEvaluate the extent to which industrialization in 1750–1900 transformed labor in colonized regions. Use the documents plus outside evidence.\n\n(a) Write a thesis that responds to the prompt.\n(b) Use TWO documents, explaining how each supports your argument.\n(c) Provide ONE piece of outside evidence.",
+        ["Thesis with extent.", "Group documents.", "Outside evidence."],
+        ["(a) Thesis: ______", "(b) Document use: ______", "(c) Outside evidence: ______"]
       ),
     ],
   },
@@ -644,6 +652,14 @@ The contrast is best used to illustrate tension between`,
         "a) Identify ONE cause of the Protestant Reformation. b) Identify ONE political consequence in the Holy Roman Empire.",
         ["Indulgences / printing / corruption.", "Princes’ choice of confession; conflict."],
         ["a) ______", "b) ______"]
+      ),
+      frq(
+        "euro-fmt-dbq",
+        "euro-renaissance",
+        "Section II · DBQ",
+        "Documents (original practice — not College Board):\nDoc 1 (1751, salon letter): “Print makes a public that kings did not invite.”\nDoc 2 (1685, minister): “Uniform worship is the peace of the realm.”\nDoc 3 (1789, cahier): “We ask for law, not a gift from the throne.”\n\nEvaluate the extent to which Enlightenment ideas transformed political authority in Europe from 1685 to 1815. Use the documents plus outside evidence.\n\n(a) Write a thesis that responds to the prompt.\n(b) Use TWO documents, explaining how each supports your argument.\n(c) Provide ONE piece of outside evidence.",
+        ["Thesis with extent.", "Sourcing.", "Outside evidence."],
+        ["(a) Thesis: ______", "(b) Document use: ______", "(c) Outside evidence: ______"]
       ),
     ],
   },

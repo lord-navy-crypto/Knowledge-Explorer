@@ -48,4 +48,35 @@ describe("AP official exam-format pass", () => {
       expect(AP_EXAM_BLUEPRINT[subject], subject).toBeTruthy();
     }
   });
+
+  it("gives history FRQs labeled DBQ original documents and part (a)/(b)", () => {
+    const dbq = questionnaires
+      .filter((q) => /History/.test(q.subject))
+      .flatMap((q) => q.items)
+      .filter((i) => /DBQ/i.test(i.examSection || "") || /DBQ/i.test(i.conceptIntro || ""));
+    expect(dbq.length).toBeGreaterThan(0);
+    for (const item of dbq) {
+      expect(item.prompt, item.id).toMatch(/Doc(?:ument)?\s*1\b|Documents \(original/i);
+      expect(item.prompt, item.id).toMatch(/\(\s*a\s*\)|\ba\)\s+/i);
+    }
+  });
+
+  it("rewrites leftover one-line FRQs into labeled parts", () => {
+    const frq = questionnaires
+      .filter((q) => q.subject.startsWith("AP "))
+      .flatMap((q) => q.items)
+      .filter((i) => i.format === "frq_half");
+    expect(frq.length).toBeGreaterThan(50);
+    const withParts = frq.filter((i) => /\(\s*a\s*\)|\ba\)\s+/i.test(i.prompt));
+    expect(withParts.length / frq.length).toBeGreaterThan(0.8);
+  });
+
+  it("adds a stimulus to history MCQs", () => {
+    const mcq = questionnaires
+      .filter((q) => /History/.test(q.subject))
+      .flatMap((q) => q.items)
+      .filter((i) => i.format === "mcq");
+    expect(mcq.length).toBeGreaterThan(0);
+    expect(mcq.every((i) => /Stimulus \(original\)|excerpt|Source/i.test(i.prompt))).toBe(true);
+  });
 });

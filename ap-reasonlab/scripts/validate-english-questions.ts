@@ -10,8 +10,8 @@ function loadExtra() {
   const extended = path.join(root, "../data/english-questions-curated-extended.ts");
   const source = readFileSync(file, "utf8");
   const extendedSource = readFileSync(extended, "utf8");
-  const toeflCount = (source.match(/id: "toefl-extra-/g) || []).length;
-  const satCount = (source.match(/id: "sat-extra-/g) || []).length;
+  const toeflCount = (source.match(/id: "toefl-extra-|"id": "toefl-extra-/g) || []).length;
+  const satCount = (source.match(/id: "sat-extra-|"id": "sat-extra-/g) || []).length;
   const extToefl = (extendedSource.match(/toefl-curated-ext-/g) || []).length;
   const extSat = (extendedSource.match(/sat-curated-ext-/g) || []).length;
   return { toeflCount, satCount, extToefl, extSat };

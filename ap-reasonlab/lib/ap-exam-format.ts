@@ -151,14 +151,24 @@ function hashId(id: string): number {
   return n;
 }
 
-function pickFrqLabel(subject: string, item: QuestionnaireItem): string {
+function pickFrqLabel(subject: string, item: QuestionnaireItem, set?: Questionnaire): string {
   const spec = AP_EXAM_BLUEPRINT[subject];
   const labels = spec?.frq ?? ["Section II · Free Response"];
-  const text = `${item.prompt} ${item.conceptIntro ?? ""}`.toLowerCase();
+  const itemText = `${item.id} ${item.prompt} ${item.conceptIntro ?? ""}`.toLowerCase();
+  const title = (set?.title ?? "").toLowerCase();
+  const text = `${itemText} ${title}`;
 
   if (subject.includes("History") || subject === "AP US History") {
-    if (/\bdbq\b|documents?/.test(text)) return "Section II · DBQ";
-    if (/\bleq\b|evaluate the extent|compare.*period/.test(text)) return "Section II · Long Essay Question";
+    if (/^\s*a\)|\bbriefly explain one\b|-fmt-saq/.test(item.prompt.toLowerCase() + " " + item.id.toLowerCase())) {
+      return "Section I Part B · Short-Answer Question";
+    }
+    if (/\bdbq\b|-fmt-dbq|using the documents/.test(itemText) || (/\bdbq\b/.test(title) && /evaluate the extent/.test(itemText))) {
+      return "Section II · DBQ";
+    }
+    if (/\bleq\b|-fmt-leq|evaluate the extent|compare the effects|compare.*period/.test(text)) {
+      return "Section II · Long Essay Question";
+    }
+    if (/\bdbq\b/.test(title)) return "Section II · DBQ";
     return "Section I Part B · Short-Answer Question";
   }
   if (subject === "AP English Language") {
@@ -191,46 +201,198 @@ function prefixIntro(existing: string | undefined, label: string): string {
   return rest ? `${label}. ${rest}` : label;
 }
 
-export function shapeApItem(subject: string, item: QuestionnaireItem): QuestionnaireItem {
+function alreadyHasParts(prompt: string): boolean {
+  return /\(\s*a\s*\)|\ba\)\s+/i.test(prompt) && /\(\s*b\s*\)|\bb\)\s+/i.test(prompt);
+}
+
+function alreadyHasDocs(prompt: string): boolean {
+  return /Doc(?:ument)?\s*1\b|Documents \(original/i.test(prompt);
+}
+
+function alreadyHasStimulus(prompt: string): boolean {
+  return /Stimulus \(original\)|Source \(original\)|excerpt from|Poem \(original\)|Passage \(original\)/i.test(
+    prompt
+  );
+}
+
+function isHistorySubject(subject: string): boolean {
+  return /History/.test(subject);
+}
+
+function dbqDocuments(prompt: string): string {
+  if (/Progressive|suffrage|1890|1920/i.test(prompt)) {
+    return `Documents (original practice — not College Board):
+Doc 1 (1912, settlement house worker): “Night classes filled once women could vote in school elections.”
+Doc 2 (1911, mill owner): “State factory inspection is an assault on property.”
+Doc 3 (1920, newspaper): “The Nineteenth Amendment closed one fight and opened another over enforcement.”`;
+  }
+  if (/New Deal|1933|federal government/i.test(prompt)) {
+    return `Documents (original practice — not College Board):
+Doc 1 (1935, newspaper): “Factories hum again, yet breadlines remain in the mill towns.”
+Doc 2 (1937, worker letter): “The job is back, but the union meeting is why I keep it.”
+Doc 3 (1935, critic): “Relief agencies teach dependence, not recovery.”`;
+  }
+  if (/Cold War/i.test(prompt)) {
+    return `Documents (original practice — not College Board):
+Doc 1 (1950, suburban ad): “A lawn and a fallout pamphlet in every kitchen.”
+Doc 2 (1954, student paper): “We practiced duck-and-cover between algebra problems.”
+Doc 3 (1964, pamphlet): “The highway is prosperity; the watchlist is the price.”`;
+  }
+  if (/Enlightenment|absolut/i.test(prompt)) {
+    return `Documents (original practice — not College Board):
+Doc 1 (1751, salon letter): “Print makes a public that kings did not invite.”
+Doc 2 (1685, minister): “Uniform worship is the peace of the realm.”
+Doc 3 (1789, cahier): “We ask for law, not a gift from the throne.”`;
+  }
+  if (/industrial|empire|tribute|1450|1750|1900/i.test(prompt)) {
+    return `Documents (original practice — not College Board):
+Doc 1 (1880s export table): Raw staples leave; factory cloth returns on the same ships.
+Doc 2 (official gazette): “Rail and telegraph will make the provinces legible.”
+Doc 3 (artisan petition): “Machine cloth undersells the workshop but not the tax.”`;
+  }
+  return `Documents (original practice — not College Board):
+Doc 1 (contemporary observer): “The reform looked complete from the capital and unfinished on the ground.”
+Doc 2 (critic): “Law on paper is not the same as practice in the provinces.”
+Doc 3 (later commentator): “Participation widened in some arenas and narrowed in others.”`;
+}
+
+function historyStimulus(prompt: string): string {
+  if (/New Deal/i.test(prompt)) {
+    return "A 1935 newspaper: “Factories hum again, yet breadlines remain in the mill towns.”";
+  }
+  if (/industrial|cotton|imperial/i.test(prompt)) {
+    return "1880s export table — raw cotton exports rise while finished cloth imports into the same ports also rise.";
+  }
+  return "A period observer wrote: “The law changed faster than daily practice, and both still matter as evidence.”";
+}
+
+function langExcerpt(prompt: string): string {
+  if (/park|bike|corridor/i.test(prompt)) {
+    return `Excerpt (original practice): “I write not as a contractor but as a parent who walks this corridor at 7:40 a.m. You have heard cost estimates. Hear instead a child on a bike and a paint line that ends.”`;
+  }
+  if (/start time|parent/i.test(prompt)) {
+    return `Excerpt (original practice): “Buses already idle at 6:50 a.m. A later bell would not erase homework; it would let teenagers meet the clock their bodies already keep.”`;
+  }
+  return `Excerpt (original practice): “You have the budget spreadsheet. I am asking you to hear the daily sequence the spreadsheet does not show.”`;
+}
+
+function litExcerpt(prompt: string): string {
+  if (/enjamb|storm|poem|poetry/i.test(prompt)) {
+    return `Poem (original practice): “The shutters / did not wait for the sentence to end / the rain kept walking into the kitchen.”`;
+  }
+  return `Passage (original practice): “She counted the clock’s ticks as if they were footsteps she still owed the hallway.”`;
+}
+
+function defaultBlanks(label: string, existing?: string[]): string[] | undefined {
+  if (existing && existing.length >= 2) return existing;
+  if (label.includes("DBQ")) return ["(a) Thesis: ______", "(b) Document use: ______", "(c) Outside evidence: ______"];
+  if (label.includes("Long Essay") || label.includes("LEQ")) {
+    return ["(a) Context: ______", "(b) Thesis: ______", "(c) Evidence: ______"];
+  }
+  if (label.includes("Short-Answer")) return ["(a) ______", "(b) ______", "(c) ______"];
+  return existing && existing.length ? existing : ["(a) ______", "(b) ______"];
+}
+
+function defaultVisible(label: string, existing?: string[]): string[] | undefined {
+  if (existing && existing.length) return existing;
+  if (label.includes("DBQ")) {
+    return [
+      "(a) Defensible thesis with a line of reasoning.",
+      "(b) Use at least two documents.",
+      "(c) Outside evidence beyond the documents.",
+    ];
+  }
+  return ["Answer each labeled part in AP free-response style."];
+}
+
+function expandOfficialFrq(
+  subject: string,
+  label: string,
+  item: QuestionnaireItem
+): Pick<QuestionnaireItem, "prompt" | "blankSteps" | "visibleSteps"> {
+  const original = item.prompt.trim();
+  let prompt = original;
+
+  if (label.includes("DBQ") && !alreadyHasDocs(prompt)) {
+    prompt = `${dbqDocuments(original)}\n\nPrompt: ${original}`;
+  }
+  if (
+    (subject === "AP English Language" && /Rhetorical Analysis/i.test(label) && !alreadyHasStimulus(prompt))
+  ) {
+    prompt = `${langExcerpt(original)}\n\n${prompt}`;
+  }
+  if (
+    subject === "AP English Literature" &&
+    /Poetry|Prose|Literary argument/i.test(label) &&
+    !alreadyHasStimulus(prompt)
+  ) {
+    prompt = `${litExcerpt(original)}\n\n${prompt}`;
+  }
+
+  if (!alreadyHasParts(prompt)) {
+    if (label.includes("DBQ")) {
+      prompt = `${prompt}\n\n(a) Write a thesis that responds to the prompt.\n(b) Use TWO documents, explaining how each supports your argument.\n(c) Provide ONE piece of outside evidence.`;
+    } else if (label.includes("Long Essay") || /\bLEQ\b/.test(label)) {
+      prompt = `${prompt}\n\n(a) Contextualize the topic (1–2 sentences).\n(b) Write a thesis that takes a position.\n(c) Support with TWO specific examples.`;
+    } else if (label.includes("Short-Answer")) {
+      prompt = `${prompt}\n\n(a) Identify or describe ONE relevant example.\n(b) Explain a cause, effect, or reason using specific evidence.`;
+    } else if (/Rhetorical Analysis/i.test(label)) {
+      prompt = `${prompt}\n\n(a) Identify the rhetorical situation (speaker, audience, purpose).\n(b) Analyze TWO rhetorical choices and their effects.`;
+    } else if (/Poetry|Prose fiction|Literary argument/i.test(label)) {
+      prompt = `${prompt}\n\n(a) Make a defensible claim about the passage.\n(b) Support it with TWO specific textual details.`;
+    } else if (/Synthesis|Argument/i.test(label) && subject === "AP English Language") {
+      prompt = `${prompt}\n\n(a) State a defensible thesis.\n(b) Support it with specific evidence and commentary.`;
+    } else {
+      prompt = `${prompt}\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.`;
+    }
+  }
+
+  return {
+    prompt,
+    blankSteps: defaultBlanks(label, item.blankSteps),
+    visibleSteps: defaultVisible(label, item.visibleSteps),
+  };
+}
+
+function expandHistoryMcq(item: QuestionnaireItem): QuestionnaireItem {
+  if (alreadyHasStimulus(item.prompt)) return item;
+  return {
+    ...item,
+    prompt: `Stimulus (original): ${historyStimulus(item.prompt)}\n\n${item.prompt}`,
+  };
+}
+
+export function shapeApItem(subject: string, item: QuestionnaireItem, set?: Questionnaire): QuestionnaireItem {
   const spec = AP_EXAM_BLUEPRINT[subject];
   if (!spec) {
     if (item.format === "concept_check") {
+      const expanded = expandOfficialFrq(subject, "Free-response skill check", item);
       return {
         ...item,
+        ...expanded,
         format: "frq_half",
         examSection: "Free-response skill check",
         conceptIntro: prefixIntro(item.conceptIntro, "Free-response skill check"),
-        blankSteps: item.blankSteps?.length ? item.blankSteps : ["Response: ______"],
-        visibleSteps: item.visibleSteps?.length ? item.visibleSteps : ["Write 1–3 complete sentences."],
       };
     }
     return { ...item, examSection: item.format === "mcq" ? "Multiple Choice (4 options)" : "Free Response" };
   }
 
   if (item.format === "mcq") {
-    const label = spec.mcq;
-    return {
+    const labeled = {
       ...item,
-      examSection: label,
-      conceptIntro: prefixIntro(item.conceptIntro, label),
+      examSection: spec.mcq,
+      conceptIntro: prefixIntro(item.conceptIntro, spec.mcq),
     };
+    return isHistorySubject(subject) ? expandHistoryMcq(labeled) : labeled;
   }
 
-  if (item.format === "concept_check") {
-    const label = pickFrqLabel(subject, item);
-    return {
-      ...item,
-      format: "frq_half",
-      examSection: label,
-      conceptIntro: prefixIntro(item.conceptIntro, label),
-      blankSteps: item.blankSteps?.length ? item.blankSteps : ["Response: ______"],
-      visibleSteps: item.visibleSteps?.length ? item.visibleSteps : ["Answer in the style of a short AP free-response part."],
-    };
-  }
-
-  const label = pickFrqLabel(subject, item);
+  const label = pickFrqLabel(subject, item, set);
+  const expanded = expandOfficialFrq(subject, label, item);
   return {
     ...item,
+    ...expanded,
+    format: item.format === "concept_check" ? "frq_half" : item.format,
     examSection: label,
     conceptIntro: prefixIntro(item.conceptIntro, label),
   };
@@ -238,7 +400,7 @@ export function shapeApItem(subject: string, item: QuestionnaireItem): Questionn
 
 export function shapeApQuestionnaire(set: Questionnaire): Questionnaire {
   const spec = AP_EXAM_BLUEPRINT[set.subject];
-  const items = set.items.map((item) => shapeApItem(set.subject, item));
+  const items = set.items.map((item) => shapeApItem(set.subject, item, set));
   if (!spec) return { ...set, items };
   const note = spec.blurb;
   const description = set.description.includes("College Board") ? set.description : `${set.description} Official exam shape: ${note}`;
