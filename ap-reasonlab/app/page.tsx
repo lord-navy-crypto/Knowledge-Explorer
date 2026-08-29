@@ -60,16 +60,13 @@ export default function HomePage() {
           {HOME_GATEWAYS.map((box, index) => {
             const mark = String(index + 1).padStart(2, "0");
             const isSentinel = box.accent === "sentinel";
-            return (
-              <Link
-                key={box.id}
-                href={box.href}
-                className={`group relative overflow-hidden rounded-2xl border px-5 py-6 shadow-sm transition hover:shadow-md ${
-                  isSentinel
-                    ? "border-slate-700 bg-gradient-to-br from-slate-950 via-slate-900 to-sky-950 text-white hover:border-sky-500/50"
-                    : "border-[var(--ke-border)] bg-[var(--ke-surface)] hover:border-brand-300"
-                }`}
-              >
+            const className = `group relative overflow-hidden rounded-2xl border px-5 py-6 shadow-sm transition hover:shadow-md ${
+              isSentinel
+                ? "border-slate-700 bg-gradient-to-br from-slate-950 via-slate-900 to-sky-950 text-white hover:border-sky-500/50"
+                : "border-[var(--ke-border)] bg-[var(--ke-surface)] hover:border-brand-300"
+            }`;
+            const content = (
+              <>
                 <div
                   className={`pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-100 ${
                     isSentinel
@@ -105,6 +102,20 @@ export default function HomePage() {
                     {box.comingSoon ? "View placeholder →" : isSentinel ? "Download & overview →" : "Enter →"}
                   </p>
                 </div>
+              </>
+            );
+
+            if (box.id === "tools-code") {
+              return (
+                <a key={box.id} href={box.href} className={className}>
+                  {content}
+                </a>
+              );
+            }
+
+            return (
+              <Link key={box.id} href={box.href} className={className}>
+                {content}
               </Link>
             );
           })}

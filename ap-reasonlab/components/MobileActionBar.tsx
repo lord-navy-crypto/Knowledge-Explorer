@@ -23,7 +23,7 @@ const moreGroups = [
     links: [
       { href: "/ap", label: "AP" },
       { href: "/english", label: "English" },
-      { href: "/tools", label: "Tools" },
+      { href: "/explore/tools-code", label: "Tools" },
       { href: "/code", label: "Code" },
       { href: "/user-guide", label: "User Guide" },
       { href: "/about", label: "About" },
@@ -126,15 +126,21 @@ export default function MobileActionBar() {
                     {group.label}
                   </p>
                   <div className="grid grid-cols-2 gap-1">
-                    {group.links.map((link) => (
-                      <Link
-                        key={link.href}
-                        href={link.href}
-                        className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                      >
-                        {link.label}
-                      </Link>
-                    ))}
+                    {group.links.map((link) => {
+                      const className = "rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50";
+                      if (link.href === "/explore/tools-code") {
+                        return (
+                          <a key={`${group.label}-${link.label}`} href={link.href} className={className}>
+                            {link.label}
+                          </a>
+                        );
+                      }
+                      return (
+                        <Link key={`${group.label}-${link.label}`} href={link.href} className={className}>
+                          {link.label}
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
               ))}

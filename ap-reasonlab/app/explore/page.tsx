@@ -26,41 +26,54 @@ export default function ExploreIndexPage() {
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2">
-        {HOME_GATEWAYS.map((gateway) => (
-          <Link
-            key={gateway.id}
-            href={gateway.href}
-            className={`group rounded-2xl border px-5 py-6 shadow-sm transition hover:shadow-md ${
-              gateway.accent === "sentinel"
-                ? "border-slate-700 bg-gradient-to-br from-slate-950 via-slate-900 to-sky-950 text-white hover:border-sky-500/50"
-                : "border-slate-200 bg-white hover:border-brand-300"
-            }`}
-          >
-            <h2
-              className={`font-display text-xl font-semibold ${
-                gateway.accent === "sentinel"
-                  ? "text-white group-hover:text-sky-100"
-                  : "text-slate-900 group-hover:text-brand-800"
-              }`}
-            >
-              {gateway.title}
-            </h2>
-            <p
-              className={`mt-2 text-sm leading-6 ${
-                gateway.accent === "sentinel" ? "text-slate-300" : "text-slate-600"
-              }`}
-            >
-              {gateway.description}
-            </p>
-            <p
-              className={`mt-4 text-sm font-medium ${
-                gateway.accent === "sentinel" ? "text-sky-300" : "text-brand-700"
-              }`}
-            >
-              Open hub →
-            </p>
-          </Link>
-        ))}
+        {HOME_GATEWAYS.map((gateway) => {
+          const className = `group rounded-2xl border px-5 py-6 shadow-sm transition hover:shadow-md ${
+            gateway.accent === "sentinel"
+              ? "border-slate-700 bg-gradient-to-br from-slate-950 via-slate-900 to-sky-950 text-white hover:border-sky-500/50"
+              : "border-slate-200 bg-white hover:border-brand-300"
+          }`;
+          const content = (
+            <>
+              <h2
+                className={`font-display text-xl font-semibold ${
+                  gateway.accent === "sentinel"
+                    ? "text-white group-hover:text-sky-100"
+                    : "text-slate-900 group-hover:text-brand-800"
+                }`}
+              >
+                {gateway.title}
+              </h2>
+              <p
+                className={`mt-2 text-sm leading-6 ${
+                  gateway.accent === "sentinel" ? "text-slate-300" : "text-slate-600"
+                }`}
+              >
+                {gateway.description}
+              </p>
+              <p
+                className={`mt-4 text-sm font-medium ${
+                  gateway.accent === "sentinel" ? "text-sky-300" : "text-brand-700"
+                }`}
+              >
+                Open hub →
+              </p>
+            </>
+          );
+
+          if (gateway.id === "tools-code") {
+            return (
+              <a key={gateway.id} href={gateway.href} className={className}>
+                {content}
+              </a>
+            );
+          }
+
+          return (
+            <Link key={gateway.id} href={gateway.href} className={className}>
+              {content}
+            </Link>
+          );
+        })}
       </section>
     </div>
   );

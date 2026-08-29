@@ -41,7 +41,7 @@ const moreGroups = [
       { href: "/ap", label: "AP subjects" },
       { href: "/english", label: "English" },
       { href: "/practice", label: "Practice" },
-      { href: "/tools", label: "Convenient Tools" },
+      { href: "/explore/tools-code", label: "Convenient Tools" },
       { href: "/code", label: "Code" },
       { href: "/user-guide", label: "User Guide" },
       { href: "/about", label: "About" },
@@ -203,17 +203,33 @@ export default function Nav() {
                       </p>
                       {group.links.map((link) => {
                         const active = linkIsActive(pathname, link.href);
+                        const className =
+                          active
+                            ? "block rounded-lg bg-brand-50 px-3 py-2 text-sm font-semibold text-brand-700"
+                            : "block rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50";
+
+                        if (link.href === "/explore/tools-code") {
+                          return (
+                            <a
+                              key={`${group.label}-${link.label}`}
+                              href={link.href}
+                              role="menuitem"
+                              className={className}
+                              aria-current={active ? "page" : undefined}
+                              onClick={() => setMoreOpen(false)}
+                            >
+                              {link.label}
+                            </a>
+                          );
+                        }
+
                         return (
                           <Link
-                            key={link.href}
+                            key={`${group.label}-${link.label}`}
                             href={link.href}
                             prefetch={stopPrefetch ? false : undefined}
                             role="menuitem"
-                            className={
-                              active
-                                ? "block rounded-lg bg-brand-50 px-3 py-2 text-sm font-semibold text-brand-700"
-                                : "block rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                            }
+                            className={className}
                             aria-current={active ? "page" : undefined}
                             onClick={() => setMoreOpen(false)}
                           >
