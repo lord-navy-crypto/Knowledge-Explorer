@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { satQuestions, toeflQuestions } from "@/data/english-content";
+import { extraToeflQuestions, extraSatQuestions } from "@/data/english-questions-extra";
 import { SAT_ALL_SKILLS, TOEFL_ALL_SKILLS } from "@/lib/english-exam-format";
 import { getQuestionnaireById } from "@/data/questionnaires";
 
@@ -14,6 +15,14 @@ describe("english question banks", () => {
     const sat = new Set(SAT_ALL_SKILLS);
     expect(toeflQuestions.every((q) => toefl.has(q.skill))).toBe(true);
     expect(satQuestions.every((q) => sat.has(q.skill))).toBe(true);
+  });
+
+  it("persists official task shape in extra bank source files", () => {
+    const toefl = new Set(TOEFL_ALL_SKILLS);
+    const sat = new Set(SAT_ALL_SKILLS);
+    expect(extraToeflQuestions.every((q) => toefl.has(q.skill))).toBe(true);
+    expect(extraToeflQuestions.every((q) => (q.passage?.trim().length ?? 0) > 0)).toBe(true);
+    expect(extraSatQuestions.every((q) => sat.has(q.skill))).toBe(true);
   });
 });
 

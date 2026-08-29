@@ -292,57 +292,94 @@ export const macroGuides: KeyConceptGuide[] = [
 
 export const macroQuestionnaires: Questionnaire[] = [
   {
-    id: "macro-gen-ad-as",
-    title: "Macro — AD–AS & Multipliers Generated Set",
-    subject: "AP Macroeconomics",
-    kind: "generated",
-    description: "Generated practice on AD–AS shifts, output gaps, and fiscal multipliers.",
-    generationNote: "Original items aligned with AP Macroeconomics CED Units 2–3.",
-    estimatedMinutes: 25,
-    tags: ["AD-AS", "multiplier", "generated"],
-    items: [
-      {
-        id: "macro-ad-1",
-        format: "concept_check",
-        conceptId: "macro-ad-as",
-        conceptIntro: "Recessionary gap: equilibrium Y below LRAS.",
-        prompt:
-          "An economy is in short-run equilibrium below potential output. Is this a recessionary or inflationary gap? Which direction could expansionary fiscal policy shift AD?",
-        hints: ["Below potential → recessionary gap; expansionary policy shifts AD right."],
-      },
-      {
-        id: "macro-ad-2",
-        format: "frq_half",
-        conceptId: "macro-ad-as",
-        conceptIntro: "Spending multiplier k = 1 / (1 − MPC).",
-        prompt:
-          "MPC = 0.75 and government purchases increase by $20 billion. Find the predicted change in equilibrium GDP (ceteris paribus, simplified multiplier model).",
-        visibleSteps: ["Compute k = 1 / (1 − MPC).", "Multiply ΔG by k."],
-        blankSteps: ["k = ______", "ΔY = ______ billion"],
-        hints: ["L1: MPS = 1 − MPC.", "L2: ΔY = k × ΔG."],
-      },
+    "id": "macro-gen-ad-as",
+    "title": "Macro — AD–AS & Multipliers Generated Set",
+    "subject": "AP Macroeconomics",
+    "kind": "generated",
+    "description": "Generated practice on AD–AS shifts, output gaps, and fiscal multipliers. Official exam shape: Section I: 60 MCQ (70 min). Section II: 3 FRQs — 1 long, 2 short (60 min).",
+    "generationNote": "Original items aligned with AP Macroeconomics CED Units 2–3.",
+    "estimatedMinutes": 25,
+    "tags": [
+      "AD-AS",
+      "multiplier",
+      "generated"
     ],
+    "items": [
+      {
+        "id": "macro-ad-1",
+        "format": "frq_half",
+        "conceptId": "macro-ad-as",
+        "conceptIntro": "Section II · Short free response. Recessionary gap: equilibrium Y below LRAS.",
+        "prompt": "An economy is in short-run equilibrium below potential output. Is this a recessionary or inflationary gap? Which direction could expansionary fiscal policy shift AD?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "hints": [
+          "Below potential → recessionary gap; expansionary policy shifts AD right."
+        ],
+        "blankSteps": [
+          "(a) ______",
+          "(b) ______"
+        ],
+        "visibleSteps": [
+          "Answer each labeled part in AP free-response style."
+        ],
+        "examSection": "Section II · Short free response"
+      },
+      {
+        "id": "macro-ad-2",
+        "format": "frq_half",
+        "conceptId": "macro-ad-as",
+        "conceptIntro": "Section II · Short free response. Spending multiplier k = 1 / (1 − MPC).",
+        "prompt": "MPC = 0.75 and government purchases increase by $20 billion. Find the predicted change in equilibrium GDP (ceteris paribus, simplified multiplier model).\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "visibleSteps": [
+          "Compute k = 1 / (1 − MPC).",
+          "Multiply ΔG by k."
+        ],
+        "blankSteps": [
+          "k = ______",
+          "ΔY = ______ billion"
+        ],
+        "hints": [
+          "L1: MPS = 1 − MPC.",
+          "L2: ΔY = k × ΔG."
+        ],
+        "examSection": "Section II · Short free response"
+      }
+    ],
+    "examFormatNote": "Section I: 60 MCQ (70 min). Section II: 3 FRQs — 1 long, 2 short (60 min)."
   },
   {
-    id: "macro-gen-indicators",
-    title: "Macro — GDP & Inflation Generated Set",
-    subject: "AP Macroeconomics",
-    kind: "generated",
-    description: "Generated practice on GDP components, CPI, and inflation rate.",
-    generationNote: "Original items aligned with AP Macroeconomics CED Unit 2.",
-    estimatedMinutes: 20,
-    tags: ["GDP", "CPI", "inflation", "generated"],
-    items: [
-      {
-        id: "macro-ind-1",
-        format: "frq_half",
-        conceptId: "macro-indicators",
-        conceptIntro: "Inflation rate from CPI.",
-        prompt: "CPI was 240 last year and 252 this year. Calculate the inflation rate.",
-        visibleSteps: ["Use π = (CPI_t − CPI_{t−1}) / CPI_{t−1} × 100%."],
-        blankSteps: ["Inflation rate = ______%"],
-        hints: ["L1: Subtract old CPI from new, divide by old.", "L2: Express as percentage."],
-      },
+    "id": "macro-gen-indicators",
+    "title": "Macro — GDP & Inflation Generated Set",
+    "subject": "AP Macroeconomics",
+    "kind": "generated",
+    "description": "Generated practice on GDP components, CPI, and inflation rate. Official exam shape: Section I: 60 MCQ (70 min). Section II: 3 FRQs — 1 long, 2 short (60 min).",
+    "generationNote": "Original items aligned with AP Macroeconomics CED Unit 2.",
+    "estimatedMinutes": 20,
+    "tags": [
+      "GDP",
+      "CPI",
+      "inflation",
+      "generated"
     ],
-  },
+    "items": [
+      {
+        "id": "macro-ind-1",
+        "format": "frq_half",
+        "conceptId": "macro-indicators",
+        "conceptIntro": "Section II · Long free response. Inflation rate from CPI.",
+        "prompt": "CPI was 240 last year and 252 this year. Calculate the inflation rate.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "visibleSteps": [
+          "Use π = (CPI_t − CPI_{t−1}) / CPI_{t−1} × 100%."
+        ],
+        "blankSteps": [
+          "Inflation rate = ______%"
+        ],
+        "hints": [
+          "L1: Subtract old CPI from new, divide by old.",
+          "L2: Express as percentage."
+        ],
+        "examSection": "Section II · Long free response"
+      }
+    ],
+    "examFormatNote": "Section I: 60 MCQ (70 min). Section II: 3 FRQs — 1 long, 2 short (60 min)."
+  }
 ];

@@ -21,6 +21,14 @@ describe("AP official exam-format pass", () => {
     expect(leftover).toHaveLength(0);
   });
 
+  it("converts leftover fill_blank and open items on AP subjects into FRQ-shaped prompts", () => {
+    const leftover = questionnaires
+      .filter((q) => q.subject.startsWith("AP "))
+      .flatMap((q) => q.items)
+      .filter((i) => i.format === "fill_blank" || i.format === "open");
+    expect(leftover).toHaveLength(0);
+  });
+
   it("keeps four-choice MCQs", () => {
     const mcq = questionnaires.flatMap((q) => q.items).filter((i) => i.format === "mcq");
     expect(mcq.length).toBeGreaterThan(100);
@@ -69,6 +77,27 @@ describe("AP official exam-format pass", () => {
     expect(frq.length).toBeGreaterThan(50);
     const withParts = frq.filter((i) => /\(\s*a\s*\)|\ba\)\s+/i.test(i.prompt));
     expect(withParts.length / frq.length).toBeGreaterThan(0.8);
+  });
+
+  it("has no concept_check left in AP questionnaire source files", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { fileURLToPath } = await import("node:url");
+    const path = await import("node:path");
+    const data = path.join(path.dirname(fileURLToPath(import.meta.url)), "../data");
+    const files = [
+      "ap-ced-practice.ts",
+      "ap-practice-set-b.ts",
+      "ap-practice-set-c.ts",
+      "ap-practice-set-d.ts",
+      "ap-humanities-set-c-d.ts",
+      "ap-humanities-set-e.ts",
+      "ap-questionnaires-inline.ts",
+      "ap-practice-by-subject.ts",
+    ];
+    for (const name of files) {
+      const source = readFileSync(path.join(data, name), "utf8");
+      expect(source.includes("concept_check"), name).toBe(false);
+    }
   });
 
   it("adds a stimulus to history MCQs", () => {

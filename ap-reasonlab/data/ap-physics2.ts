@@ -435,93 +435,147 @@ export const physics2Guides: KeyConceptGuide[] = [
 
 export const physics2Questionnaires: Questionnaire[] = [
   {
-    id: "p2-gen-thermo",
-    title: "Physics 2 — Thermodynamics Generated Set",
-    subject: "AP Physics 2",
-    kind: "generated",
-    description: "Generated practice on Q = mcΔT, first law, and engine efficiency.",
-    generationNote: "Original items aligned with AP Physics 2 CED Unit 9.",
-    estimatedMinutes: 25,
-    tags: ["thermodynamics", "heat", "generated"],
-    items: [
-      {
-        id: "p2-th-1",
-        format: "frq_half",
-        conceptId: "p2-thermo",
-        conceptIntro: "Q = mcΔT for sensible heat.",
-        prompt:
-          "A 0.5 kg aluminum block (c = 900 J/kg·K) cools from 80°C to 20°C. Find the magnitude of heat lost.",
-        visibleSteps: ["Use Q = mcΔT with ΔT = 60 K.", "Substitute m, c, and ΔT."],
-        blankSteps: ["|Q| = ______ J"],
-        hints: ["L1: ΔT in kelvin equals magnitude of Celsius change.", "L2: Heat lost is negative Q for the block."],
-      },
+    "id": "p2-gen-thermo",
+    "title": "Physics 2 — Thermodynamics Generated Set",
+    "subject": "AP Physics 2",
+    "kind": "generated",
+    "description": "Generated practice on Q = mcΔT, first law, and engine efficiency. Official exam shape: Section I: 40 four-choice MCQ. Section II: 4 FRQs (mathematical routines, representations, experimental design, qualitative/quantitative translation).",
+    "generationNote": "Original items aligned with AP Physics 2 CED Unit 9.",
+    "estimatedMinutes": 25,
+    "tags": [
+      "thermodynamics",
+      "heat",
+      "generated"
     ],
+    "items": [
+      {
+        "id": "p2-th-1",
+        "format": "frq_half",
+        "conceptId": "p2-thermo",
+        "conceptIntro": "Section II · Mathematical Routines. Q = mcΔT for sensible heat.",
+        "prompt": "A 0.5 kg aluminum block (c = 900 J/kg·K) cools from 80°C to 20°C. Find the magnitude of heat lost.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "visibleSteps": [
+          "Use Q = mcΔT with ΔT = 60 K.",
+          "Substitute m, c, and ΔT."
+        ],
+        "blankSteps": [
+          "|Q| = ______ J"
+        ],
+        "hints": [
+          "L1: ΔT in kelvin equals magnitude of Celsius change.",
+          "L2: Heat lost is negative Q for the block."
+        ],
+        "examSection": "Section II · Mathematical Routines"
+      }
+    ],
+    "examFormatNote": "Section I: 40 four-choice MCQ. Section II: 4 FRQs (mathematical routines, representations, experimental design, qualitative/quantitative translation)."
   },
   {
-    id: "p2-gen-optics",
-    title: "Physics 2 — Geometric Optics Generated Set",
-    subject: "AP Physics 2",
-    kind: "generated",
-    description: "Generated practice on Snell's law and the thin lens equation.",
-    generationNote: "Original items aligned with AP Physics 2 CED Unit 13.",
-    estimatedMinutes: 25,
-    tags: ["optics", "lens", "refraction", "generated"],
-    items: [
-      {
-        id: "p2-opt-1",
-        format: "frq_half",
-        conceptId: "p2-geometric-optics",
-        conceptIntro: "Snell's law: n₁ sin θ₁ = n₂ sin θ₂.",
-        prompt:
-          "Light enters water (n = 1.33) from air (n = 1.00) at an angle of 30° to the normal. Find the angle of refraction in water.",
-        visibleSteps: ["Write Snell's law with n_air and n_water.", "Solve for θ₂."],
-        blankSteps: ["θ₂ = ______°"],
-        hints: ["L1: sin 30° = 0.5.", "L2: Refracted ray bends toward normal (into higher n)."],
-      },
+    "id": "p2-gen-optics",
+    "title": "Physics 2 — Geometric Optics Generated Set",
+    "subject": "AP Physics 2",
+    "kind": "generated",
+    "description": "Generated practice on Snell's law and the thin lens equation. Official exam shape: Section I: 40 four-choice MCQ. Section II: 4 FRQs (mathematical routines, representations, experimental design, qualitative/quantitative translation).",
+    "generationNote": "Original items aligned with AP Physics 2 CED Unit 13.",
+    "estimatedMinutes": 25,
+    "tags": [
+      "optics",
+      "lens",
+      "refraction",
+      "generated"
     ],
+    "items": [
+      {
+        "id": "p2-opt-1",
+        "format": "frq_half",
+        "conceptId": "p2-geometric-optics",
+        "conceptIntro": "Section II · Mathematical Routines. Snell's law: n₁ sin θ₁ = n₂ sin θ₂.",
+        "prompt": "Light enters water (n = 1.33) from air (n = 1.00) at an angle of 30° to the normal. Find the angle of refraction in water.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "visibleSteps": [
+          "Write Snell's law with n_air and n_water.",
+          "Solve for θ₂."
+        ],
+        "blankSteps": [
+          "θ₂ = ______°"
+        ],
+        "hints": [
+          "L1: sin 30° = 0.5.",
+          "L2: Refracted ray bends toward normal (into higher n)."
+        ],
+        "examSection": "Section II · Mathematical Routines"
+      }
+    ],
+    "examFormatNote": "Section I: 40 four-choice MCQ. Section II: 4 FRQs (mathematical routines, representations, experimental design, qualitative/quantitative translation)."
   },
   {
-    id: "p2-gen-waves",
-    title: "Physics 2 — Waves & Interference Generated Set",
-    subject: "AP Physics 2",
-    kind: "generated",
-    description: "Generated practice on standing waves and double-slit interference.",
-    generationNote: "Original items aligned with AP Physics 2 CED Unit 14.",
-    estimatedMinutes: 25,
-    tags: ["waves", "interference", "generated"],
-    items: [
-      {
-        id: "p2-wv-1",
-        format: "concept_check",
-        conceptId: "p2-waves-optics",
-        conceptIntro: "Closed pipe: f_n = nv/(4L), n = 1,3,5,…",
-        prompt:
-          "A pipe closed at one end has length 0.68 m and the speed of sound is 340 m/s. What is the fundamental frequency?",
-        hints: ["Use n = 1 in f_n = nv/(4L) for fundamental of closed pipe."],
-      },
+    "id": "p2-gen-waves",
+    "title": "Physics 2 — Waves & Interference Generated Set",
+    "subject": "AP Physics 2",
+    "kind": "generated",
+    "description": "Generated practice on standing waves and double-slit interference. Official exam shape: Section I: 40 four-choice MCQ. Section II: 4 FRQs (mathematical routines, representations, experimental design, qualitative/quantitative translation).",
+    "generationNote": "Original items aligned with AP Physics 2 CED Unit 14.",
+    "estimatedMinutes": 25,
+    "tags": [
+      "waves",
+      "interference",
+      "generated"
     ],
+    "items": [
+      {
+        "id": "p2-wv-1",
+        "format": "frq_half",
+        "conceptId": "p2-waves-optics",
+        "conceptIntro": "Section II · Mathematical Routines. Closed pipe: f_n = nv/(4L), n = 1,3,5,…",
+        "prompt": "A pipe closed at one end has length 0.68 m and the speed of sound is 340 m/s. What is the fundamental frequency?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "hints": [
+          "Use n = 1 in f_n = nv/(4L) for fundamental of closed pipe."
+        ],
+        "blankSteps": [
+          "(a) ______",
+          "(b) ______"
+        ],
+        "visibleSteps": [
+          "Answer each labeled part in AP free-response style."
+        ],
+        "examSection": "Section II · Mathematical Routines"
+      }
+    ],
+    "examFormatNote": "Section I: 40 four-choice MCQ. Section II: 4 FRQs (mathematical routines, representations, experimental design, qualitative/quantitative translation)."
   },
   {
-    id: "p2-gen-modern",
-    title: "Physics 2 — Modern Physics Generated Set",
-    subject: "AP Physics 2",
-    kind: "generated",
-    description: "Generated practice on photoelectric effect and radioactive decay.",
-    generationNote: "Original items aligned with AP Physics 2 CED Unit 15 (no special relativity).",
-    estimatedMinutes: 25,
-    tags: ["modern physics", "photoelectric", "generated"],
-    items: [
-      {
-        id: "p2-mod-1",
-        format: "frq_half",
-        conceptId: "p2-modern",
-        conceptIntro: "K_max = hf − φ.",
-        prompt:
-          "Ultraviolet light with frequency 1.0 × 10¹⁵ Hz strikes a metal with work function φ = 3.0 × 10⁻¹⁹ J. Find K_max of ejected electrons. (h = 6.63 × 10⁻³⁴ J·s)",
-        visibleSteps: ["Compute photon energy E = hf.", "Apply K_max = E − φ."],
-        blankSteps: ["K_max = ______ J"],
-        hints: ["L1: If E < φ, no electrons ejected.", "L2: K_max is per electron, not total energy."],
-      },
+    "id": "p2-gen-modern",
+    "title": "Physics 2 — Modern Physics Generated Set",
+    "subject": "AP Physics 2",
+    "kind": "generated",
+    "description": "Generated practice on photoelectric effect and radioactive decay. Official exam shape: Section I: 40 four-choice MCQ. Section II: 4 FRQs (mathematical routines, representations, experimental design, qualitative/quantitative translation).",
+    "generationNote": "Original items aligned with AP Physics 2 CED Unit 15 (no special relativity).",
+    "estimatedMinutes": 25,
+    "tags": [
+      "modern physics",
+      "photoelectric",
+      "generated"
     ],
-  },
+    "items": [
+      {
+        "id": "p2-mod-1",
+        "format": "frq_half",
+        "conceptId": "p2-modern",
+        "conceptIntro": "Section II · Mathematical Routines. K_max = hf − φ.",
+        "prompt": "Ultraviolet light with frequency 1.0 × 10¹⁵ Hz strikes a metal with work function φ = 3.0 × 10⁻¹⁹ J. Find K_max of ejected electrons. (h = 6.63 × 10⁻³⁴ J·s)\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "visibleSteps": [
+          "Compute photon energy E = hf.",
+          "Apply K_max = E − φ."
+        ],
+        "blankSteps": [
+          "K_max = ______ J"
+        ],
+        "hints": [
+          "L1: If E < φ, no electrons ejected.",
+          "L2: K_max is per electron, not total energy."
+        ],
+        "examSection": "Section II · Mathematical Routines"
+      }
+    ],
+    "examFormatNote": "Section I: 40 four-choice MCQ. Section II: 4 FRQs (mathematical routines, representations, experimental design, qualitative/quantitative translation)."
+  }
 ];

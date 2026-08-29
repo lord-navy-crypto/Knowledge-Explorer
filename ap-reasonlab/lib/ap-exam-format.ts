@@ -365,17 +365,17 @@ function expandHistoryMcq(item: QuestionnaireItem): QuestionnaireItem {
 export function shapeApItem(subject: string, item: QuestionnaireItem, set?: Questionnaire): QuestionnaireItem {
   const spec = AP_EXAM_BLUEPRINT[subject];
   if (!spec) {
-    if (item.format === "concept_check") {
-      const expanded = expandOfficialFrq(subject, "Free-response skill check", item);
-      return {
-        ...item,
-        ...expanded,
-        format: "frq_half",
-        examSection: "Free-response skill check",
-        conceptIntro: prefixIntro(item.conceptIntro, "Free-response skill check"),
-      };
+    if (item.format === "mcq") {
+      return { ...item, examSection: "Multiple Choice (4 options)" };
     }
-    return { ...item, examSection: item.format === "mcq" ? "Multiple Choice (4 options)" : "Free Response" };
+    const expanded = expandOfficialFrq(subject, "Free-response skill check", item);
+    return {
+      ...item,
+      ...expanded,
+      format: "frq_half",
+      examSection: "Free-response skill check",
+      conceptIntro: prefixIntro(item.conceptIntro, "Free-response skill check"),
+    };
   }
 
   if (item.format === "mcq") {
@@ -392,7 +392,7 @@ export function shapeApItem(subject: string, item: QuestionnaireItem, set?: Ques
   return {
     ...item,
     ...expanded,
-    format: item.format === "concept_check" ? "frq_half" : item.format,
+    format: "frq_half",
     examSection: label,
     conceptIntro: prefixIntro(item.conceptIntro, label),
   };
@@ -403,7 +403,10 @@ export function shapeApQuestionnaire(set: Questionnaire): Questionnaire {
   const items = set.items.map((item) => shapeApItem(set.subject, item, set));
   if (!spec) return { ...set, items };
   const note = spec.blurb;
-  const description = set.description.includes("College Board") ? set.description : `${set.description} Official exam shape: ${note}`;
+  const description =
+    /College Board|Official exam shape/i.test(set.description)
+      ? set.description
+      : `${set.description} Official exam shape: ${note}`;
   return { ...set, items, description, examFormatNote: note };
 }
 

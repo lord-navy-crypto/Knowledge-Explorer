@@ -437,697 +437,785 @@ export const statsGuides: KeyConceptGuide[] = [
 
 export const statsQuestionnaires: Questionnaire[] = [
   {
-    id: "stats-gen-exploring-data",
-    title: "Stats — Exploring Data Generated FRQ Set",
-    subject: "AP Statistics",
-    kind: "generated",
-    description:
-      "Original SOCS, outlier rules, boxplots vs histograms, and regression interpretation drills.",
-    generationNote:
-      "AI-generated from Topic 1 fixed FRQ templates (one-var + two-var). Original contexts/numbers. 2026-07-22.",
-    estimatedMinutes: 35,
-    tags: ["SOCS", "outliers", "regression", "residuals", "generated", "FRQ"],
-    items: [
+    "id": "stats-gen-exploring-data",
+    "title": "Stats — Exploring Data Generated FRQ Set",
+    "subject": "AP Statistics",
+    "kind": "generated",
+    "description": "Original SOCS, outlier rules, boxplots vs histograms, and regression interpretation drills. Official exam shape: Section I: 40 MCQ (90 min). Section II: 5 FRQs + 1 Investigative Task (90 min).",
+    "generationNote": "AI-generated from Topic 1 fixed FRQ templates (one-var + two-var). Original contexts/numbers. 2026-07-22.",
+    "estimatedMinutes": 35,
+    "tags": [
+      "SOCS",
+      "outliers",
+      "regression",
+      "residuals",
+      "generated",
+      "FRQ"
+    ],
+    "items": [
       {
-        id: "stats-ed-1",
-        format: "frq_half",
-        conceptId: "stats-one-var",
-        conceptIntro: "Five-number summary + 1.5×IQR outlier rule.",
-        difficultyTier: 2,
-        prompt:
-          "A random sample of 40 delivery times (minutes) for a campus food app has five-number summary: Min = 8, Q1 = 14, Median = 18, Q3 = 25, Max = 52. (i) Calculate the IQR and the 1.5×IQR outlier fences. (ii) Is 52 a potential outlier? Justify.",
-        visibleSteps: [
+        "id": "stats-ed-1",
+        "format": "frq_half",
+        "conceptId": "stats-one-var",
+        "conceptIntro": "Section II Part A · Exploring data. Five-number summary + 1.5×IQR outlier rule.",
+        "difficultyTier": 2,
+        "prompt": "A random sample of 40 delivery times (minutes) for a campus food app has five-number summary: Min = 8, Q1 = 14, Median = 18, Q3 = 25, Max = 52. (i) Calculate the IQR and the 1.5×IQR outlier fences. (ii) Is 52 a potential outlier? Justify.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "visibleSteps": [
           "IQR = Q3 − Q1.",
           "Lower fence = Q1 − 1.5·IQR; upper fence = Q3 + 1.5·IQR.",
-          "Compare Max = 52 to the upper fence.",
+          "Compare Max = 52 to the upper fence."
         ],
-        blankSteps: [
+        "blankSteps": [
           "IQR = ______",
           "Fences: (______ , ______)",
-          "52 outlier? Yes/No + reason: ____________________",
+          "52 outlier? Yes/No + reason: ____________________"
         ],
-        hints: [
+        "hints": [
           "L1: IQR = 25 − 14.",
           "L2: Upper fence = 25 + 1.5×IQR.",
-          "L3: Any value above the upper fence is a potential outlier.",
+          "L3: Any value above the upper fence is a potential outlier."
         ],
+        "examSection": "Section II Part A · Exploring data"
       },
       {
-        id: "stats-ed-2",
-        format: "concept_check",
-        conceptId: "stats-one-var",
-        conceptIntro: "Mean/SD vs median/IQR under right skew.",
-        difficultyTier: 2,
-        prompt:
-          "Commute times for 200 workers are strongly skewed right with a few very long delays. Method A uses the 1.5×IQR rule; Method B flags points more than 2 sample SDs from the sample mean. Explain why Method A may flag more high outliers than Method B.",
-        hints: [
+        "id": "stats-ed-2",
+        "format": "frq_half",
+        "conceptId": "stats-one-var",
+        "conceptIntro": "Section II Part B · Investigative Task. Mean/SD vs median/IQR under right skew.",
+        "difficultyTier": 2,
+        "prompt": "Commute times for 200 workers are strongly skewed right with a few very long delays. Method A uses the 1.5×IQR rule; Method B flags points more than 2 sample SDs from the sample mean. Explain why Method A may flag more high outliers than Method B.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "hints": [
           "Right skew pulls mean and SD upward.",
-          "IQR/quartiles are resistant; fences stay lower than a 2-SD cutoff inflated by the tail.",
+          "IQR/quartiles are resistant; fences stay lower than a 2-SD cutoff inflated by the tail."
         ],
+        "blankSteps": [
+          "(a) ______",
+          "(b) ______"
+        ],
+        "visibleSteps": [
+          "Answer each labeled part in AP free-response style."
+        ],
+        "examSection": "Section II Part B · Investigative Task"
       },
       {
-        id: "stats-ed-3",
-        format: "frq_half",
-        conceptId: "stats-two-var",
-        conceptIntro: "Interpret slope and r² in context.",
-        difficultyTier: 2,
-        prompt:
-          "For 15 hiking trails, a biologist fits ŷ = 4.2 + 0.85x predicting trail rating ŷ (1–10) from length x (km). Given r² = 0.64: (i) Interpret the slope. (ii) Interpret r².",
-        visibleSteps: [
+        "id": "stats-ed-3",
+        "format": "frq_half",
+        "conceptId": "stats-two-var",
+        "conceptIntro": "Section II Part A · Inference. Interpret slope and r² in context.",
+        "difficultyTier": 2,
+        "prompt": "For 15 hiking trails, a biologist fits ŷ = 4.2 + 0.85x predicting trail rating ŷ (1–10) from length x (km). Given r² = 0.64: (i) Interpret the slope. (ii) Interpret r².\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "visibleSteps": [
           "Slope: predicted change in y per 1-unit increase in x.",
-          "r²: percent of variation in y explained by the linear model with x.",
+          "r²: percent of variation in y explained by the linear model with x."
         ],
-        blankSteps: [
+        "blankSteps": [
           "Slope interpretation: ____________________",
-          "r² interpretation: ____________________",
+          "r² interpretation: ____________________"
         ],
-        hints: [
+        "hints": [
           "L1: Include “predicted” and units (rating points per km).",
           "L2: r² = 64% of variation in ratings…",
-          "L3: Do not claim causation.",
+          "L3: Do not claim causation."
         ],
+        "examSection": "Section II Part A · Inference"
       },
       {
-        id: "stats-ed-4",
-        format: "frq_half",
-        conceptId: "stats-two-var",
-        conceptIntro: "Residual = observed − predicted.",
-        difficultyTier: 2,
-        prompt:
-          "Using ŷ = −16.5 + 35.0x for wolf weight (kg) from length x (m), one wolf with length 1.3 m has residual −8.2 kg. Find the wolf’s actual weight.",
-        visibleSteps: [
+        "id": "stats-ed-4",
+        "format": "frq_half",
+        "conceptId": "stats-two-var",
+        "conceptIntro": "Section II Part A · Exploring data. Residual = observed − predicted.",
+        "difficultyTier": 2,
+        "prompt": "Using ŷ = −16.5 + 35.0x for wolf weight (kg) from length x (m), one wolf with length 1.3 m has residual −8.2 kg. Find the wolf’s actual weight.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "visibleSteps": [
           "Compute ŷ at x = 1.3.",
-          "Use residual = y − ŷ ⇒ y = ŷ + residual.",
+          "Use residual = y − ŷ ⇒ y = ŷ + residual."
         ],
-        blankSteps: ["ŷ = ______ kg", "Actual weight y = ______ kg"],
-        hints: [
+        "blankSteps": [
+          "ŷ = ______ kg",
+          "Actual weight y = ______ kg"
+        ],
+        "hints": [
           "L1: ŷ = −16.5 + 35.0(1.3).",
-          "L2: Negative residual means actual is below predicted.",
+          "L2: Negative residual means actual is below predicted."
         ],
+        "examSection": "Section II Part A · Exploring data"
       },
       {
-        id: "stats-ed-5",
-        format: "mcq",
-        conceptId: "stats-one-var",
-        conceptIntro: "Histogram vs boxplot information.",
-        difficultyTier: 1,
-        prompt:
-          "A histogram of dorm room sizes is clearly bimodal. A boxplot of the same data is drawn. Which feature is apparent in the histogram but NOT in the boxplot?",
-        choices: [
+        "id": "stats-ed-5",
+        "format": "mcq",
+        "conceptId": "stats-one-var",
+        "conceptIntro": "Section I · Multiple Choice (4 options). Histogram vs boxplot information.",
+        "difficultyTier": 1,
+        "prompt": "A histogram of dorm room sizes is clearly bimodal. A boxplot of the same data is drawn. Which feature is apparent in the histogram but NOT in the boxplot?",
+        "choices": [
           "A) The median room size",
           "B) The presence of two peaks (bimodality)",
           "C) The maximum room size",
-          "D) The interquartile range",
+          "D) The interquartile range"
         ],
-        hints: [
-          "Boxplots summarize quartiles; they do not show multiple modes.",
+        "hints": [
+          "Boxplots summarize quartiles; they do not show multiple modes."
         ],
+        "examSection": "Section I · Multiple Choice (4 options)"
       },
       {
-        id: "stats-ed-6",
-        format: "concept_check",
-        conceptId: "stats-two-var",
-        conceptIntro: "Changing one point: mean vs median.",
-        difficultyTier: 1,
-        prompt:
-          "Among 60 tip amounts, one tip of $9 is changed to $19. What happens to the mean and to the median? Justify briefly.",
-        hints: [
+        "id": "stats-ed-6",
+        "format": "frq_half",
+        "conceptId": "stats-two-var",
+        "conceptIntro": "Section II Part A · Inference. Changing one point: mean vs median.",
+        "difficultyTier": 1,
+        "prompt": "Among 60 tip amounts, one tip of $9 is changed to $19. What happens to the mean and to the median? Justify briefly.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "hints": [
           "Mean uses the sum → increases.",
-          "Median depends on middle order stats; one point moving within the same half often leaves median unchanged.",
+          "Median depends on middle order stats; one point moving within the same half often leaves median unchanged."
         ],
-      },
+        "blankSteps": [
+          "(a) ______",
+          "(b) ______"
+        ],
+        "visibleSteps": [
+          "Answer each labeled part in AP free-response style."
+        ],
+        "examSection": "Section II Part A · Inference"
+      }
     ],
+    "examFormatNote": "Section I: 40 MCQ (90 min). Section II: 5 FRQs + 1 Investigative Task (90 min)."
   },
   {
-    id: "stats-gen-collecting-data",
-    title: "Stats — Collecting Data Generated FRQ Set",
-    subject: "AP Statistics",
-    kind: "generated",
-    description:
-      "Original sampling-bias, SRS/stratified, and experiment-design FRQ clones.",
-    generationNote:
-      "AI-generated from Topic 2 fixed templates (sampling + experiments). Original contexts. 2026-07-22.",
-    estimatedMinutes: 30,
-    tags: ["sampling", "bias", "experiments", "matched pairs", "generated", "FRQ"],
-    items: [
+    "id": "stats-gen-collecting-data",
+    "title": "Stats — Collecting Data Generated FRQ Set",
+    "subject": "AP Statistics",
+    "kind": "generated",
+    "description": "Original sampling-bias, SRS/stratified, and experiment-design FRQ clones. Official exam shape: Section I: 40 MCQ (90 min). Section II: 5 FRQs + 1 Investigative Task (90 min).",
+    "generationNote": "AI-generated from Topic 2 fixed templates (sampling + experiments). Original contexts. 2026-07-22.",
+    "estimatedMinutes": 30,
+    "tags": [
+      "sampling",
+      "bias",
+      "experiments",
+      "matched pairs",
+      "generated",
+      "FRQ"
+    ],
+    "items": [
       {
-        id: "stats-cd-1",
-        format: "frq_half",
-        conceptId: "stats-sampling-design",
-        conceptIntro: "Voluntary response vs SRS with follow-up.",
-        difficultyTier: 2,
-        prompt:
-          "A city wants to estimate average annual income of 12,000 alumni. Method 1: email all alumni an online form (expect ~800 replies). Method 2: select an SRS of 120 alumni and phone until all respond. Which method would you choose for estimating the mean income? Compare bias.",
-        visibleSteps: [
+        "id": "stats-cd-1",
+        "format": "frq_half",
+        "conceptId": "stats-sampling-design",
+        "conceptIntro": "Section II Part B · Investigative Task. Voluntary response vs SRS with follow-up.",
+        "difficultyTier": 2,
+        "prompt": "A city wants to estimate average annual income of 12,000 alumni. Method 1: email all alumni an online form (expect ~800 replies). Method 2: select an SRS of 120 alumni and phone until all respond. Which method would you choose for estimating the mean income? Compare bias.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "visibleSteps": [
           "Identify the sampling/response mechanism for each method.",
-          "Link mechanism to bias in the income estimate.",
+          "Link mechanism to bias in the income estimate."
         ],
-        blankSteps: [
+        "blankSteps": [
           "Preferred method: ______",
-          "Reasoning: ____________________",
+          "Reasoning: ____________________"
         ],
-        hints: [
+        "hints": [
           "L1: Method 1 is voluntary response / nonresponse.",
           "L2: Higher earners may be more/less likely to reply → bias.",
-          "L3: Smaller n can still beat a large biased sample.",
+          "L3: Smaller n can still beat a large biased sample."
         ],
+        "examSection": "Section II Part B · Investigative Task"
       },
       {
-        id: "stats-cd-2",
-        format: "concept_check",
-        conceptId: "stats-sampling-design",
-        conceptIntro: "Convenience sample bias.",
-        difficultyTier: 1,
-        prompt:
-          "To estimate the proportion of students satisfied with campus landscaping, an admin surveys the first 400 students entering a sold-out basketball game. Why might this be biased?",
-        hints: [
+        "id": "stats-cd-2",
+        "format": "frq_half",
+        "conceptId": "stats-sampling-design",
+        "conceptIntro": "Section II Part A · Inference. Convenience sample bias.",
+        "difficultyTier": 1,
+        "prompt": "To estimate the proportion of students satisfied with campus landscaping, an admin surveys the first 400 students entering a sold-out basketball game. Why might this be biased?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "hints": [
           "Game attendees are not a random cross-section of all students.",
-          "Interest in athletics may correlate with opinions about grounds.",
+          "Interest in athletics may correlate with opinions about grounds."
         ],
+        "blankSteps": [
+          "(a) ______",
+          "(b) ______"
+        ],
+        "visibleSteps": [
+          "Answer each labeled part in AP free-response style."
+        ],
+        "examSection": "Section II Part A · Inference"
       },
       {
-        id: "stats-cd-3",
-        format: "frq_half",
-        conceptId: "stats-experiments",
-        conceptIntro: "Identify treatments, units, response.",
-        difficultyTier: 1,
-        prompt:
-          "Researchers test four fungus concentrations (0, 1.0, 2.0, 3.0 ml/L) sprayed on beetles in 24 jars (6 jars each). After one week they record how many beetles remain alive in each jar. Identify treatments, experimental units, and response variable. Does the study have a control group?",
-        visibleSteps: [
+        "id": "stats-cd-3",
+        "format": "frq_half",
+        "conceptId": "stats-experiments",
+        "conceptIntro": "Section II Part A · Exploring data. Identify treatments, units, response.",
+        "difficultyTier": 1,
+        "prompt": "Researchers test four fungus concentrations (0, 1.0, 2.0, 3.0 ml/L) sprayed on beetles in 24 jars (6 jars each). After one week they record how many beetles remain alive in each jar. Identify treatments, experimental units, and response variable. Does the study have a control group?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "visibleSteps": [
           "Treatments = levels of the explanatory factor.",
           "Units = what is randomly assigned a treatment.",
-          "Response = measured outcome.",
+          "Response = measured outcome."
         ],
-        blankSteps: [
+        "blankSteps": [
           "Treatments: ____________________",
           "Experimental units: ____________________",
           "Response: ____________________",
-          "Control group? ____________________",
+          "Control group? ____________________"
         ],
-        hints: [
+        "hints": [
           "L1: 0 ml/L is a control (no fungus).",
-          "L2: Units are the jars (groups of beetles), not individual concentrations.",
+          "L2: Units are the jars (groups of beetles), not individual concentrations."
         ],
+        "examSection": "Section II Part A · Exploring data"
       },
       {
-        id: "stats-cd-4",
-        format: "concept_check",
-        conceptId: "stats-experiments",
-        conceptIntro: "Matched pairs advantage.",
-        difficultyTier: 2,
-        prompt:
-          "A dermatologist recruits 30 pairs of identical twins with similar acne severity (severity differs across pairs). Why is a matched-pairs design (twins paired) statistically advantageous vs a completely randomized design?",
-        hints: [
+        "id": "stats-cd-4",
+        "format": "frq_half",
+        "conceptId": "stats-experiments",
+        "conceptIntro": "Section II Part B · Investigative Task. Matched pairs advantage.",
+        "difficultyTier": 2,
+        "prompt": "A dermatologist recruits 30 pairs of identical twins with similar acne severity (severity differs across pairs). Why is a matched-pairs design (twins paired) statistically advantageous vs a completely randomized design?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "hints": [
           "Pairing controls genetic/severity similarity.",
-          "Reduces variability → more power to detect treatment differences.",
+          "Reduces variability → more power to detect treatment differences."
         ],
+        "blankSteps": [
+          "(a) ______",
+          "(b) ______"
+        ],
+        "visibleSteps": [
+          "Answer each labeled part in AP free-response style."
+        ],
+        "examSection": "Section II Part B · Investigative Task"
       },
       {
-        id: "stats-cd-5",
-        format: "frq_half",
-        conceptId: "stats-experiments",
-        conceptIntro: "Observational study + confounding.",
-        difficultyTier: 2,
-        prompt:
-          "A 20-year health study finds adults who drink ≥3 cups of coffee daily have 1.8× the rate of sleep complaints of non-coffee drinkers. (i) Explanatory and response variables? (ii) Observational study or experiment? (iii) Explain how “late work shifts” could be a confounding variable.",
-        visibleSteps: [
+        "id": "stats-cd-5",
+        "format": "frq_half",
+        "conceptId": "stats-experiments",
+        "conceptIntro": "Section II Part A · Inference. Observational study + confounding.",
+        "difficultyTier": 2,
+        "prompt": "A 20-year health study finds adults who drink ≥3 cups of coffee daily have 1.8× the rate of sleep complaints of non-coffee drinkers. (i) Explanatory and response variables? (ii) Observational study or experiment? (iii) Explain how “late work shifts” could be a confounding variable.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "visibleSteps": [
           "Explanatory predicts; response is the outcome.",
           "Was a treatment assigned by researchers?",
-          "Confounder associated with both explanatory and response.",
+          "Confounder associated with both explanatory and response."
         ],
-        blankSteps: [
+        "blankSteps": [
           "Explanatory: ______  Response: ______",
           "Study type: ______",
-          "Confounding explanation: ____________________",
+          "Confounding explanation: ____________________"
         ],
-        hints: [
+        "hints": [
           "L1: No assignment ⇒ observational.",
-          "L2: Shift workers may drink more coffee AND sleep worse.",
+          "L2: Shift workers may drink more coffee AND sleep worse."
         ],
+        "examSection": "Section II Part A · Inference"
       },
       {
-        id: "stats-cd-6",
-        format: "mcq",
-        conceptId: "stats-experiments",
-        conceptIntro: "Scope of conclusions.",
-        difficultyTier: 2,
-        prompt:
-          "In a randomized experiment, drug + 2 therapy sessions beats placebo + 2 sessions (statistically significant). Researchers conclude “drug + 2 sessions is as good as 8 sessions without drug.” What is the best critique?",
-        choices: [
+        "id": "stats-cd-6",
+        "format": "mcq",
+        "conceptId": "stats-experiments",
+        "conceptIntro": "Section I · Multiple Choice (4 options). Scope of conclusions.",
+        "difficultyTier": 2,
+        "prompt": "In a randomized experiment, drug + 2 therapy sessions beats placebo + 2 sessions (statistically significant). Researchers conclude “drug + 2 sessions is as good as 8 sessions without drug.” What is the best critique?",
+        "choices": [
           "A) The sample size was too small to ever conclude anything",
           "B) The study never compared to an 8-session no-drug group",
           "C) Significance proves the treatments are identical",
-          "D) Placebos cannot be used in experiments",
+          "D) Placebos cannot be used in experiments"
         ],
-        hints: [
-          "Conclusions are limited to the treatments actually compared.",
+        "hints": [
+          "Conclusions are limited to the treatments actually compared."
         ],
-      },
+        "examSection": "Section I · Multiple Choice (4 options)"
+      }
     ],
+    "examFormatNote": "Section I: 40 MCQ (90 min). Section II: 5 FRQs + 1 Investigative Task (90 min)."
   },
   {
-    id: "stats-gen-probability",
-    title: "Stats — Probability & RVs Generated FRQ Set",
-    subject: "AP Statistics",
-    kind: "generated",
-    description:
-      "Original conditional probability, independence, Binomial/Normal, and expected-value FRQs.",
-    generationNote:
-      "AI-generated from Topic 3 fixed templates. Original numbers/contexts. 2026-07-22.",
-    estimatedMinutes: 40,
-    tags: ["conditional probability", "binomial", "normal", "expected value", "generated", "FRQ"],
-    items: [
+    "id": "stats-gen-probability",
+    "title": "Stats — Probability & RVs Generated FRQ Set",
+    "subject": "AP Statistics",
+    "kind": "generated",
+    "description": "Original conditional probability, independence, Binomial/Normal, and expected-value FRQs. Official exam shape: Section I: 40 MCQ (90 min). Section II: 5 FRQs + 1 Investigative Task (90 min).",
+    "generationNote": "AI-generated from Topic 3 fixed templates. Original numbers/contexts. 2026-07-22.",
+    "estimatedMinutes": 40,
+    "tags": [
+      "conditional probability",
+      "binomial",
+      "normal",
+      "expected value",
+      "generated",
+      "FRQ"
+    ],
+    "items": [
       {
-        id: "stats-pr-1",
-        format: "frq_half",
-        conceptId: "stats-probability",
-        conceptIntro: "Two-way relative frequency table.",
-        difficultyTier: 2,
-        prompt:
-          "Relative frequencies for survey responses (Never / Sometimes / Always) by gender:\nNever∩Men=0.05, Never∩Women=0.07, Never total=0.12; Women total=0.55; Always∩Women=0.30; Always total=0.52.\nOne person selected at random. Find: (i) P(Never and Woman); (ii) P(Never or Woman); (iii) P(Never | Woman). Are Never and Woman independent?",
-        visibleSteps: [
+        "id": "stats-pr-1",
+        "format": "frq_half",
+        "conceptId": "stats-probability",
+        "conceptIntro": "Section II Part A · Multi-skill. Two-way relative frequency table.",
+        "difficultyTier": 2,
+        "prompt": "Relative frequencies for survey responses (Never / Sometimes / Always) by gender:\nNever∩Men=0.05, Never∩Women=0.07, Never total=0.12; Women total=0.55; Always∩Women=0.30; Always total=0.52.\nOne person selected at random. Find: (i) P(Never and Woman); (ii) P(Never or Woman); (iii) P(Never | Woman). Are Never and Woman independent?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "visibleSteps": [
           "Read joint from table for (i).",
           "P(A or B) = P(A)+P(B)−P(A and B).",
-          "P(A|B)=P(A and B)/P(B); compare to P(A).",
+          "P(A|B)=P(A and B)/P(B); compare to P(A)."
         ],
-        blankSteps: [
+        "blankSteps": [
           "(i) ______",
           "(ii) ______",
           "(iii) ______",
-          "Independent? ______",
+          "Independent? ______"
         ],
-        hints: [
+        "hints": [
           "L1: (i) is the joint 0.07.",
           "L2: P(Woman)=0.55; P(Never)=0.12.",
-          "L3: Independent iff P(Never|Woman)=P(Never).",
+          "L3: Independent iff P(Never|Woman)=P(Never)."
         ],
+        "examSection": "Section II Part A · Multi-skill"
       },
       {
-        id: "stats-pr-2",
-        format: "frq_half",
-        conceptId: "stats-random-vars",
-        conceptIntro: "Independent trials success probability.",
-        difficultyTier: 2,
-        prompt:
-          "A new rocket igniter fails with probability 0.12 each launch (independent). Engineers test igniters until the first failure or 25 successes, whichever comes first. (a) If failure rate is truly 0.12, find P(first 20 succeed). (b) Given first 20 succeed, find P(first failure is on the 21st or 22nd test).",
-        visibleSteps: [
+        "id": "stats-pr-2",
+        "format": "frq_half",
+        "conceptId": "stats-random-vars",
+        "conceptIntro": "Section II Part A · Probability / sampling distributions. Independent trials success probability.",
+        "difficultyTier": 2,
+        "prompt": "A new rocket igniter fails with probability 0.12 each launch (independent). Engineers test igniters until the first failure or 25 successes, whichever comes first. (a) If failure rate is truly 0.12, find P(first 20 succeed). (b) Given first 20 succeed, find P(first failure is on the 21st or 22nd test).",
+        "visibleSteps": [
           "Success probability = 0.88 per trial.",
           "Part (a): (0.88)^20.",
-          "Part (b): fail on 21 OR (success on 21 and fail on 22).",
+          "Part (b): fail on 21 OR (success on 21 and fail on 22)."
         ],
-        blankSteps: [
+        "blankSteps": [
           "(a) P = ______",
-          "(b) P = ______",
+          "(b) P = ______"
         ],
-        hints: [
+        "hints": [
           "L1: Independent identical trials.",
-          "L2: (b) = 0.12 + 0.88×0.12.",
+          "L2: (b) = 0.12 + 0.88×0.12."
         ],
+        "examSection": "Section II Part A · Probability / sampling distributions"
       },
       {
-        id: "stats-pr-3",
-        format: "frq_half",
-        conceptId: "stats-probability",
-        conceptIntro: "Combinations without replacement.",
-        difficultyTier: 2,
-        prompt:
-          "A club has 7 juniors and 4 seniors. Three members are chosen at random to attend a conference; all 3 selected are seniors. (a) Find P(all 3 seniors). (b) Based on (a), is there reason to doubt “random selection”? (c) A simulation rolls 3 fair six-sided dice each trial, treating {1–4}=junior and {5–6}=senior, and counts trials with three “seniors.” Why is this simulation incorrect?",
-        visibleSteps: [
+        "id": "stats-pr-3",
+        "format": "frq_half",
+        "conceptId": "stats-probability",
+        "conceptIntro": "Section II Part A · Collecting data / methods. Combinations without replacement.",
+        "difficultyTier": 2,
+        "prompt": "A club has 7 juniors and 4 seniors. Three members are chosen at random to attend a conference; all 3 selected are seniors. (a) Find P(all 3 seniors). (b) Based on (a), is there reason to doubt “random selection”? (c) A simulation rolls 3 fair six-sided dice each trial, treating {1–4}=junior and {5–6}=senior, and counts trials with three “seniors.” Why is this simulation incorrect?",
+        "visibleSteps": [
           "P = C(4,3)/C(11,3) (or sequential without replacement).",
           "Judge if probability is unusually small.",
-          "Check replacement and probability of “senior” on each die.",
+          "Check replacement and probability of “senior” on each die."
         ],
-        blankSteps: [
+        "blankSteps": [
           "(a) P = ______",
           "(b) Doubt? ______",
-          "(c) Flaw: ____________________",
+          "(c) Flaw: ____________________"
         ],
-        hints: [
+        "hints": [
           "L1: C(11,3)=165; C(4,3)=4.",
-          "L2: Simulation allows repeats and wrong P(senior)=1/3 each roll.",
+          "L2: Simulation allows repeats and wrong P(senior)=1/3 each roll."
         ],
+        "examSection": "Section II Part A · Collecting data / methods"
       },
       {
-        id: "stats-pr-4",
-        format: "frq_half",
-        conceptId: "stats-random-vars",
-        conceptIntro: "Normal + Binomial rejection rule.",
-        difficultyTier: 3,
-        prompt:
-          "Fill volume A ~ N(μ=0.60 L, σ=0.04 L). A bottle is underfilled if A < 0.50. Boxes hold 10 independent bottles; a crate is rejected if a randomly chosen box has ≥2 underfilled bottles. (a) Find P(a bottle is underfilled). (b) Define the RV for # underfilled in a box and its distribution; find P(crate rejected).",
-        visibleSteps: [
+        "id": "stats-pr-4",
+        "format": "frq_half",
+        "conceptId": "stats-random-vars",
+        "conceptIntro": "Section II Part A · Multi-skill. Normal + Binomial rejection rule.",
+        "difficultyTier": 3,
+        "prompt": "Fill volume A ~ N(μ=0.60 L, σ=0.04 L). A bottle is underfilled if A < 0.50. Boxes hold 10 independent bottles; a crate is rejected if a randomly chosen box has ≥2 underfilled bottles. (a) Find P(a bottle is underfilled). (b) Define the RV for # underfilled in a box and its distribution; find P(crate rejected).",
+        "visibleSteps": [
           "Standardize: z = (0.50 − 0.60)/0.04.",
           "Let X = # underfilled in 10 bottles; X ~ Bin(10, p).",
-          "P(X ≥ 2) = 1 − P(0) − P(1).",
+          "P(X ≥ 2) = 1 − P(0) − P(1)."
         ],
-        blankSteps: [
+        "blankSteps": [
           "(a) z = ______ , P ≈ ______",
-          "(b) X ~ ______ ; P(reject) ≈ ______",
+          "(b) X ~ ______ ; P(reject) ≈ ______"
         ],
-        hints: [
+        "hints": [
           "L1: z = −2.5 → use Normal table/calculator.",
-          "L2: Independence + constant p ⇒ Binomial.",
+          "L2: Independence + constant p ⇒ Binomial."
         ],
+        "examSection": "Section II Part A · Multi-skill"
       },
       {
-        id: "stats-pr-5",
-        format: "frq_half",
-        conceptId: "stats-random-vars",
-        conceptIntro: "Binomial expected value + rare event.",
-        difficultyTier: 2,
-        prompt:
-          "Each week one of 250 employees is chosen uniformly at random for a gift card (with replacement across weeks; independent). (a) Define X = # cards a particular employee gets in 52 weeks and state the distribution. (b) Find P(X ≥ 1). (c) Find and interpret E(X). (d) An employee gets 0 cards all year — strong evidence of non-randomness?",
-        visibleSteps: [
+        "id": "stats-pr-5",
+        "format": "frq_half",
+        "conceptId": "stats-random-vars",
+        "conceptIntro": "Section II Part A · Probability / sampling distributions. Binomial expected value + rare event.",
+        "difficultyTier": 2,
+        "prompt": "Each week one of 250 employees is chosen uniformly at random for a gift card (with replacement across weeks; independent). (a) Define X = # cards a particular employee gets in 52 weeks and state the distribution. (b) Find P(X ≥ 1). (c) Find and interpret E(X). (d) An employee gets 0 cards all year — strong evidence of non-randomness?",
+        "visibleSteps": [
           "X ~ Bin(n=52, p=1/250).",
           "P(X≥1)=1−(1−p)^52.",
-          "E(X)=np; compare P(X=0) to decide if 0 is surprising.",
+          "E(X)=np; compare P(X=0) to decide if 0 is surprising."
         ],
-        blankSteps: [
+        "blankSteps": [
           "(a) X ~ ______",
           "(b) P ≈ ______",
           "(c) E(X)= ______ interpretation: ______",
-          "(d) ______",
+          "(d) ______"
         ],
-        hints: [
+        "hints": [
           "L1: p = 1/250 each week.",
-          "L2: P(X=0)=(249/250)^52 is not small.",
+          "L2: P(X=0)=(249/250)^52 is not small."
         ],
+        "examSection": "Section II Part A · Probability / sampling distributions"
       },
       {
-        id: "stats-pr-6",
-        format: "frq_half",
-        conceptId: "stats-random-vars",
-        conceptIntro: "Normal percentile + expected gain.",
-        difficultyTier: 2,
-        prompt:
-          "Phone battery life ~ N(μ=28 months, σ=7 months). A $40 warranty replaces the phone if life < 24 months (company loss $160 including the $40). If no claim, company gains $40. (a) Find the 30th percentile of battery life. (b) P(claim). (c) Expected gain per warranty.",
-        visibleSteps: [
+        "id": "stats-pr-6",
+        "format": "frq_half",
+        "conceptId": "stats-random-vars",
+        "conceptIntro": "Section II Part A · Collecting data / methods. Normal percentile + expected gain.",
+        "difficultyTier": 2,
+        "prompt": "Phone battery life ~ N(μ=28 months, σ=7 months). A $40 warranty replaces the phone if life < 24 months (company loss $160 including the $40). If no claim, company gains $40. (a) Find the 30th percentile of battery life. (b) P(claim). (c) Expected gain per warranty.",
+        "visibleSteps": [
           "Percentile: x = μ + z_p σ.",
           "P(X<24) via z-score.",
-          "E(gain)=40(1−p)+(−160)p.",
+          "E(gain)=40(1−p)+(−160)p."
         ],
-        blankSteps: [
+        "blankSteps": [
           "(a) ≈ ______ months",
           "(b) P ≈ ______",
-          "(c) E(gain) ≈ ______",
+          "(c) E(gain) ≈ ______"
         ],
-        hints: [
+        "hints": [
           "L1: z_0.30 ≈ −0.52.",
-          "L2: z=(24−28)/7 = −4/7.",
+          "L2: z=(24−28)/7 = −4/7."
         ],
-      },
+        "examSection": "Section II Part A · Collecting data / methods"
+      }
     ],
+    "examFormatNote": "Section I: 40 MCQ (90 min). Section II: 5 FRQs + 1 Investigative Task (90 min)."
   },
   {
-    id: "stats-gen-inference",
-    title: "Stats — Statistical Inference Generated FRQ Set",
-    subject: "AP Statistics",
-    kind: "generated",
-    description:
-      "Original CI, significance tests, chi-square, paired t, and slope-interval FRQs.",
-    generationNote:
-      "AI-generated from Topic 4 fixed inference templates. Original data/contexts. 2026-07-22.",
-    estimatedMinutes: 45,
-    tags: ["confidence interval", "hypothesis test", "chi-square", "regression slope", "generated", "FRQ"],
-    items: [
+    "id": "stats-gen-inference",
+    "title": "Stats — Statistical Inference Generated FRQ Set",
+    "subject": "AP Statistics",
+    "kind": "generated",
+    "description": "Original CI, significance tests, chi-square, paired t, and slope-interval FRQs. Official exam shape: Section I: 40 MCQ (90 min). Section II: 5 FRQs + 1 Investigative Task (90 min).",
+    "generationNote": "AI-generated from Topic 4 fixed inference templates. Original data/contexts. 2026-07-22.",
+    "estimatedMinutes": 45,
+    "tags": [
+      "confidence interval",
+      "hypothesis test",
+      "chi-square",
+      "regression slope",
+      "generated",
+      "FRQ"
+    ],
+    "items": [
       {
-        id: "stats-inf-1",
-        format: "frq_half",
-        conceptId: "stats-ci-prop-mean",
-        conceptIntro: "One-proportion z-interval + using CI for a claim.",
-        difficultyTier: 2,
-        prompt:
-          "In a random sample of 800 U.S. teens, 62% say they use noise-cancelling headphones daily. (a) Construct and interpret a 95% CI for the true proportion. (b) Does the interval provide convincing evidence that the true proportion is not 0.50? Justify.",
-        visibleSteps: [
+        "id": "stats-inf-1",
+        "format": "frq_half",
+        "conceptId": "stats-ci-prop-mean",
+        "conceptIntro": "Section II Part A · Multi-skill. One-proportion z-interval + using CI for a claim.",
+        "difficultyTier": 2,
+        "prompt": "In a random sample of 800 U.S. teens, 62% say they use noise-cancelling headphones daily. (a) Construct and interpret a 95% CI for the true proportion. (b) Does the interval provide convincing evidence that the true proportion is not 0.50? Justify.",
+        "visibleSteps": [
           "ˆp ± 1.96√(ˆp(1−ˆp)/n).",
           "Interpret “95% confident … true proportion … between …”.",
-          "See whether 0.50 lies in the interval.",
+          "See whether 0.50 lies in the interval."
         ],
-        blankSteps: [
+        "blankSteps": [
           "(a) CI ≈ (______ , ______); interpretation: ______",
-          "(b) Evidence against 0.50? ______",
+          "(b) Evidence against 0.50? ______"
         ],
-        hints: [
+        "hints": [
           "L1: ˆp=0.62, n=800.",
-          "L2: If 0.50 is outside, yes — evidence it differs from 0.50.",
+          "L2: If 0.50 is outside, yes — evidence it differs from 0.50."
         ],
+        "examSection": "Section II Part A · Multi-skill"
       },
       {
-        id: "stats-inf-2",
-        format: "frq_half",
-        conceptId: "stats-hypothesis-tests",
-        conceptIntro: "One-proportion z-test + Type I/II.",
-        difficultyTier: 2,
-        prompt:
-          "A café manager believes that with a $2 coupon, more than 35% of past customers will reorder within 30 days. Of 120 randomly selected past customers emailed the coupon, 48 reorder. (a) At α=0.05, is there convincing evidence the manager is correct? (b) Based on your conclusion, which error (Type I or II) is possible? Interpret in context.",
-        visibleSteps: [
+        "id": "stats-inf-2",
+        "format": "frq_half",
+        "conceptId": "stats-hypothesis-tests",
+        "conceptIntro": "Section II Part A · Inference. One-proportion z-test + Type I/II.",
+        "difficultyTier": 2,
+        "prompt": "A café manager believes that with a $2 coupon, more than 35% of past customers will reorder within 30 days. Of 120 randomly selected past customers emailed the coupon, 48 reorder. (a) At α=0.05, is there convincing evidence the manager is correct? (b) Based on your conclusion, which error (Type I or II) is possible? Interpret in context.",
+        "visibleSteps": [
           "H₀: p=0.35 vs Hₐ: p>0.35.",
           "z=(ˆp−0.35)/√(0.35·0.65/120); find p-value.",
-          "If fail to reject, Type II is the possible error.",
+          "If fail to reject, Type II is the possible error."
         ],
-        blankSteps: [
+        "blankSteps": [
           "(a) ˆp=______ z≈______ p-value≈______ conclusion:______",
-          "(b) Possible error:______ meaning:______",
+          "(b) Possible error:______ meaning:______"
         ],
-        hints: [
+        "hints": [
           "L1: ˆp=48/120=0.40.",
           "L2: Use p₀=0.35 in the SE.",
-          "L3: Type II = fail to reject false H₀.",
+          "L3: Type II = fail to reject false H₀."
         ],
+        "examSection": "Section II Part A · Inference"
       },
       {
-        id: "stats-inf-3",
-        format: "frq_half",
-        conceptId: "stats-chi-square",
-        conceptIntro: "Homogeneity vs counts misconception.",
-        difficultyTier: 2,
-        prompt:
-          "Independent random samples of teens in three cities report soft-drink use in the past week:\nCity A: Yes 210 / No 90 (n=300)\nCity B: Yes 360 / No 240 (n=600)\nCity C: Yes 400 / No 350 (n=750)\n(a) A researcher claims City A has the lowest likelihood of “Yes” because 210 is the smallest Yes count. Is this correct? (b) Which city has the smallest Yes proportion? (c) Name the appropriate test to compare Yes proportions across cities and state hypotheses.",
-        visibleSteps: [
+        "id": "stats-inf-3",
+        "format": "frq_half",
+        "conceptId": "stats-chi-square",
+        "conceptIntro": "Section II Part A · Probability / sampling distributions. Homogeneity vs counts misconception.",
+        "difficultyTier": 2,
+        "prompt": "Independent random samples of teens in three cities report soft-drink use in the past week:\nCity A: Yes 210 / No 90 (n=300)\nCity B: Yes 360 / No 240 (n=600)\nCity C: Yes 400 / No 350 (n=750)\n(a) A researcher claims City A has the lowest likelihood of “Yes” because 210 is the smallest Yes count. Is this correct? (b) Which city has the smallest Yes proportion? (c) Name the appropriate test to compare Yes proportions across cities and state hypotheses.",
+        "visibleSteps": [
           "Compare proportions, not raw counts.",
           "Compute Yes/n for each city.",
-          "Independent samples → χ² test of homogeneity.",
+          "Independent samples → χ² test of homogeneity."
         ],
-        blankSteps: [
+        "blankSteps": [
           "(a) ______",
           "(b) City ______ proportion ______",
-          "(c) Procedure:______  H₀:______  Hₐ:______",
+          "(c) Procedure:______  H₀:______  Hₐ:______"
         ],
-        hints: [
+        "hints": [
           "L1: A: 210/300=0.70; B: 0.60; C: 400/750≈0.533.",
-          "L2: Homogeneity: H₀ says the Yes probability is the same in all three city populations.",
+          "L2: Homogeneity: H₀ says the Yes probability is the same in all three city populations."
         ],
+        "examSection": "Section II Part A · Probability / sampling distributions"
       },
       {
-        id: "stats-inf-4",
-        format: "frq_half",
-        conceptId: "stats-hypothesis-tests",
-        conceptIntro: "Two-proportion z-test for an increase.",
-        difficultyTier: 3,
-        prompt:
-          "In 2022, 14 of 70 randomly sampled roadside weeds were herbicide-resistant. In 2025, 22 of 65 were resistant. Do the data provide convincing evidence at α=0.05 that the proportion resistant has increased?",
-        visibleSteps: [
+        "id": "stats-inf-4",
+        "format": "frq_half",
+        "conceptId": "stats-hypothesis-tests",
+        "conceptIntro": "Section II Part A · Exploring data. Two-proportion z-test for an increase.",
+        "difficultyTier": 3,
+        "prompt": "In 2022, 14 of 70 randomly sampled roadside weeds were herbicide-resistant. In 2025, 22 of 65 were resistant. Do the data provide convincing evidence at α=0.05 that the proportion resistant has increased?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "visibleSteps": [
           "H₀: p₂₅=p₂₂ vs Hₐ: p₂₅>p₂₂.",
           "Pooled ˆp_c=(14+22)/(70+65); compute z and p-value.",
-          "Conclude in context vs α=0.05.",
+          "Conclude in context vs α=0.05."
         ],
-        blankSteps: [
+        "blankSteps": [
           "ˆp₂₂=______ ˆp₂₅=______ ˆp_c=______",
           "z≈______ p-value≈______",
-          "Conclusion: ____________________",
+          "Conclusion: ____________________"
         ],
-        hints: [
+        "hints": [
           "L1: ˆp₂₂=0.2; ˆp₂₅≈0.338.",
-          "L2: SE uses pooled ˆp_c under H₀.",
+          "L2: SE uses pooled ˆp_c under H₀."
         ],
+        "examSection": "Section II Part A · Exploring data"
       },
       {
-        id: "stats-inf-5",
-        format: "frq_half",
-        conceptId: "stats-hypothesis-tests",
-        conceptIntro: "Two-sample t + causation from design.",
-        difficultyTier: 3,
-        prompt:
-          "210 patients with similar knee injuries are randomly assigned to standard (n=110, x̄=210 days, s=32) or new surgery (n=100, x̄=182 days, s=28). (a) Does a significant result allow a causal claim that the new procedure reduces mean recovery for patients like these? (b) Test whether the new procedure has smaller mean recovery (α=0.05).",
-        visibleSteps: [
+        "id": "stats-inf-5",
+        "format": "frq_half",
+        "conceptId": "stats-hypothesis-tests",
+        "conceptIntro": "Section II Part A · Collecting data / methods. Two-sample t + causation from design.",
+        "difficultyTier": 3,
+        "prompt": "210 patients with similar knee injuries are randomly assigned to standard (n=110, x̄=210 days, s=32) or new surgery (n=100, x̄=182 days, s=28). (a) Does a significant result allow a causal claim that the new procedure reduces mean recovery for patients like these? (b) Test whether the new procedure has smaller mean recovery (α=0.05).",
+        "visibleSteps": [
           "Random assignment ⇒ causal for this population.",
           "H₀: μ_n=μ_s vs Hₐ: μ_n<μ_s; two-sample t.",
-          "t=(182−210)/√(32²/110+28²/100).",
+          "t=(182−210)/√(32²/110+28²/100)."
         ],
-        blankSteps: [
+        "blankSteps": [
           "(a) ______",
-          "(b) t≈______ conclusion:______",
+          "(b) t≈______ conclusion:______"
         ],
-        hints: [
+        "hints": [
           "L1: Design → causation; observational would not.",
-          "L2: Large |t| ⇒ tiny p-value ⇒ reject H₀.",
+          "L2: Large |t| ⇒ tiny p-value ⇒ reject H₀."
         ],
+        "examSection": "Section II Part A · Collecting data / methods"
       },
       {
-        id: "stats-inf-6",
-        format: "frq_half",
-        conceptId: "stats-hypothesis-tests",
-        conceptIntro: "Paired t-test on differences.",
-        difficultyTier: 3,
-        prompt:
-          "For 8 car models, one woman and one man bought the same equipped model from the same dealer. Differences (woman − man) have d̄ = $520 and s_d = $480. Do the data provide convincing evidence that women pay more on average (α=0.05)?",
-        visibleSteps: [
+        "id": "stats-inf-6",
+        "format": "frq_half",
+        "conceptId": "stats-hypothesis-tests",
+        "conceptIntro": "Section II Part B · Investigative Task. Paired t-test on differences.",
+        "difficultyTier": 3,
+        "prompt": "For 8 car models, one woman and one man bought the same equipped model from the same dealer. Differences (woman − man) have d̄ = $520 and s_d = $480. Do the data provide convincing evidence that women pay more on average (α=0.05)?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "visibleSteps": [
           "Paired data ⇒ one-sample t on differences.",
           "H₀: μ_d=0 vs Hₐ: μ_d>0.",
-          "t = d̄ / (s_d/√n), df = n−1.",
+          "t = d̄ / (s_d/√n), df = n−1."
         ],
-        blankSteps: [
+        "blankSteps": [
           "t≈______ df=______",
-          "Conclusion: ____________________",
+          "Conclusion: ____________________"
         ],
-        hints: [
+        "hints": [
           "L1: SE = 480/√8.",
-          "L2: Compare p-value for t with df=7 to α=0.05.",
+          "L2: Compare p-value for t with df=7 to α=0.05."
         ],
+        "examSection": "Section II Part B · Investigative Task"
       },
       {
-        id: "stats-inf-7",
-        format: "frq_half",
-        conceptId: "stats-ci-prop-mean",
-        conceptIntro: "CI for proportion → interval for cost.",
-        difficultyTier: 2,
-        prompt:
-          "Of 90 random customers who asked for a water cup, 27 filled it with soda. (a) 95% CI for the true proportion who do this. (b) If 2,400 customers ask for water cups in July and each soda-fill costs $0.30, use your CI to give an interval estimate for July’s cost.",
-        visibleSteps: [
+        "id": "stats-inf-7",
+        "format": "frq_half",
+        "conceptId": "stats-ci-prop-mean",
+        "conceptIntro": "Section II Part A · Multi-skill. CI for proportion → interval for cost.",
+        "difficultyTier": 2,
+        "prompt": "Of 90 random customers who asked for a water cup, 27 filled it with soda. (a) 95% CI for the true proportion who do this. (b) If 2,400 customers ask for water cups in July and each soda-fill costs $0.30, use your CI to give an interval estimate for July’s cost.",
+        "visibleSteps": [
           "ˆp=27/90; one-prop z-interval.",
-          "Multiply interval endpoints by 2400×0.30.",
+          "Multiply interval endpoints by 2400×0.30."
         ],
-        blankSteps: [
+        "blankSteps": [
           "(a) CI ≈ (______ , ______)",
-          "(b) Cost interval ≈ (______ , ______)",
+          "(b) Cost interval ≈ (______ , ______)"
         ],
-        hints: [
+        "hints": [
           "L1: ˆp=0.30.",
-          "L2: Cost = (proportion)×2400×0.30.",
+          "L2: Cost = (proportion)×2400×0.30."
         ],
+        "examSection": "Section II Part A · Multi-skill"
       },
       {
-        id: "stats-inf-8",
-        format: "frq_half",
-        conceptId: "stats-slope-inference",
-        conceptIntro: "CI for slope from computer output.",
-        difficultyTier: 2,
-        prompt:
-          "For n=22 houses, regression of selling price (thousands of $) on distance from downtown (miles) gives slope b=−1.95 with SE_b=0.22. Assume inference conditions hold. (a) Construct and interpret a 95% CI for the true slope (t*≈2.086 for df=20). (b) An agent believes price drops about $2,000 per mile (slope −2). Does the CI contradict that belief?",
-        visibleSteps: [
+        "id": "stats-inf-8",
+        "format": "frq_half",
+        "conceptId": "stats-slope-inference",
+        "conceptIntro": "Section II Part A · Inference. CI for slope from computer output.",
+        "difficultyTier": 2,
+        "prompt": "For n=22 houses, regression of selling price (thousands of $) on distance from downtown (miles) gives slope b=−1.95 with SE_b=0.22. Assume inference conditions hold. (a) Construct and interpret a 95% CI for the true slope (t*≈2.086 for df=20). (b) An agent believes price drops about $2,000 per mile (slope −2). Does the CI contradict that belief?",
+        "visibleSteps": [
           "b ± t* SE_b.",
           "Interpret in thousands of $ per mile.",
-          "See if −2 is inside the interval.",
+          "See if −2 is inside the interval."
         ],
-        blankSteps: [
+        "blankSteps": [
           "(a) CI ≈ (______ , ______); interpretation:______",
-          "(b) Contradict? ______",
+          "(b) Contradict? ______"
         ],
-        hints: [
+        "hints": [
           "L1: df=n−2=20.",
-          "L2: If −2 is inside, it does not contradict.",
+          "L2: If −2 is inside, it does not contradict."
         ],
+        "examSection": "Section II Part A · Inference"
       },
       {
-        id: "stats-inf-9",
-        format: "frq_half",
-        conceptId: "stats-chi-square",
-        conceptIntro: "Chi-square goodness-of-fit.",
-        difficultyTier: 2,
-        prompt:
-          "A bank’s acceptable wait-time probabilities are 0.30, 0.25, 0.20, 0.15, 0.10 across five categories. In a random sample of 100 customers the observed counts are 28, 22, 19, 18, 13. Conduct a χ² GOF test to see if wait times are inconsistent with the acceptable probabilities.",
-        visibleSteps: [
+        "id": "stats-inf-9",
+        "format": "frq_half",
+        "conceptId": "stats-chi-square",
+        "conceptIntro": "Section II Part A · Probability / sampling distributions. Chi-square goodness-of-fit.",
+        "difficultyTier": 2,
+        "prompt": "A bank’s acceptable wait-time probabilities are 0.30, 0.25, 0.20, 0.15, 0.10 across five categories. In a random sample of 100 customers the observed counts are 28, 22, 19, 18, 13. Conduct a χ² GOF test to see if wait times are inconsistent with the acceptable probabilities.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "visibleSteps": [
           "H₀: true proportions equal the claimed ones; Hₐ: at least one differs.",
           "Expected = 100×p_i; χ²=Σ(O−E)²/E; df=4.",
-          "Compare p-value to α (e.g. 0.05).",
+          "Compare p-value to α (e.g. 0.05)."
         ],
-        blankSteps: [
+        "blankSteps": [
           "Expected counts: ____________________",
           "χ²≈______ df=______",
-          "Conclusion: ____________________",
+          "Conclusion: ____________________"
         ],
-        hints: [
+        "hints": [
           "L1: E = 30, 25, 20, 15, 10.",
-          "L2: Moderate χ² with df=4 often means fail to reject.",
+          "L2: Moderate χ² with df=4 often means fail to reject."
         ],
-      },
+        "examSection": "Section II Part A · Probability / sampling distributions"
+      }
     ],
+    "examFormatNote": "Section I: 40 MCQ (90 min). Section II: 5 FRQs + 1 Investigative Task (90 min)."
   },
   {
-    id: "stats-gen-mixed-frq",
-    title: "Stats — Mixed Mini-FRQ Sprint (Generated)",
-    subject: "AP Statistics",
-    kind: "generated",
-    description:
-      "Short mixed drills across all four FRQ topics — quick template recognition practice.",
-    generationNote:
-      "AI-generated mixed sprint from FRQ专项突破 topic map. Original items. 2026-07-22.",
-    estimatedMinutes: 20,
-    tags: ["mixed", "sprint", "generated", "FRQ"],
-    difficultyTier: 2,
-    items: [
+    "id": "stats-gen-mixed-frq",
+    "title": "Stats — Mixed Mini-FRQ Sprint (Generated)",
+    "subject": "AP Statistics",
+    "kind": "generated",
+    "description": "Short mixed drills across all four FRQ topics — quick template recognition practice. Official exam shape: Section I: 40 MCQ (90 min). Section II: 5 FRQs + 1 Investigative Task (90 min).",
+    "generationNote": "AI-generated mixed sprint from FRQ专项突破 topic map. Original items. 2026-07-22.",
+    "estimatedMinutes": 20,
+    "tags": [
+      "mixed",
+      "sprint",
+      "generated",
+      "FRQ"
+    ],
+    "difficultyTier": 2,
+    "items": [
       {
-        id: "stats-mix-1",
-        format: "fill_blank",
-        conceptId: "stats-two-var",
-        conceptIntro: "r² template sentence.",
-        prompt:
-          "Complete: “About ____% of the variation in ______ is explained by the linear relationship with ______.” for a model predicting exam score from hours studied with r²=0.71.",
-        blankSteps: [
-          "71% / exam scores / hours studied (order may vary but must be correct)",
+        "id": "stats-mix-1",
+        "format": "frq_half",
+        "conceptId": "stats-two-var",
+        "conceptIntro": "Section II Part A · Multi-skill. r² template sentence.",
+        "prompt": "Complete: “About ____% of the variation in ______ is explained by the linear relationship with ______.” for a model predicting exam score from hours studied with r²=0.71.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "blankSteps": [
+          "71% / exam scores / hours studied (order may vary but must be correct)"
         ],
-        hints: ["r²×100 with response variable first, explanatory second."],
+        "hints": [
+          "r²×100 with response variable first, explanatory second."
+        ],
+        "visibleSteps": [
+          "Answer each labeled part in AP free-response style."
+        ],
+        "examSection": "Section II Part A · Multi-skill"
       },
       {
-        id: "stats-mix-2",
-        format: "concept_check",
-        conceptId: "stats-sampling-design",
-        conceptIntro: "When stratification helps.",
-        prompt:
-          "A university has two campuses. When would stratifying by campus give a more precise estimate of overall satisfaction than stratifying by gender?",
-        hints: [
-          "When satisfaction differs more between campuses than between genders (within-campus homogeneity).",
+        "id": "stats-mix-2",
+        "format": "frq_half",
+        "conceptId": "stats-sampling-design",
+        "conceptIntro": "Section II Part A · Inference. When stratification helps.",
+        "prompt": "A university has two campuses. When would stratifying by campus give a more precise estimate of overall satisfaction than stratifying by gender?\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "hints": [
+          "When satisfaction differs more between campuses than between genders (within-campus homogeneity)."
         ],
+        "blankSteps": [
+          "(a) ______",
+          "(b) ______"
+        ],
+        "visibleSteps": [
+          "Answer each labeled part in AP free-response style."
+        ],
+        "examSection": "Section II Part A · Inference"
       },
       {
-        id: "stats-mix-3",
-        format: "mcq",
-        conceptId: "stats-hypothesis-tests",
-        conceptIntro: "Type I vs Type II.",
-        prompt:
-          "A test of H₀: p=0.5 vs Hₐ: p≠0.5 fails to reject H₀. Which error is possible?",
-        choices: [
+        "id": "stats-mix-3",
+        "format": "mcq",
+        "conceptId": "stats-hypothesis-tests",
+        "conceptIntro": "Section I · Multiple Choice (4 options). Type I vs Type II.",
+        "prompt": "A test of H₀: p=0.5 vs Hₐ: p≠0.5 fails to reject H₀. Which error is possible?",
+        "choices": [
           "A) Type I only",
           "B) Type II only",
           "C) Both Type I and Type II",
-          "D) Neither — failing to reject prevents all errors",
+          "D) Neither — failing to reject prevents all errors"
         ],
-        hints: ["You can only make the error consistent with your decision."],
+        "hints": [
+          "You can only make the error consistent with your decision."
+        ],
+        "examSection": "Section I · Multiple Choice (4 options)"
       },
       {
-        id: "stats-mix-4",
-        format: "open",
-        conceptId: "stats-experiments",
-        conceptIntro: "Random assignment procedure.",
-        prompt:
-          "Describe a valid method to randomly assign 24 students to two equal lab groups (physical dissection vs simulation) for comparing learning gains.",
-        hints: [
+        "id": "stats-mix-4",
+        "format": "frq_half",
+        "conceptId": "stats-experiments",
+        "conceptIntro": "Section II Part A · Exploring data. Random assignment procedure.",
+        "prompt": "Describe a valid method to randomly assign 24 students to two equal lab groups (physical dissection vs simulation) for comparing learning gains.\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "hints": [
           "Label 1–24, use RNG / shuffle, first 12 → Group A, rest → Group B.",
-          "Mention equal size and chance assignment.",
+          "Mention equal size and chance assignment."
         ],
+        "blankSteps": [
+          "(a) ______",
+          "(b) ______"
+        ],
+        "visibleSteps": [
+          "Answer each labeled part in AP free-response style."
+        ],
+        "examSection": "Section II Part A · Exploring data"
       },
       {
-        id: "stats-mix-5",
-        format: "frq_half",
-        conceptId: "stats-random-vars",
-        conceptIntro: "Geometric / “first success after”.",
-        difficultyTier: 2,
-        prompt:
-          "An airline upgrades a frequent flyer with probability 0.08 on each flight (independent). Find the probability that the flyer’s first upgrade occurs after the 4th flight (i.e., flights 1–4 are not upgrades).",
-        visibleSteps: ["Need 4 consecutive non-upgrades.", "P(no upgrade)=0.92."],
-        blankSteps: ["P = ______"],
-        hints: ["L1: (0.92)^4.", "L2: “After the 4th” means first four fail."],
-      },
+        "id": "stats-mix-5",
+        "format": "frq_half",
+        "conceptId": "stats-random-vars",
+        "conceptIntro": "Section II Part A · Collecting data / methods. Geometric / “first success after”.",
+        "difficultyTier": 2,
+        "prompt": "An airline upgrades a frequent flyer with probability 0.08 on each flight (independent). Find the probability that the flyer’s first upgrade occurs after the 4th flight (i.e., flights 1–4 are not upgrades).\n\n(a) Identify the relevant principle, quantity, or claim.\n(b) Explain or calculate using evidence from the prompt.",
+        "visibleSteps": [
+          "Need 4 consecutive non-upgrades.",
+          "P(no upgrade)=0.92."
+        ],
+        "blankSteps": [
+          "P = ______"
+        ],
+        "hints": [
+          "L1: (0.92)^4.",
+          "L2: “After the 4th” means first four fail."
+        ],
+        "examSection": "Section II Part A · Collecting data / methods"
+      }
     ],
-  },
+    "examFormatNote": "Section I: 40 MCQ (90 min). Section II: 5 FRQs + 1 Investigative Task (90 min)."
+  }
 ];
