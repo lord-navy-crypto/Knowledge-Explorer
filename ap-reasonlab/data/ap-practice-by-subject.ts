@@ -127,7 +127,7 @@ export const apPracticeBySubject: Questionnaire[] = [
         "id": "macro-ad-a1",
         "format": "frq_half",
         "conceptIntro": "Section II · Short free response. Key concept: AD components.",
-        "prompt": "Government increases infrastructure spending.\n\n(a) Identify which component of aggregate demand increases first.\n(b) Describe the short-run AD-AS result for output and the price level.",
+        "prompt": "A closed economy is initially in short-run equilibrium. The government then funds a new highway program by increasing infrastructure spending, with no immediate tax change.\n\n(a) Identify which component of aggregate demand increases first.\n(b) Describe the short-run AD-AS result for output and the price level.",
         "visibleSteps": [
           "G is a direct AD component.",
           "AD shifts right."
@@ -520,7 +520,7 @@ export const apPracticeBySubject: Questionnaire[] = [
         "id": "hg-pat-a1",
         "format": "frq_half",
         "conceptIntro": "Section II · Free Response 1. Key concept: scale of analysis.",
-        "prompt": "Explain urban sprawl at two scales.\n\n(a) Identify one local effect.\n(b) Identify one global effect.",
+        "prompt": "A city rezones edge farmland for low-density housing. Commutes lengthen, retail follows new roads, and remaining farms convert over a decade.\n\n(a) Identify one local effect.\n(b) Identify one global effect.",
         "visibleSteps": [
           "Local: traffic, land use.",
           "Global: resource use, emissions."

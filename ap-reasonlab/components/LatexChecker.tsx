@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import katex from "katex";
 import Link from "next/link";
 import StudyToolShell from "@/components/StudyToolShell";
@@ -20,6 +20,11 @@ export default function LatexChecker() {
   const [display, setDisplay] = useState(true);
   const [wrapDollars, setWrapDollars] = useState(true);
   const [copied, setCopied] = useState("");
+
+  useEffect(() => {
+    const tex = new URLSearchParams(window.location.search).get("tex");
+    if (tex?.trim()) setSource(tex);
+  }, []);
 
   const result = useMemo(() => {
     try {

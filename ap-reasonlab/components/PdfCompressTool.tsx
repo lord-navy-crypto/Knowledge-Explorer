@@ -18,7 +18,7 @@ type Result = {
   url: string;
 };
 
-export default function PdfCompressTool() {
+export default function PdfCompressTool({ embedded = false }: { embedded?: boolean }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
@@ -88,12 +88,8 @@ export default function PdfCompressTool() {
     a.click();
   }
 
-  return (
-    <StudyToolShell
-      title="PDF compress (light)"
-      description="Rebuild a PDF in the browser to trim unused objects. Optionally strip metadata. Best for text-heavy files; image scans may not shrink much."
-      tip="For aggressive photo PDF shrinking, compress images first (Image compress) then rebuild, or use merge/split to drop pages."
-    >
+  const body = (
+    <>
       <div className="flex flex-wrap items-center gap-3">
         <label className="btn-primary inline-flex cursor-pointer">
           {busy ? "Working…" : "Choose PDF"}
@@ -150,6 +146,20 @@ export default function PdfCompressTool() {
           </div>
         </div>
       ) : null}
+    </>
+  );
+
+  if (embedded) {
+    return <div className="card space-y-4">{body}</div>;
+  }
+
+  return (
+    <StudyToolShell
+      title="PDF compress (light)"
+      description="Rebuild a PDF in the browser to trim unused objects. Optionally strip metadata. Best for text-heavy files; image scans may not shrink much."
+      tip="For aggressive photo PDF shrinking, compress images first (Image compress) then rebuild, or use merge/split to drop pages."
+    >
+      {body}
     </StudyToolShell>
   );
 }

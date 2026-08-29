@@ -17,6 +17,9 @@ describe("known redirect routes", () => {
 
     const grapher = KNOWN_REDIRECTS.find((row) => row.from === "/tools/grapher");
     expect(grapher?.to).toBe("/hints?tool=grapher");
+
+    const pdfCompress = KNOWN_REDIRECTS.find((row) => row.from === "/tools/pdf-compress");
+    expect(pdfCompress?.to).toBe("/tools/pdf-tools?mode=compress");
   });
 
   it("folds legacy academic routes into Forum", () => {

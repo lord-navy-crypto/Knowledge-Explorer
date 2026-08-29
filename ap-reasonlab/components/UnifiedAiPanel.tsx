@@ -7,6 +7,13 @@ import LocalAIControls from "@/components/LocalAIControls";
 import MarkdownLatexField from "@/components/MarkdownLatexField";
 import AiEquationCards from "@/components/AiEquationCards";
 import AiToolboxRelatedStrip from "@/components/AiToolboxRelatedStrip";
+import OfficialResourceLinks from "@/components/OfficialResourceLinks";
+import {
+  AP_PROGRAM_OFFICIAL,
+  CODE_HUB_OFFICIAL,
+  SAT_HUB_OFFICIAL,
+  TOEFL_HUB_OFFICIAL,
+} from "@/data/official-resources";
 import AiSpecialFeatures from "@/components/AiSpecialFeatures";
 import RichContent from "@/components/RichContent";
 import VoiceInputButton from "@/components/VoiceInputButton";
@@ -1276,6 +1283,14 @@ export default function UnifiedAiPanel({
       <div className="space-y-5 p-4 md:p-5">
         <LocalAIControls embedded />
         <AiToolboxRelatedStrip />
+        {category === "ap" ? <OfficialResourceLinks block={AP_PROGRAM_OFFICIAL} tone="slate" /> : null}
+        {category === "english" ? (
+          <div className="grid gap-3 lg:grid-cols-2">
+            <OfficialResourceLinks block={SAT_HUB_OFFICIAL} tone="slate" />
+            <OfficialResourceLinks block={TOEFL_HUB_OFFICIAL} tone="slate" />
+          </div>
+        ) : null}
+        {category === "coding" ? <OfficialResourceLinks block={CODE_HUB_OFFICIAL} tone="slate" /> : null}
         <AiSpecialFeatures
           category={category}
           apTask={apTask}
@@ -1429,11 +1444,20 @@ export default function UnifiedAiPanel({
                 ))}
               </select>
               <span id="ai-toolbox-language-hint" className="mt-1 block text-xs font-normal text-slate-500">
-                Try snippets in the{" "}
-                <Link href={language === "Java" ? "/code/java" : "/code"} className="text-brand-700 hover:underline">
-                  Code playground
-                </Link>
-                .
+                Open the{" "}
+                <Link
+                  href={
+                    language === "Java"
+                      ? "/code/editor?lang=java"
+                      : language.startsWith("HTML")
+                        ? "/code/editor?lang=web"
+                        : "/code/editor?lang=python"
+                  }
+                  className="text-brand-700 hover:underline"
+                >
+                  Code editor
+                </Link>{" "}
+                and pick the language there.
               </span>
             </label>
           ) : null}

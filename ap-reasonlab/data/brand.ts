@@ -66,7 +66,7 @@ export const collaborators = [
 export const brand = {
   name: "Knowledge Explorer",
   shortName: "KE",
-  tagline: "Explore knowledge — AP, English, tools, and reasoning",
+  tagline: "Personal academic site — AP & English first, then tools and code",
   description:
-    "Knowledge Explorer is an academic platform. Open a box for AP & English, Convenient Tools & Code, Forum, and more — with AI Toolbox always in the top bar.",
+    "Knowledge Explorer is a personal academic site. The first plate is AP & English. Convenient Tools, Code, and AI Toolbox sit beside it.",
 };

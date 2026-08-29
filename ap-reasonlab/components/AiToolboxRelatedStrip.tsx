@@ -3,14 +3,15 @@
 import Link from "next/link";
 
 const LINKS = [
-  { href: "/hints?tool=calculator", label: "Calculator" },
-  { href: "/hints?tool=grapher", label: "Grapher" },
+  { href: "/hints?tool=math", label: "Calc + Graph" },
   { href: "/tools/formula-board", label: "Formula board" },
   { href: "/tools/latex", label: "LaTeX checker" },
   { href: "/tools/focus-desk", label: "Focus desk" },
   { href: "/tools/units", label: "Units" },
-  { href: "/code", label: "Code playground" },
+  { href: "/code/editor?lang=python", label: "Code editor" },
   { href: "/tools/speech-to-text", label: "Speech to text" },
+  { href: "https://apcentral.collegeboard.org/", label: "AP Central ↗" },
+  { href: "https://www.ets.org/toefl.html", label: "TOEFL (ETS) ↗" },
 ];
 
 export default function AiToolboxRelatedStrip() {

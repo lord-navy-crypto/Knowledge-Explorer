@@ -18,11 +18,8 @@ import {
 import { legacyToolToApTask, migrateEnglishTask } from "@/lib/ai-toolbox-url";
 import { decodeSpecialPrompt } from "@/lib/ai-special-features";
 
-const TICalculator = dynamic(() => import("@/components/TICalculator"), {
-  loading: () => <div className="card text-sm text-slate-500">Loading calculator…</div>,
-});
-const TIGrapher = dynamic(() => import("@/components/TIGrapher"), {
-  loading: () => <div className="card text-sm text-slate-500">Loading grapher…</div>,
+const MathPad = dynamic(() => import("@/components/MathPad"), {
+  loading: () => <div className="card text-sm text-slate-500">Loading Calc + Graph…</div>,
 });
 
 type ExtraTool = ToolboxExtraTool;
@@ -43,7 +40,7 @@ function resolveSubject(raw: string | null): string | undefined {
 }
 
 function resolveExtraTool(raw: string | null): ExtraTool {
-  if (raw === "calculator" || raw === "grapher") return raw;
+  if (raw === "calculator" || raw === "grapher" || raw === "math") return raw === "grapher" ? "grapher" : "calculator";
   if (
     raw === "english" ||
     raw === "coding" ||
@@ -128,14 +125,14 @@ function ToolboxContent() {
         <span className="inline-block rounded-full bg-white/20 px-3 py-1 text-xs font-semibold">
           AI TOOLBOX · AI FOR AP
         </span>
-        <h1 className="mt-3 text-2xl font-bold md:text-4xl">One AI panel for study help</h1>
+        <h1 className="mt-3 text-2xl font-bold md:text-4xl">AI Toolbox</h1>
         <p className="mt-2 hidden max-w-2xl text-blue-100 sm:block">
-          Choose Local, Website API, or Your own API — then pick AP, English, or Coding tasks.
-          Includes AI for AP workflows and guides below. Extra tools: Calculator and Grapher. Your
-          path and last tab are remembered in this browser.
+          One panel for study help. Choose Local, Website API, or Your own API — then pick AP,
+          English, or Coding. Extra tool: Calc + Graph (calculator and grapher fused). Official AP /
+          ETS links sit next to chat. Your path and last tab are remembered in this browser.
         </p>
         <p className="mt-2 text-sm text-blue-100 sm:hidden">
-          Local / Website API / Your key · AP · English · Coding · Calculator · Grapher
+          Local / Website API / Your key · AP · English · Coding · Calc + Graph
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           <a
@@ -162,25 +159,27 @@ function ToolboxContent() {
         {(
           [
             { id: "ai", label: "Unified AI" },
-            { id: "calculator", label: "Calculator" },
-            { id: "grapher", label: "Grapher" },
+            { id: "calculator", label: "Calc + Graph" },
           ] as const
-        ).map((item) => (
+        ).map((item) => {
+          const selected = item.id === "ai" ? extra === "ai" : extra !== "ai";
+          return (
           <button
             key={item.id}
             type="button"
             role="tab"
-            aria-selected={extra === item.id}
+            aria-selected={selected}
             onClick={() => selectExtra(item.id)}
             className={`rounded-full border px-3 py-1.5 text-sm font-medium ${
-              extra === item.id
+              selected
                 ? "border-brand-500 bg-brand-50 text-brand-800"
                 : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
             }`}
           >
             {item.label}
           </button>
-        ))}
+          );
+        })}
         {extra === "ai" ? (
           <a
             href="#unified-ai-chat"
@@ -201,8 +200,9 @@ function ToolboxContent() {
           defaultPrefillPrompt={prefillPrompt || undefined}
         />
       ) : null}
-      {extra === "calculator" ? <TICalculator /> : null}
-      {extra === "grapher" ? <TIGrapher /> : null}
+      {extra !== "ai" ? (
+        <MathPad focus={extra === "grapher" ? "grapher" : "calculator"} />
+      ) : null}
 
       {extra === "ai" ? <AiForApToolboxSection /> : null}
 

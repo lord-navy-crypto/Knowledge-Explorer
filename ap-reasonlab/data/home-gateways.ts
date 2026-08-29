@@ -21,28 +21,10 @@ export type HomeGateway = {
 
 export const HOME_GATEWAYS: HomeGateway[] = [
   {
-    id: "workshops",
-    title: "Simulation & Download",
-    description:
-      "Simulation Workshop (research labs on GitHub) and Download (macOS Shell builders / installers, including VAMPIRE).",
-    href: "/explore/workshops",
-    links: [
-      {
-        href: "/explore/simulation-workshop",
-        title: "Simulation Workshop",
-        description: "Monte Carlo, oscillators, chaos, Ising, RADIA labs — open on GitHub.",
-      },
-      {
-        href: "/explore/download",
-        title: "Download",
-        description: "Chrono Modal, RADIA Universal2, and VAMPIRE Apple Silicon builders.",
-      },
-    ],
-  },
-  {
     id: "ap-english",
     title: "AP & English",
-    description: "AP subjects and English exams / skills — open folders, practice, and study materials.",
+    description:
+      "First plate of this personal site: AP subjects and English exams / skills — folders, practice, and study materials.",
     href: "/explore/ap-english",
     links: [
       {
@@ -60,18 +42,38 @@ export const HOME_GATEWAYS: HomeGateway[] = [
   {
     id: "tools-code",
     title: "Convenient Tools & Code",
-    description: "Everyday study utilities plus browser coding playgrounds.",
+    description:
+      "Everyday utilities (Calc + Graph, PDF desk, import/convert) plus one code editor with an in-editor language picker.",
     href: "/explore/tools-code",
     links: [
       {
         href: "/tools",
         title: "Convenient Tools",
-        description: "Timers, converters, editors, file helpers, and more.",
+        description: "Timers, converters, Calc + Graph, PDF desk, and more.",
       },
       {
         href: "/code",
         title: "Code",
-        description: "Python, JavaScript, TypeScript, Web, SQL, Java, C#, and more.",
+        description: "Open one editor, then choose Python, JavaScript, TypeScript, Web, SQL, Java, or C#.",
+      },
+    ],
+  },
+  {
+    id: "workshops",
+    title: "Simulation & Download",
+    description:
+      "Simulation Workshop (research labs on GitHub) and Download (macOS Shell builders / installers, including VAMPIRE).",
+    href: "/explore/workshops",
+    links: [
+      {
+        href: "/explore/simulation-workshop",
+        title: "Simulation Workshop",
+        description: "Monte Carlo, oscillators, chaos, Ising, RADIA labs — open on GitHub.",
+      },
+      {
+        href: "/explore/download",
+        title: "Download",
+        description: "Chrono Modal, RADIA Universal2, and VAMPIRE Apple Silicon builders.",
       },
     ],
   },

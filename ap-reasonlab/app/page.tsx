@@ -18,11 +18,12 @@ export default function HomePage() {
             {brand.name}
           </h1>
           <p className="mt-4 max-w-xl font-display text-xl font-medium leading-snug text-[#f7f4ee]/90 md:text-2xl">
-            Four study boxes below — simulation, AP, tools, and Sentinel Mac.
+            Personal academic site — AP & English first, then tools, code, and Sentinel Mac.
           </p>
           <p className="mt-3 max-w-lg text-base leading-relaxed text-[#f7f4ee]/75">
-            AI Toolbox, Forum, and Manage stay in the top bar. Pick a box for labs, subjects,
-            coding utilities, or the Sentinel Mac download.
+            Start with AP subjects and English exam practice. Convenient Tools (Calc + Graph, PDF
+            desk) and one Code editor sit in the next box. AI Toolbox, Forum, and Manage stay in the
+            top bar.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
@@ -51,7 +52,8 @@ export default function HomePage() {
         <div>
           <h2 className="section-title">Main boxes</h2>
           <p className="mt-1 text-sm text-slate-600">
-            Click a box to enter that area. AI Toolbox is always available from the top bar.
+            Click a box to enter that area. AP & English is plate one. AI Toolbox is always in the
+            top bar.
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">

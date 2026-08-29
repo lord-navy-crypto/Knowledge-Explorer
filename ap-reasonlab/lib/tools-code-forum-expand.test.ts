@@ -42,10 +42,10 @@ describe("tool clusters", () => {
     expect(code?.toolIds).toContain("encode-decode");
   });
 
-  it("includes write-convert wizard in write cluster", async () => {
+  it("includes math-pad in math cluster", async () => {
     const { TOOL_CLUSTERS } = await import("@/data/tool-clusters");
-    const write = TOOL_CLUSTERS.find((c) => c.id === "write-convert");
-    expect(write?.toolIds[0]).toBe("write-convert");
+    const math = TOOL_CLUSTERS.find((c) => c.id === "math-science");
+    expect(math?.toolIds).toContain("math-pad");
   });
 });
 

@@ -50,7 +50,7 @@ export default function CodePage() {
       <div>
         <h1 className="text-3xl font-bold">Code Resource</h1>
         <p className="mt-2 text-slate-600">
-          Browser playgrounds grouped by family. Save reusable blocks in the{" "}
+          Open one editor, then pick the language. Save reusable blocks in the{" "}
           <Link href="/tools/code-board" className="font-medium text-brand-700 underline">
             long code block adder
           </Link>
@@ -64,6 +64,9 @@ export default function CodePage() {
           </Link>
           .
         </p>
+        <Link href="/code/editor?lang=python" className="btn-primary mt-4 inline-flex">
+          Open editor
+        </Link>
       </div>
 
       <OfficialResourceLinks block={CODE_HUB_OFFICIAL} tone="slate" />
@@ -182,7 +185,7 @@ export default function CodePage() {
               <div className="flex flex-wrap items-center gap-2">
                 <span className="badge">{s.language}</span>
                 <Link
-                  href={`/code/${s.language === "html" ? "web" : s.language}`}
+                  href={`/code/editor?lang=${s.language === "html" ? "web" : s.language}`}
                   className="text-xs font-medium text-brand-700 hover:underline"
                 >
                   Open playground

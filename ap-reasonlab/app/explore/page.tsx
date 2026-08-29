@@ -15,8 +15,8 @@ export default function ExploreIndexPage() {
           Explore
         </h1>
         <p className="max-w-2xl text-slate-600">
-          Home gateway boxes — simulation labs, AP &amp; English, tools &amp; code, and Sentinel Mac.
-          Forum lives in the top bar with AI Toolbox and Manage.
+          Home gateway boxes — AP &amp; English first, then Convenient Tools &amp; Code, simulation
+          labs, and Sentinel Mac. Forum lives in the top bar with AI Toolbox and Manage.
         </p>
         <p className="text-sm text-slate-500">
           <Link href="/forum" className="font-medium text-brand-700 hover:underline">

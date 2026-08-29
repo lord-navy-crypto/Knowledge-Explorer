@@ -109,7 +109,7 @@ const CALC_ITEMS: QuestionnaireItem[] = [
   ),
   frq(
     "calc-001",
-    "Evaluate ∫₀¹ (2x + 1) dx.",
+    "Evaluate ∫₀¹ (2x + 1) dx for a particle whose velocity is v(t) = 2t + 1 m/s from t = 0 to t = 1 s. The integral is the displacement over that second.",
     ["Find an antiderivative of 2x + 1.", "Apply the Fundamental Theorem: F(1) − F(0)."],
     ["L1: ∫2x dx = x²; ∫1 dx = x.", "L2: Evaluate at both bounds."]
   ),

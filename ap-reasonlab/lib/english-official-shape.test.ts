@@ -213,4 +213,25 @@ describe("shapeOfficialEnglishQuestion SAT", () => {
     expect(shaped.passage).not.toMatch(/^Which sentence is correctly punctuated/);
     expect(shaped.passage).toMatch(/which were cold/);
   });
+
+  it("turns delete-the-off-topic items into a paragraph of the choices", () => {
+    const shaped = shapeOfficialEnglishQuestion(
+      "sat",
+      q(
+        "sat-delete",
+        "Expression of Ideas",
+        "Which sentence should be deleted as off-topic in a paragraph about lab-notebook habits?",
+        [
+          "Date every page.",
+          "Record raw values before you average them.",
+          "My favorite movie is a space opera.",
+          "Note which instrument you used.",
+        ],
+        2
+      )
+    );
+    expect(shaped.passage).toMatch(/space opera/i);
+    expect(shaped.passage).not.toMatch(/^Writer's goal/i);
+    expect(shaped.prompt).toMatch(/deleted/i);
+  });
 });

@@ -98,6 +98,7 @@ export const STUDY_TOOLS: StudyTool[] = [
       "Casio ClassWiz-class: COMP, COMPLEX, MATRIX, EQN, 1-/2-Var STAT, BASE-N, DIST, ENG — AP STEM ready.",
     category: "ai",
     security: "safe",
+    listed: false,
   },
   {
     id: "grapher",
@@ -106,6 +107,16 @@ export const STUDY_TOOLS: StudyTool[] = [
     blurb:
       "Y1–Y4, derivative/tangent, zeros/max-min/intersect, ∫, shade Y1≥Y2, parametric & polar, pan/zoom.",
     category: "ai",
+    security: "safe",
+    listed: false,
+  },
+  {
+    id: "math-pad",
+    href: "/hints?tool=calculator",
+    title: "Calc + Graph pad",
+    blurb:
+      "Calculator and grapher fused: evaluate, send → Graph, plot Y1–Y4. Paste an expression once — AP STEM desk.",
+    category: "math",
     security: "safe",
   },
 
@@ -319,18 +330,19 @@ export const STUDY_TOOLS: StudyTool[] = [
   {
     id: "pdf-tools",
     href: "/tools/pdf-tools",
-    title: "PDF merge & split",
-    blurb: "Combine PDFs or extract page ranges — all in this browser.",
+    title: "PDF desk",
+    blurb: "Merge, split, rotate, or lightly compress PDFs — import files in one desk.",
     category: "files",
     security: "upload",
   },
   {
     id: "pdf-compress",
-    href: "/tools/pdf-compress",
+    href: "/tools/pdf-tools?mode=compress",
     title: "PDF compress (light)",
-    blurb: "Rebuild a PDF to trim unused objects; modest browser-side shrink.",
+    blurb: "Merged into PDF desk.",
     category: "files",
     security: "upload",
+    listed: false,
   },
   {
     id: "csv-markdown",

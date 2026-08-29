@@ -3,6 +3,7 @@ export const KNOWN_REDIRECTS: Array<{ from: string; to: string }> = [
   { from: "/ai-for-ap", to: "/hints?section=ai-for-ap" },
   { from: "/tools/calculator", to: "/hints?tool=calculator" },
   { from: "/tools/grapher", to: "/hints?tool=grapher" },
+  { from: "/tools/pdf-compress", to: "/tools/pdf-tools?mode=compress" },
   { from: "/tools/timer", to: "/tools/focus-desk" },
   { from: "/image-gen", to: "/hints?tool=grapher" },
   { from: "/academic", to: "/forum" },

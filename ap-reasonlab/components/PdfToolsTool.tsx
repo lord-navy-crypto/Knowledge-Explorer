@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PDFDocument, degrees } from "pdf-lib";
 import StudyToolShell from "@/components/StudyToolShell";
+import PdfCompressTool from "@/components/PdfCompressTool";
 
 function downloadBytes(bytes: Uint8Array, name: string) {
   const copy = new Uint8Array(bytes.byteLength);
@@ -17,7 +18,7 @@ function downloadBytes(bytes: Uint8Array, name: string) {
 }
 
 export default function PdfToolsTool() {
-  const [mode, setMode] = useState<"merge" | "split" | "rotate">("merge");
+  const [mode, setMode] = useState<"merge" | "split" | "rotate" | "compress">("merge");
   const [mergeFiles, setMergeFiles] = useState<File[]>([]);
   const [splitFile, setSplitFile] = useState<File | null>(null);
   const [rotateFile, setRotateFile] = useState<File | null>(null);
@@ -30,6 +31,13 @@ export default function PdfToolsTool() {
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [splitEach, setSplitEach] = useState(false);
+
+  useEffect(() => {
+    const next = new URLSearchParams(window.location.search).get("mode");
+    if (next === "split" || next === "rotate" || next === "compress" || next === "merge") {
+      setMode(next);
+    }
+  }, []);
 
   async function onSplitPick(file: File | null) {
     setSplitFile(file);
@@ -195,9 +203,9 @@ export default function PdfToolsTool() {
 
   return (
     <StudyToolShell
-      title="PDF merge & split"
-      description="Combine several PDFs into one, extract a page range, or rotate pages. Processing stays on this device."
-      tip="Page numbers are 1-based. Range examples: 1-3 · 2,4,6 · 5- (from page 5 to end)."
+      title="PDF desk"
+      description="Merge, split, rotate, or lightly compress PDFs. Processing stays on this device — import files here, then download."
+      tip="Page numbers are 1-based. Range examples: 1-3 · 2,4,6 · 5- (from page 5 to end). Compress rebuilds the file; photo scans may barely shrink."
     >
       <div className="flex flex-wrap gap-2">
         {(
@@ -205,6 +213,7 @@ export default function PdfToolsTool() {
             ["merge", "Merge PDFs"],
             ["split", "Split / extract"],
             ["rotate", "Rotate pages"],
+            ["compress", "Compress"],
           ] as const
         ).map(([id, label]) => (
           <button
@@ -337,7 +346,7 @@ export default function PdfToolsTool() {
             {busy ? "Extracting…" : "Extract & download"}
           </button>
         </div>
-      ) : (
+      ) : mode === "rotate" ? (
         <div className="card space-y-4">
           <label className="btn-primary inline-flex cursor-pointer">
             Choose PDF
@@ -384,6 +393,8 @@ export default function PdfToolsTool() {
             {busy ? "Rotating…" : "Rotate & download"}
           </button>
         </div>
+      ) : (
+        <PdfCompressTool embedded />
       )}
 
       {error ? <p className="text-sm text-red-700">{error}</p> : null}

@@ -153,7 +153,7 @@ export const apInlineQuestionnaires: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "derivatives-basics",
         "conceptIntro": "Section II · Free Response (calculator). Key concept: power rule, term by term.",
-        "prompt": "Find f′(x) if f(x) = 4x⁵ − 3x² + 7.\n\n(a) Set up the derivative, integral, or limit that answers the question.\n(b) Compute the value.\n(c) Interpret the result in the context of the problem.",
+        "prompt": "A particle’s position on a line is s(x) = 4x⁵ − 3x² + 7 meters, with x in seconds. A student needs the instantaneous velocity as a function of x. Find f′(x) if f(x) = 4x⁵ − 3x² + 7.\n\n(a) Set up the derivative, integral, or limit that answers the question.\n(b) Compute the value.\n(c) Interpret the result in the context of the problem.",
         "visibleSteps": [
           "Recall d/dx(xⁿ) = nxⁿ⁻¹.",
           "Differentiate each term."
@@ -361,7 +361,7 @@ export const apInlineQuestionnaires: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "derivatives-basics",
         "conceptIntro": "Section II · Free Response (no calculator). Chain rule: d/dx f(g(x)) = f′(g(x))·g′(x).",
-        "prompt": "Find d/dx [(3x² + 1)⁴].\n\n(a) Set up the derivative, integral, or limit that answers the question.\n(b) Compute the value.\n(c) Interpret the result in the context of the problem.",
+        "prompt": "A student models the height in meters of a stacking-block tower as h(x) = (3x² + 1)⁴, treating the layer count x as continuous for a first-look derivative. Find d/dx [(3x² + 1)⁴].\n\n(a) Set up the derivative, integral, or limit that answers the question.\n(b) Compute the value.\n(c) Interpret the result in the context of the problem.",
         "visibleSteps": [
           "Outer function: u⁴ ⇒ derivative 4u³.",
           "Inner function: 3x² + 1 ⇒ derivative 6x."

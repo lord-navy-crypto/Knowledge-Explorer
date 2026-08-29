@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import OfficialResourceLinks from "@/components/OfficialResourceLinks";
+import { AP_PROGRAM_OFFICIAL } from "@/data/official-resources";
 import { listAiForApGuides, toolboxLinkForGuide } from "@/lib/ai-for-ap-guides";
 import { toolboxHref } from "@/lib/ai-toolbox-url";
 
@@ -41,8 +43,9 @@ export default function AiForApToolboxSection() {
         <p className="max-w-3xl text-sm text-slate-600">
           Safe tutor workflows — explain concepts, use diagrams as drafts, and build original
           practice. Local AI is recommended; cloud API is backup. Guides below open prompts into
-          this Toolbox.
+          this Toolbox. Cross-check with College Board and ETS pages — AI can be confidently wrong.
         </p>
+        <OfficialResourceLinks block={AP_PROGRAM_OFFICIAL} tone="slate" />
         <div className="flex flex-wrap gap-2 pt-1">
           <Link
             href={toolboxHref({

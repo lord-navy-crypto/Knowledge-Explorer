@@ -41,19 +41,23 @@ export default function ToolsPage() {
           Convenient Tools
         </h1>
         <p className="relative mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">
-          {tools.length} browser utilities — search below, or jump to{" "}
+          {tools.length} browser utilities — fused desks for speed:{" "}
+          <Link href="/hints?tool=math" className="font-medium text-brand-700 underline">
+            Calc + Graph
+          </Link>
+          ,{" "}
+          <Link href="/tools/pdf-tools" className="font-medium text-brand-700 underline">
+            PDF desk
+          </Link>
+          ,{" "}
           <Link href="/tools/write-convert" className="font-medium text-brand-700 underline">
             Write & convert wizard
           </Link>
-          ,{" "}
-          <Link href="/code" className="font-medium text-brand-700 underline">
-            Code playgrounds
-          </Link>
           , and{" "}
-          <Link href="/forum" className="font-medium text-brand-700 underline">
-            Forum
+          <Link href="/code/editor?lang=python" className="font-medium text-brand-700 underline">
+            Code editor
           </Link>
-          . AI lives in{" "}
+          . Import files in those desks. AI lives in{" "}
           <Link href="/hints" className="font-medium text-brand-700 underline">
             AI Toolbox
           </Link>

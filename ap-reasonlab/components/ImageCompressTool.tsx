@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import StudyToolShell from "@/components/StudyToolShell";
 
 type Format = "image/jpeg" | "image/webp" | "image/png";
@@ -140,10 +141,13 @@ export default function ImageCompressTool() {
   return (
     <StudyToolShell
       title="Image compress & convert"
-      description="Shrink images, cap width/height, and export JPEG, WebP, or PNG. Files never leave this browser."
-      tip="WebP usually wins on size. PNG ignores the quality slider (lossless)."
+      description="Shrink images, cap width/height, and export JPEG, WebP, or PNG. Crop or annotate next door, then come back to compress."
+      tip="WebP usually wins on size. PNG ignores the quality slider (lossless). Crop lives at Image crop — same local import style."
     >
       <div className="flex flex-wrap items-center gap-3">
+        <Link href="/tools/image-crop" className="btn-secondary text-sm">
+          Crop & annotate →
+        </Link>
         <label className="btn-primary cursor-pointer">
           Choose image
           <input

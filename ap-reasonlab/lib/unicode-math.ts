@@ -710,6 +710,22 @@ export function sanitizeMathDelimiterSalad(input: string): string {
   return text;
 }
 
+/** Repair common authored TeX that KaTeX treats as garbage (comma instead of \,). */
+export function repairCommonLatexSpacing(input: string): string {
+  return String(input ?? "")
+    .replace(/\uFFFD/g, "")
+    .replace(/(\\)?hat\{n\},dA/g, "\\hat{n}\\,dA")
+    .replace(/\\hat n,dA/g, "\\hat{n}\\,dA")
+    .replace(/\\vec\{A\}=\\hat\{n\},dA/g, "\\vec{A}=\\hat{n}\\,dA")
+    .replace(/\\omega\(t\),dt/g, "\\omega(t)\\,dt")
+    .replace(/\\alpha\(t\),dt/g, "\\alpha(t)\\,dt")
+    .replace(/\\theta\(t\),dt/g, "\\theta(t)\\,dt")
+    .replace(/\\omega\(t\),d t/g, "\\omega(t)\\,dt")
+    .replace(/\(([a-zA-Z])\),d([txA])/g, "($1)\\,d$2")
+    .replace(/([_^]\{[^}]+\})\s*,\s*d([A-Za-z]+)/g, "$1\\,d$2")
+    .replace(/\\int_\{([^}]+)\}\^\{([^}]+)\}([^$]*?),d([tx])/g, "\\int_{$1}^{$2}$3\\,d$4");
+}
+
 /** Normalize pasted content and safely repair common UTF-8-as-Latin-1 mojibake. */
 export function normalizeAuthoredText(input: string): string {
   let value = String(input ?? "")
@@ -744,6 +760,7 @@ export function normalizeAuthoredText(input: string): string {
 
   // Bare \frac / ```latex / ASCII physics → real math delimiters.
   value = promoteBareLatexToMath(value);
+  value = repairCommonLatexSpacing(value);
   // Promote can reintroduce salad — clean again before balancing.
   value = sanitizeMathDelimiterSalad(value);
   // Currency already protected above — use raw balancer (public one would wipe slots).
@@ -782,6 +799,7 @@ export function normalizeAiDialogueText(input: string): string {
   value = value
     .replace(/\\\[([\s\S]*?)\\\]/g, (_match, math: string) => ` ${String(math).trim()} `)
     .replace(/\\\(([^\n]*?)\\\)/g, (_match, math: string) => ` ${String(math).trim()} `);
+  value = repairCommonLatexSpacing(value);
   value = sanitizeMathDelimiterSalad(value);
   value = balanceMathDelimitersRaw(value);
   value = sanitizeMathDelimiterSalad(value);

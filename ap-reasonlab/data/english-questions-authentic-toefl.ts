@@ -579,4 +579,99 @@ export const authenticToeflQuestions: EnglishPracticeQuestion[] = [
     1,
     "The answer names a change in behavior and a result."
   ),
+  item(
+    "toefl-auth-daily-6",
+    "Read in Daily Life",
+    `Campus Rec — Pool hours this week
+Monday–Thursday: 6:30 a.m.–9:00 p.m.
+Friday: 6:30 a.m.–7:00 p.m. (closes early for a swim meet)
+Saturday–Sunday: 10:00 a.m.–6:00 p.m.
+Bring a student ID. Guest passes are sold at the front desk until 30 minutes before closing.`,
+    "According to the notice, which statement is true?",
+    [
+      "The pool is open until 9 p.m. every day.",
+      "Friday closing is earlier than Monday–Thursday because of a swim meet.",
+      "Guest passes are free on weekends.",
+      "You do not need an ID.",
+    ],
+    1,
+    "Friday lists an early close for a meet; weekday evenings run to 9 p.m."
+  ),
+  item(
+    "toefl-auth-acad-6",
+    "Read an Academic Passage",
+    `When a sound wave travels from air into water, its speed increases and its wavelength increases, but its frequency stays the same. Students sometimes expect the pitch to rise because the wave is “faster,” yet pitch is tied to frequency, which is set by the source. The medium changes how far the wave travels in each cycle, not how many cycles occur each second.`,
+    "What is the author’s main point?",
+    [
+      "Sound cannot travel in water.",
+      "A change in medium can change speed and wavelength without changing frequency (pitch).",
+      "Pitch always rises in water.",
+      "Wavelength never changes.",
+    ],
+    1,
+    "The passage separates source-controlled frequency from medium-controlled speed and wavelength."
+  ),
+  item(
+    "toefl-auth-conv-4",
+    "Listen to a Conversation",
+    `Student: “The printer in the library says the job is held.”
+Librarian: “It is waiting for you to release it at the desk. We started that step so unfinished jobs do not pile up.”
+Student: “Can I release it from my laptop?”
+Librarian: “Not yet. You need the desk computer or the QR code on the printer.”`,
+    "Why is the print job held?",
+    [
+      "The student has no files.",
+      "The library now requires a release step so unfinished jobs do not pile up.",
+      "The librarian refuses all printing.",
+      "Laptops cannot connect to campus Wi-Fi.",
+    ],
+    1,
+    "The librarian states the new release step and its purpose."
+  ),
+  item(
+    "toefl-auth-email-4",
+    "Write an Email",
+    `From: advisor@college.edu
+Subject: Missing prerequisite
+You registered for CHEM 210, but our records do not show CHEM 110. Reply by Friday if you completed an equivalent course, or we will drop the 210 seat.`,
+    "Which student reply is most complete?",
+    [
+      "Ok.",
+      "I completed the equivalent course CHEM 110X at City College last summer (transcript attached) and would like to keep CHEM 210.",
+      "Chemistry is interesting.",
+      "Please ignore this.",
+    ],
+    1,
+    "The email asks for an equivalent-course reply by Friday; the strong answer names the course and attaches evidence."
+  ),
+  item(
+    "toefl-auth-disc-4",
+    "Write for an Academic Discussion",
+    `Professor: Should cities prioritize bus lanes even if some car lanes are removed?
+Student A: Yes. Reliable buses reduce the number of cars that need downtown parking.
+Student B: I worry about delivery trucks if a lane disappears on a market street.`,
+    "Which post best adds a new, specific point to the thread?",
+    [
+      "I agree with everyone.",
+      "A timed delivery window on the remaining curb lane can protect trucks while a bus lane still runs in peak hours.",
+      "Buses exist in many cities.",
+      "Cars are vehicles.",
+    ],
+    1,
+    "Academic discussion scoring rewards a specific proposal that answers both classmates, not a restatement."
+  ),
+  item(
+    "toefl-auth-talk-4",
+    "Listen to an Academic Talk",
+    `Professor: “In this demo, a cart on a low-friction track has a spring bumper. If the cart hits a fixed wall and bounces, kinetic energy is not fully conserved—the spring warms slightly. Momentum of the cart-plus-wall system is still accounted for if we include the Earth-bound wall.”`,
+    "What distinction does the professor emphasize?",
+    [
+      "Springs never store energy.",
+      "A bounce can lose kinetic energy to heat while momentum bookkeeping still includes the wall.",
+      "Frictionless tracks do not exist in any form.",
+      "Walls have no mass.",
+    ],
+    1,
+    "The talk separates kinetic-energy loss from careful momentum accounting."
+  ),
 ];

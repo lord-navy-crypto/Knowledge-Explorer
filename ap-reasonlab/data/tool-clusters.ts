@@ -15,7 +15,7 @@ export const TOOL_CLUSTERS: ToolCluster[] = [
     title: "Code workbench",
     blurb: "Save blocks, compare text, format JSON, and jump to browser playgrounds.",
     toolIds: ["code-board", "text-comparator", "short-code", "json-formatter", "encode-decode"],
-    codeHrefs: ["/code", "/code/python", "/code/javascript"],
+    codeHrefs: ["/code", "/code/editor?lang=python", "/code/editor?lang=javascript"],
   },
   {
     id: "write-convert",
@@ -26,7 +26,7 @@ export const TOOL_CLUSTERS: ToolCluster[] = [
   {
     id: "file-lab",
     title: "File lab",
-    blurb: "PDF helpers, CSV ↔ Markdown, batch rename, and compression.",
+    blurb: "PDF desk (merge/split/rotate/compress), CSV ↔ Markdown, batch rename, and compression.",
     toolIds: ["pdf-tools", "pdf-compress", "csv-markdown", "batch-rename", "image-compress", "image-crop"],
   },
   {
@@ -38,8 +38,8 @@ export const TOOL_CLUSTERS: ToolCluster[] = [
   {
     id: "math-science",
     title: "Math & science pads",
-    blurb: "Calculator, grapher, LaTeX, units, vectors, and formula board.",
-    toolIds: ["calculator", "grapher", "latex", "formula-board", "units", "sci-notation", "vector-resolve"],
+    blurb: "Calculator + grapher in one pad, plus LaTeX, units, vectors, and formula board.",
+    toolIds: ["math-pad", "latex", "formula-board", "units", "sci-notation", "vector-resolve"],
   },
   {
     id: "english-practice",

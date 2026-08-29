@@ -1,9 +1,5 @@
-import PdfCompressTool from "@/components/PdfCompressTool";
-
-export const metadata = {
-  title: "PDF compress — Knowledge Explorer",
-};
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return <PdfCompressTool />;
+  redirect("/tools/pdf-tools?mode=compress");
 }

@@ -196,6 +196,15 @@ function shapeSat(q: EnglishPracticeQuestion, skill: string): EnglishPracticeQue
         prompt: "Which choice completes the text with the most logical transition?",
       };
     }
+    if (/deleted|off-topic/i.test(`${q.prompt}\n${body}`)) {
+      const draft = q.choices.map((c) => ensurePeriod(c)).join(" ");
+      return {
+        ...q,
+        skill,
+        passage: draft,
+        prompt: "Which sentence should be deleted because it is least relevant to the paragraph?",
+      };
+    }
     const goal = writerGoal(q.prompt);
     const draftBits = q.choices.filter((_, i) => i !== q.answer).slice(0, 2);
     const passage = /^Which/.test(body)

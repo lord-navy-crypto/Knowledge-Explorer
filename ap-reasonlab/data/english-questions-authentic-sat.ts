@@ -248,8 +248,8 @@ export const authenticSatQuestions: EnglishPracticeQuestion[] = [
   item(
     "sat-auth-eoi-6",
     "Expression of Ideas",
-    `Which sentence should be deleted as off-topic in a paragraph about lab-notebook habits?`,
-    "Choose the sentence to delete.",
+    `Lab notebooks should be dated on every page. Record raw values before you average them. My favorite movie is a space opera. Note which instrument you used, and draw a line through mistakes instead of erasing them.`,
+    "Which sentence should be deleted because it is least relevant to the paragraph?",
     [
       "Date every page.",
       "Record raw values before you average them.",
@@ -257,7 +257,7 @@ export const authenticSatQuestions: EnglishPracticeQuestion[] = [
       "Note which instrument you used.",
     ],
     2,
-    "The movie sentence does not support the paragraph’s purpose."
+    "The movie sentence does not support a paragraph about lab-notebook habits."
   ),
   item(
     "sat-auth-sec-1",
@@ -476,5 +476,74 @@ export const authenticSatQuestions: EnglishPracticeQuestion[] = [
     ["w(w + 3) = 40", "w + 3 = 40", "2w + 3 = 40", "w(w − 3) = 40"],
     0,
     "Length = w + 3, so area w(w + 3) = 40."
+  ),
+  item(
+    "sat-auth-ii-8",
+    "Information and Ideas",
+    `A campus lab logged overnight freezer alarms for one week: Mon 0, Tue 2, Wed 1, Thu 0, Fri 4, Sat 1, Sun 0. The Friday spike happened during a scheduled defrost test that staff had posted on the door.`,
+    "Which claim is best supported by the text?",
+    [
+      "The freezer failed every night.",
+      "Friday had the most alarms, and the text links that day to a posted defrost test.",
+      "Staff never check the freezer.",
+      "Tuesday proves the thermostat is broken.",
+    ],
+    1,
+    "The table peak is Friday; the only stated coincidence is the defrost test, not a diagnosis of every other day."
+  ),
+  item(
+    "sat-auth-cs-8",
+    "Craft and Structure",
+    `The chemist called the leftover solvent a ghost in the data: it did not appear in the planned reactions, yet it kept shifting the baseline.`,
+    "As used in the text, ghost most nearly means",
+    [
+      "a costume for a holiday",
+      "an unplanned residue that still affects the measurements",
+      "a confirmed product of the main reaction",
+      "a person who left the lab",
+    ],
+    1,
+    "The contrast with planned reactions and the baseline shift supports an unplanned residue, not a literal spirit."
+  ),
+  item(
+    "sat-auth-eoi-7",
+    "Expression of Ideas",
+    `The first trial used a wooden ramp. The second trial used a metal ramp of the same length. Friction was the variable of interest. The class also ordered pizza after school.`,
+    "Which sentence should be deleted because it is least relevant to the paragraph?",
+    [
+      "The first trial used a wooden ramp.",
+      "The second trial used a metal ramp of the same length.",
+      "Friction was the variable of interest.",
+      "The class also ordered pizza after school.",
+    ],
+    3,
+    "Pizza is off-topic in a controlled-friction comparison."
+  ),
+  item(
+    "sat-auth-sec-8",
+    "Standard English Conventions",
+    `Neither the first sensor nor the backup ___ recording when the logger lost power.`,
+    "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    ["were", "was", "are", "have been"],
+    1,
+    "Neither/nor with singular nouns takes was in this past narrative."
+  ),
+  item(
+    "sat-auth-psd-4",
+    "Problem-Solving and Data Analysis",
+    `A club sold 40 tickets. Student tickets were $6 and guest tickets were $9. Total revenue was $285.`,
+    "If s is the number of student tickets, which equation is correct?",
+    ["6s + 9(40 − s) = 285", "6s + 9s = 285", "s + 40 = 285", "6(40) + 9s = 285"],
+    0,
+    "Guest tickets are 40 − s, so 6s + 9(40 − s) = 285."
+  ),
+  item(
+    "sat-auth-geo-5",
+    "Geometry and Trigonometry",
+    `A right triangle has legs 5 cm and 12 cm.`,
+    "What is the length of the hypotenuse?",
+    ["13 cm", "17 cm", "10 cm", "60 cm"],
+    0,
+    "5-12-13 is a Pythagorean triple: √(25 + 144) = 13."
   ),
 ];

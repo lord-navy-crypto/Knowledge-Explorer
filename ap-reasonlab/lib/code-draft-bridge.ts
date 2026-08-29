@@ -15,14 +15,14 @@ export const PLAYGROUND_DRAFT_KEYS: Record<CodeBoardLanguage, string> = {
 
 export function playgroundHref(language: CodeBoardLanguage): string | null {
   if (language === "other") return null;
-  if (language === "python") return "/code/python";
-  if (language === "javascript") return "/code/javascript";
-  if (language === "typescript") return "/code/typescript";
-  if (language === "html") return "/code/web";
-  if (language === "sql") return "/code/sql";
-  if (language === "markdown") return "/code/markdown";
-  if (language === "java") return "/code/java";
-  if (language === "csharp") return "/code/csharp";
+  if (language === "python") return "/code/editor?lang=python";
+  if (language === "javascript") return "/code/editor?lang=javascript";
+  if (language === "typescript") return "/code/editor?lang=typescript";
+  if (language === "html") return "/code/editor?lang=web";
+  if (language === "sql") return "/code/editor?lang=sql";
+  if (language === "markdown") return "/code/editor?lang=markdown";
+  if (language === "java") return "/code/editor?lang=java";
+  if (language === "csharp") return "/code/editor?lang=csharp";
   return null;
 }
 

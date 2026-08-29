@@ -137,6 +137,9 @@ export default function FormulaBoardTool() {
         <Link href="/tools/latex" className="btn-secondary text-xs">
           LaTeX checker
         </Link>
+        <Link href="/hints?tool=math" className="btn-secondary text-xs">
+          Calc + Graph
+        </Link>
         <Link href="/hints?tool=grapher" className="btn-secondary text-xs">
           Grapher
         </Link>
@@ -196,6 +199,12 @@ export default function FormulaBoardTool() {
                 >
                   Ask AI
                 </button>
+                <Link
+                  href={`/tools/latex?tex=${encodeURIComponent(item.latex)}`}
+                  className="btn-secondary text-xs"
+                >
+                  Check LaTeX
+                </Link>
                 {canGraph ? (
                   <Link
                     href={`/hints?tool=grapher&y1=${encodeURIComponent(item.plain)}`}
