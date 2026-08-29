@@ -25,9 +25,9 @@ function primaryOfficial(langId: string): OfficialLink | undefined {
 
 export const CODE_LANG_FAMILIES: CodeLangFamily[] = [
   {
-    id: "scripting",
-    label: "Scripting & data",
-    blurb: "Python, SQL, and Markdown — great for AP CSP, stats, and notes.",
+    id: "featured",
+    label: "Featured languages",
+    blurb: "Start here for AP, school CS, web projects, and data work.",
     langs: [
       {
         id: "python",
@@ -38,28 +38,13 @@ export const CODE_LANG_FAMILIES: CodeLangFamily[] = [
         official: primaryOfficial("python"),
       },
       {
-        id: "sql",
-        title: "SQL",
-        href: "/code/sql",
-        runKind: "browser",
-        description: "Persistent SQLite session via sql.js.",
-        official: primaryOfficial("sql"),
+        id: "java",
+        title: "Java",
+        href: "/code/java",
+        runKind: "practice",
+        description: "AP CSA practice + Download .java.",
+        official: primaryOfficial("java"),
       },
-      {
-        id: "markdown",
-        title: "Markdown",
-        href: "/code/markdown",
-        runKind: "browser",
-        description: "Live Markdown + KaTeX preview.",
-        official: primaryOfficial("markdown"),
-      },
-    ],
-  },
-  {
-    id: "web-stack",
-    label: "Web stack",
-    blurb: "JavaScript, TypeScript, and HTML/CSS/JS preview.",
-    langs: [
       {
         id: "javascript",
         title: "JavaScript",
@@ -69,14 +54,6 @@ export const CODE_LANG_FAMILIES: CodeLangFamily[] = [
         official: primaryOfficial("javascript"),
       },
       {
-        id: "typescript",
-        title: "TypeScript",
-        href: "/code/typescript",
-        runKind: "browser",
-        description: "Transpile + run in-browser.",
-        official: primaryOfficial("typescript"),
-      },
-      {
         id: "web",
         title: "Web / HTML",
         href: "/code/web",
@@ -84,36 +61,29 @@ export const CODE_LANG_FAMILIES: CodeLangFamily[] = [
         description: "Live HTML/CSS/JS preview.",
         official: primaryOfficial("web"),
       },
-    ],
-  },
-  {
-    id: "training",
-    label: "Java & C# training",
-    blurb: "Practice Run stand-ins — download real source for JDK / .NET.",
-    langs: [
       {
-        id: "java",
-        title: "Java",
-        href: "/code/java",
-        runKind: "practice",
-        description: "Practice Run (JS stand-in) + Download .java.",
-        official: primaryOfficial("java"),
-      },
-      {
-        id: "csharp",
-        title: "C#",
-        href: "/code/csharp",
-        runKind: "practice",
-        description: "Practice Run like Java + Download .cs.",
-        official: primaryOfficial("csharp"),
+        id: "sql",
+        title: "SQL",
+        href: "/code/sql",
+        runKind: "browser",
+        description: "Persistent SQLite session via sql.js.",
+        official: primaryOfficial("sql"),
       },
     ],
   },
   {
-    id: "systems",
-    label: "Systems & compiled",
-    blurb: "C, C++, Go, and Rust — edit here, then download for a real compiler. Practice Run is a brace/quote check, not gcc/rustc.",
+    id: "more-langs",
+    label: "More languages",
+    blurb: "Explore more languages with lightweight editing, practice checks, downloads, and official references.",
     langs: [
+      {
+        id: "typescript",
+        title: "TypeScript",
+        href: "/code/typescript",
+        runKind: "browser",
+        description: "Transpile + run in-browser.",
+        official: primaryOfficial("typescript"),
+      },
       {
         id: "c",
         title: "C",
@@ -131,6 +101,22 @@ export const CODE_LANG_FAMILIES: CodeLangFamily[] = [
         official: primaryOfficial("cpp"),
       },
       {
+        id: "r",
+        title: "R",
+        href: "/code/r",
+        runKind: "practice",
+        description: "Structure check + Download .r.",
+        official: primaryOfficial("r"),
+      },
+      {
+        id: "markdown",
+        title: "Markdown",
+        href: "/code/markdown",
+        runKind: "browser",
+        description: "Live Markdown + KaTeX preview.",
+        official: primaryOfficial("markdown"),
+      },
+      {
         id: "go",
         title: "Go",
         href: "/code/go",
@@ -146,13 +132,14 @@ export const CODE_LANG_FAMILIES: CodeLangFamily[] = [
         description: "Structure check + Download .rs (not rustc).",
         official: primaryOfficial("rust"),
       },
-    ],
-  },
-  {
-    id: "more-langs",
-    label: "More practice languages",
-    blurb: "PHP, Ruby, R, Swift, and Kotlin — write and download; Practice Run checks structure, not runtime.",
-    langs: [
+      {
+        id: "csharp",
+        title: "C#",
+        href: "/code/csharp",
+        runKind: "practice",
+        description: "Practice Run like Java + Download .cs.",
+        official: primaryOfficial("csharp"),
+      },
       {
         id: "php",
         title: "PHP",
@@ -168,14 +155,6 @@ export const CODE_LANG_FAMILIES: CodeLangFamily[] = [
         runKind: "practice",
         description: "Structure check + Download .rb.",
         official: primaryOfficial("ruby"),
-      },
-      {
-        id: "r",
-        title: "R",
-        href: "/code/r",
-        runKind: "practice",
-        description: "Structure check + Download .r.",
-        official: primaryOfficial("r"),
       },
       {
         id: "swift",
