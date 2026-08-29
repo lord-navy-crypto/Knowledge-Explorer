@@ -75,11 +75,16 @@ function documentHtml() {
     .external-card span{font-size:14px;line-height:1.5;color:#69717a}
     .footer{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:32px;padding-top:18px;border-top:1px solid #d6d9dd;color:#727a84;font-size:12px}
     .footer a{font-weight:800;color:#3c6086}
+    #ke-load{display:none;position:fixed;inset:0 0 auto 0;z-index:2147483647;pointer-events:none}
+    #ke-load-track{height:3px;background:rgba(30,58,95,.12)}
+    #ke-load-bar{height:100%;width:0;background:#1e3a5f;transition:width 140ms linear}
+    #ke-load-label{position:absolute;top:8px;right:12px;border:1px solid rgba(30,58,95,.18);border-radius:999px;background:#fffdf8;padding:4px 8px;color:#1e3a5f;font-size:11px;font-weight:700;line-height:1.2}
     @media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:620px){.shell{padding:16px 14px 34px}.topbar{align-items:flex-start}.nav{justify-content:flex-end}.hero{padding-top:26px}.grid{grid-template-columns:1fr}.card{min-height:0}.section-head{align-items:flex-start;flex-direction:column}}
   </style>
 </head>
 <body translate="no" class="notranslate">
+  <div id="ke-load" aria-live="polite" aria-label="Page loading progress"><div id="ke-load-track"><div id="ke-load-bar"></div></div><span id="ke-load-label">Loading 0%</span></div>
   <main class="shell">
     <header class="topbar">
       <a class="brand" href="/"><span class="logo">KE</span><span>Knowledge Explorer</span></a>
@@ -120,6 +125,18 @@ function documentHtml() {
       <a href="/explore/tools-code/full">Full app view + shared files</a>
     </footer>
   </main>
+  <script>
+    (function(){
+      var shell=document.getElementById('ke-load'),bar=document.getElementById('ke-load-bar'),label=document.getElementById('ke-load-label'),timer=0,p=0;
+      function render(v){p=v;shell.style.display='block';bar.style.width=v+'%';label.textContent='Loading '+v+'%';}
+      function start(){if(timer)clearInterval(timer);render(7);timer=setInterval(function(){var n=p<35?p+7:p<65?p+4:p<82?p+2:p<92?p+1:p;render(Math.min(92,n));},170);}
+      document.addEventListener('click',function(e){
+        if(e.defaultPrevented||e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
+        var a=e.target&&e.target.closest?e.target.closest('a[href]'):null;if(!a||a.target&&a.target!=='_self'||a.hasAttribute('download'))return;
+        try{var u=new URL(a.href,location.href),c=new URL(location.href);if(u.origin!==location.origin)return;if(u.pathname===c.pathname&&u.search===c.search)return;start();}catch(_){}
+      },true);
+    })();
+  </script>
 </body>
 </html>`;
 }

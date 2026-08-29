@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import Script from "next/script";
 import { IBM_Plex_Sans, Source_Serif_4 } from "next/font/google";
@@ -19,6 +20,7 @@ import { LocalAIProvider } from "@/components/LocalAIProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ToastProvider } from "@/components/ToastProvider";
 import SiteStructuredData from "@/components/SiteStructuredData";
+import GlobalRouteProgress from "@/components/GlobalRouteProgress";
 import { brand } from "@/data/brand";
 
 const fontSans = IBM_Plex_Sans({
@@ -94,6 +96,9 @@ export default function RootLayout({
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: THEME_BOOT }}
         />
+        <Suspense fallback={null}>
+          <GlobalRouteProgress />
+        </Suspense>
         <ThemeProvider>
           <ToastProvider>
             <EditorModeProvider>
