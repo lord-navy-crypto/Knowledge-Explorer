@@ -14,7 +14,7 @@ import {
  */
 export default function SiteRelatedToolsBar() {
   const pathname = usePathname() || "/";
-  if (shouldHideRelatedBar(pathname)) return null;
+  if (pathname === "/explore/tools-code" || shouldHideRelatedBar(pathname)) return null;
 
   const pack = relatedPackForPath(pathname);
 
