@@ -10,6 +10,7 @@ import ToeflWritingTimers from "@/components/ToeflWritingTimers";
 import type { EnglishExamConfig, EnglishExamSection } from "@/data/english-exam-sections";
 import { getExamSectionOfficial } from "@/data/official-resources";
 import { sectionTimerMinutes } from "@/lib/english-section-timers";
+import { examFormatBlurb } from "@/lib/english-exam-format";
 
 type LaneCopy = {
   eyebrow: string;
@@ -25,40 +26,40 @@ function toeflLaneCopy(sectionId: string): LaneCopy {
       return {
         eyebrow: "English · TOEFL · Daily practice",
         headerDescription:
-          "Upload TOEFL reading articles for easy reading practice. No quiz questions — just passages you can open anytime.",
-        guideTitle: "Reading · articles only",
+          "Practice Complete the Words, campus/daily-life texts, and short academic passages in official TOEFL iBT shape. Upload extra articles below.",
+        guideTitle: "Reading · official task types",
         guideBody:
-          "Open the upload window below and add TOEFL passages (PDF, Word, Markdown, or text). Students read the materials here — we do not attach comprehension questions.",
+          "In-site items follow ETS task names: Complete the Words, Read in Daily Life, and Read an Academic Passage. Upload extra TOEFL-shaped passages (PDF, Word, Markdown, or text) in the folder below.",
         uploadTitle: "Upload TOEFL reading articles",
       };
     case "writing":
       return {
         eyebrow: "English · TOEFL · Daily practice",
         headerDescription:
-          "Upload writing prompts (题目) and model essays (范文). Browse and study them — no timed scoring on this page.",
-        guideTitle: "Writing · prompts + model essays",
+          "Practice Build a Sentence, Write an Email, and Write for an Academic Discussion. Upload extra prompts (题目) and model essays (范文) below.",
+        guideTitle: "Writing · official task types",
         guideBody:
-          "Upload writing topics and sample essays into this folder. Use the 7-minute and 10-minute timers above for timed drafts. Clear file names (e.g. Prompt-…, Model-…) help students find 题目 and 范文.",
+          "In-site items match ETS writing tasks. Use the 7-minute and 10-minute timers for timed drafts. Clear file names (e.g. Prompt-…, Model-…) help students find 题目 and 范文.",
         uploadTitle: "Upload writing prompts & model essays (范文)",
       };
     case "listening":
       return {
         eyebrow: "English · TOEFL · Daily practice",
         headerDescription:
-          "Upload listening materials, then replay scripts with the machine voice. Everyday listening practice — no exam questions.",
-        guideTitle: "Listening · upload + machine replay",
+          "Practice Listen and Choose a Response, conversations, announcements, and academic talks (transcripts stand in for audio). Replay extra scripts with the machine voice.",
+        guideTitle: "Listening · official task types",
         guideBody:
-          "Upload audio or transcripts below. Paste the listening script into the replay box so the browser can read it aloud for follow-along listening.",
+          "In-site items use ETS listening task names. Upload audio or transcripts below. Paste a script into the replay box so the browser can read it aloud.",
         uploadTitle: "Upload listening materials (audio / transcript)",
       };
     case "speaking":
       return {
         eyebrow: "English · TOEFL · Daily practice",
         headerDescription:
-          "Paste dialogues or shadowing lines, play one sentence at a time, and read after the model voice for pronunciation.",
-        guideTitle: "Speaking · dialogue & tongue twisters",
+          "Practice Listen and Repeat and Take an Interview. Shadow extra dialogues line by line with the model voice.",
+        guideTitle: "Speaking · official task types",
         guideBody:
-          "Load dialogues or tongue twisters, play each line, shadow the model, and optionally score your reading with the mic. Upload sheets below if you want.",
+          "In-site items follow ETS speaking tasks. Load dialogues or tongue twisters, play each line, shadow the model, and optionally score your reading with the mic.",
         uploadTitle: "Upload speaking dialogues / shadow sheets (optional)",
       };
     default:
@@ -128,8 +129,8 @@ export default function EnglishExamSectionView({
           <p className="font-semibold">{lane.guideTitle}</p>
           <p className="mt-1 text-emerald-900/85">{lane.guideBody}</p>
           <p className="mt-2 text-xs text-emerald-800/80">
-            Design: practice English in daily study time — materials and follow-along, not exam
-            quizzes.
+            Design: official ETS task names for in-site items; uploads stay in this lane for extra
+            materials.
           </p>
         </section>
       ) : (
@@ -154,6 +155,7 @@ export default function EnglishExamSectionView({
           questions={sectionMcqs}
           storageKey={`${exam.id}-${section.id}`}
           timedMinutes={timedMinutes}
+          formatNote={examFormatBlurb(exam.id)}
         />
       ) : null}
 

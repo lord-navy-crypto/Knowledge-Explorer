@@ -26,13 +26,14 @@ export const englishExamConfigs: Record<EnglishExamId, EnglishExamConfig> = {
     title: "TOEFL",
     hubHref: "/english/toefl",
     blurb:
-      "Four daily-practice lanes plus an in-site MCQ bank (120+ questions). Upload reading, listening, writing, and speaking materials; use built-in multiple-choice practice by skill.",
+      "Four daily-practice lanes plus an in-site bank shaped like the current ETS TOEFL iBT: Complete the Words, Read in Daily Life, Read an Academic Passage; four listening tasks; Build a Sentence, Write an Email, Academic Discussion; Listen and Repeat and Take an Interview. Original items — not real ETS questions.",
     sections: [
       {
         id: "reading",
         title: "Reading",
         short: "R",
-        description: "Upload TOEFL articles for reading practice — no questions attached.",
+        description:
+          "Official-shaped reading: Complete the Words, campus/daily notices, and short academic passages. Upload extra articles below.",
         spaceKey: "toefl-reading",
         href: "/english/toefl/reading",
       },
@@ -40,7 +41,8 @@ export const englishExamConfigs: Record<EnglishExamId, EnglishExamConfig> = {
         id: "listening",
         title: "Listening",
         short: "L",
-        description: "Upload listening materials, then replay scripts with machine voice.",
+        description:
+          "Official-shaped listening: choose a response, conversation, announcement, and academic talk (transcripts stand in for audio). Upload extra scripts below.",
         spaceKey: "toefl-listening",
         href: "/english/toefl/listening",
       },
@@ -48,7 +50,8 @@ export const englishExamConfigs: Record<EnglishExamId, EnglishExamConfig> = {
         id: "writing",
         title: "Writing",
         short: "W",
-        description: "Upload writing prompts (题目) and model essays (范文).",
+        description:
+          "Official-shaped writing: Build a Sentence, Write an Email, and Write for an Academic Discussion. Upload prompts and model essays below.",
         spaceKey: "toefl-writing",
         href: "/english/toefl/writing",
       },
@@ -56,7 +59,8 @@ export const englishExamConfigs: Record<EnglishExamId, EnglishExamConfig> = {
         id: "speaking",
         title: "Speaking",
         short: "S",
-        description: "Paste dialogues and shadow line-by-line with model pronunciation.",
+        description:
+          "Official-shaped speaking: Listen and Repeat and Take an Interview. Shadow dialogues with the model voice below.",
         spaceKey: "toefl-speaking",
         href: "/english/toefl/speaking",
       },
@@ -67,13 +71,14 @@ export const englishExamConfigs: Record<EnglishExamId, EnglishExamConfig> = {
     title: "SAT",
     hubHref: "/english/sat",
     blurb:
-      "Four subject folders plus an in-site MCQ bank (120+ questions). Upload practice files per subject or use built-in multiple-choice sets filtered by skill.",
+      "Digital SAT folders plus original MCQs: each Reading and Writing item pairs a short passage with one question (Information and Ideas, Craft and Structure, Standard English Conventions, Expression of Ideas). Math covers Algebra, Advanced Math, Problem-Solving and Data Analysis, and Geometry and Trigonometry. Not real College Board items.",
     sections: [
       {
         id: "english",
         title: "English",
         short: "E",
-        description: "General English practice sets, rhetoric, and expression-of-ideas materials.",
+        description:
+          "Expression of Ideas: revise short drafts to meet a stated rhetorical goal (Digital SAT R&W).",
         spaceKey: "sat-english",
         href: "/english/sat/english",
       },
@@ -81,7 +86,8 @@ export const englishExamConfigs: Record<EnglishExamId, EnglishExamConfig> = {
         id: "grammar",
         title: "Grammar",
         short: "G",
-        description: "Standard English conventions, usage, punctuation, and sentence structure.",
+        description:
+          "Standard English Conventions: edit short texts for sentence structure, usage, and punctuation.",
         spaceKey: "sat-grammar",
         href: "/english/sat/grammar",
       },
@@ -89,7 +95,8 @@ export const englishExamConfigs: Record<EnglishExamId, EnglishExamConfig> = {
         id: "reading",
         title: "Reading",
         short: "R",
-        description: "Passages, information & ideas, craft & structure, and reading practice sets.",
+        description:
+          "Information and Ideas plus Craft and Structure: one short passage (or pair) per question, as on the Digital SAT.",
         spaceKey: "sat-reading",
         href: "/english/sat/reading",
       },
@@ -97,7 +104,8 @@ export const englishExamConfigs: Record<EnglishExamId, EnglishExamConfig> = {
         id: "mathematics",
         title: "Mathematics",
         short: "M",
-        description: "Algebra, advanced math, and problem-solving practice sets.",
+        description:
+          "Algebra, Advanced Math, Problem-Solving and Data Analysis, and Geometry and Trigonometry.",
         spaceKey: "sat-mathematics",
         href: "/english/sat/mathematics",
       },

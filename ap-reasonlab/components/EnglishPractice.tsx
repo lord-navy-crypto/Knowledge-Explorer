@@ -2,6 +2,7 @@
 
 import type { EnglishPracticeQuestion } from "@/data/english-content";
 import RichContent from "@/components/RichContent";
+import { englishStimulusLabel } from "@/lib/english-exam-format";
 
 type Props = {
   questions: EnglishPracticeQuestion[];
@@ -22,12 +23,23 @@ export default function EnglishPractice({ questions, answers: controlled, onAnsw
       {questions.map((question, questionIndex) => {
         const selected = isControlled ? controlled[question.id] : undefined;
         const answered = selected !== undefined;
+        const passage = question.passage?.trim();
         return (
           <article key={question.id} className="card space-y-3">
             <div className="flex flex-wrap items-center gap-2">
               <span className="badge">Practice {questionIndex + 1}</span>
               <span className="text-xs font-medium text-slate-500">{question.skill}</span>
             </div>
+            {passage ? (
+              <figure className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                <figcaption className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                  {englishStimulusLabel(question.skill)}
+                </figcaption>
+                <blockquote className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-800">
+                  {passage}
+                </blockquote>
+              </figure>
+            ) : null}
             <RichContent className="font-medium leading-7 text-slate-900">{question.prompt}</RichContent>
             <div className="grid gap-2">
               {question.choices.map((choice, choiceIndex) => {

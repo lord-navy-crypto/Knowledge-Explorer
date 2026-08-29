@@ -24,8 +24,12 @@ function validateBank(label: string, items: typeof toeflQuestions) {
     ids.add(item.id);
     if (item.id.includes("batch3")) throw new Error(`${label}: batch3 template id still present: ${item.id}`);
     if (item.prompt.includes("[Batch 3")) throw new Error(`${label}: batch3 template prompt in ${item.id}`);
-    if (!item.prompt.trim()) throw new Error(`${label}: empty prompt in ${item.id}`);
-    if (item.choices.length !== 4) throw new Error(`${label}: ${item.id} must have 4 choices`);
+    if (typeof item.prompt !== "string" || !item.prompt.trim()) {
+      throw new Error(`${label}: empty or invalid prompt in ${item.id}`);
+    }
+    if (!Array.isArray(item.choices) || item.choices.length !== 4) {
+      throw new Error(`${label}: ${item.id} must have 4 choices`);
+    }
     if (item.answer < 0 || item.answer > 3) throw new Error(`${label}: invalid answer in ${item.id}`);
     if (!item.explanation.trim()) throw new Error(`${label}: missing explanation in ${item.id}`);
   }

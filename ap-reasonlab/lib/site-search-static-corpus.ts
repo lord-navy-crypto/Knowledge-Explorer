@@ -292,9 +292,9 @@ export function getStaticSearchCorpus(): StaticCorpusRow[] {
   for (const area of englishAreas) {
     const examTags =
       area.href === "/english/toefl"
-        ? "TOEFL reading listening writing speaking practice"
+        ? "TOEFL iBT Complete the Words daily academic reading listening conversation announcement talk email academic discussion interview"
         : area.href === "/english/sat"
-          ? "SAT reading grammar mathematics english practice"
+          ? "Digital SAT short passage Information and Ideas Craft and Structure conventions Expression of Ideas Algebra Geometry"
           : "";
     rows.push(
       row({

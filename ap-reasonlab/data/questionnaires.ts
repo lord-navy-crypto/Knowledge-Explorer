@@ -12,6 +12,7 @@ import { apPracticeSetB } from "@/data/ap-practice-set-b";
 import { apPracticeSetC } from "@/data/ap-practice-set-c";
 import { apPracticeSetD } from "@/data/ap-practice-set-d";
 import { apCedPractice } from "@/data/ap-ced-practice";
+import { apEnglishExamFormatQuestionnaires } from "@/data/ap-english-exam-format";
 import managed from "@/data/managed-content.json";
 
 /**
@@ -537,6 +538,7 @@ export const questionnaires: Questionnaire[] = [
   ...apPracticeSetC,
   ...apPracticeSetD,
   ...apCedPractice,
+  ...apEnglishExamFormatQuestionnaires,
   ...(((managed as { questionnaires?: Questionnaire[] }).questionnaires ||
     []) as Questionnaire[]),
 ];

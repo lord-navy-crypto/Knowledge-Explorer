@@ -6,8 +6,8 @@ export default function SatPage() {
   return (
     <EnglishExamHub
       exam={getExamConfig("sat")}
-      title="SAT · English, Grammar, Reading & Math"
-      description="Four SAT subject folders for uploads plus 120+ in-site multiple-choice practice questions filtered by skill."
+      title="Digital SAT · Reading & Writing + Math"
+      description="Short passage + one question (Digital SAT Reading and Writing domains) and College Board Math domains. Original practice — not real SAT items."
       officialNote={SAT_HUB_OFFICIAL.note}
       officialLinks={SAT_HUB_OFFICIAL.links}
     />

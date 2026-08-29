@@ -49,7 +49,7 @@ export const checklistItems: ChecklistItem[] = [
     status: "done",
     title: "Expand English TOEFL/SAT practice banks (120+ each)",
     description:
-      "120+ hand-curated and challenge-tier MCQs per exam; skill filters, pagination, localStorage resume, and section timers.",
+      "120+ original items per exam in official ETS TOEFL iBT and Digital SAT formats; skill filters, pagination, localStorage resume, and section timers.",
     link: "/english",
   },
   {

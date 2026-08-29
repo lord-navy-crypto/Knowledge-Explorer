@@ -74,7 +74,8 @@ export const humanitiesQuestionnaires: Questionnaire[] = [
     title: "AP English Language — Rhetorical Analysis Set A",
     subject: "AP English Language",
     kind: "generated",
-    description: "Rhetorical analysis prompts with SOAPS + thesis scaffolding.",
+    description:
+      "Skill practice: rhetorical analysis with SOAPS + thesis scaffolding. For full exam shape (reading/writing MCQ + three FRQs), use AP English Language — Exam Format Set A.",
     generationNote: "Original rhetorical situations for practice.",
     estimatedMinutes: 35,
     difficultyTier: 2,

@@ -3,6 +3,7 @@ import EnglishPageHeader from "@/components/EnglishPageHeader";
 import EnglishPracticeBank from "@/components/EnglishPracticeBank";
 import { questionsForExam } from "@/lib/english-question-bank";
 import { hubTimerMinutes } from "@/lib/english-section-timers";
+import { examFormatBlurb } from "@/lib/english-exam-format";
 import type { EnglishExamConfig } from "@/data/english-exam-sections";
 
 type OfficialLink = { href: string; label: string };
@@ -60,10 +61,11 @@ export default function EnglishExamHub({
 
       <EnglishPracticeBank
         title={`${exam.title} · in-site practice questions`}
-        description="Original multiple-choice items grouped by skill. Progress saves in this browser."
+        description="Original multiple-choice items grouped by official task type. Progress saves in this browser."
         questions={mcqBank}
         storageKey={`${exam.id}-hub`}
         timedMinutes={hubTimerMinutes(exam.id)}
+        formatNote={examFormatBlurb(exam.id)}
       />
 
       <section className={`grid gap-4 ${cols}`}>

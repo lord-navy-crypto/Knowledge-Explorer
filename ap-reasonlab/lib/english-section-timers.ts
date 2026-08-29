@@ -1,20 +1,20 @@
 import type { EnglishExamId } from "@/data/english-exam-sections";
 
-/** Exam-style section timers (minutes) for in-site MCQ banks. */
+/** Official-ish section timers (minutes) for in-site MCQ banks. */
 export const ENGLISH_SECTION_TIMER_MINUTES: Record<
   EnglishExamId,
   Partial<Record<string, number>>
 > = {
   toefl: {
-    reading: 35,
-    listening: 20,
-    writing: 18,
-    speaking: 12,
+    reading: 30,
+    listening: 29,
+    writing: 23,
+    speaking: 8,
   },
   sat: {
-    english: 25,
-    grammar: 15,
-    reading: 25,
+    english: 32,
+    grammar: 32,
+    reading: 32,
     mathematics: 35,
   },
 };
@@ -28,7 +28,7 @@ export function sectionTimerMinutes(
 
 /** Full-hub practice pace (all skills combined). */
 export const ENGLISH_HUB_TIMER_MINUTES: Record<EnglishExamId, number> = {
-  toefl: 54,
+  toefl: 90,
   sat: 64,
 };
 

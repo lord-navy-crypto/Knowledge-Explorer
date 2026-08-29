@@ -5,6 +5,9 @@ import {
   curatedExtendedToeflQuestions,
 } from "./english-questions-curated-extended";
 import { hardSatQuestions, hardToeflQuestions } from "./english-questions-hard";
+import { authenticToeflQuestions } from "./english-questions-authentic-toefl";
+import { authenticSatQuestions } from "./english-questions-authentic-sat";
+import { withOfficialSkill } from "@/lib/english-exam-format";
 
 export type EnglishPracticeQuestion = {
   id: string;
@@ -13,7 +16,16 @@ export type EnglishPracticeQuestion = {
   choices: string[];
   answer: number;
   explanation: string;
+  /** Short stimulus: Digital SAT passage, TOEFL notice, transcript, email scenario. */
+  passage?: string;
 };
+
+function withExamSkills(
+  exam: "toefl" | "sat",
+  items: EnglishPracticeQuestion[]
+): EnglishPracticeQuestion[] {
+  return items.map((item) => withOfficialSkill(exam, item));
+}
 
 /** Exam tracks — exam-style practice questions and uploaded practice sets. */
 export const englishExamAreas = [
@@ -22,13 +34,14 @@ export const englishExamAreas = [
     title: "TOEFL",
     icon: "T",
     description:
-      "Daily practice lanes plus an in-site MCQ bank (120+ questions). Upload reading articles, listening scripts, writing prompts, and speaking dialogues.",
+      "ETS TOEFL iBT task types (Reading, Listening, Writing, Speaking) plus an in-site bank of original items. Upload articles, scripts, prompts, and dialogues.",
   },
   {
     href: "/english/sat",
     title: "SAT",
     icon: "S",
-    description: "4 subject folders plus 120+ in-site MCQ practice questions filtered by skill.",
+    description:
+      "Digital SAT folders (Reading and Writing domains + Math) plus 120+ original short-passage MCQs.",
   },
 ] as const;
 
@@ -125,13 +138,14 @@ const baseToeflQuestions: EnglishPracticeQuestion[] = [
   { id: "toefl-10", skill: "Grammar in context", prompt: "The research team ___ its findings after repeating the experiment under stricter controls.", choices: ["publish", "publishes", "published", "publishing"], answer: 2, explanation: "Past tense fits a completed action in narrative context." },
 ];
 
-export const toeflQuestions: EnglishPracticeQuestion[] = [
+export const toeflQuestions: EnglishPracticeQuestion[] = withExamSkills("toefl", [
+  ...authenticToeflQuestions,
   ...curatedToeflQuestions,
   ...curatedExtendedToeflQuestions,
   ...hardToeflQuestions,
   ...baseToeflQuestions,
   ...extraToeflQuestions,
-];
+]);
 
 const baseSatQuestions: EnglishPracticeQuestion[] = [
   { id: "sat-1", skill: "Standard English Conventions", prompt: "The prototype completed twelve trials ___ only two required a manual reset.", choices: [", and", ",", "; and", ": and"], answer: 0, explanation: "Two independent clauses can be joined with a comma plus the coordinating conjunction ‘and’." },
@@ -146,11 +160,12 @@ const baseSatQuestions: EnglishPracticeQuestion[] = [
   { id: "sat-11", skill: "Words in context", prompt: "Although the initial results were ___, the team repeated the trial and confirmed the pattern.", choices: ["definitive", "tentative", "irrelevant", "hostile"], answer: 1, explanation: "Repeating the trial suggests the first results were preliminary or uncertain — tentative." },
 ];
 
-export const satQuestions: EnglishPracticeQuestion[] = [
+export const satQuestions: EnglishPracticeQuestion[] = withExamSkills("sat", [
+  ...authenticSatQuestions,
   ...curatedSatQuestions,
   ...curatedExtendedSatQuestions,
   ...hardSatQuestions,
   ...baseSatQuestions,
   ...extraSatQuestions,
-];
+]);
 

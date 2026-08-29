@@ -124,7 +124,7 @@ export function getApSubjectOfficial(slug: string, subjectName?: string): Offici
 
 export const SAT_HUB_OFFICIAL: OfficialResourceBlock = {
   title: "Official SAT practice",
-  note: "Use College Board / Bluebook for official practice. This site is not affiliated with College Board.",
+  note: "Digital SAT Reading and Writing uses one short passage (about 25–150 words) per question across four domains. Use Bluebook for official tests. This site is not affiliated with College Board.",
   links: [
     {
       href: "https://satsuite.collegeboard.org/practice/student-question-bank",
@@ -135,15 +135,15 @@ export const SAT_HUB_OFFICIAL: OfficialResourceBlock = {
       label: "Bluebook & practice tests",
     },
     {
-      href: "https://satsuite.collegeboard.org/sat",
-      label: "SAT Suite overview",
+      href: "https://satsuite.collegeboard.org/sat/whats-on-the-test/reading-writing",
+      label: "What's on Reading & Writing",
     },
   ],
 };
 
 export const TOEFL_HUB_OFFICIAL: OfficialResourceBlock = {
   title: "Official TOEFL resources",
-  note: "Use ETS for current format and official preparation. This site is not affiliated with ETS.",
+  note: "The enhanced TOEFL iBT uses named task types in Reading, Listening, Writing, and Speaking. Use ETS for official prep. This site is not affiliated with ETS.",
   links: [
     {
       href: "https://www.ets.org/toefl/test-takers/ibt/about/content.html",
@@ -154,8 +154,8 @@ export const TOEFL_HUB_OFFICIAL: OfficialResourceBlock = {
       label: "ETS preparation",
     },
     {
-      href: "https://www.ets.org/toefl.html",
-      label: "ETS TOEFL home",
+      href: "https://www.ets.org/pdfs/toefl/toefl-ibt-test-overview.pdf",
+      label: "ETS test overview (PDF)",
     },
   ],
 };
@@ -164,7 +164,7 @@ export const TOEFL_HUB_OFFICIAL: OfficialResourceBlock = {
 const EXAM_SECTION_OFFICIAL: Record<string, OfficialResourceBlock> = {
   "sat:english": {
     title: "Official SAT Reading & Writing",
-    note: "College Board Digital SAT R&W practice (Expression of Ideas / conventions overlap).",
+    note: "College Board Digital SAT R&W: Expression of Ideas (revise for a stated goal).",
     links: [
       {
         href: "https://satsuite.collegeboard.org/sat/whats-on-the-test/reading-writing",
@@ -192,7 +192,7 @@ const EXAM_SECTION_OFFICIAL: Record<string, OfficialResourceBlock> = {
   },
   "sat:reading": {
     title: "Official SAT Reading practice",
-    note: "Information & Ideas / Craft & Structure on the Digital SAT.",
+    note: "Information and Ideas plus Craft and Structure: one short passage per question.",
     links: [
       {
         href: "https://satsuite.collegeboard.org/sat/whats-on-the-test/reading-writing",
@@ -224,7 +224,7 @@ const EXAM_SECTION_OFFICIAL: Record<string, OfficialResourceBlock> = {
   },
   "toefl:reading": {
     title: "Official TOEFL Reading",
-    note: "ETS describes current Reading task types and free prep options.",
+    note: "ETS Reading tasks: Complete the Words, Read in Daily Life, Read an Academic Passage.",
     links: [
       {
         href: "https://www.ets.org/toefl/test-takers/ibt/about/content.html",
@@ -238,7 +238,7 @@ const EXAM_SECTION_OFFICIAL: Record<string, OfficialResourceBlock> = {
   },
   "toefl:listening": {
     title: "Official TOEFL Listening",
-    note: "Official Listening format and prep from ETS.",
+    note: "ETS Listening tasks: Listen and Choose a Response, Conversation, Announcement, Academic Talk.",
     links: [
       {
         href: "https://www.ets.org/toefl/test-takers/ibt/about/content.html",
@@ -252,7 +252,7 @@ const EXAM_SECTION_OFFICIAL: Record<string, OfficialResourceBlock> = {
   },
   "toefl:writing": {
     title: "Official TOEFL Writing",
-    note: "Official Writing tasks and sample materials from ETS.",
+    note: "ETS Writing tasks: Build a Sentence, Write an Email, Write for an Academic Discussion.",
     links: [
       {
         href: "https://www.ets.org/toefl/test-takers/ibt/about/content.html",
@@ -266,7 +266,7 @@ const EXAM_SECTION_OFFICIAL: Record<string, OfficialResourceBlock> = {
   },
   "toefl:speaking": {
     title: "Official TOEFL Speaking",
-    note: "Official Speaking format and prep from ETS.",
+    note: "ETS Speaking tasks: Listen and Repeat, Take an Interview.",
     links: [
       {
         href: "https://www.ets.org/toefl/test-takers/ibt/about/content.html",

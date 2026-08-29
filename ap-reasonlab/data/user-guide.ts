@@ -146,12 +146,12 @@ export const USER_GUIDE_SECTIONS: UserGuideSection[] = [
     id: "english-toefl",
     title: "English — TOEFL lanes",
     preview:
-      "TOEFL is split into Reading, Listening, Writing, and Speaking folders with sample prompts and practice materials. Timers and accent practice tools are in Convenient Tools; speaking can use speech-to-text and AI speaking coach in Toolbox.",
+      "TOEFL iBT now uses named tasks: Complete the Words, daily-life and academic reading; four listening tasks; Build a Sentence, email, and academic discussion; Listen and Repeat and Take an Interview. Upload extra materials in each lane.",
     conversation: [
-      { speaker: "you", text: "Where is TOEFL integrated writing vs independent?" },
+      { speaker: "you", text: "Is this the old integrated/independent TOEFL writing?" },
       {
         speaker: "guide",
-        text: "Start at /english/toefl — open Writing for integrated/independent lanes, Speaking for record-and-review flows, Reading/Listening for passage-style practice. English AI in Toolbox can critique structure without writing the essay for you.",
+        text: "No — current ETS writing is Build a Sentence, Write an Email, and Write for an Academic Discussion. Open /english/toefl/writing. Reading, Listening, and Speaking lanes use the matching official task names. Items are original practice, not real ETS questions.",
       },
     ],
     links: [
@@ -168,18 +168,18 @@ export const USER_GUIDE_SECTIONS: UserGuideSection[] = [
     id: "english-sat",
     title: "English — SAT lanes",
     preview:
-      "SAT covers Reading, Writing/Grammar, and Mathematics sections with in-site practice items. Vocabulary and grammar skill pages complement the exam lanes.",
+      "Digital SAT Reading and Writing: one short passage (about 25–150 words) plus one question, in four domains. Math: Algebra, Advanced Math, Problem-Solving and Data Analysis, Geometry and Trigonometry.",
     conversation: [
-      { speaker: "you", text: "SAT math and reading — same AI?" },
+      { speaker: "you", text: "Is this the old long SAT passage with many questions?" },
       {
         speaker: "guide",
-        text: "Use /english/sat for section folders. AI Toolbox → English tab can explain grammar rules or math word-problem setup; pick the English task that matches (reading, writing, or general).",
+        text: "No — Digital SAT pairs each short passage with a single question. Open /english/sat/reading for Information and Ideas and Craft and Structure, Grammar for conventions, English for Expression of Ideas, and Mathematics for the four math domains. Original items, not real SAT questions.",
       },
     ],
     links: [
       { href: "/english/sat", label: "SAT home" },
       { href: "/english/sat/reading", label: "SAT Reading" },
-      { href: "/english/sat/english", label: "SAT Writing & Language" },
+      { href: "/english/sat/english", label: "SAT Expression of Ideas" },
       { href: "/english/sat/grammar", label: "SAT Grammar lane" },
       { href: "/english/sat/mathematics", label: "SAT Mathematics" },
       { href: "/english/vocabulary", label: "Vocabulary skills" },

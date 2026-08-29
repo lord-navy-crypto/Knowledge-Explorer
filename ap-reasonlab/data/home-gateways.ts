@@ -53,7 +53,7 @@ export const HOME_GATEWAYS: HomeGateway[] = [
       {
         href: "/english",
         title: "English",
-        description: "TOEFL, SAT, vocabulary, grammar, and English AI.",
+        description: "TOEFL iBT and Digital SAT in official task formats, plus vocabulary and grammar.",
       },
     ],
   },

@@ -22,6 +22,8 @@ type Props = {
   storageKey: string;
   /** Exam-style countdown in minutes (section pages). */
   timedMinutes?: number;
+  /** Official-format note under the bank description. */
+  formatNote?: string;
 };
 
 function loadSaved(key: string): SavedState | null {
@@ -51,6 +53,7 @@ export default function EnglishPracticeBank({
   questions,
   storageKey,
   timedMinutes,
+  formatNote,
 }: Props) {
   const skills = useMemo(
     () => [...new Set(questions.map((q) => q.skill))].sort(),
@@ -166,6 +169,7 @@ export default function EnglishPracticeBank({
           {title}
         </h2>
         <p className="mt-1 text-sm text-slate-600">{description}</p>
+        {formatNote ? <p className="mt-2 text-xs leading-5 text-slate-500">{formatNote}</p> : null}
         <p className="mt-2 text-xs text-slate-500">
           {filtered.length} question{filtered.length === 1 ? "" : "s"}
           {skill !== "all" ? ` · skill: ${skill}` : ""}

@@ -20,11 +20,11 @@ export default function EnglishHubPage() {
       />
 
       <section className="rounded-2xl border border-sky-200 bg-sky-50/80 px-5 py-4 text-sm text-sky-950">
-        <p className="font-semibold">TOEFL &amp; SAT MCQ banks are live (120+ each)</p>
+        <p className="font-semibold">TOEFL &amp; SAT banks use official exam task formats</p>
         <p className="mt-1 text-sky-900/85">
-          Exam folders, vocabulary, grammar, and English AI are ready. Upload more lanes via Manage,
-          or ask for sets on Forum — built-in banks already include hand-curated and challenge-tier
-          items.
+          In-site items follow ETS TOEFL iBT task types and Digital SAT domains (short passage + one
+          question). Original practice — not real ETS or College Board questions. Upload extra
+          materials in each lane.
         </p>
       </section>
 
@@ -68,8 +68,9 @@ export default function EnglishHubPage() {
           </p>
           <h2 className="section-title mt-1">TOEFL · SAT</h2>
           <p className="mt-1 max-w-2xl text-sm text-slate-600">
-            TOEFL is daily materials practice (articles, listening replay, writing 范文, speaking
-            shadow). SAT keeps practice-set folders. Core language drills live under Basic skills.
+            TOEFL follows current ETS iBT task types. SAT follows Digital SAT Reading and Writing
+            (one short passage per question) plus Math domains. Vocabulary and grammar drills stay
+            under Basic skills.
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

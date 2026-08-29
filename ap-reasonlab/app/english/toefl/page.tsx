@@ -7,7 +7,7 @@ export default function ToeflPage() {
     <EnglishExamHub
       exam={getExamConfig("toefl")}
       title="TOEFL iBT"
-      description="Daily English practice with TOEFL-shaped materials — reading, listening, writing, and speaking lanes plus 120+ in-site MCQ items."
+      description="Current ETS TOEFL iBT task types — Reading, Listening, Writing, and Speaking lanes plus 120+ original in-site items (not real ETS questions)."
       officialNote={TOEFL_HUB_OFFICIAL.note}
       officialLinks={TOEFL_HUB_OFFICIAL.links}
     />
