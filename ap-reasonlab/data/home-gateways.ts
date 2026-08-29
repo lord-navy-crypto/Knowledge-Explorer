@@ -43,28 +43,28 @@ export const HOME_GATEWAYS: HomeGateway[] = [
     id: "tools-code",
     title: "Convenient Tools & Code",
     description:
-      "A few larger workbenches instead of duplicate mini-tools: Calc + Graph, writing/file desks, and one Code Workbench.",
+      "Combined workbenches first, then individual utilities: Calc + Graph, Code, AI, writing/file desks, and single-purpose tools.",
     href: "/explore/tools-code",
     links: [
       {
-        href: "/tools",
-        title: "Convenient Tools",
-        description: "Fused workbenches for math, writing, PDF/image work, focus, and utilities.",
-      },
-      {
         href: "/hints?tool=calculator",
-        title: "Calc + Graph",
-        description: "One math desk: calculator, grapher, calculus lab, units, vectors, LaTeX, and formulas.",
+        title: "Math Workbench · Calc + Graph",
+        description: "Combined calculator, grapher, calculus lab, units, vectors, LaTeX, and formulas.",
       },
       {
         href: "/code/editor?lang=python",
         title: "Code Workbench",
-        description: "One editor with language picker plus JSON, Base64/URL, and Code board tabs.",
+        description: "Combined editor with language picker plus JSON, Base64/URL, and Code board tabs.",
       },
       {
         href: "/hints",
-        title: "AI Toolbox",
-        description: "Unified AI — Local / Website API / Your own API, then chat.",
+        title: "AI Workbench",
+        description: "Unified AI — Local / Website API / Your own API, with AP, English, Coding, and Math tools.",
+      },
+      {
+        href: "/tools",
+        title: "Convenient Tools",
+        description: "Browse all combined workbenches first, then the individual tools underneath.",
       },
       {
         href: "/forum",
