@@ -77,6 +77,7 @@ function linkClass(active: boolean, compact?: boolean) {
 
 export default function Nav() {
   const pathname = usePathname();
+  const stopPrefetch = pathname === "/explore/tools-code";
   const { editor } = useEditorMode();
   const { open: openQuickSearch } = useQuickSearch();
   const [moreOpen, setMoreOpen] = useState(false);
@@ -128,7 +129,11 @@ export default function Nav() {
     <header className="sticky top-0 z-50 border-b border-[var(--ke-border)] bg-[rgba(255,252,247,0.92)] backdrop-blur-md">
       <div className="mx-auto max-w-6xl px-4 py-3">
         <div className="flex items-center justify-between gap-3">
-          <Link href="/" className="flex min-w-0 shrink-0 items-center gap-2.5">
+          <Link
+            href="/"
+            prefetch={stopPrefetch ? false : undefined}
+            className="flex min-w-0 shrink-0 items-center gap-2.5"
+          >
             <span className="flex h-8 w-8 items-center justify-center rounded border border-[var(--ke-border-strong)] bg-[var(--ke-navy)] font-display text-[11px] font-bold tracking-wide text-[#f7f4ee]">
               {brand.shortName}
             </span>
@@ -159,6 +164,7 @@ export default function Nav() {
                 <Link
                   key={link.href}
                   href={link.href}
+                  prefetch={stopPrefetch ? false : undefined}
                   className={`hidden md:inline-flex ${linkClass(active)}`}
                   aria-current={active ? "page" : undefined}
                 >
@@ -201,6 +207,7 @@ export default function Nav() {
                           <Link
                             key={link.href}
                             href={link.href}
+                            prefetch={stopPrefetch ? false : undefined}
                             role="menuitem"
                             className={
                               active
@@ -232,6 +239,7 @@ export default function Nav() {
               <Link
                 key={link.href}
                 href={link.href}
+                prefetch={stopPrefetch ? false : undefined}
                 className={linkClass(active, true)}
                 aria-current={active ? "page" : undefined}
               >
