@@ -71,7 +71,7 @@ export default function CodePage() {
           className="input w-full"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Filter playgrounds: python, sql, java, markdown, playground, official docs…"
+          placeholder="Filter playgrounds: python, rust, go, java, sql, kotlin, playground, official docs…"
         />
       </label>
 
@@ -111,7 +111,7 @@ export default function CodePage() {
 
       {families.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-500">
-          No playgrounds match “{query.trim()}”. Try python, java, sql, html, or a keyword like json / regex / graph.
+          No playgrounds match “{query.trim()}”. Try python, rust, go, java, sql, html, or a keyword like json / regex / graph.
         </p>
       ) : (
         families.map((family) => (

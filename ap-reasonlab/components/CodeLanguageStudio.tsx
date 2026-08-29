@@ -14,7 +14,10 @@ import HtmlPlayground from "@/components/HtmlPlayground";
 import MarkdownPlayground from "@/components/MarkdownPlayground";
 import JavaPlayground from "@/components/JavaPlayground";
 import CsharpPlayground from "@/components/CsharpPlayground";
-import { ALL_CODE_LANGS } from "@/data/code-language-hub";
+import { ALL_CODE_LANGS, CODE_LANG_FAMILIES } from "@/data/code-language-hub";
+import PracticeLangPlayground from "@/components/PracticeLangPlayground";
+import { isPracticeLangId, PRACTICE_LANG_BY_ID } from "@/data/practice-langs";
+import { PRACTICE_LANG_EXAMPLES } from "@/data/practice-lang-examples";
 import { getCodeLangOfficial } from "@/data/official-resources";
 import { standardSnippets } from "@/data/code-snippets";
 import { jsExamples, tsExamples, sqlExamples, markdownExamples } from "@/data/easy-code-langs";
@@ -25,6 +28,7 @@ import {
   loadLastCodeLang,
   saveLastCodeLang,
   boardLang,
+  CODE_IMPORT_ACCEPT,
 } from "@/lib/code-editor-studio";
 import { appendToCodeBoard } from "@/lib/code-board-store";
 import { classifyPaste } from "@/lib/code-paste-detect";
@@ -124,6 +128,15 @@ export default function CodeLanguageStudio({ initialLang = "python" }: { initial
     if (lang === "markdown") return <MarkdownPlayground examples={markdownExamples} />;
     if (lang === "java") return <JavaPlayground examples={javaExamples} />;
     if (lang === "csharp") return <CsharpPlayground examples={csharpExamples} />;
+    if (isPracticeLangId(lang)) {
+      return (
+        <PracticeLangPlayground
+          key={lang}
+          spec={PRACTICE_LANG_BY_ID[lang]}
+          examples={PRACTICE_LANG_EXAMPLES[lang]}
+        />
+      );
+    }
     return null;
   }, [lang, importNonce]);
 
@@ -221,7 +234,7 @@ export default function CodeLanguageStudio({ initialLang = "python" }: { initial
         <div>
           <h1 className="text-3xl font-bold">{meta.title} editor</h1>
           <p className="mt-2 max-w-2xl text-slate-600">
-            One editor: pick a language here, import a file, or keep snippets on the{" "}
+            One editor: pick a language here (including C, Go, Rust, and more), import a file, or keep snippets on the{" "}
             <button
               type="button"
               className="font-medium text-brand-700 underline"
@@ -244,10 +257,14 @@ export default function CodeLanguageStudio({ initialLang = "python" }: { initial
                 router.replace(`/code/editor?${params.toString()}`);
               }}
             >
-              {ALL_CODE_LANGS.map((row) => (
-                <option key={row.id} value={row.id}>
-                  {row.title}
-                </option>
+              {CODE_LANG_FAMILIES.map((family) => (
+                <optgroup key={family.id} label={family.label}>
+                  {family.langs.map((row) => (
+                    <option key={row.id} value={row.id}>
+                      {row.title}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           </label>
@@ -256,7 +273,7 @@ export default function CodeLanguageStudio({ initialLang = "python" }: { initial
             <input
               type="file"
               className="sr-only"
-              accept=".py,.js,.mjs,.ts,.tsx,.jsx,.sql,.md,.html,.htm,.css,.json,.java,.cs,.txt"
+              accept={CODE_IMPORT_ACCEPT}
               onChange={(e) => {
                 const file = e.target.files?.[0] || null;
                 e.target.value = "";

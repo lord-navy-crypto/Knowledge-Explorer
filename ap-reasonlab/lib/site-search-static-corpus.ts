@@ -46,6 +46,15 @@ function playgroundHrefForSnippet(language: string): string {
   if (language === "sql") return "/code/sql";
   if (language === "markdown") return "/code/markdown";
   if (language === "csharp") return "/code/csharp";
+  if (language === "c") return "/code/c";
+  if (language === "cpp") return "/code/cpp";
+  if (language === "go") return "/code/go";
+  if (language === "rust") return "/code/rust";
+  if (language === "php") return "/code/php";
+  if (language === "ruby") return "/code/ruby";
+  if (language === "r") return "/code/r";
+  if (language === "swift") return "/code/swift";
+  if (language === "kotlin") return "/code/kotlin";
   return "/code";
 }
 
@@ -73,7 +82,7 @@ const CORE_STATIC_PAGES: Array<Omit<StaticCorpusRow, "body">> = [
   { id: "forum", type: "page", title: "Forum", subject: "Community", detail: "Discussions, shared library, My box", href: "/forum" },
   { id: "forum-shared", type: "page", title: "Shared library", subject: "Community", detail: "Public materials in Forum", href: "/forum?tab=shared" },
   { id: "forum-box", type: "page", title: "My box", subject: "Community", detail: "Private notes and pictures", href: "/forum?tab=box" },
-  { id: "code", type: "page", title: "Code Resource", subject: "Code", detail: "Python, JavaScript, SQL, Java, C# playgrounds", href: "/code" },
+  { id: "code", type: "page", title: "Code Resource", subject: "Code", detail: "Python, JavaScript, SQL, Java, C#, C, Go, Rust playgrounds", href: "/code" },
   { id: "code-board-page", type: "tool", title: "Long code block adder", subject: "Code", detail: "Save reusable snippets and open playgrounds", href: "/tools/code-board" },
   { id: "tools", type: "page", title: "Convenient Tools", subject: "Tools", detail: "Searchable catalog of browser utilities", href: "/tools" },
   { id: "english", type: "page", title: "English Learning", subject: "English", detail: "TOEFL SAT vocabulary writing", href: "/english" },

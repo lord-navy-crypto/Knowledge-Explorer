@@ -9,6 +9,13 @@ describe("code paste detect", () => {
     expect(hit.body).toContain("print");
   });
 
+  it("extracts a rust fence into the rust editor lang", () => {
+    const hit = classifyPaste("See:\n```rust\nfn main() {}\n```");
+    expect(hit.kind).toBe("fence");
+    expect(hit.language).toBe("rust");
+    expect(hit.body).toContain("fn main");
+  });
+
   it("pretty-prints JSON objects", () => {
     const hit = classifyPaste('{"ok":true,"n":1}');
     expect(hit.kind).toBe("json");

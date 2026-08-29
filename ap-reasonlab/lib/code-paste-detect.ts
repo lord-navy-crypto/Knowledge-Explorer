@@ -18,6 +18,15 @@ const FENCE_TO_EDITOR: Record<string, string> = {
   markdown: "markdown",
   java: "java",
   csharp: "csharp",
+  c: "c",
+  cpp: "cpp",
+  go: "go",
+  rust: "rust",
+  php: "php",
+  ruby: "ruby",
+  r: "r",
+  swift: "swift",
+  kotlin: "kotlin",
 };
 
 function looksLikeBase64(text: string): boolean {

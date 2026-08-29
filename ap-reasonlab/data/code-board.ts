@@ -9,6 +9,15 @@ export type CodeBoardLanguage =
   | "typescript"
   | "sql"
   | "markdown"
+  | "c"
+  | "cpp"
+  | "go"
+  | "rust"
+  | "php"
+  | "ruby"
+  | "r"
+  | "swift"
+  | "kotlin"
   | "other";
 
 export type CodeBoardBlock = {
@@ -32,6 +41,15 @@ export const CODE_BOARD_LANGUAGES: Array<{ id: CodeBoardLanguage | "all"; label:
   { id: "markdown", label: "Markdown" },
   { id: "java", label: "Java" },
   { id: "csharp", label: "C#" },
+  { id: "c", label: "C" },
+  { id: "cpp", label: "C++" },
+  { id: "go", label: "Go" },
+  { id: "rust", label: "Rust" },
+  { id: "php", label: "PHP" },
+  { id: "ruby", label: "Ruby" },
+  { id: "r", label: "R" },
+  { id: "swift", label: "Swift" },
+  { id: "kotlin", label: "Kotlin" },
   { id: "other", label: "Other" },
 ];
 
@@ -217,6 +235,56 @@ class Program {
     foreach (int x in a) sum += x;
     Console.WriteLine(sum);
   }
+}
+`,
+  },
+  {
+    id: "c-hello-sum",
+    language: "c",
+    title: "C array sum",
+    comment: "Starter C main for the practice editor — download and compile locally.",
+    builtin: true,
+    code: `#include <stdio.h>
+
+int main(void) {
+  int a[] = {1, 2, 3, 4};
+  int sum = 0;
+  for (int i = 0; i < 4; i++) sum += a[i];
+  printf("%d\\n", sum);
+  return 0;
+}
+`,
+  },
+  {
+    id: "go-hello-sum",
+    language: "go",
+    title: "Go slice sum",
+    comment: "Starter Go main — Practice Run is a structure check, not go run.",
+    builtin: true,
+    code: `package main
+
+import "fmt"
+
+func main() {
+  a := []int{1, 2, 3, 4}
+  sum := 0
+  for _, x := range a {
+    sum += x
+  }
+  fmt.Println(sum)
+}
+`,
+  },
+  {
+    id: "rust-hello-sum",
+    language: "rust",
+    title: "Rust slice sum",
+    comment: "Starter Rust main — download for rustc / cargo.",
+    builtin: true,
+    code: `fn main() {
+    let a = [1, 2, 3, 4];
+    let sum: i32 = a.iter().sum();
+    println!("{}", sum);
 }
 `,
   },

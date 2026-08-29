@@ -32,6 +32,11 @@ describe("forum-code-blocks", () => {
     expect(blocks[0]?.language).toBe("python");
     expect(blocks[0]?.code).toContain("print");
   });
+
+  it("extracts c++ and rust fences into the one editor langs", () => {
+    const blocks = extractForumCodeBlocks("```c++\nint x = 1;\n```\n```rust\nfn main() {}\n```");
+    expect(blocks.map((b) => b.language)).toEqual(["cpp", "rust"]);
+  });
 });
 
 describe("tool clusters", () => {
@@ -151,6 +156,9 @@ describe("code editor fusion", () => {
     expect(playgroundHref("python")).toBe("/code/editor?lang=python");
     expect(playgroundHref("html")).toBe("/code/editor?lang=web");
     expect(playgroundHref("javascript")).toBe("/code/editor?lang=javascript");
+    expect(playgroundHref("rust")).toBe("/code/editor?lang=rust");
+    expect(playgroundHref("go")).toBe("/code/editor?lang=go");
+    expect(playgroundHref("other")).toBeNull();
     expect(codeEditorDeskHref("json")).toBe("/code/editor?desk=json");
     expect(codeEditorDeskHref("encode", "python")).toBe("/code/editor?lang=python&desk=encode");
     expect(codeEditorDeskHref("board")).toBe("/code/editor?desk=board");

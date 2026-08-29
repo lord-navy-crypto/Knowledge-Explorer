@@ -25,8 +25,30 @@ describe("personal site tools and stems", () => {
   });
 
   it("points code languages at one editor with a language query", () => {
-    expect(ALL_CODE_LANGS.length).toBeGreaterThanOrEqual(7);
+    const ids = ALL_CODE_LANGS.map((row) => row.id);
+    expect(ALL_CODE_LANGS.length).toBeGreaterThanOrEqual(16);
     expect(ALL_CODE_LANGS.every((row) => row.href === `/code/${row.id}`)).toBe(true);
+    expect(ids).toEqual(
+      expect.arrayContaining([
+        "python",
+        "sql",
+        "markdown",
+        "javascript",
+        "typescript",
+        "web",
+        "java",
+        "csharp",
+        "c",
+        "cpp",
+        "go",
+        "rust",
+        "php",
+        "ruby",
+        "r",
+        "swift",
+        "kotlin",
+      ])
+    );
   });
 
   it("keeps math cluster on the fused pad and file lab on PDF desk", () => {

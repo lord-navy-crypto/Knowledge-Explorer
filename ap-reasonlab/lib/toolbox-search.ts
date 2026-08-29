@@ -135,6 +135,13 @@ const CODE_QUERY_TERMS = new Set([
   "snippet",
   "compiler",
   "markdown",
+  "rust",
+  "golang",
+  "kotlin",
+  "swift",
+  "ruby",
+  "php",
+  "cpp",
 ]);
 
 const FORUM_QUERY_TERMS = new Set([

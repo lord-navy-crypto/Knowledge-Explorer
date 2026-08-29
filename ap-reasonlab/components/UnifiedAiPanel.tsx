@@ -50,6 +50,7 @@ import {
   saveToolboxPanelPrefs,
   type ToolboxCategory,
 } from "@/lib/ai-toolbox-prefs";
+import { codingAiPlaygroundHref } from "@/lib/code-editor-studio";
 import { takeToolboxPrefill } from "@/lib/ai-toolbox-prefill";
 import { migrateEnglishTask, toolboxHref } from "@/lib/ai-toolbox-url";
 import {
@@ -197,7 +198,25 @@ const CODING_TASKS: Array<{ value: CodingTask; label: string; hint: string }> = 
   },
 ];
 
-const LANGUAGES = ["Python", "Java", "HTML / CSS / JS", "General algorithms", "Other"] as const;
+const LANGUAGES = [
+  "Python",
+  "Java",
+  "C",
+  "C++",
+  "Go",
+  "Rust",
+  "JavaScript / TypeScript",
+  "HTML / CSS / JS",
+  "SQL",
+  "C#",
+  "PHP",
+  "Ruby",
+  "R",
+  "Swift",
+  "Kotlin",
+  "General algorithms",
+  "Other",
+] as const;
 
 type Props = {
   defaultCategory?: Category;
@@ -347,9 +366,12 @@ export default function UnifiedAiPanel({
   });
   const [subject, setSubject] = useState(defaultSubject || savedPrefs.subject || SUBJECT_OPTIONS[0]);
   const [englishTarget, setEnglishTarget] = useState(savedPrefs.englishTarget);
-  const [language, setLanguage] = useState<(typeof LANGUAGES)[number]>(
-    (savedPrefs.language as (typeof LANGUAGES)[number]) || "Python"
-  );
+  const [language, setLanguage] = useState<(typeof LANGUAGES)[number]>(() => {
+    const raw = savedPrefs.language;
+    return (LANGUAGES as readonly string[]).includes(raw)
+      ? (raw as (typeof LANGUAGES)[number])
+      : "Python";
+  });
   const [input, setInput] = useState("");
   const [code, setCode] = useState("");
   const [notes, setNotes] = useState("");
@@ -1432,13 +1454,7 @@ export default function UnifiedAiPanel({
               <span id="ai-toolbox-language-hint" className="mt-1 block text-xs font-normal text-slate-500">
                 Open the{" "}
                 <Link
-                  href={
-                    language === "Java"
-                      ? "/code/editor?lang=java"
-                      : language.startsWith("HTML")
-                        ? "/code/editor?lang=web"
-                        : "/code/editor?lang=python"
-                  }
+                  href={codingAiPlaygroundHref(language)}
                   className="text-brand-700 hover:underline"
                 >
                   Code editor
@@ -1712,7 +1728,7 @@ export default function UnifiedAiPanel({
                   ) : null}
                   {message.role === "assistant" && category === "coding" && message.snippet ? (
                     <Link
-                      href={language === "Java" ? "/code/java" : "/code"}
+                      href={codingAiPlaygroundHref(language)}
                       className="mt-2 inline-block text-xs font-medium text-brand-700 hover:underline"
                     >
                       Open Code playground →
@@ -1843,7 +1859,7 @@ export default function UnifiedAiPanel({
                   <span className="mt-1 block text-xs font-normal text-slate-500">
                     Try snippets in{" "}
                     <Link
-                      href={language === "Java" ? "/code/java" : "/code"}
+                      href={codingAiPlaygroundHref(language)}
                       className="text-brand-700 hover:underline"
                     >
                       Code playground

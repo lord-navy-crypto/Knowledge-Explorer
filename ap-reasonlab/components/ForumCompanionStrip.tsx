@@ -57,8 +57,10 @@ export default function ForumCompanionStrip() {
           Pair with Tools & Code
         </h2>
         <p className="text-sm text-slate-600">
-          Fence code with <code className="text-xs">```python</code> in a thread, then run it in a
-          playground or save it to the code board.
+          Fence code with <code className="text-xs">```python</code>,{" "}
+          <code className="text-xs">```go</code>, <code className="text-xs">```rust</code>, or{" "}
+          <code className="text-xs">```c++</code> in a thread, then run it in the one editor or save
+          it to the code board.
         </p>
         <div className="flex flex-wrap gap-1.5">
           {WORKFLOWS.map((item) => (

@@ -23,6 +23,7 @@ import {
   writeForumDisplayName,
 } from "@/lib/forum-display-name";
 import ForumCodeLaunchers from "@/components/ForumCodeLaunchers";
+import { FORUM_FENCE_INSERTS } from "@/lib/forum-code-blocks";
 import {
   clearForumComposerDraft,
   clearForumReplyDraft,
@@ -801,22 +802,16 @@ export function ForumDiscussions({
             </select>
           </label>
           <div className="flex flex-wrap gap-1.5">
-            {(
-              [
-                ["python", "Python fence"],
-                ["json", "JSON fence"],
-                ["latex", "LaTeX fence"],
-              ] as const
-            ).map(([lang, label]) => (
+            {FORUM_FENCE_INSERTS.map(({ tag, label }) => (
               <button
-                key={lang}
+                key={tag}
                 type="button"
                 className="rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50"
                 onClick={() => {
                   const fence =
-                    lang === "latex"
+                    tag === "latex"
                       ? "\n$$\n\n$$\n"
-                      : "\n```" + lang + "\n\n```\n";
+                      : "\n```" + tag + "\n\n```\n";
                   setBody((prev) => (prev.trim() ? prev + fence : fence.trimStart()));
                 }}
               >
