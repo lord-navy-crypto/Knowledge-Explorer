@@ -1,9 +1,5 @@
-import ImageCropTool from "@/components/ImageCropTool";
-
-export const metadata = {
-  title: "Image crop — Knowledge Explorer",
-};
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return <ImageCropTool />;
+  redirect("/tools/image-compress?mode=crop");
 }

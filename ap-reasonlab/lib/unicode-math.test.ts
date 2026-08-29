@@ -12,6 +12,11 @@ describe("repairCommonLatexSpacing", () => {
     expect(repairCommonLatexSpacing("\\hat{n},dA")).toBe("\\hat{n}\\,dA");
     expect(repairCommonLatexSpacing("d\\vec{A}=\\hat{n},dA")).toContain("\\hat{n}\\,dA");
     expect(repairCommonLatexSpacing("\\int_{t_i}^{t_f}\\omega(t),dt")).toContain("\\,dt");
+    expect(repairCommonLatexSpacing("\\int_0^6 A(t),dt")).toContain("\\,dt");
+    expect(repairCommonLatexSpacing("y,dy=(x^2+1),dx")).toContain("\\,dy");
+    expect(repairCommonLatexSpacing("y,dy=(x^2+1),dx")).toContain("\\,dx");
+    expect(repairCommonLatexSpacing("r^2,d\\theta")).toContain("\\,d\\theta");
+    expect(repairCommonLatexSpacing("\\lambda,d\\ell")).toContain("\\,d\\ell");
   });
 
   it("runs during authored-text and AI-dialogue normalize", () => {

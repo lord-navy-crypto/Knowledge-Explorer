@@ -77,7 +77,7 @@ export const apPracticeSetD: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "diff-eqs",
         "conceptIntro": "Section II · Free Response (no calculator). Key concept: dy/dx = ky ⇒ exponential solutions.",
-        "prompt": "Solve dy/dx = 3y with initial condition y(0) = 2.\n\n(a) Set up the derivative, integral, or limit that answers the question.\n(b) Compute the value.\n(c) Interpret the result in the context of the problem.",
+        "prompt": "A laboratory culture is modeled by exponential growth with relative rate 3 per hour and initial population 2. Solve dy/dx = 3y with initial condition y(0) = 2.\n\n(a) Set up the derivative, integral, or limit that answers the question.\n(b) Compute the value.\n(c) Interpret the result in the context of the problem.",
         "visibleSteps": [
           "Separate: dy/y = 3 dx.",
           "Integrate and apply IC."

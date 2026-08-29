@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import StudyToolShell from "@/components/StudyToolShell";
+import ImageCropTool from "@/components/ImageCropTool";
 
 type Format = "image/jpeg" | "image/webp" | "image/png";
 
@@ -20,6 +20,7 @@ function extFor(mime: Format): string {
 }
 
 export default function ImageCompressTool() {
+  const [deskMode, setDeskMode] = useState<"compress" | "crop">("compress");
   const [srcUrl, setSrcUrl] = useState("");
   const [outUrl, setOutUrl] = useState("");
   const [fileName, setFileName] = useState("");
@@ -34,6 +35,11 @@ export default function ImageCompressTool() {
   const [rawFile, setRawFile] = useState<File | null>(null);
   const [dims, setDims] = useState({ ow: 0, oh: 0, w: 0, h: 0 });
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    const next = new URLSearchParams(window.location.search).get("mode");
+    if (next === "crop" || next === "compress") setDeskMode(next);
+  }, []);
 
   const savedPct = useMemo(() => {
     if (!origBytes || !outBytes) return null;
@@ -140,14 +146,37 @@ export default function ImageCompressTool() {
 
   return (
     <StudyToolShell
-      title="Image compress & convert"
-      description="Shrink images, cap width/height, and export JPEG, WebP, or PNG. Crop or annotate next door, then come back to compress."
-      tip="WebP usually wins on size. PNG ignores the quality slider (lossless). Crop lives at Image crop — same local import style."
+      title="Image desk"
+      description="Compress, convert, crop, or annotate images. Processing stays on this device — import a file here, then download."
+      tip="WebP usually wins on size. PNG ignores the quality slider (lossless). Crop mode: drag the blue box or switch to annotate."
     >
+      <div className="flex flex-wrap gap-2">
+        {(
+          [
+            ["compress", "Compress & convert"],
+            ["crop", "Crop & annotate"],
+          ] as const
+        ).map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => setDeskMode(id)}
+            className={
+              deskMode === id
+                ? "rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white"
+                : "rounded-lg bg-white px-3 py-2 text-sm font-semibold text-slate-600 ring-1 ring-slate-200"
+            }
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {deskMode === "crop" ? <ImageCropTool embedded /> : null}
+
+      {deskMode === "compress" ? (
+      <>
       <div className="flex flex-wrap items-center gap-3">
-        <Link href="/tools/image-crop" className="btn-secondary text-sm">
-          Crop & annotate →
-        </Link>
         <label className="btn-primary cursor-pointer">
           Choose image
           <input
@@ -275,6 +304,8 @@ export default function ImageCompressTool() {
           </div>
         </div>
       )}
+      </>
+      ) : null}
     </StudyToolShell>
   );
 }

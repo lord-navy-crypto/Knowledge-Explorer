@@ -347,7 +347,7 @@ export const apExamFormatAllQuestionnaires: Questionnaire[] = [
         "calc-fmt-m2",
         "calc-abbc-integrals",
         "Section I · Multiple Choice (no calculator)",
-        "∫₀² (3x²) dx =",
+        "If a particle has velocity v(x) = 3x² on the interval [0, 2], the net change in position is ∫₀² (3x²) dx =",
         ["6", "8", "12", "24"],
         1,
         ["Antiderivative x³ from 0 to 2 = 8."],

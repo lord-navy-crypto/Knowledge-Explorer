@@ -32,6 +32,10 @@ function hasGarbled(s: string): string[] {
   if (/Ã.|Â.|â€/.test(s)) hits.push("mojibake");
   if (/\$\$[^$]{0,40}\$\$/.test(s) && /\\frac\{[^}]*$/.test(s)) hits.push("unclosed-frac");
   if (/\\int_[^\\]*\(t\),dt/.test(s) || /\\omega\(t\),dt/.test(s)) hits.push("comma-dt");
+  if (/(?<!\\),d(t|x|y|A|m)\b/.test(s) || /(?<!\\),d\\theta/.test(s) || /(?<!\\),d\\ell/.test(s)) {
+    hits.push("comma-dt");
+  }
+  if (/\$\$\$/.test(s)) hits.push("triple-dollar");
   if (/\\hat\{n\},dA/.test(s) || /\\hat n,dA/.test(s)) hits.push("comma-dA");
   if (/\$d\\vec\{A\}=\\hat\{n\},dA/.test(s)) hits.push("bad-dA");
   if (/\\\\frac|\\\\int|\\\\vec/.test(s) && !/\$/.test(s) && /prompt|summary/.test("x")) {

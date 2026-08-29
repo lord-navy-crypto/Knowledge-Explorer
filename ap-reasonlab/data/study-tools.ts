@@ -373,18 +373,19 @@ export const STUDY_TOOLS: StudyTool[] = [
   {
     id: "image-compress",
     href: "/tools/image-compress",
-    title: "Image compress & convert",
-    blurb: "Shrink photos, set max width, export JPEG / WebP / PNG locally.",
+    title: "Image desk",
+    blurb: "Compress, convert, crop, or annotate images locally — import in one desk.",
     category: "media",
     security: "upload",
   },
   {
     id: "image-crop",
-    href: "/tools/image-crop",
+    href: "/tools/image-compress?mode=crop",
     title: "Image crop & annotate",
-    blurb: "Crop a region or draw simple marks, then download PNG.",
+    blurb: "Merged into Image desk.",
     category: "media",
     security: "upload",
+    listed: false,
   },
 
   // —— Classroom light ——

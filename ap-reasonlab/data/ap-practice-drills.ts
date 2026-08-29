@@ -115,7 +115,7 @@ const CALC_ITEMS: QuestionnaireItem[] = [
   ),
   frq(
     "calc-002",
-    "Find lim x→3 (x² − 9)/(x − 3).",
+    "A student is simplifying a difference of squares that appears as an average rate of change of x² on [3, x]. Find lim x→3 (x² − 9)/(x − 3).",
     ["Direct substitution gives 0/0, so factor the numerator.", "Cancel the common factor and re-evaluate."],
     ["L1: x² − 9 is a difference of squares.", "L2: After canceling, substitute x = 3."]
   ),
@@ -127,7 +127,7 @@ const CALC_ITEMS: QuestionnaireItem[] = [
   ),
   frq(
     "calc-004",
-    "Solve dy/dx = 2y with y(0) = 3.",
+    "A quantity y grows at a rate proportional to itself with constant 2 and starts at y(0) = 3. Solve dy/dx = 2y with y(0) = 3.",
     ["Separate variables: dy/y = 2 dx.", "Integrate and apply the initial condition."],
     ["L1: ln|y| = 2x + C.", "L2: Exponential form: y = Ce^{2x}."]
   ),

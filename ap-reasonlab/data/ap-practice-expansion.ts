@@ -100,7 +100,7 @@ export const apPracticeExpansion: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "integrals-basics",
         "conceptIntro": "Section II · Free Response (no calculator). Key concept: ∫ₐᵇ f(x) dx = F(b) − F(a).",
-        "prompt": "Evaluate ∫₀² (3x² + 1) dx.\n\n(a) Set up the derivative, integral, or limit that answers the question.\n(b) Compute the value.\n(c) Interpret the result in the context of the problem.",
+        "prompt": "A particle’s velocity is v(t) = 3t² + 1 meters per second. Find the displacement from t = 0 to t = 2 by evaluating ∫₀² (3x² + 1) dx.\n\n(a) Set up the derivative, integral, or limit that answers the question.\n(b) Compute the value.\n(c) Interpret the result in the context of the problem.",
         "visibleSteps": [
           "Find antiderivative.",
           "Apply FTC at bounds 0 and 2."

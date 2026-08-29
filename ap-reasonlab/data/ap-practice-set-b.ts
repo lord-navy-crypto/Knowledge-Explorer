@@ -673,7 +673,7 @@ export const apPracticeSetB: Questionnaire[] = [
         "id": "phycm-r-b2",
         "format": "frq_half",
         "conceptIntro": "Section II · Free Response 3. Key concept: rolling without slipping v = Rω.",
-        "prompt": "A disk rolls without slipping. How are v_cm and ω related?\n\n(a) List known quantities and the unknown.\n(b) Write a symbolic equation relating them.\n(c) Calculate a numerical result with units.",
+        "prompt": "A uniform disk of radius R rolls without slipping down a gentle incline, so the contact point is instantaneously at rest. How are v_cm and ω related?\n\n(a) List known quantities and the unknown.\n(b) Write a symbolic equation relating them.\n(c) Calculate a numerical result with units.",
         "hints": [
           "v = Rω for rolling without slipping."
         ],
@@ -727,7 +727,7 @@ export const apPracticeSetB: Questionnaire[] = [
         "id": "phycem-c-b2",
         "format": "frq_half",
         "conceptIntro": "Section II · Free Response 2. Key concept: parallel plate C ∝ A/d.",
-        "prompt": "How does doubling plate separation affect capacitance (same A)?\n\n(a) List known quantities and the unknown.\n(b) Write a symbolic equation relating them.\n(c) Calculate a numerical result with units.",
+        "prompt": "Two large parallel plates of fixed area A form a vacuum capacitor on a lab bench. How does doubling plate separation affect capacitance (same A)?\n\n(a) List known quantities and the unknown.\n(b) Write a symbolic equation relating them.\n(c) Calculate a numerical result with units.",
         "hints": [
           "C halved when d doubles."
         ],
@@ -983,7 +983,7 @@ export const apPracticeSetB: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "integrals-basics",
         "conceptIntro": "Section II · Free Response (no calculator). Key concept: u-substitution.",
-        "prompt": "Evaluate ∫ 2x cos(x²) dx.\n\n(a) Set up the derivative, integral, or limit that answers the question.\n(b) Compute the value.\n(c) Interpret the result in the context of the problem.",
+        "prompt": "A student notices that 2x is the inner derivative of x² and wants to reverse the chain rule for a cosine composition. Evaluate ∫ 2x cos(x²) dx.\n\n(a) Set up the derivative, integral, or limit that answers the question.\n(b) Compute the value.\n(c) Interpret the result in the context of the problem.",
         "visibleSteps": [
           "Let u = x².",
           "Find du and antiderivative in u."

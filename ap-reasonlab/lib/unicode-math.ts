@@ -723,7 +723,10 @@ export function repairCommonLatexSpacing(input: string): string {
     .replace(/\\omega\(t\),d t/g, "\\omega(t)\\,dt")
     .replace(/\(([a-zA-Z])\),d([txA])/g, "($1)\\,d$2")
     .replace(/([_^]\{[^}]+\})\s*,\s*d([A-Za-z]+)/g, "$1\\,d$2")
-    .replace(/\\int_\{([^}]+)\}\^\{([^}]+)\}([^$]*?),d([tx])/g, "\\int_{$1}^{$2}$3\\,d$4");
+    .replace(/\\int_\{([^}]+)\}\^\{([^}]+)\}([^$]*?),d([tx])/g, "\\int_{$1}^{$2}$3\\,d$4")
+    .replace(/(?<!\\),d(t|x|y|A|m)\b/g, "\\,d$1")
+    .replace(/(?<!\\),d\\theta/g, "\\,d\\theta")
+    .replace(/(?<!\\),d\\ell/g, "\\,d\\ell");
 }
 
 /** Normalize pasted content and safely repair common UTF-8-as-Latin-1 mojibake. */

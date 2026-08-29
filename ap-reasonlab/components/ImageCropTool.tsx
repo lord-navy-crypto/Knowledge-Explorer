@@ -13,7 +13,7 @@ const ASPECTS: Array<{ id: string; label: string; ratio: number | null }> = [
 
 const PEN_COLORS = ["#ef4444", "#2563eb", "#16a34a", "#f59e0b", "#ffffff"];
 
-export default function ImageCropTool() {
+export default function ImageCropTool({ embedded = false }: { embedded?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const historyRef = useRef<ImageData[]>([]);
   const [src, setSrc] = useState("");
@@ -237,12 +237,8 @@ export default function ImageCropTool() {
     }, "image/png");
   }
 
-  return (
-    <StudyToolShell
-      title="Image crop & annotate"
-      description="Crop with aspect presets, rotate, or annotate with colored pens — then download PNG. Local only."
-      tip="Crop mode: drag the blue box. Draw mode: choose pen color/size, scribble, undo strokes, then download."
-    >
+  const body = (
+    <>
       <div className="flex flex-wrap gap-2">
         <label className="btn-primary cursor-pointer">
           Choose image
@@ -374,6 +370,20 @@ export default function ImageCropTool() {
       ) : (
         <p className="card text-sm text-slate-500">No image loaded.</p>
       )}
+    </>
+  );
+
+  if (embedded) {
+    return <div className="card space-y-4">{body}</div>;
+  }
+
+  return (
+    <StudyToolShell
+      title="Image crop & annotate"
+      description="Crop with aspect presets, rotate, or annotate with colored pens — then download PNG. Local only."
+      tip="Crop mode: drag the blue box. Draw mode: choose pen color/size, scribble, undo strokes, then download."
+    >
+      {body}
     </StudyToolShell>
   );
 }

@@ -20,6 +20,9 @@ describe("known redirect routes", () => {
 
     const pdfCompress = KNOWN_REDIRECTS.find((row) => row.from === "/tools/pdf-compress");
     expect(pdfCompress?.to).toBe("/tools/pdf-tools?mode=compress");
+
+    const imageCrop = KNOWN_REDIRECTS.find((row) => row.from === "/tools/image-crop");
+    expect(imageCrop?.to).toBe("/tools/image-compress?mode=crop");
   });
 
   it("folds legacy academic routes into Forum", () => {

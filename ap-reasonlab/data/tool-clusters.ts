@@ -26,7 +26,7 @@ export const TOOL_CLUSTERS: ToolCluster[] = [
   {
     id: "file-lab",
     title: "File lab",
-    blurb: "PDF desk (merge/split/rotate/compress), CSV ↔ Markdown, batch rename, and compression.",
+    blurb: "PDF desk (merge/split/rotate/compress), image desk (compress/crop), CSV ↔ Markdown, and batch rename.",
     toolIds: ["pdf-tools", "pdf-compress", "csv-markdown", "batch-rename", "image-compress", "image-crop"],
   },
   {

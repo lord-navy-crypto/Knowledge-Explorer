@@ -382,7 +382,7 @@ export const apInlineQuestionnaires: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "integrals-basics",
         "conceptIntro": "Section II · Free Response (no calculator). FTC Part 2: ∫ₐᵇ f(x) dx = F(b) − F(a).",
-        "prompt": "Evaluate ∫₀² (x² + 1) dx.\n\n(a) Set up the derivative, integral, or limit that answers the question.\n(b) Compute the value.\n(c) Interpret the result in the context of the problem.",
+        "prompt": "A student models the signed area between y = x² + 1 and the x-axis on [0, 2] for a stacking-block height integral. Evaluate ∫₀² (x² + 1) dx.\n\n(a) Set up the derivative, integral, or limit that answers the question.\n(b) Compute the value.\n(c) Interpret the result in the context of the problem.",
         "visibleSteps": [
           "Antiderivative: x³/3 + x.",
           "Evaluate at 2 and 0."
@@ -422,7 +422,7 @@ export const apInlineQuestionnaires: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "integrals-basics",
         "conceptIntro": "Section II · Free Response (no calculator). FTC Part 1 links accumulation and derivative.",
-        "prompt": "In one sentence: why does d/dx ∫₀ˣ t² dt equal x²?\n\n(a) Set up the derivative, integral, or limit that answers the question.\n(b) Compute the value.\n(c) Interpret the result in the context of the problem.",
+        "prompt": "A student defines G(x) = ∫₀ˣ t² dt as accumulated area under y = t² from 0 to x. In one sentence: why does d/dx ∫₀ˣ t² dt equal x²?\n\n(a) Set up the derivative, integral, or limit that answers the question.\n(b) Compute the value.\n(c) Interpret the result in the context of the problem.",
         "hints": [
           "FTC Part 1: derivative of accumulation function returns integrand."
         ],
@@ -663,7 +663,7 @@ export const apInlineQuestionnaires: Questionnaire[] = [
         "format": "frq_half",
         "conceptId": "limits-continuity",
         "conceptIntro": "Section II · Free Response (calculator). Factor to resolve 0/0 indeterminate form.",
-        "prompt": "Find lim x→2 (x² − 4)/(x − 2).\n\n(a) Set up the derivative, integral, or limit that answers the question.\n(b) Compute the value.\n(c) Interpret the result in the context of the problem.",
+        "prompt": "A student is simplifying the difference quotient of f(x) = x² at x = 2 and first considers the related algebraic limit. Find lim x→2 (x² − 4)/(x − 2).\n\n(a) Set up the derivative, integral, or limit that answers the question.\n(b) Compute the value.\n(c) Interpret the result in the context of the problem.",
         "visibleSteps": [
           "Direct substitution gives 0/0.",
           "Factor numerator and cancel common factor."

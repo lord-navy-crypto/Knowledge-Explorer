@@ -16,6 +16,10 @@ describe("personal site tools and stems", () => {
     expect(listed.some((t) => t.id === "grapher")).toBe(false);
     expect(listed.some((t) => t.id === "pdf-compress")).toBe(false);
     expect(listed.some((t) => t.id === "pdf-tools")).toBe(true);
+    expect(listed.some((t) => t.id === "image-crop")).toBe(false);
+    expect(listed.some((t) => t.id === "image-compress")).toBe(true);
+    const images = STUDY_TOOLS.find((t) => t.id === "image-compress");
+    expect(images?.title).toMatch(/desk/i);
     const pad = STUDY_TOOLS.find((t) => t.id === "math-pad");
     expect(pad?.href).toContain("calculator");
   });
