@@ -13,6 +13,8 @@ import { apPracticeSetC } from "@/data/ap-practice-set-c";
 import { apPracticeSetD } from "@/data/ap-practice-set-d";
 import { apCedPractice } from "@/data/ap-ced-practice";
 import { apEnglishExamFormatQuestionnaires } from "@/data/ap-english-exam-format";
+import { apExamFormatAllQuestionnaires } from "@/data/ap-exam-format-all";
+import { shapeApQuestionnaires } from "@/lib/ap-exam-format";
 import managed from "@/data/managed-content.json";
 
 /**
@@ -22,7 +24,7 @@ import managed from "@/data/managed-content.json";
  * Do not paste College Board exam text verbatim.
  */
 
-export const questionnaires: Questionnaire[] = [
+export const questionnaires: Questionnaire[] = shapeApQuestionnaires([
   {
     id: "phys1-gen-kinematics-a",
     title: "Physics 1 — Kinematics Generated Set A",
@@ -539,9 +541,10 @@ export const questionnaires: Questionnaire[] = [
   ...apPracticeSetD,
   ...apCedPractice,
   ...apEnglishExamFormatQuestionnaires,
+  ...apExamFormatAllQuestionnaires,
   ...(((managed as { questionnaires?: Questionnaire[] }).questionnaires ||
     []) as Questionnaire[]),
-];
+]);
 
 export function getQuestionnaireById(id: string): Questionnaire | undefined {
   return questionnaires.find((q) => q.id === id);

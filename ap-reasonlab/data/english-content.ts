@@ -8,6 +8,7 @@ import { hardSatQuestions, hardToeflQuestions } from "./english-questions-hard";
 import { authenticToeflQuestions } from "./english-questions-authentic-toefl";
 import { authenticSatQuestions } from "./english-questions-authentic-sat";
 import { withOfficialSkill } from "@/lib/english-exam-format";
+import { shapeOfficialEnglishQuestion } from "@/lib/english-official-shape";
 
 export type EnglishPracticeQuestion = {
   id: string;
@@ -24,7 +25,7 @@ function withExamSkills(
   exam: "toefl" | "sat",
   items: EnglishPracticeQuestion[]
 ): EnglishPracticeQuestion[] {
-  return items.map((item) => withOfficialSkill(exam, item));
+  return items.map((item) => shapeOfficialEnglishQuestion(exam, withOfficialSkill(exam, item)));
 }
 
 /** Exam tracks — exam-style practice questions and uploaded practice sets. */

@@ -140,6 +140,11 @@ export default function QuestionnaireDetailPage() {
         </div>
         <h1 className="text-3xl font-bold">{quiz.title}</h1>
         <p className="text-slate-600"><RichContent>{quiz.description}</RichContent></p>
+        {quiz.examFormatNote ? (
+          <p className="rounded-xl border border-violet-200 bg-violet-50 px-4 py-2 text-sm text-violet-950">
+            {quiz.examFormatNote}
+          </p>
+        ) : null}
         <p className="rounded-xl bg-slate-50 px-4 py-2 text-sm text-slate-500">
           {quiz.generationNote}
         </p>

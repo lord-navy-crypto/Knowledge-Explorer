@@ -42,6 +42,22 @@ describe("english question bank", () => {
     ).toBe(true);
   });
 
+  it("gives every non-math item a stimulus passage", () => {
+    const math = new Set([
+      "Algebra",
+      "Advanced Math",
+      "Problem-Solving and Data Analysis",
+      "Geometry and Trigonometry",
+    ]);
+    for (const q of questionsForExam("toefl")) {
+      expect(q.passage?.trim().length ?? 0, q.id).toBeGreaterThan(0);
+    }
+    for (const q of questionsForExam("sat")) {
+      if (math.has(q.skill)) continue;
+      expect(q.passage?.trim().length ?? 0, q.id).toBeGreaterThan(0);
+    }
+  });
+
   it("leads SAT reading with short-passage Information and Ideas / Craft items", () => {
     const reading = questionsForSection("sat", "reading");
     expect(reading[0]?.id.startsWith("sat-auth-")).toBe(true);
@@ -58,7 +74,7 @@ describe("remapEnglishSkill", () => {
   it("maps legacy TOEFL and SAT labels onto official task names", () => {
     expect(remapEnglishSkill("Academic Reading", "toefl", "x")).toMatch(/Read /);
     expect(remapEnglishSkill("Listening inference", "toefl", "ab")).toMatch(/Listen/);
-    expect(remapEnglishSkill("Transitions", "sat", "y")).toBe("Standard English Conventions");
+    expect(remapEnglishSkill("Transitions", "sat", "y")).toBe("Expression of Ideas");
     expect(remapEnglishSkill("Words in context", "sat", "z")).toBe("Craft and Structure");
     expect(remapEnglishSkill("Linear equations", "sat", "z")).toBe("Algebra");
   });

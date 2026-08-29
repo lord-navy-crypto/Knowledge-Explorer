@@ -72,7 +72,8 @@ export function remapEnglishSkill(skill: string, exam: "toefl" | "sat", id: stri
   ) {
     return skill;
   }
-  if (skill === "Transitions" || skill === "Punctuation") return "Standard English Conventions";
+  if (skill === "Transitions") return "Expression of Ideas";
+  if (skill === "Punctuation") return "Standard English Conventions";
   if (skill === "Central Ideas" || skill === "Information and Ideas") return "Information and Ideas";
   if (skill === "Rhetoric" || skill === "Words in context" || skill === "Craft and Structure") {
     return "Craft and Structure";

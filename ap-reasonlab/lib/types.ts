@@ -45,6 +45,8 @@ export interface QuestionnaireItem {
   conceptIntro?: string;
   /** Future: 1 = intro, 2 = standard, 3 = challenge */
   difficultyTier?: DifficultyTier;
+  /** Official exam section label (College Board format). */
+  examSection?: string;
   /** Reveal after attempt — sample / instructor reference, not College Board keys */
   answerKey?: string;
   /** MCQ: 0-based index into choices */
@@ -64,6 +66,8 @@ export interface Questionnaire {
   estimatedMinutes: number;
   tags: string[];
   items: QuestionnaireItem[];
+  /** Official AP exam section structure this set trains. */
+  examFormatNote?: string;
   /** Future: filter sets by tier */
   difficultyTier?: DifficultyTier;
 }

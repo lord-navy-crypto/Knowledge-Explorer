@@ -17,6 +17,24 @@ describe("english question banks", () => {
   });
 });
 
+describe("legacy English items are reshaped", () => {
+  it("gives every TOEFL item a stimulus passage", () => {
+    expect(toeflQuestions.every((q) => (q.passage?.trim().length ?? 0) > 0)).toBe(true);
+  });
+
+  it("gives every SAT Reading and Writing item a short passage", () => {
+    const math = new Set([
+      "Algebra",
+      "Advanced Math",
+      "Problem-Solving and Data Analysis",
+      "Geometry and Trigonometry",
+    ]);
+    const rw = satQuestions.filter((q) => !math.has(q.skill));
+    expect(rw.length).toBeGreaterThan(50);
+    expect(rw.every((q) => (q.passage?.trim().length ?? 0) > 0)).toBe(true);
+  });
+});
+
 describe("AP English exam-format sets", () => {
   it("ships Language MCQ + three FRQ types", () => {
     const set = getQuestionnaireById("aplang-exam-format-a");

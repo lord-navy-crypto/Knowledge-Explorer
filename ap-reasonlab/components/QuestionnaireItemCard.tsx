@@ -23,6 +23,9 @@ export default function QuestionnaireItemCard({
       <div className="flex flex-wrap items-center gap-2">
         <span className="badge">Q{index + 1}</span>
         <span className="badge">{item.format}</span>
+        {item.examSection ? (
+          <span className="badge">{item.examSection}</span>
+        ) : null}
         {item.difficultyTier ? (
           <span className="badge">Tier {item.difficultyTier}</span>
         ) : null}
