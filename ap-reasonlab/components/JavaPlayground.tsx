@@ -209,7 +209,7 @@ export default function JavaPlayground({
           >
             {status === "running" ? "Running…" : "Practice Run"}
           </button>
-          <PlaygroundExtras code={code} language="java" filename="Main.java" />
+          <PlaygroundExtras code={code} language="java" filename="Main.java" onRun={practiceRun} />
           <button
             type="button"
             className="btn-secondary self-end"

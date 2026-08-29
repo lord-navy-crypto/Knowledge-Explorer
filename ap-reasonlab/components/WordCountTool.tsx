@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import StudyToolShell from "@/components/StudyToolShell";
 import { consumeWriteToolHandoff } from "@/lib/write-tool-handoff";
+import ReturnToWizardButton from "@/components/ReturnToWizardButton";
+import WriteToolHandoffBanner from "@/components/WriteToolHandoffBanner";
 
 type Tab = "count" | "keywords" | "goals";
 
@@ -132,6 +134,7 @@ export default function WordCountTool() {
   const [compare, setCompare] = useState("");
   const [mounted, setMounted] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [handoffNote, setHandoffNote] = useState("");
 
   const stats = useMemo(() => countStats(text), [text]);
   const keywords = useMemo(() => topKeywords(text), [text]);
@@ -143,6 +146,7 @@ export default function WordCountTool() {
     const handoff = consumeWriteToolHandoff("word-count");
     if (handoff?.text) {
       setText(handoff.text);
+      setHandoffNote("Draft inserted from the wizard.");
       return;
     }
     try {
@@ -186,6 +190,9 @@ export default function WordCountTool() {
       description="Paste an essay, FRQ draft, or notes. Auto-saves locally with keyword density, reading ease, and word goals."
       tip="Reading ≈ 200 wpm · Speaking ≈ 130 wpm. Draft autosaves in this browser."
     >
+      {handoffNote ? (
+        <WriteToolHandoffBanner message={handoffNote} onDismiss={() => setHandoffNote("")} />
+      ) : null}
       <div className="flex flex-wrap gap-2">
         {(
           [
@@ -208,6 +215,7 @@ export default function WordCountTool() {
             Draft saved {new Date(savedAt).toLocaleTimeString()}
           </span>
         ) : null}
+        <ReturnToWizardButton text={text} title="Word-count draft" />
       </div>
 
       {tab === "count" ? (

@@ -116,7 +116,7 @@ export default function HtmlPlayground({
           <button type="button" className="btn-primary self-end" onClick={run}>
             Run preview
           </button>
-          <PlaygroundExtras code={code} language="html" filename="playground.html" />
+          <PlaygroundExtras code={code} language="html" filename="playground.html" onRun={run} />
         </div>
       </div>
 

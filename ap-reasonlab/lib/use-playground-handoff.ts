@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { consumePlaygroundHandoffNotice } from "@/lib/code-draft-bridge";
 
-/** Show a one-time note when navigating from code block adder. */
-export function usePlaygroundHandoffNotice(onHandoff?: (message: string) => void) {
+/** One-time note when navigating from the code block adder or Forum. */
+export function usePlaygroundHandoffNotice(): string {
+  const [message, setMessage] = useState("");
   useEffect(() => {
     if (consumePlaygroundHandoffNotice()) {
-      onHandoff?.("Loaded from code block adder — press Run when ready.");
+      setMessage("Loaded from code block adder or Forum — press Run when ready.");
     }
-  }, [onHandoff]);
+  }, []);
+  return message;
 }

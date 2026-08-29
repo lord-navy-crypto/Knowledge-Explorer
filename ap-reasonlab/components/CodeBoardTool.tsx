@@ -419,7 +419,11 @@ export default function CodeBoardTool() {
                         <Link
                           href={play}
                           className="rounded-lg bg-white px-2.5 py-1 text-[11px] font-semibold text-brand-700 ring-1 ring-brand-200 hover:bg-brand-50"
-                          onClick={() => preloadPlaygroundDraft(block.language, block.code)}
+                          onClick={() =>
+                            preloadPlaygroundDraft(block.language, block.code, {
+                              blockId: block.builtin ? undefined : block.id,
+                            })
+                          }
                         >
                           Open playground
                         </Link>

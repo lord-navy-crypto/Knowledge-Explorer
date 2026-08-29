@@ -155,7 +155,7 @@ export default function JsPlayground({
           <button type="button" className="btn-primary self-end" onClick={run} disabled={running}>
             {running ? "Running…" : "Run"}
           </button>
-          <PlaygroundExtras code={code} language="javascript" filename="playground.js" />
+          <PlaygroundExtras code={code} language="javascript" filename="playground.js" onRun={run} onNote={setNote} />
         </div>
       </div>
 

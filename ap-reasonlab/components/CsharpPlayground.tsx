@@ -178,7 +178,7 @@ export default function CsharpPlayground({
           >
             {status === "running" ? "Running…" : "Practice Run"}
           </button>
-          <PlaygroundExtras code={code} language="csharp" filename="Program.cs" />
+          <PlaygroundExtras code={code} language="csharp" filename="Program.cs" onRun={practiceRun} />
         </div>
       </div>
 

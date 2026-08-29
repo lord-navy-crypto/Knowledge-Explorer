@@ -1,17 +1,24 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { extractForumCodeBlocks } from "@/lib/forum-code-blocks";
+import { extractForumBase64Payloads, extractForumJsonPayloads } from "@/lib/forum-payload-detect";
 import { preloadPlaygroundDraft } from "@/lib/code-draft-bridge";
 import { appendToCodeBoard } from "@/lib/code-board-store";
+import { preloadEncodeDecode, preloadJsonFormatter } from "@/lib/payload-handoff";
 import ForumOfficialLinks from "@/components/ForumOfficialLinks";
 
 export default function ForumCodeLaunchers({ body }: { body: string }) {
   const router = useRouter();
   const blocks = useMemo(() => extractForumCodeBlocks(body), [body]);
+  const jsonBlocks = useMemo(() => extractForumJsonPayloads(body), [body]);
+  const b64Blocks = useMemo(() => extractForumBase64Payloads(body), [body]);
+  const [saved, setSaved] = useState<string>("");
 
-  if (!blocks.length) return <ForumOfficialLinks body={body} />;
+  const hasAnything = blocks.length || jsonBlocks.length || b64Blocks.length;
+  if (!hasAnything) return <ForumOfficialLinks body={body} />;
 
   return (
     <div className="space-y-2">
@@ -38,13 +45,49 @@ export default function ForumCodeLaunchers({ body }: { body: string }) {
                   code: block.code,
                   comment: "Saved from Forum",
                 });
+                setSaved(`${block.label} saved`);
+                window.setTimeout(() => setSaved(""), 2500);
               }}
             >
               Save to code board
             </button>
           </div>
         ))}
+        {jsonBlocks.map((payload, index) => (
+          <button
+            key={`json-${index}`}
+            type="button"
+            className="rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-950 hover:bg-amber-100"
+            onClick={() => {
+              preloadJsonFormatter(payload);
+              router.push("/tools/json-formatter");
+            }}
+          >
+            Format JSON {jsonBlocks.length > 1 ? index + 1 : ""}
+          </button>
+        ))}
+        {b64Blocks.map((payload, index) => (
+          <button
+            key={`b64-${index}`}
+            type="button"
+            className="rounded-md border border-sky-300 bg-sky-50 px-2 py-1 text-xs font-semibold text-sky-950 hover:bg-sky-100"
+            onClick={() => {
+              preloadEncodeDecode(payload, "base64-decode");
+              router.push("/tools/encode-decode");
+            }}
+          >
+            Decode Base64 {b64Blocks.length > 1 ? index + 1 : ""}
+          </button>
+        ))}
       </div>
+      {saved ? (
+        <p className="text-xs text-emerald-700">
+          {saved}.{" "}
+          <Link href="/tools/code-board" className="font-medium underline">
+            Open code board →
+          </Link>
+        </p>
+      ) : null}
       <ForumOfficialLinks body={body} />
     </div>
   );

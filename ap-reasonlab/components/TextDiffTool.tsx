@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import StudyToolShell from "@/components/StudyToolShell";
+import { consumeTextDiffHandoff } from "@/lib/payload-handoff";
 
 type DiffLine = { type: "same" | "add" | "del"; text: string };
 type DiffToken = { type: "same" | "add" | "del"; text: string };
@@ -156,6 +157,14 @@ export default function TextDiffTool() {
   const [ignoreCase, setIgnoreCase] = useState(false);
   const [onlyChanged, setOnlyChanged] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    const handed = consumeTextDiffHandoff();
+    if (handed) {
+      setLeft(handed.left);
+      setRight(handed.right);
+    }
+  }, []);
 
   const analysis = useMemo(() => {
     const leftN = normalizeText(left, ignoreWs, ignoreCase);

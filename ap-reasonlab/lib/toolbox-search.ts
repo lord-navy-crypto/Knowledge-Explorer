@@ -17,8 +17,8 @@ export const TOOL_SEARCH_KEYWORDS: Record<string, string> = {
   "pdf-compress": "shrink pdf size reduce",
   "csv-markdown": "spreadsheet table paste csv tsv",
   "batch-rename": "filename numbered copies export",
-  "json-formatter": "pretty print minify validate json object array stringify parse",
-  "encode-decode": "base64 url uri percent encoding utf-8 query string btoa atob hex",
+  "json-formatter": "pretty print minify validate json object array stringify parse sort keys jsonpath extract compare",
+  "encode-decode": "base64 url uri percent encoding utf-8 query string btoa atob hex html entities jwt peek data url",
   "code-board": "snippet library adder playground python javascript save blocks",
   "text-comparator": "diff compare two texts highlight changes",
   "text-diff": "diff compare",
@@ -112,6 +112,9 @@ const TOOL_QUERY_TERMS = new Set([
   "flashcard",
   "pretty",
   "minify",
+  "hex",
+  "jwt",
+  "html",
 ]);
 
 const CODE_QUERY_TERMS = new Set([

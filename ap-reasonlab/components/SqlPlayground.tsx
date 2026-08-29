@@ -84,6 +84,8 @@ export default function SqlPlayground({
   const [note, setNote] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "running" | "error">("idle");
   const sqlRef = useRef<SqlJsStatic | null>(null);
+  const dbRef = useRef<SqlJsDatabase | null>(null);
+  const [keepDb, setKeepDb] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem(storageKey);
@@ -116,15 +118,15 @@ export default function SqlPlayground({
     try {
       const SQL = await ensureSql();
       setStatus("running");
-      const db = new SQL.Database();
-      try {
-        const tables = db.exec(code);
-        setOutput(formatTables(tables));
-        setNote("Query finished.");
-        setStatus("idle");
-      } finally {
-        db.close();
+      if (!keepDb || !dbRef.current) {
+        dbRef.current?.close();
+        dbRef.current = new SQL.Database();
       }
+      const db = dbRef.current;
+      const tables = db.exec(code);
+      setOutput(formatTables(tables));
+      setNote(keepDb ? "Query finished (schema kept)." : "Query finished (fresh DB).");
+      setStatus("idle");
     } catch (err) {
       setStatus("error");
       setOutput(String(err));
@@ -142,11 +144,13 @@ export default function SqlPlayground({
   }
 
   function resetStarter() {
+    dbRef.current?.close();
+    dbRef.current = null;
     setCode(starter);
     setSelected(examples[0]?.id || "default");
     setOutput("Ready. Press Run to execute SQL in the browser (sql.js).");
-    setNote("Reset to starter example.");
-    setStatus(sqlRef.current ? "idle" : "idle");
+    setNote("Reset to starter example (database cleared).");
+    setStatus("idle");
   }
 
   return (
@@ -158,8 +162,8 @@ export default function SqlPlayground({
           </p>
           <h2 className="text-xl font-bold">SQL playground</h2>
           <p className="mt-1 text-sm text-slate-600">
-            SQLite via sql.js in your browser — create tables, insert, select. Each Run starts a
-            fresh in-memory database. Draft auto-saves on this device.
+            SQLite via sql.js in your browser — create tables, insert, select. Keep the schema
+            between runs when you want CREATE then SELECT. Draft auto-saves on this device.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -180,6 +184,20 @@ export default function SqlPlayground({
           <button type="button" className="btn-secondary self-end" onClick={resetStarter}>
             Reset
           </button>
+          <label className="flex items-center gap-2 self-end text-xs font-medium text-slate-600">
+            <input
+              type="checkbox"
+              checked={keepDb}
+              onChange={(e) => {
+                setKeepDb(e.target.checked);
+                if (!e.target.checked) {
+                  dbRef.current?.close();
+                  dbRef.current = null;
+                }
+              }}
+            />
+            Keep schema between runs
+          </label>
           <button
             type="button"
             className="btn-primary self-end"
@@ -188,7 +206,7 @@ export default function SqlPlayground({
           >
             {status === "loading" ? "Loading SQL…" : status === "running" ? "Running…" : "Run"}
           </button>
-          <PlaygroundExtras code={code} language="sql" filename="playground.sql" />
+          <PlaygroundExtras code={code} language="sql" filename="playground.sql" onRun={() => void run()} onNote={setNote} />
         </div>
       </div>
 

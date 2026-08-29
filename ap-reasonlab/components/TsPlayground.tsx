@@ -208,7 +208,7 @@ export default function TsPlayground({
           >
             {status === "loading" ? "Loading…" : status === "running" ? "Running…" : "Run"}
           </button>
-          <PlaygroundExtras code={code} language="typescript" filename="playground.ts" />
+          <PlaygroundExtras code={code} language="typescript" filename="playground.ts" onRun={() => void run()} onNote={setNote} />
         </div>
       </div>
 

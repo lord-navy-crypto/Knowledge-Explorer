@@ -6,6 +6,8 @@ import MarkdownLatexField from "@/components/MarkdownLatexField";
 import { useSiteDialog } from "@/components/SiteDialog";
 import RichContent from "@/components/RichContent";
 import { consumeWriteToolHandoff } from "@/lib/write-tool-handoff";
+import ReturnToWizardButton from "@/components/ReturnToWizardButton";
+import WriteToolHandoffBanner from "@/components/WriteToolHandoffBanner";
 
 const STORAGE_KEY = "ke-dual-column-v1";
 
@@ -67,12 +69,14 @@ export default function DualColumnEditor() {
   const [savedHint, setSavedHint] = useState("");
   const [focusPreview, setFocusPreview] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [handoffNote, setHandoffNote] = useState("");
 
   useEffect(() => {
     setMounted(true);
     const handoff = consumeWriteToolHandoff("dual");
     if (handoff?.text) {
       setValue(handoff.text);
+      setHandoffNote("Draft inserted from the wizard.");
       return;
     }
     try {
@@ -121,6 +125,9 @@ export default function DualColumnEditor() {
       description="Write on the left, see rendered Markdown + LaTeX on the right — good for FRQ drafts and concept notes. Auto-saves in this browser."
       tip={`${stats.words} words · ${stats.chars} chars · ${stats.lines} lines · stays local until you copy or download.`}
     >
+      {handoffNote ? (
+        <WriteToolHandoffBanner message={handoffNote} onDismiss={() => setHandoffNote("")} />
+      ) : null}
       <div className="no-print flex flex-wrap items-center gap-2">
         <button
           type="button"
@@ -151,6 +158,7 @@ export default function DualColumnEditor() {
         <button type="button" className="btn-primary text-sm" onClick={() => window.print()}>
           Print / PDF
         </button>
+        <ReturnToWizardButton text={value} title="Dual-column draft" />
         <div className="flex flex-wrap gap-1">
           {TEMPLATES.map((t) => (
             <button

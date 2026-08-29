@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import StudyToolShell from "@/components/StudyToolShell";
 import { consumeWriteToolHandoff } from "@/lib/write-tool-handoff";
+import ReturnToWizardButton from "@/components/ReturnToWizardButton";
+import WriteToolHandoffBanner from "@/components/WriteToolHandoffBanner";
 
 function mdToPlain(md: string, keepLinks: boolean): string {
   return md
@@ -42,10 +44,14 @@ export default function MarkdownPlainTool() {
   const [input, setInput] = useState("# Title\n\nHello **world** and a [link](https://example.com).");
   const [keepLinks, setKeepLinks] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [handoffNote, setHandoffNote] = useState("");
 
   useEffect(() => {
     const handoff = consumeWriteToolHandoff("markdown-plain");
-    if (handoff?.text) setInput(handoff.text);
+    if (handoff?.text) {
+      setInput(handoff.text);
+      setHandoffNote("Draft inserted from the wizard.");
+    }
   }, []);
 
   const output = useMemo(
@@ -87,6 +93,9 @@ export default function MarkdownPlainTool() {
       description="Strip Markdown to readable plain text, or wrap plain paragraphs into simple Markdown. Swap directions and download results."
       tip="Code fences and complex tables are simplified — fine for notes and FRQ drafts."
     >
+      {handoffNote ? (
+        <WriteToolHandoffBanner message={handoffNote} onDismiss={() => setHandoffNote("")} />
+      ) : null}
       <div className="flex flex-wrap gap-2">
         <button
           type="button"
@@ -120,6 +129,7 @@ export default function MarkdownPlainTool() {
         <button type="button" className="btn-ghost" onClick={swapIo} disabled={!output}>
           Use output as input
         </button>
+        <ReturnToWizardButton text={output || input} title="Markdown convert draft" />
         {mode === "md2plain" ? (
           <label className="flex items-center gap-2 text-sm text-slate-700">
             <input

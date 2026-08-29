@@ -46,3 +46,19 @@ export function appendToCodeBoard(opts: {
   localStorage.setItem(KEY, JSON.stringify(next));
   return block.id;
 }
+
+/** Replace code on an existing user block. Returns false if missing. */
+export function updateCodeBoardBlock(id: string, code: string): boolean {
+  if (typeof window === "undefined") return false;
+  const blocks = readBlocks();
+  const idx = blocks.findIndex((b) => b.id === id);
+  if (idx < 0) return false;
+  const prev = blocks[idx]!;
+  blocks[idx] = {
+    ...prev,
+    code: code.replace(/\r\n/g, "\n"),
+    updatedAt: Date.now(),
+  };
+  localStorage.setItem(KEY, JSON.stringify(blocks));
+  return true;
+}

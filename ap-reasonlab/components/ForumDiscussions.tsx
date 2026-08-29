@@ -40,17 +40,17 @@ const CATEGORIES: { id: Category; label: string; match: (p: ManagedForumPost) =>
   {
     id: "questions",
     label: "Questions",
-    match: (p) => /question|\?|help|how|why|what/i.test(`${p.title} ${p.body}`),
+    match: (p) => /#questions|\bquestion\b|\?|\bhelp\b|\bhow\b|\bwhy\b|\bwhat\b/i.test(`${p.title} ${p.body}`),
   },
   {
     id: "resources",
     label: "Resources",
-    match: (p) => /resource|share|note|link|material|pdf|guide|tip/i.test(`${p.title} ${p.body}`),
+    match: (p) => /#resources|\bresource\b|\bshare\b|\bnote\b|\blink\b|\bmaterial\b|\bpdf\b|\bguide\b|\btip\b/i.test(`${p.title} ${p.body}`),
   },
   {
     id: "announcements",
     label: "Announcements",
-    match: (p) => /announce|update|news|notice|important/i.test(`${p.title} ${p.body}`),
+    match: (p) => /#announcements|\bannounce\b|\bupdate\b|\bnews\b|\bnotice\b|\bimportant\b/i.test(`${p.title} ${p.body}`),
   },
   {
     id: "beta-feedback",
@@ -271,6 +271,7 @@ export function ForumDiscussions({
   const [nameDraft, setNameDraft] = useState("");
   const [nameOpen, setNameOpen] = useState(false);
   const [composerOpen, setComposerOpen] = useState(false);
+  const [postCategory, setPostCategory] = useState<Exclude<Category, "all">>("questions");
   const [pendingAction, setPendingAction] = useState<"post" | string | null>(null);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -321,6 +322,12 @@ export function ForumDiscussions({
     if (thread) setExpandedId(thread);
     const qParam = searchParams.get("q");
     if (qParam !== null) setQuery(qParam);
+    const reply = searchParams.get("reply");
+    if (reply) {
+      window.setTimeout(() => {
+        document.getElementById(`forum-reply-${reply}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 250);
+    }
   }, [searchParams]);
 
   const filtered = useMemo(() => {
@@ -439,10 +446,13 @@ export function ForumDiscussions({
   async function submitPost(event: React.FormEvent) {
     event.preventDefault();
     if (!displayName) return requestIdentity("post");
+    const tag =
+      postCategory === "beta-feedback" ? "#beta-feedback" : `#${postCategory}`;
+    const taggedBody = /^\s*#/.test(body) ? body : `${tag}\n\n${body}`;
     const ok = await publish("add_forum_post", {
       author: displayName,
       title,
-      body,
+      body: taggedBody,
       attachments: draftsPayload(postAttachments),
     });
     if (ok) {
@@ -623,6 +633,19 @@ export function ForumDiscussions({
             onChange={(event) => setTitle(event.target.value)}
             required
           />
+          <label className="block text-sm font-medium text-slate-700">
+            Category tag
+            <select
+              className="input mt-1 max-w-xs"
+              value={postCategory}
+              onChange={(e) => setPostCategory(e.target.value as Exclude<Category, "all">)}
+            >
+              <option value="questions">Questions</option>
+              <option value="resources">Resources</option>
+              <option value="announcements">Announcements</option>
+              <option value="beta-feedback">Beta feedback</option>
+            </select>
+          </label>
           <MarkdownLatexField
             label="Discussion body"
             value={body}
@@ -755,7 +778,11 @@ export function ForumDiscussions({
                     {replyCount > 0 && (
                       <div className="space-y-3 border-l-2 border-brand-100 pl-4">
                         {(post.replies || []).map((reply) => (
-                          <div key={reply.id} className="flex gap-2 rounded-xl bg-slate-50 p-3">
+                          <div
+                            key={reply.id}
+                            id={`forum-reply-${reply.id}`}
+                            className="flex scroll-mt-28 gap-2 rounded-xl bg-slate-50 p-3"
+                          >
                             <Avatar name={reply.author} />
                             <div className="min-w-0 flex-1">
                               <div className="flex items-start justify-between gap-2">
@@ -782,6 +809,18 @@ export function ForumDiscussions({
                                 }}
                               >
                                 Quote this reply
+                              </button>
+                              <button
+                                type="button"
+                                className="ml-3 mt-2 text-xs text-slate-500 hover:underline"
+                                onClick={() => {
+                                  const url = `${window.location.origin}/forum?thread=${encodeURIComponent(post.id)}&reply=${encodeURIComponent(reply.id)}`;
+                                  void navigator.clipboard.writeText(url);
+                                  setNotice("Reply permalink copied.");
+                                  window.setTimeout(() => setNotice(""), 1500);
+                                }}
+                              >
+                                Copy reply link
                               </button>
                             </div>
                           </div>

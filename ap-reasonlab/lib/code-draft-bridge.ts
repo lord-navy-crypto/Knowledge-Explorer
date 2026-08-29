@@ -26,14 +26,27 @@ export function playgroundHref(language: CodeBoardLanguage): string | null {
   return null;
 }
 
+const EDIT_ID_KEY = "ke-code-board-edit-id";
+
 /** Write code into the target playground draft before navigation. */
-export function preloadPlaygroundDraft(language: CodeBoardLanguage, code: string): string | null {
+export function preloadPlaygroundDraft(
+  language: CodeBoardLanguage,
+  code: string,
+  opts?: { blockId?: string }
+): string | null {
   const href = playgroundHref(language);
   if (!href || typeof window === "undefined") return href;
   const key = PLAYGROUND_DRAFT_KEYS[language];
   localStorage.setItem(key, code.replace(/\r\n/g, "\n"));
   sessionStorage.setItem("ke-code-board-handoff", language);
+  if (opts?.blockId) sessionStorage.setItem(EDIT_ID_KEY, opts.blockId);
+  else sessionStorage.removeItem(EDIT_ID_KEY);
   return href;
+}
+
+export function peekCodeBoardEditId(): string | null {
+  if (typeof window === "undefined") return null;
+  return sessionStorage.getItem(EDIT_ID_KEY);
 }
 
 export function consumePlaygroundHandoffNotice(): string | null {

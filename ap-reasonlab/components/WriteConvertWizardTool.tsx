@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import StudyToolShell from "@/components/StudyToolShell";
 import RelatedToolboxLinks from "@/components/RelatedToolboxLinks";
 import {
@@ -10,7 +10,7 @@ import {
   WRITE_TOOL_QUICK_LINKS,
   type WriteConvertPath,
 } from "@/data/write-convert-wizard";
-import { preloadWriteToolDraft } from "@/lib/write-tool-handoff";
+import { consumeWriteToolHandoff, preloadWriteToolDraft } from "@/lib/write-tool-handoff";
 
 export default function WriteConvertWizardTool() {
   const router = useRouter();
@@ -26,6 +26,15 @@ Write your essay or notes here, then send this text to each tool in the pipeline
 `);
   const [title, setTitle] = useState("My draft");
   const [notice, setNotice] = useState("");
+
+  useEffect(() => {
+    const handoff = consumeWriteToolHandoff("write-convert");
+    if (handoff?.text) {
+      setText(handoff.text);
+      if (handoff.title) setTitle(handoff.title);
+      setNotice("Loaded text returned from a writing tool.");
+    }
+  }, []);
 
   const step = path.steps[stepIndex];
 
@@ -43,7 +52,7 @@ Write your essay or notes here, then send this text to each tool in the pipeline
     <StudyToolShell
       title="Write & convert wizard"
       description="Batch workflow across writing tools — keep one draft here and hand it off to word count, Markdown cleanup, or PDF export."
-      tip="Text is passed via a one-time browser handoff (session). Each tool loads it once when you arrive."
+      tip="Send a draft into a tool, edit there, then Return to wizard to continue the pipeline."
     >
       <div className="space-y-6">
         <section className="card space-y-3">

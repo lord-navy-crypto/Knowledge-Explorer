@@ -7,7 +7,8 @@ export type WriteToolTarget =
   | "markdown-plain"
   | "markdown-pdf"
   | "word-pdf"
-  | "word-import";
+  | "word-import"
+  | "write-convert";
 
 export type WriteToolHandoff = {
   target: WriteToolTarget;

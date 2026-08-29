@@ -202,7 +202,7 @@ export default function PythonPlayground({
                 ? "Running…"
                 : "Run"}
           </button>
-          <PlaygroundExtras code={code} language="python" filename="playground.py" />
+          <PlaygroundExtras code={code} language="python" filename="playground.py" onRun={() => void run()} onNote={setNote} />
         </div>
       </div>
 

@@ -1,18 +1,29 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import StudyToolShell from "@/components/StudyToolShell";
 import RelatedToolboxLinks from "@/components/RelatedToolboxLinks";
 import {
   decodeBase64,
+  decodeHex,
+  decodeHtmlEntities,
   decodeUri,
   decodeUriComponent,
   encodeBase64,
+  encodeHex,
+  encodeHtmlEntities,
   encodeUri,
   encodeUriComponent,
+  peekJwt,
 } from "@/lib/encode-decode";
+import {
+  consumeEncodeDecodeHandoff,
+  preloadJsonFormatter,
+  type EncodeHandoffMode,
+} from "@/lib/payload-handoff";
 
-type Mode = "base64-encode" | "base64-decode" | "url-encode" | "url-decode" | "uri-encode" | "uri-decode";
+type Mode = EncodeHandoffMode;
 
 const MODES: { id: Mode; label: string }[] = [
   { id: "base64-encode", label: "Base64 encode" },
@@ -21,12 +32,27 @@ const MODES: { id: Mode; label: string }[] = [
   { id: "url-decode", label: "URL decode (component)" },
   { id: "uri-encode", label: "URI encode (full)" },
   { id: "uri-decode", label: "URI decode (full)" },
+  { id: "hex-encode", label: "Hex encode" },
+  { id: "hex-decode", label: "Hex decode" },
+  { id: "html-encode", label: "HTML encode" },
+  { id: "html-decode", label: "HTML decode" },
+  { id: "jwt-peek", label: "JWT peek" },
 ];
 
 export default function EncodeDecodeTool() {
+  const router = useRouter();
   const [input, setInput] = useState("Hello, Knowledge Explorer! 🎓");
   const [mode, setMode] = useState<Mode>("base64-encode");
   const [note, setNote] = useState("");
+
+  useEffect(() => {
+    const handed = consumeEncodeDecodeHandoff();
+    if (handed) {
+      setInput(handed.text);
+      if (handed.mode) setMode(handed.mode);
+      setNote("Loaded from Forum or another tool.");
+    }
+  }, []);
 
   const result = useMemo(() => {
     try {
@@ -35,7 +61,12 @@ export default function EncodeDecodeTool() {
       if (mode === "url-encode") return { out: encodeUriComponent(input), err: "" };
       if (mode === "url-decode") return { out: decodeUriComponent(input), err: "" };
       if (mode === "uri-encode") return { out: encodeUri(input), err: "" };
-      return { out: decodeUri(input), err: "" };
+      if (mode === "uri-decode") return { out: decodeUri(input), err: "" };
+      if (mode === "hex-encode") return { out: encodeHex(input), err: "" };
+      if (mode === "hex-decode") return { out: decodeHex(input), err: "" };
+      if (mode === "html-encode") return { out: encodeHtmlEntities(input), err: "" };
+      if (mode === "html-decode") return { out: decodeHtmlEntities(input), err: "" };
+      return { out: peekJwt(input), err: "" };
     } catch (err) {
       return { out: "", err: err instanceof Error ? err.message : "Conversion failed" };
     }
@@ -57,11 +88,27 @@ export default function EncodeDecodeTool() {
     setNote("Output moved to input.");
   }
 
+  function sendToJson() {
+    if (!result.out) return;
+    preloadJsonFormatter(result.out);
+    router.push("/tools/json-formatter");
+  }
+
+  function onFile(file: File) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      setInput(String(reader.result || ""));
+      setMode("base64-encode");
+      setNote(`Loaded ${file.name} as a data URL.`);
+    };
+    reader.readAsDataURL(file);
+  }
+
   return (
     <StudyToolShell
       title="Base64 & URL encoder"
-      description="Encode or decode Base64 and URL/URI strings locally — useful for API tokens, query params, and data URLs."
-      tip="Never paste private passwords or live API keys into shared screenshots. Processing stays in this browser."
+      description="Encode or decode Base64, URL/URI, hex, HTML entities, or peek at a JWT — all locally in this browser."
+      tip="Never paste private passwords or live API keys into shared screenshots. JWT peek does not verify signatures."
     >
       <div className="card space-y-4">
         <div className="flex flex-wrap gap-2">
@@ -99,13 +146,33 @@ export default function EncodeDecodeTool() {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button type="button" className="btn-secondary text-sm" onClick={() => void copyOutput()} disabled={!result.out}>
             Copy output
           </button>
           <button type="button" className="btn-secondary text-sm" onClick={useOutputAsInput} disabled={!result.out}>
             Use output as input
           </button>
+          <button
+            type="button"
+            className="btn-secondary text-sm"
+            onClick={sendToJson}
+            disabled={!result.out}
+          >
+            Open output in JSON formatter
+          </button>
+          <label className="btn-secondary cursor-pointer text-sm">
+            Load file as data URL
+            <input
+              type="file"
+              className="sr-only"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) onFile(file);
+                e.target.value = "";
+              }}
+            />
+          </label>
         </div>
         {note ? <p className="text-xs text-emerald-700">{note}</p> : null}
       </div>
