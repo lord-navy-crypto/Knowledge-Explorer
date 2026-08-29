@@ -12,9 +12,6 @@ import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import ResourceEditor from "@/components/ResourceEditor";
 import { useEditorMode } from "@/components/EditorModeProvider";
 import { useSiteDialog } from "@/components/SiteDialog";
-import { concepts } from "@/data/content";
-import { formulas } from "@/data/formulas";
-import { questionnaires } from "@/data/questionnaires";
 import { getSubjectBySlug } from "@/data/ap-catalog";
 import { getApSubjectOfficial } from "@/data/official-resources";
 import type { ManagedContent, ManagedContentItem } from "@/lib/managed-types";
@@ -27,6 +24,12 @@ const sectionConfig = [
   { key: "hints", label: "AI Toolbox", icon: "✦" },
 ] as const;
 
+type BuiltInCounts = {
+  concept: number;
+  formula: number;
+  practice: number;
+};
+
 function SubjectWorkspaceContent() {
   const { active: editMode } = useEditorMode();
   const { confirm, dialog } = useSiteDialog();
@@ -34,6 +37,7 @@ function SubjectWorkspaceContent() {
   const searchParams = useSearchParams();
   const builtIn = getSubjectBySlug(params.subject);
   const [managed, setManaged] = useState<Partial<ManagedContent>>({});
+  const [builtInCounts, setBuiltInCounts] = useState<BuiltInCounts | null>(null);
   const [query, setQuery] = useState("");
   const [type, setType] = useState(() => {
     const fromQuery = searchParams.get("type");
@@ -53,6 +57,24 @@ function SubjectWorkspaceContent() {
   useEffect(() => {
     refresh();
   }, [refresh]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setBuiltInCounts(null);
+
+    fetch(`/api/ap-subject-counts/${encodeURIComponent(params.subject)}`)
+      .then((response) => (response.ok ? response.json() : Promise.reject(new Error("Count request failed"))))
+      .then((data: BuiltInCounts) => {
+        if (!cancelled) setBuiltInCounts(data);
+      })
+      .catch(() => {
+        if (!cancelled) setBuiltInCounts({ concept: 0, formula: 0, practice: 0 });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [params.subject]);
 
   useEffect(() => {
     const fromQuery = searchParams.get("type");
@@ -155,16 +177,16 @@ function SubjectWorkspaceContent() {
     );
   }
 
+  const managedCounts = {
+    concept: items.filter((item) => item.type === "concept").length,
+    formula: items.filter((item) => item.type === "formula").length,
+    practice: items.filter((item) => item.type === "practice").length,
+  };
+
   const counts: Record<string, number> = {
-    concept:
-      concepts.filter((item) => item.subject === subjectName).length +
-      items.filter((item) => item.type === "concept").length,
-    formula:
-      formulas.filter((item) => item.subject === subjectName).length +
-      items.filter((item) => item.type === "formula").length,
-    practice:
-      questionnaires.filter((item) => item.subject === subjectName).length +
-      items.filter((item) => item.type === "practice").length,
+    concept: (builtInCounts?.concept ?? 0) + managedCounts.concept,
+    formula: (builtInCounts?.formula ?? 0) + managedCounts.formula,
+    practice: (builtInCounts?.practice ?? 0) + managedCounts.practice,
     hints: 1,
   };
 
@@ -214,7 +236,11 @@ function SubjectWorkspaceContent() {
               <p className="text-sm text-slate-500">
                 {section.key === "practice"
                   ? "Sets, drills & exam & paper"
-                  : `${counts[section.key]} available`}
+                  : section.key === "hints"
+                    ? `${counts[section.key]} available`
+                    : builtInCounts
+                      ? `${counts[section.key]} available`
+                      : "Loading count…"}
               </p>
             </div>
           </Link>
