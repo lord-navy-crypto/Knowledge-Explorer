@@ -43,18 +43,23 @@ export const HOME_GATEWAYS: HomeGateway[] = [
     id: "tools-code",
     title: "Convenient Tools & Code",
     description:
-      "One unified area: combined workbenches first, then single-purpose tools, code, AI, community, recommendations, and shared files.",
+      "Workbench-only tool area: math, code, writing, files, study, English, classroom utilities and AI, with external connections kept separate.",
     href: "/explore/tools-code",
     links: [
       {
         href: "/hints?tool=calculator",
         title: "Math Workbench · Calc + Graph",
-        description: "Combined calculator, grapher, calculus lab, units, vectors, LaTeX, and formulas.",
+        description: "Calculator, grapher, calculus lab, units, vectors, LaTeX, and formulas in one workbench.",
       },
       {
         href: "/code/editor?lang=python",
         title: "Code Workbench",
-        description: "Combined editor with language picker plus JSON, Base64/URL, and Code board tabs.",
+        description: "Editor plus code board, JSON, Base64/URL, compare, and presets under one workbench.",
+      },
+      {
+        href: "/tools/workbench/files",
+        title: "File Workbench",
+        description: "PDF, images, CSV/Markdown, and batch rename collected into one workbench.",
       },
       {
         href: "/hints",
@@ -62,14 +67,9 @@ export const HOME_GATEWAYS: HomeGateway[] = [
         description: "Unified AI — Local / Website API / Your own API, with AP, English, Coding, and Math tools.",
       },
       {
-        href: "/explore/tools-code#single-tools",
-        title: "Single Tools",
-        description: "Jump directly to the smaller utilities now embedded in the Tools & Code area.",
-      },
-      {
-        href: "/forum",
-        title: "Forum",
-        description: "Discussions, Shared library, and My box — run fenced code in the editor.",
+        href: "/explore/tools-code#external-tools",
+        title: "External Connections & Tools",
+        description: "Off-site resources kept separate because they cannot be absorbed into local workbenches.",
       },
     ],
   },
