@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   averageValue,
   evalAtX,
+  findIntersections,
   findZeros,
   formatCalc,
   newtonRoot,
@@ -15,6 +17,8 @@ import {
   tangentLineExpression,
   valueTable,
 } from "@/lib/math-expr";
+import { openToolboxWithPrefill } from "@/lib/ai-toolbox-prefill";
+import { preloadForumComposer } from "@/lib/forum-local";
 
 /** Numeric calculus extras fused into Calc + Graph — original-practice AP STEM, not a licensed ROM. */
 export default function MathCalcLab({
@@ -28,6 +32,8 @@ export default function MathCalcLab({
   expr: string;
   onExprChange: (next: string) => void;
 }) {
+  const router = useRouter();
+  const [gExpr, setGExpr] = useState("x");
   const [x0, setX0] = useState("2");
   const [a, setA] = useState("0");
   const [b, setB] = useState("2");
@@ -42,7 +48,18 @@ export default function MathCalcLab({
   const [error, setError] = useState("");
 
   function run(
-    kind: "eval" | "deriv" | "second" | "int" | "avg" | "riemann" | "sum" | "zeros" | "newton" | "table"
+    kind:
+      | "eval"
+      | "deriv"
+      | "second"
+      | "int"
+      | "avg"
+      | "riemann"
+      | "sum"
+      | "zeros"
+      | "newton"
+      | "table"
+      | "intersect"
   ) {
     setError("");
     setTable([]);
@@ -83,6 +100,17 @@ export default function MathCalcLab({
       } else if (kind === "newton") {
         const root = newtonRoot(f, Number(x0));
         setOut(`Newton from x=${x0} → ${formatCalc(root)}  (f ≈ ${formatCalc(evalAtX(f, root))})`);
+      } else if (kind === "intersect") {
+        const g = gExpr.trim() || "x";
+        const pts = findIntersections(f, g, Number(xmin), Number(xmax));
+        setOut(
+          pts.length
+            ? `f ∩ g in [${xmin}, ${xmax}]: ${pts
+                .map((p) => `(${formatCalc(p.x)}, ${formatCalc(p.y)})`)
+                .join(", ")}`
+            : `No intersections in [${xmin}, ${xmax}].`
+        );
+        onSendToGraph(f, g);
       } else {
         const rows = valueTable(f, Number(xmin), Number(xmax), Number(step));
         setTable(
@@ -117,7 +145,7 @@ export default function MathCalcLab({
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Calc lab</p>
           <h3 className="text-sm font-semibold text-slate-900">
-            Evaluate · d/dx · f″ · ∫ · avg · Riemann · Σ · table · zeros
+            Evaluate · d/dx · f″ · ∫ · avg · Riemann · Σ · table · zeros · f∩g
           </h3>
         </div>
         <button type="button" className="btn-secondary text-xs" onClick={() => onSendToGraph(expr.trim() || "x")}>
@@ -139,6 +167,15 @@ export default function MathCalcLab({
           className="input mt-1 font-mono"
           value={expr}
           onChange={(e) => onExprChange(e.target.value)}
+          spellCheck={false}
+        />
+      </label>
+      <label className="mt-2 block text-sm font-medium text-slate-700">
+        g(x) for intersections (plots as Y2)
+        <input
+          className="input mt-1 font-mono"
+          value={gExpr}
+          onChange={(e) => setGExpr(e.target.value)}
           spellCheck={false}
         />
       </label>
@@ -217,6 +254,49 @@ export default function MathCalcLab({
         </button>
         <button type="button" className="btn-secondary text-xs" onClick={() => run("newton")}>
           Newton
+        </button>
+        <button type="button" className="btn-secondary text-xs" onClick={() => run("intersect")}>
+          f ∩ g → Y1/Y2
+        </button>
+        <button
+          type="button"
+          className="btn-secondary text-xs"
+          onClick={() =>
+            openToolboxWithPrefill({
+              category: "ap",
+              apTask: "advice",
+              prompt: [
+                "Help with this original-practice calc lab (do not paste copyrighted exam text).",
+                `f(x) = ${expr.trim() || "x"}`,
+                gExpr.trim() ? `g(x) = ${gExpr.trim()}` : "",
+                out ? `Latest result: ${out}` : "",
+              ]
+                .filter(Boolean)
+                .join("\n"),
+            })
+          }
+        >
+          Ask AI
+        </button>
+        <button
+          type="button"
+          className="btn-secondary text-xs"
+          onClick={() => {
+            preloadForumComposer({
+              title: `Calc lab: ${expr.trim() || "f(x)"}`,
+              body: [
+                `f(x) = \`${expr.trim() || "x"}\``,
+                gExpr.trim() ? `g(x) = \`${gExpr.trim()}\`` : "",
+                out ? `Result: ${out}` : "Need help checking this setup.",
+              ]
+                .filter(Boolean)
+                .join("\n\n"),
+              postCategory: "questions",
+            });
+            router.push("/forum");
+          }}
+        >
+          Post to Forum
         </button>
       </div>
       {out ? <p className="mt-3 font-mono text-sm text-slate-900">{out}</p> : null}

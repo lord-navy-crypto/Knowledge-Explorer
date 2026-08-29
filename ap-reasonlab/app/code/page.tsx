@@ -50,19 +50,12 @@ export default function CodePage() {
       <div>
         <h1 className="text-3xl font-bold">Code Resource</h1>
         <p className="mt-2 text-slate-600">
-          Open one editor, then pick the language, import a file, or copy a permalink. Save reusable blocks in the{" "}
-          <Link href="/tools/code-board" className="font-medium text-brand-700 underline">
-            long code block adder
-          </Link>
-          . Fence code on{" "}
+          Open one editor, then pick the language, import a file, or copy a permalink. JSON, Base64,
+          and the code board are tabs on that editor; catalog cards stay listed. Fence code on{" "}
           <Link href="/forum" className="font-medium text-brand-700 underline">
             Forum
           </Link>{" "}
-          to run it here. Format JSON or Base64 in{" "}
-          <Link href="/tools" className="font-medium text-brand-700 underline">
-            Convenient Tools
-          </Link>
-          .
+          to run it here.
         </p>
         <Link href="/code/editor?lang=python" className="btn-primary mt-4 inline-flex">
           Open editor
@@ -88,17 +81,30 @@ export default function CodePage() {
         </p>
         <h2 className="mt-1 text-xl font-semibold text-slate-900">Long code block adder</h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-          Add title + comment + long code, then copy or open a playground with the block preloaded.
+          Add title + comment + long code on the editor’s Code board tab, or use the catalog adder
+          page — both share the same local library.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
-          <Link href="/tools/code-board" className="btn-primary">
-            Open code block adder
+          <Link href="/code/editor?lang=python" className="btn-primary">
+            Open editor
           </Link>
-          <Link href="/tools/json-formatter" className="btn-secondary">
-            JSON formatter
+          <Link href="/code/editor?desk=board" className="btn-secondary">
+            Code board tab
           </Link>
-          <Link href="/tools/encode-decode" className="btn-secondary">
-            Base64 / URL
+          <Link href="/code/editor?desk=json" className="btn-secondary">
+            JSON on editor
+          </Link>
+          <Link href="/code/editor?desk=encode" className="btn-secondary">
+            Base64 on editor
+          </Link>
+          <Link href="/tools/code-board" className="btn-ghost">
+            Catalog adder
+          </Link>
+          <Link href="/tools/json-formatter" className="btn-ghost">
+            JSON catalog
+          </Link>
+          <Link href="/tools/encode-decode" className="btn-ghost">
+            Base64 catalog
           </Link>
         </div>
       </section>

@@ -718,6 +718,23 @@ export function ForumDiscussions({
           >
             Starred{stars.length ? ` (${stars.length})` : ""}
           </button>
+          {stars.length ? (
+            <button
+              type="button"
+              className="rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 ring-1 ring-slate-200"
+              onClick={() => {
+                const md = posts
+                  .filter((p) => stars.includes(p.id))
+                  .map(forumThreadMarkdown)
+                  .join("\n\n---\n\n");
+                void navigator.clipboard.writeText(md || "(no starred threads loaded)");
+                setNotice("Starred threads copied as Markdown.");
+                window.setTimeout(() => setNotice(""), 1500);
+              }}
+            >
+              Export starred
+            </button>
+          ) : null}
           {displayName && (
             <button
               type="button"
@@ -783,6 +800,49 @@ export function ForumDiscussions({
               <option value="beta-feedback">Beta feedback</option>
             </select>
           </label>
+          <div className="flex flex-wrap gap-1.5">
+            {(
+              [
+                ["python", "Python fence"],
+                ["json", "JSON fence"],
+                ["latex", "LaTeX fence"],
+              ] as const
+            ).map(([lang, label]) => (
+              <button
+                key={lang}
+                type="button"
+                className="rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50"
+                onClick={() => {
+                  const fence =
+                    lang === "latex"
+                      ? "\n$$\n\n$$\n"
+                      : "\n```" + lang + "\n\n```\n";
+                  setBody((prev) => (prev.trim() ? prev + fence : fence.trimStart()));
+                }}
+              >
+                Insert {label}
+              </button>
+            ))}
+            <button
+              type="button"
+              className="rounded-md border border-brand-200 bg-brand-50 px-2 py-1 text-[11px] font-semibold text-brand-800 hover:bg-brand-100"
+              onClick={() =>
+                openToolboxWithPrefill({
+                  category: "ap",
+                  apTask: "advice",
+                  prompt: [
+                    "Help me improve this Forum draft (original-practice only; do not paste copyrighted exam text).",
+                    title.trim() ? `Title: ${title.trim()}` : "",
+                    body.trim() || "(empty body)",
+                  ]
+                    .filter(Boolean)
+                    .join("\n\n"),
+                })
+              }
+            >
+              Ask AI about this draft
+            </button>
+          </div>
           <MarkdownLatexField
             label="Discussion body"
             value={body}

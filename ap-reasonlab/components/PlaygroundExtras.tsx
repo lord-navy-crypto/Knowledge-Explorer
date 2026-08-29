@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { appendToCodeBoard, updateCodeBoardBlock } from "@/lib/code-board-store";
 import { copySource, downloadSource } from "@/lib/playground-export";
-import { peekCodeBoardEditId } from "@/lib/code-draft-bridge";
+import { codeEditorDeskHref, peekCodeBoardEditId } from "@/lib/code-draft-bridge";
+import { preloadForumComposer } from "@/lib/forum-local";
 import { usePlaygroundHandoffNotice } from "@/lib/use-playground-handoff";
 import { usePlaygroundShortcuts } from "@/lib/use-playground-shortcuts";
 import type { CodeBoardLanguage } from "@/data/code-board";
@@ -19,6 +20,7 @@ type Props = {
 };
 
 export default function PlaygroundExtras({ code, language, filename, onNote, onRun }: Props) {
+  const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [saved, setSaved] = useState(false);
   const [updated, setUpdated] = useState(false);
@@ -78,13 +80,31 @@ export default function PlaygroundExtras({ code, language, filename, onNote, onR
       <button type="button" className="btn-secondary text-xs" onClick={handleSaveToBoard}>
         {saved ? "Saved ✓" : "Save to code board"}
       </button>
+      <button
+        type="button"
+        className="btn-secondary text-xs"
+        onClick={() => {
+          const fenceLang = language === "html" ? "html" : language;
+          preloadForumComposer({
+            title: filename.replace(/\.\w+$/, "") || "Playground snippet",
+            body: "```" + fenceLang + "\n" + code + "\n```",
+            postCategory: "questions",
+          });
+          router.push("/forum");
+        }}
+      >
+        Post to Forum
+      </button>
       {editId ? (
         <button type="button" className="btn-secondary text-xs" onClick={handleUpdateBlock}>
           {updated ? "Updated ✓" : "Update code board block"}
         </button>
       ) : null}
-      <Link href="/tools/code-board" className="text-xs text-brand-600 hover:underline">
-        Open adder →
+      <Link href={codeEditorDeskHref("board")} className="text-xs text-brand-600 hover:underline">
+        Board tab →
+      </Link>
+      <Link href="/tools/code-board" className="text-xs text-slate-500 hover:underline">
+        Catalog adder
       </Link>
       {onRun ? (
         <span className="hidden text-[10px] text-slate-400 sm:inline">

@@ -51,4 +51,10 @@ describe("math-expr calc lab", () => {
     expect(riemannSum("x", 0, 2, 4, "mid")).toBeCloseTo(2, 2);
     expect(riemannSum("x", 0, 2, 4, "left")).toBeLessThan(riemannSum("x", 0, 2, 4, "right"));
   });
+
+  it("finds intersections of x and 2-x", async () => {
+    const { findIntersections } = await import("@/lib/math-expr");
+    const pts = findIntersections("x", "2-x", 0, 2);
+    expect(pts.some((p) => Math.abs(p.x - 1) < 1e-3 && Math.abs(p.y - 1) < 1e-3)).toBe(true);
+  });
 });
