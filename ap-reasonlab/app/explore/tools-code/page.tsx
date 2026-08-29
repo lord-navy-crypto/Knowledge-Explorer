@@ -16,7 +16,13 @@ body:has(#tools-code-lite-render) {
   background-blend-mode: normal !important;
 }
 
-body:has(#tools-code-lite-render) .academic-print {
+body:has(#tools-code-lite-render) .academic-print,
+body:has(#tools-code-lite-render) .style-window-launcher,
+body:has(#tools-code-lite-render) .tomato-cloud-circle,
+body:has(#tools-code-lite-render) button[aria-label="Jump to a random study page"],
+body:has(#tools-code-lite-render) button[aria-label="Open page edit menu"],
+body:has(#tools-code-lite-render) button[aria-label="Unlock page edit"],
+body:has(#tools-code-lite-render) nav[aria-label="Mobile shortcuts"] {
   display: none !important;
 }
 
@@ -28,19 +34,8 @@ body.site-shell:has(#tools-code-lite-render)::after {
 body:has(#tools-code-lite-render) header.sticky {
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
-  background: rgba(255, 252, 247, 0.98) !important;
+  background: rgba(255, 252, 247, 0.99) !important;
   box-shadow: 0 1px 0 rgba(30, 58, 95, 0.1) !important;
-}
-
-body:has(#tools-code-lite-render) .style-window-launcher {
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.1) !important;
-}
-
-body:has(#tools-code-lite-render) .tomato-cloud-circle {
-  filter: none !important;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.1) !important;
 }
 
 #tools-code-lite-render,
@@ -51,7 +46,7 @@ body:has(#tools-code-lite-render) .tomato-cloud-circle {
 #tools-code-lite-render a,
 #tools-code-lite-render button,
 #tools-code-lite-render input {
-  transition-duration: 60ms !important;
+  transition-duration: 0ms !important;
 }
 
 #tools-code-lite-render a:hover,
@@ -83,7 +78,7 @@ export default function ExploreToolsCodePage() {
           Convenient Tools & Code
         </h1>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
-          This page now uses a low-overhead render path: no fixed decorative layers, no backdrop blur, and no background prefetch for heavy workbenches.
+          This directory uses a low-overhead render path: fixed decorative layers, background prefetch, floating chrome, blur effects, and nonessential animations are disabled here.
         </p>
       </section>
 
