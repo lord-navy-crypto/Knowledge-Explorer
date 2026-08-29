@@ -1,27 +1,15 @@
-"use client";
-
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import { getStudyTool, type StudyTool } from "@/data/study-tools";
+import { getStudyTool } from "@/data/study-tools";
 import { TOOL_WORKBENCHES, type ToolWorkbench } from "@/data/tool-workbenches";
 
-function searchText(workbench: ToolWorkbench): string {
-  const moduleText = workbench.moduleIds
-    .map((id) => getStudyTool(id))
-    .filter(Boolean)
-    .map((tool) => `${tool!.title} ${tool!.blurb}`)
-    .join(" ");
-  return `${workbench.title} ${workbench.blurb} ${workbench.capabilityLabel} ${moduleText}`.toLowerCase();
-}
-
 function WorkbenchCard({ workbench }: { workbench: ToolWorkbench }) {
-  const modules = workbench.moduleIds.map((id) => getStudyTool(id)).filter(Boolean);
+  const moduleCount = workbench.moduleIds.filter((id) => Boolean(getStudyTool(id))).length;
 
   return (
     <Link
       href={workbench.href}
-      className="group flex min-h-[11rem] flex-col rounded-2xl border border-brand-200 bg-gradient-to-br from-brand-50 via-white to-sky-50 p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md active:scale-[0.99]"
+      prefetch={false}
+      className="group flex min-h-[10rem] flex-col rounded-2xl border border-brand-200 bg-white p-5 transition-colors hover:border-brand-400 hover:bg-brand-50/40 active:bg-brand-50"
     >
       <div className="flex items-start justify-between gap-3">
         <div>
@@ -30,8 +18,8 @@ function WorkbenchCard({ workbench }: { workbench: ToolWorkbench }) {
             {workbench.title}
           </h3>
         </div>
-        <span className="rounded-full bg-brand-100 px-2.5 py-1 text-[10px] font-bold text-brand-800">
-          {modules.length} modules
+        <span className="shrink-0 rounded-full bg-brand-100 px-2.5 py-1 text-[10px] font-bold text-brand-800">
+          {moduleCount} modules
         </span>
       </div>
       <p className="mt-2 text-sm leading-6 text-slate-600">{workbench.blurb}</p>
@@ -41,89 +29,27 @@ function WorkbenchCard({ workbench }: { workbench: ToolWorkbench }) {
   );
 }
 
-export default function ToolsCatalog({
-  basePath = "/explore/tools-code",
-}: {
-  tools?: StudyTool[];
-  basePath?: string;
-}) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const [query, setQuery] = useState("");
-
-  useEffect(() => {
-    setQuery(searchParams.get("q") || "");
-  }, [searchParams]);
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return TOOL_WORKBENCHES;
-    const tokens = q.split(/\s+/);
-    return TOOL_WORKBENCHES.filter((workbench) => {
-      const haystack = searchText(workbench);
-      return tokens.every((token) => haystack.includes(token));
-    });
-  }, [query]);
-
+export default function ToolsCatalog() {
   const external = getStudyTool("external-hub");
-  const externalMatches = useMemo(() => {
-    if (!external) return false;
-    const q = query.trim().toLowerCase();
-    if (!q) return true;
-    const haystack = `${external.title} ${external.blurb} external connection tools`.toLowerCase();
-    return q.split(/\s+/).every((token) => haystack.includes(token));
-  }, [external, query]);
-
-  function updateQuery(value: string) {
-    setQuery(value);
-    const params = new URLSearchParams(searchParams.toString());
-    if (value.trim()) params.set("q", value.trim());
-    else params.delete("q");
-    const qs = params.toString();
-    router.replace(qs ? `${basePath}?${qs}` : basePath, { scroll: false });
-  }
 
   return (
     <div className="space-y-8">
-      <section className="rounded-xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <label className="block min-w-0 flex-1 text-sm">
-            <span className="sr-only">Search workbenches</span>
-            <input
-              className="input w-full"
-              value={query}
-              onChange={(event) => updateQuery(event.target.value)}
-              placeholder="Search workbenches or included capabilities…"
-            />
-          </label>
-          <p className="text-xs tabular-nums text-slate-500">{filtered.length} workbenches</p>
+      <section className="space-y-3" aria-labelledby="workbenches-heading">
+        <div className="border-b border-brand-200 pb-2">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-brand-600">Primary tools</p>
+          <h2 id="workbenches-heading" className="text-xl font-bold text-slate-900">Workbenches</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Open a workbench directly. Smaller covered tools stay inside their workbench instead of loading as separate catalog items.
+          </p>
         </div>
-        <p className="mt-2 text-xs text-slate-500">
-          Clusters and covered single tools are no longer separate products. They are modules inside these workbenches.
-        </p>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {TOOL_WORKBENCHES.map((workbench) => (
+            <WorkbenchCard key={workbench.id} workbench={workbench} />
+          ))}
+        </div>
       </section>
 
-      {filtered.length ? (
-        <section className="space-y-3" aria-labelledby="workbenches-heading">
-          <div className="border-b border-brand-200 pb-2">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-brand-600">Primary tools</p>
-            <h2 id="workbenches-heading" className="text-xl font-bold text-slate-900">Workbenches</h2>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {filtered.map((workbench) => (
-              <WorkbenchCard key={workbench.id} workbench={workbench} />
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      {!filtered.length && !externalMatches ? (
-        <p className="rounded-xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500">
-          No workbench matches that search.
-        </p>
-      ) : null}
-
-      {external && externalMatches ? (
+      {external ? (
         <section id="external-tools" className="scroll-mt-28 space-y-3 border-t border-slate-200 pt-7">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">Separate</p>
@@ -134,7 +60,8 @@ export default function ToolsCatalog({
           </div>
           <Link
             href={external.href}
-            className="group block rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-brand-300 hover:shadow-md"
+            prefetch={false}
+            className="group block rounded-xl border border-slate-200 bg-white p-5 transition-colors hover:border-brand-300 hover:bg-slate-50 active:bg-slate-100"
           >
             <h3 className="font-display text-lg font-bold text-slate-900 group-hover:text-brand-800">{external.title}</h3>
             <p className="mt-2 text-sm leading-6 text-slate-600">{external.blurb}</p>
