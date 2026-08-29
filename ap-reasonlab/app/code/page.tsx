@@ -50,7 +50,7 @@ export default function CodePage() {
       <div>
         <h1 className="text-3xl font-bold">Code Resource</h1>
         <p className="mt-2 text-slate-600">
-          Open one editor, then pick the language. Save reusable blocks in the{" "}
+          Open one editor, then pick the language, import a file, or copy a permalink. Save reusable blocks in the{" "}
           <Link href="/tools/code-board" className="font-medium text-brand-700 underline">
             long code block adder
           </Link>

@@ -9,7 +9,7 @@ import {
   type CodeBoardBlock,
   type CodeBoardLanguage,
 } from "@/data/code-board";
-import { preloadPlaygroundDraft } from "@/lib/code-draft-bridge";
+import { playgroundHref, preloadPlaygroundDraft } from "@/lib/code-draft-bridge";
 
 const KEY = "ke-code-board-v1";
 
@@ -17,18 +17,6 @@ type Tab = "library" | "add" | "import";
 type SortMode = "newest" | "title" | "lang";
 
 type StoredBlock = CodeBoardBlock & { favorite?: boolean; updatedAt?: number };
-
-function playgroundHref(language: CodeBoardLanguage): string | null {
-  if (language === "python") return "/code/python";
-  if (language === "javascript") return "/code/javascript";
-  if (language === "typescript") return "/code/typescript";
-  if (language === "html") return "/code/web";
-  if (language === "sql") return "/code/sql";
-  if (language === "markdown") return "/code/markdown";
-  if (language === "java") return "/code/java";
-  if (language === "csharp") return "/code/csharp";
-  return "/code";
-}
 
 export default function CodeBoardTool() {
   const [tab, setTab] = useState<Tab>("library");
@@ -425,7 +413,7 @@ export default function CodeBoardTool() {
                             })
                           }
                         >
-                          Open playground
+                          Open in editor
                         </Link>
                       ) : null}
                       <button

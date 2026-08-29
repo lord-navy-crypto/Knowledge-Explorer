@@ -114,7 +114,13 @@ const CONSTANTS = [
   { name: "F (Faraday)", value: "96485 C/mol", insert: "96485.3321" },
 ];
 
-export default function UnitsConstants() {
+export default function UnitsConstants({
+  embedded = false,
+  onInsert,
+}: {
+  embedded?: boolean;
+  onInsert?: (value: string) => void;
+}) {
   const [groupId, setGroupId] = useState<(typeof GROUPS)[number]["id"]>("length");
   const group = GROUPS.find((g) => g.id === groupId) || GROUPS[0];
   const [from, setFrom] = useState(group.units[0]!.label);
@@ -158,12 +164,8 @@ export default function UnitsConstants() {
     window.setTimeout(() => setCopied((c) => (c === id ? "" : c)), 1200);
   }
 
-  return (
-    <StudyToolShell
-      title="Units & constants"
-      description="Casio-style unit converter for AP Physics / Chemistry — length, mass, energy, force, pressure, charge, time, temperature — plus searchable constants with one-click copy for the calculator."
-      tip="Copy a constant’s insert value, then paste into KE ClassWiz. Temperature uses exact °C/°F/K formulas (not a linear scale factor)."
-    >
+  const body = (
+    <>
       <div className="flex flex-wrap gap-2">
         {GROUPS.map((g) => (
           <button
@@ -219,6 +221,15 @@ export default function UnitsConstants() {
           >
             {copied === "conv" ? "Copied" : "Copy"}
           </button>
+          {onInsert && converted !== "—" ? (
+            <button
+              type="button"
+              className="ml-2 text-xs font-semibold text-brand-700"
+              onClick={() => onInsert(converted)}
+            >
+              Use in calc
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -279,6 +290,20 @@ export default function UnitsConstants() {
           ))}
         </ul>
       </div>
+    </>
+  );
+
+  if (embedded) {
+    return <div className="card space-y-4">{body}</div>;
+  }
+
+  return (
+    <StudyToolShell
+      title="Units & constants"
+      description="Casio-style unit converter for AP Physics / Chemistry — length, mass, energy, force, pressure, charge, time, temperature — plus searchable constants with one-click copy for the calculator."
+      tip="Copy a constant’s insert value, then paste into KE ClassWiz. Temperature uses exact °C/°F/K formulas (not a linear scale factor)."
+    >
+      {body}
     </StudyToolShell>
   );
 }

@@ -46,6 +46,7 @@ describe("tool clusters", () => {
     const { TOOL_CLUSTERS } = await import("@/data/tool-clusters");
     const math = TOOL_CLUSTERS.find((c) => c.id === "math-science");
     expect(math?.toolIds).toContain("math-pad");
+    expect(math?.blurb.toLowerCase()).toMatch(/calc lab|d\/dx|integral|table|zeros/);
   });
 });
 
@@ -140,6 +141,15 @@ describe("code-board update", () => {
     const id = appendToCodeBoard({ language: "python", title: "A", code: "print(1)" });
     expect(updateCodeBoardBlock(id, "print(2)")).toBe(true);
     expect(store.get("ke-code-board-v1")).toContain("print(2)");
+  });
+});
+
+describe("code editor fusion", () => {
+  it("sends playground handoffs to the one editor", async () => {
+    const { playgroundHref } = await import("@/lib/code-draft-bridge");
+    expect(playgroundHref("python")).toBe("/code/editor?lang=python");
+    expect(playgroundHref("html")).toBe("/code/editor?lang=web");
+    expect(playgroundHref("javascript")).toBe("/code/editor?lang=javascript");
   });
 });
 

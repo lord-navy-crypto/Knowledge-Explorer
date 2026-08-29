@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AiApiChannel from "@/components/AiApiChannel";
 import LocalAiRecommendation from "@/components/LocalAiRecommendation";
 import {
@@ -15,6 +15,7 @@ import {
   LOCAL_MODEL_USE_CASES,
   modelsForUseCase,
 } from "@/lib/local-ai-models";
+import { loadAiSettingsOpen, saveAiSettingsOpen } from "@/lib/ai-toolbox-prefs";
 
 const PATHS: Array<{
   value: AIMode;
@@ -63,6 +64,7 @@ export default function LocalAIControls({ embedded = false }: Props) {
   const [loadError, setLoadError] = useState("");
   const [showSuitabilityGuide, setShowSuitabilityGuide] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(true);
   const selected = localAI.models.find((model) => model.id === localAI.selectedModelId);
   const loaded = localAI.models.find((model) => model.id === localAI.loadedModelId);
   const target = localAI.models.find(
@@ -77,6 +79,18 @@ export default function LocalAIControls({ embedded = false }: Props) {
     () => localAI.models.filter((model) => !model.extended).length,
     [localAI.models]
   );
+
+  useEffect(() => {
+    setSettingsOpen(loadAiSettingsOpen());
+  }, []);
+
+  function toggleSettings() {
+    setSettingsOpen((open) => {
+      const next = !open;
+      saveAiSettingsOpen(next);
+      return next;
+    });
+  }
   const extendedCount = useMemo(
     () => localAI.models.filter((model) => model.extended).length,
     [localAI.models]
@@ -137,34 +151,57 @@ export default function LocalAIControls({ embedded = false }: Props) {
     >
       <div>
         <LocalAiRecommendation className="mb-3" />
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">AI settings</p>
-        <p className="mt-1 text-sm text-slate-600">
-          One shared panel for every AI task: Local, Website API, or Your own API — then choose the
-          work below.
-        </p>
-        <div className="mt-3 grid gap-2 md:grid-cols-3">
-          {PATHS.map((item) => (
-            <button
-              key={item.value}
-              type="button"
-              onClick={() => selectMode(item.value)}
-              className={
-                localAI.mode === item.value
-                  ? "rounded-xl bg-slate-900 px-4 py-3 text-left text-white shadow"
-                  : "rounded-xl border border-slate-200 bg-white px-4 py-3 text-left text-slate-800 hover:border-slate-400"
-              }
-            >
-              <span className="block text-sm font-semibold">{item.label}</span>
-              <span
-                className={`mt-1 block text-xs ${
-                  localAI.mode === item.value ? "text-slate-200" : "text-slate-500"
-                }`}
-              >
-                {item.detail}
-              </span>
-            </button>
-          ))}
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">AI settings</p>
+            <p className="mt-1 text-sm text-slate-600">
+              Path: <span className="font-semibold text-slate-900">{PATHS.find((p) => p.value === localAI.mode)?.label}</span>
+              {localAI.mode === "local" && loaded ? (
+                <>
+                  {" · "}
+                  <span className="font-medium">{loaded.label || loaded.id}</span>
+                </>
+              ) : null}
+              {localAI.mode === "site" ? ` · ${localAI.siteModel}` : null}
+            </p>
+            <p className="mt-1 text-sm text-slate-600">
+              One shared panel: Local, Website API, or Your own API — then choose the work below.
+            </p>
+          </div>
+          <button type="button" className="btn-secondary text-xs" onClick={toggleSettings}>
+            {settingsOpen ? "Hide settings" : "AI settings · path / model"}
+          </button>
         </div>
+        {settingsOpen ? (
+          <div className="mt-3 grid gap-2 md:grid-cols-3">
+            {PATHS.map((item) => (
+              <button
+                key={item.value}
+                type="button"
+                onClick={() => selectMode(item.value)}
+                className={
+                  localAI.mode === item.value
+                    ? "rounded-xl bg-slate-900 px-4 py-3 text-left text-white shadow"
+                    : "rounded-xl border border-slate-200 bg-white px-4 py-3 text-left text-slate-800 hover:border-slate-400"
+                }
+              >
+                <span className="block text-sm font-semibold">{item.label}</span>
+                <span
+                  className={`mt-1 block text-xs ${
+                    localAI.mode === item.value ? "text-slate-200" : "text-slate-500"
+                  }`}
+                >
+                  {item.detail}
+                </span>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p className="mt-2 text-xs text-slate-500">
+            Chat stays on this path. Open AI settings to switch Local / Website API / Your own API or
+            pick a Local model.
+          </p>
+        )}
         <div className="mt-3 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/90 px-3 py-3 text-sm text-emerald-950">
           <span
             className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border border-emerald-500 bg-emerald-600 text-[10px] font-bold text-white"
@@ -282,6 +319,7 @@ export default function LocalAIControls({ embedded = false }: Props) {
         )}
       </div>
 
+      {settingsOpen ? (
       <div className="rounded-xl border border-slate-200 bg-white">
         <button
           type="button"
@@ -675,6 +713,7 @@ export default function LocalAIControls({ embedded = false }: Props) {
           </div>
         ) : null}
       </div>
+      ) : null}
 
       {confirmLoad && target && (
         <div

@@ -278,7 +278,7 @@ export default function TICalculator() {
   const plotHref = useMemo(() => {
     const source = (expr.trim() || "sin(x)").replace(/\bans\b/gi, String(ans));
     const y1 = /\bx\b/i.test(source) ? source : `${source}+0*x`;
-    return `/hints?tool=grapher&y1=${encodeURIComponent(y1)}`;
+    return `/hints?tool=calculator&y1=${encodeURIComponent(y1)}`;
   }, [ans, expr]);
 
   function askAiAboutCalc(mode: "explain" | "check" | "units" = "explain") {

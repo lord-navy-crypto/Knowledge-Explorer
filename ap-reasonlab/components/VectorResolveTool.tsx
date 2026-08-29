@@ -13,7 +13,13 @@ function angDeg(v: Vec) {
   return (Math.atan2(v.y, v.x) * 180) / Math.PI;
 }
 
-export default function VectorResolveTool() {
+export default function VectorResolveTool({
+  embedded = false,
+  onInsert,
+}: {
+  embedded?: boolean;
+  onInsert?: (value: string) => void;
+}) {
   const [mode, setMode] = useState<"resolve" | "add">("resolve");
   const [magnitude, setMagnitude] = useState(10);
   const [angle, setAngle] = useState(30);
@@ -43,12 +49,8 @@ export default function VectorResolveTool() {
   const scale = Math.min(80, 80 / (maxComp / 8));
   const tip = (v: Vec) => ({ x: cx + v.x * scale, y: cy - v.y * scale });
 
-  return (
-    <StudyToolShell
-      title="Vector components"
-      description="Resolve a 2D vector into components, or add/subtract two vectors — AP Physics free-body helper."
-      tip="Resolve mode: angle from +x (or +y). Add mode: enter Ax,Ay and Bx,By to get A+B and |R|."
-    >
+  const body = (
+    <>
       <div className="mb-3 flex flex-wrap gap-2">
         <button
           type="button"
@@ -113,6 +115,15 @@ export default function VectorResolveTool() {
                 <p className="mt-1 text-xs text-slate-500">
                   Check: √(Ax²+Ay²) = {mag(resolved).toFixed(4)}
                 </p>
+                {onInsert ? (
+                  <button
+                    type="button"
+                    className="mt-2 text-xs font-semibold text-brand-700"
+                    onClick={() => onInsert(String(Number(resolved.x.toPrecision(8))))}
+                  >
+                    Use Ax in calc
+                  </button>
+                ) : null}
               </div>
             </>
           ) : (
@@ -184,6 +195,20 @@ export default function VectorResolveTool() {
           </svg>
         </div>
       </div>
+    </>
+  );
+
+  if (embedded) {
+    return <div className="space-y-4">{body}</div>;
+  }
+
+  return (
+    <StudyToolShell
+      title="Vector components"
+      description="Resolve a 2D vector into components, or add/subtract two vectors — AP Physics free-body helper."
+      tip="Resolve mode: angle from +x (or +y). Add mode: enter Ax,Ay and Bx,By to get A+B and |R|."
+    >
+      {body}
     </StudyToolShell>
   );
 }

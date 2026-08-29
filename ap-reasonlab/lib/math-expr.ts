@@ -351,6 +351,76 @@ export function numericIntegral(
   return (h / 3) * sum;
 }
 
+/** Evaluate f at a point (default variable x). */
+export function evalAtX(expression: string, x: number, vars: Record<string, number> = {}): number {
+  return evalExpr(expression, { ...vars, x });
+}
+
+/** Discrete sum Σ_{n=n0}^{n1} f(n). Uses n, i, and x as the index. */
+export function numericSum(expression: string, n0: number, n1: number, vars: Record<string, number> = {}): number {
+  const start = Math.trunc(n0);
+  const end = Math.trunc(n1);
+  if (!Number.isFinite(start) || !Number.isFinite(end)) throw new Error("sum bounds must be finite");
+  if (end < start) return 0;
+  if (end - start > 10_000) throw new Error("sum too many terms (max 10000)");
+  let total = 0;
+  for (let n = start; n <= end; n += 1) {
+    total += evalExpr(expression, { ...vars, n, i: n, x: n });
+  }
+  return total;
+}
+
+export type ValueTableRow = { x: number; y: number | null };
+
+/** Table of values for f(x) on [xmin, xmax] with a positive step (max 200 rows). */
+export function valueTable(
+  expression: string,
+  xmin: number,
+  xmax: number,
+  step: number,
+  vars: Record<string, number> = {}
+): ValueTableRow[] {
+  if (!Number.isFinite(xmin) || !Number.isFinite(xmax) || !Number.isFinite(step)) {
+    throw new Error("table bounds and step must be finite");
+  }
+  if (!(step > 0)) throw new Error("step must be positive");
+  if (xmax < xmin) throw new Error("xmax must be ≥ xmin");
+  const n = Math.min(200, Math.floor((xmax - xmin) / step) + 1);
+  const rows: ValueTableRow[] = [];
+  for (let i = 0; i < n; i += 1) {
+    const x = xmin + i * step;
+    try {
+      const y = evalAtX(expression, x, vars);
+      rows.push({ x, y: Number.isFinite(y) ? y : null });
+    } catch {
+      rows.push({ x, y: null });
+    }
+  }
+  return rows;
+}
+
+/** Newton–Raphson root of f(x) = 0 starting at x0. */
+export function newtonRoot(
+  expression: string,
+  x0: number,
+  vars: Record<string, number> = {},
+  maxIter = 40
+): number {
+  if (!Number.isFinite(x0)) throw new Error("Newton needs a finite guess");
+  let x = x0;
+  for (let i = 0; i < maxIter; i += 1) {
+    const y = evalAtX(expression, x, vars);
+    const yp = numericDerivative(expression, x, vars);
+    if (!Number.isFinite(y) || !Number.isFinite(yp)) throw new Error("Newton: f or f′ not finite");
+    if (Math.abs(yp) < 1e-12) throw new Error("Newton: derivative ≈ 0");
+    const next = x - y / yp;
+    if (!Number.isFinite(next)) throw new Error("Newton diverged");
+    if (Math.abs(next - x) < 1e-10) return next;
+    x = next;
+  }
+  return x;
+}
+
 /** Find zeros of y=f(x) in [xmin,xmax] by sign-change bisection. */
 export function findZeros(
   expression: string,

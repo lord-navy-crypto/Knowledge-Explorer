@@ -14,6 +14,17 @@ import {
   writeForumDisplayName,
 } from "@/lib/forum-display-name";
 import ForumCodeLaunchers from "@/components/ForumCodeLaunchers";
+import {
+  clearForumComposerDraft,
+  isForumSortMode,
+  loadForumComposerDraft,
+  loadForumSort,
+  loadForumStars,
+  saveForumComposerDraft,
+  saveForumSort,
+  toggleForumStar,
+  type ForumSortMode,
+} from "@/lib/forum-local";
 
 const MAX_POST_ATTACH = 4;
 const MAX_REPLY_ATTACH = 2;
@@ -284,7 +295,10 @@ export function ForumDiscussions({
   const [error, setError] = useState("");
   const [category, setCategory] = useState<Category>(initialCategory);
   const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<"newest" | "active">("newest");
+  const [sort, setSort] = useState<ForumSortMode>("newest");
+  const [stars, setStars] = useState<string[]>([]);
+  const [starredOnly, setStarredOnly] = useState(false);
+  const [draftReady, setDraftReady] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [notice, setNotice] = useState("");
@@ -314,14 +328,36 @@ export function ForumDiscussions({
 
   useEffect(() => {
     setDisplayName(readForumDisplayName());
+    setStars(loadForumStars());
+    setSort(loadForumSort());
+    const draft = loadForumComposerDraft();
+    if (draft) {
+      setTitle(draft.title);
+      setBody(draft.body);
+      if (draft.postCategory === "questions" || draft.postCategory === "resources" || draft.postCategory === "announcements" || draft.postCategory === "beta-feedback") {
+        setPostCategory(draft.postCategory);
+      }
+      if (draft.title.trim() || draft.body.trim()) setComposerOpen(true);
+    }
+    setDraftReady(true);
     void refresh();
   }, [refresh]);
+
+  useEffect(() => {
+    if (!draftReady) return;
+    saveForumComposerDraft({ title, body, postCategory });
+  }, [title, body, postCategory, draftReady]);
 
   useEffect(() => {
     const thread = searchParams.get("thread");
     if (thread) setExpandedId(thread);
     const qParam = searchParams.get("q");
     if (qParam !== null) setQuery(qParam);
+    const sortParam = searchParams.get("sort");
+    if (isForumSortMode(sortParam)) setSort(sortParam);
+    const starredParam = searchParams.get("starred");
+    if (starredParam === "1") setStarredOnly(true);
+    if (starredParam === "0") setStarredOnly(false);
     const reply = searchParams.get("reply");
     if (reply) {
       window.setTimeout(() => {
@@ -334,6 +370,7 @@ export function ForumDiscussions({
     const cat = CATEGORIES.find((c) => c.id === category) || CATEGORIES[0];
     const q = query.trim().toLowerCase();
     let list = posts.filter((p) => cat.match(p));
+    if (starredOnly) list = list.filter((p) => stars.includes(p.id));
     if (q) {
       list = list.filter((p) => {
         const attach = (p.attachments || []).map((a) => a.name || "").join(" ");
@@ -345,6 +382,9 @@ export function ForumDiscussions({
       });
     }
     list = [...list].sort((a, b) => {
+      if (sort === "replies") {
+        return (b.replies || []).length - (a.replies || []).length;
+      }
       if (sort === "newest") {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       }
@@ -359,11 +399,11 @@ export function ForumDiscussions({
       return bLast - aLast;
     });
     return list;
-  }, [posts, category, query, sort]);
+  }, [posts, category, query, sort, starredOnly, stars]);
 
   useEffect(() => {
     setPage(1);
-  }, [category, query, sort]);
+  }, [category, query, sort, starredOnly]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / POSTS_PER_PAGE));
   const paged = filtered.slice((page - 1) * POSTS_PER_PAGE, page * POSTS_PER_PAGE);
@@ -376,6 +416,30 @@ export function ForumDiscussions({
     else params.set("tag", next === "beta-feedback" ? "beta-feedback" : next);
     const qs = params.toString();
     router.replace(qs ? `/forum?${qs}` : "/forum", { scroll: false });
+  }
+
+  function patchForumQuery(patch: Record<string, string | null>) {
+    const params = new URLSearchParams(searchParams.toString());
+    for (const [key, value] of Object.entries(patch)) {
+      if (!value) params.delete(key);
+      else params.set(key, value);
+    }
+    const qs = params.toString();
+    router.replace(qs ? `/forum?${qs}` : "/forum", { scroll: false });
+  }
+
+  function changeSort(next: ForumSortMode) {
+    setSort(next);
+    saveForumSort(next);
+    patchForumQuery({ sort: next === "newest" ? null : next });
+  }
+
+  function toggleStarredFilter() {
+    setStarredOnly((v) => {
+      const next = !v;
+      patchForumQuery({ starred: next ? "1" : null });
+      return next;
+    });
   }
 
   function requestIdentity(action: "post" | string) {
@@ -460,6 +524,7 @@ export function ForumDiscussions({
       setBody("");
       setPostAttachments([]);
       setComposerOpen(false);
+      clearForumComposerDraft();
     }
   }
 
@@ -589,13 +654,25 @@ export function ForumDiscussions({
           />
           <select
             value={sort}
-            onChange={(e) => setSort(e.target.value as "newest" | "active")}
+            onChange={(e) => changeSort(e.target.value as ForumSortMode)}
             className="input py-1.5 text-xs"
             aria-label="Sort threads"
           >
             <option value="newest">Newest</option>
             <option value="active">Most active</option>
+            <option value="replies">Most replies</option>
           </select>
+          <button
+            type="button"
+            className={
+              starredOnly
+                ? "rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white"
+                : "rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 ring-1 ring-slate-200"
+            }
+            onClick={toggleStarredFilter}
+          >
+            Starred{stars.length ? ` (${stars.length})` : ""}
+          </button>
           {displayName && (
             <button
               type="button"
@@ -621,9 +698,24 @@ export function ForumDiscussions({
         <form onSubmit={submitPost} className="card space-y-3 border-brand-200">
           <div className="flex items-center justify-between gap-3">
             <h3 className="text-lg font-semibold">New discussion</h3>
-            <button type="button" className="btn-ghost" onClick={() => setComposerOpen(false)}>
-              Cancel
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-[11px] text-slate-500">Draft saved in this browser</p>
+              <button
+                type="button"
+                className="btn-ghost text-xs"
+                onClick={() => {
+                  setTitle("");
+                  setBody("");
+                  setPostAttachments([]);
+                  clearForumComposerDraft();
+                }}
+              >
+                Discard draft
+              </button>
+              <button type="button" className="btn-ghost" onClick={() => setComposerOpen(false)}>
+                Cancel
+              </button>
+            </div>
           </div>
           <input
             className="input"
@@ -680,8 +772,8 @@ export function ForumDiscussions({
         <div className="card text-sm text-slate-500">Loading discussions…</div>
       ) : filtered.length === 0 ? (
         <div className="card border-dashed text-center text-sm text-slate-500">
-          {query || category !== "all"
-            ? "No threads match this filter. Try another search."
+          {query || category !== "all" || starredOnly
+            ? "No threads match this filter. Try another search or clear Starred."
             : "No shared discussions yet. Start the first one."}
         </div>
       ) : (
@@ -692,15 +784,21 @@ export function ForumDiscussions({
             const attachCount = (post.attachments || []).length;
             return (
               <li key={post.id} id={`forum-thread-${post.id}`} className="card overflow-hidden !p-0 scroll-mt-28">
+                <div className="flex items-start gap-1">
                 <button
                   type="button"
                   onClick={() => setExpandedId(open ? null : post.id)}
-                  className="flex w-full items-start gap-3 px-4 py-3 text-left hover:bg-slate-50/80"
+                  className="flex min-w-0 flex-1 items-start gap-3 px-4 py-3 text-left hover:bg-slate-50/80"
                 >
                   <Avatar name={post.author} />
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
                       <h3 className="font-semibold text-slate-900">{post.title}</h3>
+                      {stars.includes(post.id) ? (
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-amber-700">
+                          starred
+                        </span>
+                      ) : null}
                       <span className="text-[11px] text-slate-500">
                         {replyCount} {replyCount === 1 ? "reply" : "replies"}
                         {attachCount ? ` · ${attachCount} file${attachCount === 1 ? "" : "s"}` : ""}
@@ -717,6 +815,15 @@ export function ForumDiscussions({
                     {open ? "▾" : "▸"}
                   </span>
                 </button>
+                <button
+                  type="button"
+                  className={`mt-3 mr-3 shrink-0 text-lg ${stars.includes(post.id) ? "text-amber-500" : "text-slate-300"}`}
+                  aria-label={stars.includes(post.id) ? "Unstar thread" : "Star thread"}
+                  onClick={() => setStars(toggleForumStar(post.id))}
+                >
+                  ★
+                </button>
+                </div>
 
                 {open && (
                   <div className="space-y-4 border-t border-slate-100 px-4 py-4">

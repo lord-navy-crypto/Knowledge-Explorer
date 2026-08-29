@@ -1258,6 +1258,7 @@ export default function UnifiedAiPanel({
           Choose Local / Website API / Your own API, pick a task, then chat in the dialogue box.
           Follow-up questions stay in the same conversation.{" "}
           <strong>Always search Knowledge Explorer</strong> is on — AI teaches from site materials.
+          Path and model sit in <strong>AI settings</strong> (collapse details once you pick a path).
         </p>
         {siteSearchNote ? (
           <div className="mt-2 space-y-1">

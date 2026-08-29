@@ -94,8 +94,8 @@ function ForumHub() {
           Forum
         </h1>
         <p className="relative mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">
-          Discussions (post with a display name — no change code), a public Shared library, and My
-          box (private to this browser only).
+          Discussions (drafts and starred threads stay in this browser), a public Shared library, and
+          My box (private to this browser only). Fence code to run it in the one Code editor.
         </p>
       </header>
 

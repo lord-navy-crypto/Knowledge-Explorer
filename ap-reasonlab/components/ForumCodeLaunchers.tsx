@@ -33,7 +33,7 @@ export default function ForumCodeLaunchers({ body }: { body: string }) {
                 if (href) router.push(href);
               }}
             >
-              Run {block.label} in playground
+              Run {block.label} in editor
             </button>
             <button
               type="button"
