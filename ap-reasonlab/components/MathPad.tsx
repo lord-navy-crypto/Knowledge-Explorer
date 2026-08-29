@@ -23,17 +23,18 @@ type Props = {
   focus?: "calculator" | "grapher";
 };
 
+const QUICK_FUNCTIONS = ["x^2", "sin(x)", "cos(x)", "exp(-x^2)"] as const;
+
 function parsePad(raw: string | null): PadTab {
   if (raw === "units" || raw === "sci" || raw === "vector" || raw === "latex" || raw === "formulas")
     return raw;
   return "calc";
 }
 
-/** One Convenient Tools / AI Toolbox pad: ClassWiz calculator + function grapher + fused math lab. */
+/** One Convenient Tools / AI Toolbox pad: calculator + grapher + calculus + reference utilities. */
 export default function MathPad({ focus = "calculator" }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [paste, setPaste] = useState("");
   const [labExpr, setLabExpr] = useState("x^2");
   const [graphY1, setGraphY1] = useState("");
   const [graphY2, setGraphY2] = useState("");
@@ -55,7 +56,7 @@ export default function MathPad({ focus = "calculator" }: Props) {
   }
 
   function sendToGraph(expr?: string, overlay?: string) {
-    const next = (expr ?? paste).trim() || "sin(x)";
+    const next = (expr ?? labExpr).trim() || "sin(x)";
     const y2 = (overlay ?? "").trim();
     setGraphY1(next);
     setGraphY2(y2);
@@ -73,64 +74,122 @@ export default function MathPad({ focus = "calculator" }: Props) {
     }, 50);
   }
 
+  function sendToCalculator(value?: string) {
+    const next = (value ?? labExpr).trim() || "0";
+    setCalcHandoff(next);
+    window.setTimeout(() => {
+      document.getElementById("math-calculator")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }, 50);
+  }
+
   return (
     <div className="space-y-4">
-      <div>
-        <h2 className="text-lg font-semibold text-slate-900">Calc + Graph desk</h2>
-        <p className="mt-1 max-w-2xl text-sm text-slate-600">
-          Evaluate, plot Y1–Y4, and run the calc lab: d/dx, f″, ∫, Riemann, trapezoid, Simpson,
-          extrema, inflections, arc length, Euler, zeros, and f ∩ g.
-        </p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {(
-            [
-              ["calc", "Calc + Graph"],
-              ["units", "Units"],
-              ["sci", "Sci notation"],
-              ["vector", "Vectors"],
-              ["latex", "LaTeX"],
-              ["formulas", "Formulas"],
-            ] as const
-          ).map(([id, label]) => (
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">Math workbench</p>
+            <h2 className="mt-1 text-xl font-semibold text-slate-900">Calc + Graph</h2>
+            <p className="mt-1 max-w-2xl text-sm text-slate-600">
+              Start with the calculator or graph. Open the calculus lab only when you need derivatives,
+              integrals, tables, roots, intersections, numerical methods, or AP-style analysis.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="btn-ghost text-xs"
+            onClick={() => {
+              setLabExpr("x^2");
+              setGraphY1("");
+              setGraphY2("");
+              setCalcHandoff("");
+            }}
+          >
+            Reset math desk
+          </button>
+        </div>
+
+        <div className="mt-4 border-t border-slate-100 pt-3">
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Main desk</p>
+          <div className="flex flex-wrap gap-2">
             <button
-              key={id}
               type="button"
-              onClick={() => setPadTab(id)}
+              onClick={() => setPadTab("calc")}
               className={
-                pad === id
+                pad === "calc"
                   ? "rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white"
                   : "rounded-lg bg-white px-3 py-2 text-sm font-semibold text-slate-600 ring-1 ring-slate-200"
               }
             >
-              {label}
+              Calculator + Graph
             </button>
-          ))}
+          </div>
+          <p className="mb-2 mt-3 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+            Reference & conversions
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {(
+              [
+                ["units", "Units & constants"],
+                ["sci", "Scientific notation"],
+                ["vector", "Vectors"],
+                ["latex", "LaTeX check"],
+                ["formulas", "Formula board"],
+              ] as const
+            ).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setPadTab(id)}
+                className={
+                  pad === id
+                    ? "rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white"
+                    : "rounded-lg bg-white px-3 py-2 text-sm font-semibold text-slate-600 ring-1 ring-slate-200"
+                }
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
+
         {pad === "calc" ? (
-          <div className="mt-3 flex flex-wrap items-end gap-2">
-            <label className="block min-w-[12rem] flex-1 text-sm font-medium text-slate-700">
-              Paste / import expression
-              <input
-                className="input mt-1"
-                value={paste}
-                onChange={(e) => setPaste(e.target.value)}
-                placeholder="e.g. 3*x^2 + 2*x or sin(x)"
-                spellCheck={false}
-              />
-            </label>
-            <button type="button" className="btn-primary" onClick={() => sendToGraph()}>
-              Send to Graph
-            </button>
-            <button
-              type="button"
-              className="btn-secondary"
-              onClick={() => {
-                const next = paste.trim();
-                if (next) setLabExpr(next);
-              }}
-            >
-              Use in calc lab
-            </button>
+          <div className="mt-4 rounded-xl bg-slate-50 p-3">
+            <div className="flex flex-col gap-2 lg:flex-row lg:items-end">
+              <label className="block min-w-0 flex-1 text-sm font-medium text-slate-700">
+                Shared f(x) / expression
+                <input
+                  className="input mt-1 font-mono"
+                  value={labExpr}
+                  onChange={(e) => setLabExpr(e.target.value)}
+                  placeholder="e.g. 3*x^2 + 2*x or sin(x)"
+                  spellCheck={false}
+                />
+              </label>
+              <div className="flex flex-wrap gap-2">
+                <button type="button" className="btn-primary" onClick={() => sendToGraph(labExpr)}>
+                  Plot f(x)
+                </button>
+                <button type="button" className="btn-secondary" onClick={() => sendToCalculator(labExpr)}>
+                  Send to calculator
+                </button>
+              </div>
+            </div>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Quick examples</span>
+              {QUICK_FUNCTIONS.map((expr) => (
+                <button
+                  key={expr}
+                  type="button"
+                  className="rounded-full border border-slate-200 bg-white px-2.5 py-1 font-mono text-xs text-slate-600 hover:border-brand-300 hover:text-brand-700"
+                  onClick={() => {
+                    setLabExpr(expr);
+                    sendToGraph(expr);
+                  }}
+                >
+                  {expr}
+                </button>
+              ))}
+            </div>
           </div>
         ) : null}
       </div>
@@ -152,34 +211,42 @@ export default function MathPad({ focus = "calculator" }: Props) {
 
       {pad === "calc" ? (
         <>
-          <MathCalcLab
-            expr={labExpr}
-            onExprChange={setLabExpr}
-            onSendToGraph={sendToGraph}
-            onSendToCalc={(value) => {
-              setCalcHandoff(value);
-              window.setTimeout(() => {
-                document.getElementById("math-calculator")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-              }, 50);
-            }}
-          />
           <div className="grid gap-4 xl:grid-cols-2">
             <section
               id="math-calculator"
               className={`min-w-0 ${focus === "grapher" ? "xl:order-2" : ""}`}
             >
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Calculator
-              </p>
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Calculator</p>
+                <span className="text-[11px] text-slate-400">Everyday calculations first</span>
+              </div>
               <TICalculator handoffExpr={calcHandoff} />
             </section>
             <section id="math-grapher" className="min-w-0">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Grapher
-              </p>
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Grapher</p>
+                <span className="text-[11px] text-slate-400">Y1–Y4 and shared f(x)</span>
+              </div>
               <TIGrapher handoffY1={graphY1} handoffY2={graphY2} />
             </section>
           </div>
+
+          <details className="rounded-2xl border border-slate-200 bg-slate-50/60 p-3">
+            <summary className="cursor-pointer list-none rounded-xl px-2 py-2 font-semibold text-slate-800 hover:bg-white">
+              Advanced calculus & numerical analysis
+              <span className="ml-2 text-xs font-normal text-slate-500">
+                derivatives · integrals · roots · tables · intersections · Riemann · Euler
+              </span>
+            </summary>
+            <div className="mt-3">
+              <MathCalcLab
+                expr={labExpr}
+                onExprChange={setLabExpr}
+                onSendToGraph={sendToGraph}
+                onSendToCalc={sendToCalculator}
+              />
+            </div>
+          </details>
         </>
       ) : null}
     </div>
