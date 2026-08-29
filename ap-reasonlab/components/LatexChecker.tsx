@@ -19,9 +19,11 @@ const PRESETS = [
 export default function LatexChecker({
   embedded = false,
   onPlot,
+  handoffTex = "",
 }: {
   embedded?: boolean;
   onPlot?: (expr: string) => void;
+  handoffTex?: string;
 }) {
   const [source, setSource] = useState("E = \\frac{1}{2}mv^2");
   const [display, setDisplay] = useState(true);
@@ -32,6 +34,10 @@ export default function LatexChecker({
     const tex = new URLSearchParams(window.location.search).get("tex");
     if (tex?.trim()) setSource(tex);
   }, []);
+
+  useEffect(() => {
+    if (handoffTex.trim()) setSource(handoffTex);
+  }, [handoffTex]);
 
   const result = useMemo(() => {
     try {

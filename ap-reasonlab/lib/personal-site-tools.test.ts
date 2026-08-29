@@ -32,7 +32,7 @@ describe("personal site tools and stems", () => {
   it("keeps math cluster on the fused pad and file lab on PDF desk", () => {
     const math = TOOL_CLUSTERS.find((c) => c.id === "math-science");
     expect(math?.toolIds[0]).toBe("math-pad");
-    expect(math?.blurb).toMatch(/d\/dx|∫|calc lab|table|zeros|latex/i);
+    expect(math?.blurb).toMatch(/d\/dx|∫|calc lab|table|zeros|latex|formula/i);
     const files = TOOL_CLUSTERS.find((c) => c.id === "file-lab");
     expect(files?.toolIds).toContain("pdf-tools");
   });

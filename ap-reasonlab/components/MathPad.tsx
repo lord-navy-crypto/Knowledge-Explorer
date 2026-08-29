@@ -7,6 +7,7 @@ import MathCalcLab from "@/components/MathCalcLab";
 import UnitsConstants from "@/components/UnitsConstants";
 import SciNotationTool from "@/components/SciNotationTool";
 import VectorResolveTool from "@/components/VectorResolveTool";
+import FormulaBoardTool from "@/components/FormulaBoardTool";
 import LatexChecker from "@/components/LatexChecker";
 
 const TICalculator = dynamic(() => import("@/components/TICalculator"), {
@@ -16,14 +17,15 @@ const TIGrapher = dynamic(() => import("@/components/TIGrapher"), {
   loading: () => <div className="card text-sm text-slate-500">Loading grapher…</div>,
 });
 
-type PadTab = "calc" | "units" | "sci" | "vector" | "latex";
+type PadTab = "calc" | "units" | "sci" | "vector" | "latex" | "formulas";
 
 type Props = {
   focus?: "calculator" | "grapher";
 };
 
 function parsePad(raw: string | null): PadTab {
-  if (raw === "units" || raw === "sci" || raw === "vector" || raw === "latex") return raw;
+  if (raw === "units" || raw === "sci" || raw === "vector" || raw === "latex" || raw === "formulas")
+    return raw;
   return "calc";
 }
 
@@ -33,6 +35,7 @@ export default function MathPad({ focus = "calculator" }: Props) {
   const searchParams = useSearchParams();
   const [paste, setPaste] = useState("");
   const [graphY1, setGraphY1] = useState("");
+  const [latexHandoff, setLatexHandoff] = useState("");
   const [pad, setPad] = useState<PadTab>(() => parsePad(searchParams.get("pad")));
 
   useEffect(() => {
@@ -79,6 +82,7 @@ export default function MathPad({ focus = "calculator" }: Props) {
               ["sci", "Sci notation"],
               ["vector", "Vectors"],
               ["latex", "LaTeX"],
+              ["formulas", "Formulas"],
             ] as const
           ).map(([id, label]) => (
             <button
@@ -117,7 +121,17 @@ export default function MathPad({ focus = "calculator" }: Props) {
       {pad === "units" ? <UnitsConstants embedded onInsert={sendToGraph} /> : null}
       {pad === "sci" ? <SciNotationTool embedded onInsert={sendToGraph} /> : null}
       {pad === "vector" ? <VectorResolveTool embedded onInsert={sendToGraph} /> : null}
-      {pad === "latex" ? <LatexChecker embedded onPlot={sendToGraph} /> : null}
+      {pad === "latex" ? <LatexChecker embedded onPlot={sendToGraph} handoffTex={latexHandoff} /> : null}
+      {pad === "formulas" ? (
+        <FormulaBoardTool
+          embedded
+          onPlot={sendToGraph}
+          onCheckLatex={(tex) => {
+            setLatexHandoff(tex);
+            setPadTab("latex");
+          }}
+        />
+      ) : null}
 
       {pad === "calc" ? (
         <>

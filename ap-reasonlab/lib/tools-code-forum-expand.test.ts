@@ -47,7 +47,7 @@ describe("tool clusters", () => {
     const { TOOL_CLUSTERS } = await import("@/data/tool-clusters");
     const math = TOOL_CLUSTERS.find((c) => c.id === "math-science");
     expect(math?.toolIds).toContain("math-pad");
-    expect(math?.blurb.toLowerCase()).toMatch(/calc lab|d\/dx|integral|table|zeros|latex/);
+    expect(math?.blurb.toLowerCase()).toMatch(/calc lab|d\/dx|integral|table|zeros|latex|formula/);
   });
 });
 

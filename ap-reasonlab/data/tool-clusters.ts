@@ -38,7 +38,7 @@ export const TOOL_CLUSTERS: ToolCluster[] = [
   {
     id: "math-science",
     title: "Math & science pads",
-    blurb: "Calculator + grapher + calc lab (d/dx, ∫, Σ, table, zeros) plus units, sci notation, vectors, and LaTeX on one desk.",
+    blurb: "Calculator + grapher + calc lab (d/dx, ∫, Σ, table, zeros) plus units, sci notation, vectors, LaTeX, and the formula board on one desk.",
     toolIds: ["math-pad", "latex", "formula-board", "units", "sci-notation", "vector-resolve"],
   },
   {
