@@ -32,10 +32,6 @@ function isCombinedTool(tool: StudyTool): boolean {
   return COMBINED_PRIORITY.has(tool.id);
 }
 
-/**
- * Keep the individual utilities available, but also add larger workbenches.
- * The catalog renders these combined desks first and the individual tools later.
- */
 function buildCatalogTools(tools: StudyTool[]): StudyTool[] {
   const codeSource =
     tools.find((tool) => tool.id === "json-formatter") ||
@@ -176,7 +172,13 @@ function ToolCard({
   );
 }
 
-export default function ToolsCatalog({ tools }: { tools: StudyTool[] }) {
+export default function ToolsCatalog({
+  tools,
+  basePath = "/tools",
+}: {
+  tools: StudyTool[];
+  basePath?: string;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [query, setQuery] = useState("");
@@ -211,9 +213,9 @@ export default function ToolsCatalog({ tools }: { tools: StudyTool[] }) {
       if (sec !== "all") params.set("sec", sec);
       else params.delete("sec");
       const qs = params.toString();
-      router.replace(qs ? `/tools?${qs}` : "/tools", { scroll: false });
+      router.replace(qs ? `${basePath}?${qs}` : basePath, { scroll: false });
     },
-    [searchParams, query, activeCat, activeSecurity, router]
+    [searchParams, query, activeCat, activeSecurity, router, basePath]
   );
 
   const filtered = useMemo(() => {
@@ -423,7 +425,7 @@ export default function ToolsCatalog({ tools }: { tools: StudyTool[] }) {
       ) : null}
 
       {singleTools.length > 0 ? (
-        <section className="space-y-5" aria-labelledby="single-tools-heading">
+        <section id="single-tools" className="space-y-5 scroll-mt-28" aria-labelledby="single-tools-heading">
           <div className="border-b border-slate-200 pb-2">
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">More specific</p>
             <h2 id="single-tools-heading" className="text-lg font-bold text-slate-900">Single tools</h2>
