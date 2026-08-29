@@ -3,8 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  arcLength,
   averageValue,
   evalAtX,
+  eulerMethod,
+  findExtrema,
+  findInflections,
   findIntersections,
   findZeros,
   formatCalc,
@@ -14,7 +18,9 @@ import {
   numericSecondDerivative,
   numericSum,
   riemannSum,
+  simpsonSum,
   tangentLineExpression,
+  trapezoidSum,
   valueTable,
 } from "@/lib/math-expr";
 import { openToolboxWithPrefill } from "@/lib/ai-toolbox-prefill";
@@ -43,6 +49,9 @@ export default function MathCalcLab({
   const [xmax, setXmax] = useState("2");
   const [step, setStep] = useState("0.5");
   const [slices, setSlices] = useState("8");
+  const [y0, setY0] = useState("1");
+  const [hEuler, setHEuler] = useState("0.2");
+  const [eulerSteps, setEulerSteps] = useState("5");
   const [out, setOut] = useState("");
   const [table, setTable] = useState<Array<{ x: string; y: string }>>([]);
   const [error, setError] = useState("");
@@ -60,6 +69,12 @@ export default function MathCalcLab({
       | "newton"
       | "table"
       | "intersect"
+      | "trap"
+      | "simpson"
+      | "extrema"
+      | "inflect"
+      | "arc"
+      | "euler"
   ) {
     setError("");
     setTable([]);
@@ -111,6 +126,47 @@ export default function MathCalcLab({
             : `No intersections in [${xmin}, ${xmax}].`
         );
         onSendToGraph(f, g);
+      } else if (kind === "trap") {
+        setOut(
+          `Trapezoid n=${slices} on [${a}, ${b}] ≈ ${formatCalc(
+            trapezoidSum(f, Number(a), Number(b), Number(slices))
+          )}`
+        );
+      } else if (kind === "simpson") {
+        setOut(
+          `Simpson n=${slices} on [${a}, ${b}] ≈ ${formatCalc(
+            simpsonSum(f, Number(a), Number(b), Number(slices))
+          )}`
+        );
+      } else if (kind === "extrema") {
+        const pts = findExtrema(f, Number(xmin), Number(xmax));
+        setOut(
+          pts.length
+            ? `extrema in [${xmin}, ${xmax}]: ${pts
+                .map((p) => `${p.kind} (${formatCalc(p.x)}, ${formatCalc(p.y)})`)
+                .join("; ")}`
+            : `No f′ sign-change extrema in [${xmin}, ${xmax}].`
+        );
+      } else if (kind === "inflect") {
+        const pts = findInflections(f, Number(xmin), Number(xmax));
+        setOut(
+          pts.length
+            ? `inflection candidates in [${xmin}, ${xmax}]: ${pts
+                .map((p) => `(${formatCalc(p.x)}, ${formatCalc(p.y)})`)
+                .join(", ")}`
+            : `No f″ sign-change inflections in [${xmin}, ${xmax}].`
+        );
+      } else if (kind === "arc") {
+        setOut(
+          `arc length on [${a}, ${b}] ≈ ${formatCalc(arcLength(f, Number(a), Number(b)))}`
+        );
+      } else if (kind === "euler") {
+        const rows = eulerMethod(f, Number(x0), Number(y0), Number(hEuler), Number(eulerSteps));
+        setTable(rows.map((row) => ({ x: formatCalc(row.x), y: formatCalc(row.y) })));
+        const last = rows[rows.length - 1]!;
+        setOut(
+          `Euler y'=${f}, x0=${x0}, y0=${y0}, h=${hEuler}, n=${eulerSteps} → (${formatCalc(last.x)}, ${formatCalc(last.y)})`
+        );
       } else {
         const rows = valueTable(f, Number(xmin), Number(xmax), Number(step));
         setTable(
@@ -145,7 +201,7 @@ export default function MathCalcLab({
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Calc lab</p>
           <h3 className="text-sm font-semibold text-slate-900">
-            Evaluate · d/dx · f″ · ∫ · avg · Riemann · Σ · table · zeros · f∩g
+            Evaluate · d/dx · f″ · ∫ · Riemann · trapezoid · Simpson · extrema · Euler · f∩g
           </h3>
         </div>
         <button type="button" className="btn-secondary text-xs" onClick={() => onSendToGraph(expr.trim() || "x")}>
@@ -218,9 +274,26 @@ export default function MathCalcLab({
         </label>
       </div>
       <label className="mt-2 block max-w-[8rem] text-xs font-medium text-slate-600">
-        Riemann n
+        Riemann / trap / Simpson n
         <input className="input mt-1" value={slices} onChange={(e) => setSlices(e.target.value)} />
       </label>
+      <div className="mt-2 grid gap-2 sm:grid-cols-3">
+        <label className="text-xs font-medium text-slate-600">
+          Euler y₀
+          <input className="input mt-1" value={y0} onChange={(e) => setY0(e.target.value)} />
+        </label>
+        <label className="text-xs font-medium text-slate-600">
+          Euler h
+          <input className="input mt-1" value={hEuler} onChange={(e) => setHEuler(e.target.value)} />
+        </label>
+        <label className="text-xs font-medium text-slate-600">
+          Euler steps
+          <input className="input mt-1" value={eulerSteps} onChange={(e) => setEulerSteps(e.target.value)} />
+        </label>
+      </div>
+      <p className="mt-1 text-[11px] text-slate-500">
+        Euler treats f as <span className="font-mono">dy/dx(x,y)</span>. Extrema / inflections use xmin–xmax.
+      </p>
       <div className="mt-3 flex flex-wrap gap-2">
         <button type="button" className="btn-primary text-xs" onClick={() => run("eval")}>
           f(x)
@@ -243,6 +316,12 @@ export default function MathCalcLab({
         <button type="button" className="btn-secondary text-xs" onClick={() => run("riemann")}>
           Riemann L/M/R
         </button>
+        <button type="button" className="btn-secondary text-xs" onClick={() => run("trap")}>
+          Trapezoid
+        </button>
+        <button type="button" className="btn-secondary text-xs" onClick={() => run("simpson")}>
+          Simpson
+        </button>
         <button type="button" className="btn-secondary text-xs" onClick={() => run("sum")}>
           Σ a_n
         </button>
@@ -254,6 +333,18 @@ export default function MathCalcLab({
         </button>
         <button type="button" className="btn-secondary text-xs" onClick={() => run("newton")}>
           Newton
+        </button>
+        <button type="button" className="btn-secondary text-xs" onClick={() => run("extrema")}>
+          Extrema
+        </button>
+        <button type="button" className="btn-secondary text-xs" onClick={() => run("inflect")}>
+          Inflection
+        </button>
+        <button type="button" className="btn-secondary text-xs" onClick={() => run("arc")}>
+          Arc length
+        </button>
+        <button type="button" className="btn-secondary text-xs" onClick={() => run("euler")}>
+          Euler y′
         </button>
         <button type="button" className="btn-secondary text-xs" onClick={() => run("intersect")}>
           f ∩ g → Y1/Y2
@@ -299,7 +390,18 @@ export default function MathCalcLab({
           Post to Forum
         </button>
       </div>
-      {out ? <p className="mt-3 font-mono text-sm text-slate-900">{out}</p> : null}
+      {out ? (
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <p className="font-mono text-sm text-slate-900">{out}</p>
+          <button
+            type="button"
+            className="text-xs font-semibold text-brand-700 hover:underline"
+            onClick={() => void navigator.clipboard.writeText(out)}
+          >
+            Copy result
+          </button>
+        </div>
+      ) : null}
       {error ? <p className="mt-2 text-sm text-red-700">{error}</p> : null}
       {table.length ? (
         <div className="mt-3 max-h-48 overflow-auto rounded-xl border border-slate-200">
@@ -307,7 +409,7 @@ export default function MathCalcLab({
             <thead className="sticky top-0 bg-slate-50 font-semibold text-slate-600">
               <tr>
                 <th className="px-3 py-1.5">x</th>
-                <th className="px-3 py-1.5">f(x)</th>
+                <th className="px-3 py-1.5">y</th>
               </tr>
             </thead>
             <tbody className="font-mono text-slate-800">

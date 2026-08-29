@@ -23,7 +23,7 @@ import {
   writeForumDisplayName,
 } from "@/lib/forum-display-name";
 import ForumCodeLaunchers from "@/components/ForumCodeLaunchers";
-import { FORUM_FENCE_INSERTS } from "@/lib/forum-code-blocks";
+import ForumFenceInsertBar from "@/components/ForumFenceInsertBar";
 import {
   clearForumComposerDraft,
   clearForumReplyDraft,
@@ -801,43 +801,30 @@ export function ForumDiscussions({
               <option value="beta-feedback">Beta feedback</option>
             </select>
           </label>
-          <div className="flex flex-wrap gap-1.5">
-            {FORUM_FENCE_INSERTS.map(({ tag, label }) => (
+          <ForumFenceInsertBar
+            onInsert={(fence) => setBody((prev) => (prev.trim() ? prev + fence : fence.trimStart()))}
+            extra={
               <button
-                key={tag}
                 type="button"
-                className="rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50"
-                onClick={() => {
-                  const fence =
-                    tag === "latex"
-                      ? "\n$$\n\n$$\n"
-                      : "\n```" + tag + "\n\n```\n";
-                  setBody((prev) => (prev.trim() ? prev + fence : fence.trimStart()));
-                }}
+                className="rounded-md border border-brand-200 bg-brand-50 px-2 py-1 text-[11px] font-semibold text-brand-800 hover:bg-brand-100"
+                onClick={() =>
+                  openToolboxWithPrefill({
+                    category: "ap",
+                    apTask: "advice",
+                    prompt: [
+                      "Help me improve this Forum draft (original-practice only; do not paste copyrighted exam text).",
+                      title.trim() ? `Title: ${title.trim()}` : "",
+                      body.trim() || "(empty body)",
+                    ]
+                      .filter(Boolean)
+                      .join("\n\n"),
+                  })
+                }
               >
-                Insert {label}
+                Ask AI about this draft
               </button>
-            ))}
-            <button
-              type="button"
-              className="rounded-md border border-brand-200 bg-brand-50 px-2 py-1 text-[11px] font-semibold text-brand-800 hover:bg-brand-100"
-              onClick={() =>
-                openToolboxWithPrefill({
-                  category: "ap",
-                  apTask: "advice",
-                  prompt: [
-                    "Help me improve this Forum draft (original-practice only; do not paste copyrighted exam text).",
-                    title.trim() ? `Title: ${title.trim()}` : "",
-                    body.trim() || "(empty body)",
-                  ]
-                    .filter(Boolean)
-                    .join("\n\n"),
-                })
-              }
-            >
-              Ask AI about this draft
-            </button>
-          </div>
+            }
+          />
           <MarkdownLatexField
             label="Discussion body"
             value={body}
@@ -1087,6 +1074,30 @@ export function ForumDiscussions({
                         onSubmit={(event) => submitReply(event, post.id)}
                         className="space-y-2 rounded-xl border border-brand-100 bg-brand-50/40 p-3"
                       >
+                        <ForumFenceInsertBar
+                          onInsert={(fence) =>
+                            setReplyBody((prev) => (prev.trim() ? prev + fence : fence.trimStart()))
+                          }
+                          extra={
+                            <button
+                              type="button"
+                              className="rounded-md border border-brand-200 bg-brand-50 px-2 py-1 text-[11px] font-semibold text-brand-800 hover:bg-brand-100"
+                              onClick={() =>
+                                openToolboxWithPrefill({
+                                  category: "ap",
+                                  apTask: "advice",
+                                  prompt: [
+                                    "Help me improve this Forum reply draft (original-practice only; do not paste copyrighted exam text).",
+                                    `Thread: ${post.title}`,
+                                    replyBody.trim() || "(empty reply)",
+                                  ].join("\n\n"),
+                                })
+                              }
+                            >
+                              Ask AI about this reply draft
+                            </button>
+                          }
+                        />
                         <MarkdownLatexField
                           label="Reply"
                           help="Markdown + LaTeX supported. Attachments optional."

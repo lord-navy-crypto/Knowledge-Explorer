@@ -165,6 +165,11 @@ export default function LocalAIControls({ embedded = false }: Props) {
                 </>
               ) : null}
               {localAI.mode === "site" ? ` · ${localAI.siteModel}` : null}
+              {localAI.mode === "byok" && !settingsOpen ? (
+                <span className="ml-2 text-xs font-semibold text-slate-500">
+                  {localAI.userKey?.trim() ? "Key on this session" : "Paste a key in settings"}
+                </span>
+              ) : null}
               {!settingsOpen && localAI.mode === "local" ? (
                 <span className="ml-2 text-xs font-semibold text-slate-500">
                   {localAI.ready
@@ -231,9 +236,25 @@ export default function LocalAIControls({ embedded = false }: Props) {
             ))}
           </div>
         ) : (
-          <p className="mt-1 text-xs text-slate-500">
-            Dialogue stays first. Open AI settings to switch Local / Website API / Your own API.
-          </p>
+          <div className="mt-2 flex flex-wrap gap-1.5" role="group" aria-label="Switch AI path">
+            {PATHS.map((item) => (
+              <button
+                key={item.value}
+                type="button"
+                onClick={() => selectMode(item.value)}
+                className={
+                  localAI.mode === item.value
+                    ? "rounded-full bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-white"
+                    : "rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:border-slate-400"
+                }
+              >
+                {item.label}
+              </button>
+            ))}
+            <span className="self-center text-[11px] text-slate-500">
+              Compact path switch — open settings for models and keys.
+            </span>
+          </div>
         )}
         {settingsOpen ? (
           <div className="mt-3 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/90 px-3 py-3 text-sm text-emerald-950">

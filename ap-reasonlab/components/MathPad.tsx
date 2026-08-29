@@ -78,7 +78,8 @@ export default function MathPad({ focus = "calculator" }: Props) {
       <div>
         <h2 className="text-lg font-semibold text-slate-900">Calc + Graph desk</h2>
         <p className="mt-1 max-w-2xl text-sm text-slate-600">
-          Evaluate, plot Y1–Y4, run numeric d/dx, f″, ∫, average value, and Riemann sums.
+          Evaluate, plot Y1–Y4, and run the calc lab: d/dx, f″, ∫, Riemann, trapezoid, Simpson,
+          extrema, inflections, arc length, Euler, zeros, and f ∩ g.
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           {(

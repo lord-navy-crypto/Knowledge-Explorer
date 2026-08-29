@@ -42,7 +42,7 @@ describe("math-expr calc lab", () => {
     expect(newtonRoot("x^2-2", 1.4)).toBeCloseTo(Math.sqrt(2), 6);
   });
 
-  it("second derivative, average value, tangent, and Riemann", () => {
+  it("second derivative, average value, tangent, Riemann, trapezoid, extrema, Euler", () => {
     expect(numericSecondDerivative("x^2", 3)).toBeCloseTo(2, 2);
     expect(averageValue("x", 0, 2)).toBeCloseTo(1, 4);
     const tangent = tangentLineExpression("x^2", 1);
@@ -50,6 +50,26 @@ describe("math-expr calc lab", () => {
     expect(evalExpr(tangent, { x: 1 })).toBeCloseTo(1, 4);
     expect(riemannSum("x", 0, 2, 4, "mid")).toBeCloseTo(2, 2);
     expect(riemannSum("x", 0, 2, 4, "left")).toBeLessThan(riemannSum("x", 0, 2, 4, "right"));
+  });
+
+  it("trapezoid, Simpson, extrema, arc length, and Euler", async () => {
+    const {
+      trapezoidSum,
+      simpsonSum,
+      findExtrema,
+      arcLength,
+      eulerMethod,
+    } = await import("@/lib/math-expr");
+    expect(trapezoidSum("x", 0, 2, 8)).toBeCloseTo(2, 3);
+    expect(simpsonSum("x", 0, 2, 8)).toBeCloseTo(2, 4);
+    const extrema = findExtrema("x^2", -2, 2);
+    expect(extrema.some((p) => p.kind === "min" && Math.abs(p.x) < 0.05 && Math.abs(p.y) < 0.05)).toBe(
+      true
+    );
+    expect(arcLength("x", 0, 1)).toBeCloseTo(Math.sqrt(2), 3);
+    const euler = eulerMethod("y", 0, 1, 0.1, 10);
+    expect(euler[0]).toEqual({ x: 0, y: 1 });
+    expect(euler[euler.length - 1]?.y).toBeGreaterThan(1);
   });
 
   it("finds intersections of x and 2-x", async () => {

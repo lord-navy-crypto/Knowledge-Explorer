@@ -38,7 +38,7 @@ export const TOOL_CLUSTERS: ToolCluster[] = [
   {
     id: "math-science",
     title: "Math & science pads",
-    blurb: "Calculator + grapher + calc lab (d/dx, f″, tangent Y2, ∫, average, Riemann, Σ, table, zeros, f∩g) plus units, sci notation, vectors, LaTeX, and the formula board on one desk. Catalog cards stay listed.",
+    blurb: "Calculator + grapher + calc lab (d/dx, f″, tangent Y2, ∫, average, Riemann, trapezoid, Simpson, extrema, inflection, arc length, Euler, Σ, table, zeros, f∩g) plus units, sci notation, vectors, LaTeX, and the formula board on one desk. Catalog cards stay listed.",
     toolIds: ["math-pad", "latex", "formula-board", "units", "sci-notation", "vector-resolve"],
   },
   {

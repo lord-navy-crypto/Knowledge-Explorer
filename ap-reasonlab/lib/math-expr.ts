@@ -393,6 +393,20 @@ export function riemannSum(
   return sum * h;
 }
 
+/** Approximate definite integral ∫_a^b f(x) dx (Simpson). */
+export function numericIntegralFn(fn: (x: number) => number, a: number, b: number, slices = 200): number {
+  if (a === b) return 0;
+  const n = Math.max(2, slices - (slices % 2));
+  const h = (b - a) / n;
+  let sum = fn(a) + fn(b);
+  for (let i = 1; i < n; i += 1) {
+    const x = a + i * h;
+    const y = fn(x);
+    sum += i % 2 === 0 ? 2 * y : 4 * y;
+  }
+  return (h / 3) * sum;
+}
+
 /** Approximate definite integral ∫_a^b f(x) dx (Simpson / trapezoid hybrid). */
 export function numericIntegral(
   expression: string,
@@ -401,16 +415,57 @@ export function numericIntegral(
   vars: Record<string, number> = {},
   slices = 200
 ): number {
-  if (a === b) return 0;
-  const n = Math.max(2, slices - (slices % 2));
-  const h = (b - a) / n;
-  let sum = evalExpr(expression, { ...vars, x: a }) + evalExpr(expression, { ...vars, x: b });
-  for (let i = 1; i < n; i += 1) {
-    const x = a + i * h;
-    const y = evalExpr(expression, { ...vars, x });
-    sum += i % 2 === 0 ? 2 * y : 4 * y;
+  return numericIntegralFn((x) => evalExpr(expression, { ...vars, x }), a, b, slices);
+}
+
+/** Trapezoidal rule on [a, b] with n subintervals (max 5000). */
+export function trapezoidSum(
+  expression: string,
+  a: number,
+  b: number,
+  n: number,
+  vars: Record<string, number> = {}
+): number {
+  const slices = Math.trunc(n);
+  if (!Number.isFinite(a) || !Number.isFinite(b) || !Number.isFinite(slices)) {
+    throw new Error("Trapezoid bounds and n must be finite");
   }
-  return (h / 3) * sum;
+  if (slices < 1) throw new Error("Trapezoid n must be ≥ 1");
+  if (slices > 5000) throw new Error("Trapezoid n too large (max 5000)");
+  const h = (b - a) / slices;
+  let sum = (evalAtX(expression, a, vars) + evalAtX(expression, b, vars)) / 2;
+  for (let i = 1; i < slices; i += 1) {
+    sum += evalAtX(expression, a + i * h, vars);
+  }
+  return sum * h;
+}
+
+/** Simpson's rule on [a, b] with n subintervals (n forced even, max 5000). */
+export function simpsonSum(
+  expression: string,
+  a: number,
+  b: number,
+  n: number,
+  vars: Record<string, number> = {}
+): number {
+  const slices = Math.trunc(n);
+  if (slices < 2) throw new Error("Simpson n must be ≥ 2");
+  if (slices > 5000) throw new Error("Simpson n too large (max 5000)");
+  return numericIntegral(expression, a, b, vars, slices);
+}
+
+/** Arc length of y=f(x) on [a, b]: ∫ sqrt(1+(f')²) dx. */
+export function arcLength(
+  expression: string,
+  a: number,
+  b: number,
+  vars: Record<string, number> = {}
+): number {
+  if (a === b) return 0;
+  return numericIntegralFn((x) => {
+    const fp = numericDerivative(expression, x, vars);
+    return Math.sqrt(1 + fp * fp);
+  }, a, b);
 }
 
 /** Evaluate f at a point (default variable x). */
@@ -483,12 +538,11 @@ export function newtonRoot(
   return x;
 }
 
-/** Find zeros of y=f(x) in [xmin,xmax] by sign-change bisection. */
-export function findZeros(
-  expression: string,
+/** Find zeros of a numeric function in [xmin,xmax] by sign-change bisection. */
+export function findZerosFn(
+  fn: (x: number) => number,
   xmin: number,
   xmax: number,
-  vars: Record<string, number> = {},
   samples = 240
 ): number[] {
   const zeros: number[] = [];
@@ -496,7 +550,7 @@ export function findZeros(
   let prevX = xmin;
   let prevY: number | null = null;
   try {
-    prevY = evalExpr(expression, { ...vars, x: xmin });
+    prevY = fn(xmin);
   } catch {
     prevY = null;
   }
@@ -504,7 +558,7 @@ export function findZeros(
     const x = xmin + i * step;
     let y: number | null = null;
     try {
-      y = evalExpr(expression, { ...vars, x });
+      y = fn(x);
     } catch {
       y = null;
     }
@@ -518,7 +572,7 @@ export function findZeros(
           const mid = (lo + hi) / 2;
           let fmid: number;
           try {
-            fmid = evalExpr(expression, { ...vars, x: mid });
+            fmid = fn(mid);
           } catch {
             break;
           }
@@ -537,6 +591,79 @@ export function findZeros(
     prevY = y;
   }
   return zeros.filter((z, i, arr) => i === 0 || Math.abs(z - arr[i - 1]!) > step * 0.4);
+}
+
+/** Find zeros of y=f(x) in [xmin,xmax] by sign-change bisection. */
+export function findZeros(
+  expression: string,
+  xmin: number,
+  xmax: number,
+  vars: Record<string, number> = {},
+  samples = 240
+): number[] {
+  return findZerosFn((x) => evalExpr(expression, { ...vars, x }), xmin, xmax, samples);
+}
+
+export type Extremum = { x: number; y: number; kind: "min" | "max" | "critical" };
+
+/** Critical points of y=f(x) where f' changes sign; classified with f''. */
+export function findExtrema(
+  expression: string,
+  xmin: number,
+  xmax: number,
+  vars: Record<string, number> = {}
+): Extremum[] {
+  const crit = findZerosFn((x) => numericDerivative(expression, x, vars), xmin, xmax);
+  return crit.map((x) => {
+    const y = evalAtX(expression, x, vars);
+    const fpp = numericSecondDerivative(expression, x, vars);
+    const kind: Extremum["kind"] = fpp > 1e-6 ? "min" : fpp < -1e-6 ? "max" : "critical";
+    return { x, y, kind };
+  });
+}
+
+/** Inflection candidates where f'' changes sign. */
+export function findInflections(
+  expression: string,
+  xmin: number,
+  xmax: number,
+  vars: Record<string, number> = {}
+): Array<{ x: number; y: number }> {
+  return findZerosFn((x) => numericSecondDerivative(expression, x, vars), xmin, xmax).map((x) => ({
+    x,
+    y: evalAtX(expression, x, vars),
+  }));
+}
+
+export type EulerRow = { x: number; y: number };
+
+/** Euler method for dy/dx = f(x,y). */
+export function eulerMethod(
+  dydxExpr: string,
+  x0: number,
+  y0: number,
+  h: number,
+  steps: number,
+  vars: Record<string, number> = {}
+): EulerRow[] {
+  const n = Math.trunc(steps);
+  if (!Number.isFinite(x0) || !Number.isFinite(y0) || !Number.isFinite(h)) {
+    throw new Error("Euler needs finite x0, y0, and h");
+  }
+  if (n < 1) throw new Error("Euler steps must be ≥ 1");
+  if (n > 500) throw new Error("Euler steps too large (max 500)");
+  if (h === 0) throw new Error("Euler step h cannot be 0");
+  const rows: EulerRow[] = [{ x: x0, y: y0 }];
+  let x = x0;
+  let y = y0;
+  for (let i = 0; i < n; i += 1) {
+    const slope = evalExpr(dydxExpr, { ...vars, x, y });
+    if (!Number.isFinite(slope)) throw new Error("Euler: dy/dx not finite");
+    y += h * slope;
+    x += h;
+    rows.push({ x, y });
+  }
+  return rows;
 }
 
 /** Find intersections of two y=f(x) curves in window. */

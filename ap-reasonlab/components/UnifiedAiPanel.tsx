@@ -218,6 +218,25 @@ const LANGUAGES = [
   "Other",
 ] as const;
 
+const LANGUAGE_GROUPS: Array<{ label: string; items: (typeof LANGUAGES)[number][] }> = [
+  {
+    label: "Browser runtimes",
+    items: ["Python", "JavaScript / TypeScript", "HTML / CSS / JS", "SQL"],
+  },
+  {
+    label: "Training (JS stand-in)",
+    items: ["Java", "C#"],
+  },
+  {
+    label: "Practice (structure + download)",
+    items: ["C", "C++", "Go", "Rust", "PHP", "Ruby", "R", "Swift", "Kotlin"],
+  },
+  {
+    label: "Other",
+    items: ["General algorithms", "Other"],
+  },
+];
+
 type Props = {
   defaultCategory?: Category;
   defaultSubject?: string;
@@ -1445,10 +1464,14 @@ export default function UnifiedAiPanel({
                 value={language}
                 onChange={(e) => setLanguage(e.target.value as (typeof LANGUAGES)[number])}
               >
-                {LANGUAGES.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
+                {LANGUAGE_GROUPS.map((group) => (
+                  <optgroup key={group.label} label={group.label}>
+                    {group.items.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
               <span id="ai-toolbox-language-hint" className="mt-1 block text-xs font-normal text-slate-500">
