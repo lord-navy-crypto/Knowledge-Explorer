@@ -39,6 +39,7 @@ function isInternalNavigationClick(event: MouseEvent) {
 export default function GlobalRouteProgress() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const searchKey = searchParams.toString();
   const shellRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
   const labelRef = useRef<HTMLSpanElement>(null);
@@ -85,19 +86,6 @@ export default function GlobalRouteProgress() {
       }, 170);
     };
 
-    const finish = () => {
-      if (!shellRef.current || shellRef.current.style.display === "none") return;
-      if (intervalRef.current !== null) {
-        window.clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-      render(100);
-      hideRef.current = window.setTimeout(() => {
-        if (shellRef.current) shellRef.current.style.display = "none";
-        progressRef.current = 0;
-      }, 240);
-    };
-
     const onClick = (event: MouseEvent) => {
       if (isInternalNavigationClick(event)) start();
     };
@@ -107,23 +95,10 @@ export default function GlobalRouteProgress() {
     document.addEventListener("click", onClick, true);
     window.addEventListener("popstate", onPopState);
 
-    const originalPushState = window.history.pushState.bind(window.history);
-    const originalReplaceState = window.history.replaceState.bind(window.history);
-
-    window.history.pushState = function (...args) {
-      start();
-      return originalPushState(...args);
-    };
-    window.history.replaceState = function (...args) {
-      return originalReplaceState(...args);
-    };
-
     return () => {
       clearTimers();
       document.removeEventListener("click", onClick, true);
       window.removeEventListener("popstate", onPopState);
-      window.history.pushState = originalPushState;
-      window.history.replaceState = originalReplaceState;
     };
   }, []);
 
@@ -148,7 +123,7 @@ export default function GlobalRouteProgress() {
       if (shellRef.current) shellRef.current.style.display = "none";
       progressRef.current = 0;
     }, 240);
-  }, [pathname, searchParams]);
+  }, [pathname, searchKey]);
 
   return (
     <div
