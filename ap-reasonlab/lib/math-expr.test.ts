@@ -1,12 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
+  averageValue,
   evalAtX,
   evalExpr,
   findZeros,
   newtonRoot,
   numericDerivative,
   numericIntegral,
+  numericSecondDerivative,
   numericSum,
+  riemannSum,
+  tangentLineExpression,
   valueTable,
 } from "@/lib/math-expr";
 
@@ -36,5 +40,15 @@ describe("math-expr calc lab", () => {
 
   it("Newton-refines a root of x^2-2", () => {
     expect(newtonRoot("x^2-2", 1.4)).toBeCloseTo(Math.sqrt(2), 6);
+  });
+
+  it("second derivative, average value, tangent, and Riemann", () => {
+    expect(numericSecondDerivative("x^2", 3)).toBeCloseTo(2, 2);
+    expect(averageValue("x", 0, 2)).toBeCloseTo(1, 4);
+    const tangent = tangentLineExpression("x^2", 1);
+    expect(tangent).toContain("x");
+    expect(evalExpr(tangent, { x: 1 })).toBeCloseTo(1, 4);
+    expect(riemannSum("x", 0, 2, 4, "mid")).toBeCloseTo(2, 2);
+    expect(riemannSum("x", 0, 2, 4, "left")).toBeLessThan(riemannSum("x", 0, 2, 4, "right"));
   });
 });

@@ -16,6 +16,7 @@ export type ToolboxPanelPrefs = {
 const EXTRA_TOOL_KEY = "results-toolbox-extra";
 const PANEL_PREFS_KEY = "results-toolbox-panel";
 const SETTINGS_OPEN_KEY = "results-toolbox-settings-open";
+const SPECIAL_OPEN_KEY = "results-toolbox-special-open";
 
 const DEFAULT_PANEL_PREFS: ToolboxPanelPrefs = {
   category: "ap",
@@ -92,4 +93,16 @@ export function loadAiSettingsOpen(): boolean {
 
 export function saveAiSettingsOpen(open: boolean) {
   browserStorage()?.setItem(SETTINGS_OPEN_KEY, open ? "1" : "0");
+}
+
+/** Special-feature chip row — collapsed by default so the dialogue stays first. */
+export function loadAiSpecialOpen(): boolean {
+  const raw = browserStorage()?.getItem(SPECIAL_OPEN_KEY);
+  if (raw === "0") return false;
+  if (raw === "1") return true;
+  return false;
+}
+
+export function saveAiSpecialOpen(open: boolean) {
+  browserStorage()?.setItem(SPECIAL_OPEN_KEY, open ? "1" : "0");
 }

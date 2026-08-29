@@ -24,12 +24,15 @@ import {
   importSourceIntoEditor,
   loadLastCodeLang,
   saveLastCodeLang,
+  boardLang,
 } from "@/lib/code-editor-studio";
+import { appendToCodeBoard } from "@/lib/code-board-store";
 import { classifyPaste } from "@/lib/code-paste-detect";
 import { preloadEncodeDecode, preloadJsonFormatter } from "@/lib/payload-handoff";
 import { preloadForumComposer } from "@/lib/forum-local";
 import JsonFormatterTool from "@/components/JsonFormatterTool";
 import EncodeDecodeTool from "@/components/EncodeDecodeTool";
+import CodeBoardTool from "@/components/CodeBoardTool";
 
 const LANG_IDS = ALL_CODE_LANGS.map((lang) => lang.id);
 
@@ -37,10 +40,10 @@ function isLangId(value: string | null): value is string {
   return Boolean(value && LANG_IDS.includes(value));
 }
 
-type DeskTab = "editor" | "json" | "encode";
+type DeskTab = "editor" | "json" | "encode" | "board";
 
 function parseDesk(raw: string | null): DeskTab {
-  if (raw === "json" || raw === "encode") return raw;
+  if (raw === "json" || raw === "encode" || raw === "board") return raw;
   return "editor";
 }
 
@@ -175,6 +178,24 @@ export default function CodeLanguageStudio({ initialLang = "python" }: { initial
     router.push("/forum");
   }
 
+  function savePasteToBoard() {
+    const hit = classifyPaste(pasteBox);
+    const code = hit.body || pasteBox.trim();
+    if (!code) {
+      setNote("Paste a snippet first, then save it to the code board.");
+      return;
+    }
+    const language = boardLang(hit.language || lang);
+    appendToCodeBoard({
+      language,
+      title: `${meta.title} paste`,
+      code,
+      comment: "Saved from one editor paste / detect",
+    });
+    setNote("Saved to the Code board tab.");
+    setDesk("board");
+  }
+
   async function copyPermalink() {
     const url = `${window.location.origin}${href}`;
     await navigator.clipboard.writeText(url);
@@ -192,11 +213,15 @@ export default function CodeLanguageStudio({ initialLang = "python" }: { initial
         <div>
           <h1 className="text-3xl font-bold">{meta.title} editor</h1>
           <p className="mt-2 max-w-2xl text-slate-600">
-            One editor: pick a language here, import a file, or keep snippets in the{" "}
-            <Link href="/tools/code-board" className="font-medium text-brand-700 underline">
-              code block adder
-            </Link>
-            . {meta.description}
+            One editor: pick a language here, import a file, or keep snippets on the{" "}
+            <button
+              type="button"
+              className="font-medium text-brand-700 underline"
+              onClick={() => setDesk("board")}
+            >
+              Code board
+            </button>{" "}
+            tab. {meta.description}
           </p>
         </div>
         <div className="flex flex-wrap items-end gap-2">
@@ -259,6 +284,9 @@ export default function CodeLanguageStudio({ initialLang = "python" }: { initial
           <button type="button" className="btn-secondary text-xs" onClick={postPasteToForum}>
             Post to Forum
           </button>
+          <button type="button" className="btn-secondary text-xs" onClick={savePasteToBoard}>
+            Save to code board
+          </button>
           {classified.kind === "json" ? (
             <button
               type="button"
@@ -307,6 +335,7 @@ export default function CodeLanguageStudio({ initialLang = "python" }: { initial
             ["editor", "Editor"],
             ["json", "JSON"],
             ["encode", "Base64 / URL"],
+            ["board", "Code board"],
           ] as const
         ).map(([id, label]) => (
           <button
@@ -329,6 +358,7 @@ export default function CodeLanguageStudio({ initialLang = "python" }: { initial
       {desk === "editor" ? playground : null}
       {desk === "json" ? <JsonFormatterTool embedded /> : null}
       {desk === "encode" ? <EncodeDecodeTool embedded /> : null}
+      {desk === "board" ? <CodeBoardTool embedded /> : null}
 
       <UnifiedMediaFrame
         alsoShow={["document", "folder"]}

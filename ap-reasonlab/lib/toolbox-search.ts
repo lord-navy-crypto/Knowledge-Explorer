@@ -33,7 +33,7 @@ export const TOOL_SEARCH_KEYWORDS: Record<string, string> = {
   "formula-board": "pin formulas physics chemistry",
   calculator: "classwiz scientific matrix stats calc graph pad",
   grapher: "plot function y= graph desmos-like calc pad",
-  "math-pad": "calculator grapher classwiz plot y1 y2 fuse math pad expression import",
+  "math-pad": "calculator grapher classwiz plot y1 y2 fuse math pad expression import derivative integral riemann tangent zeros newton",
   units: "si convert meters joules",
   "sci-notation": "scientific notation significant figures",
   "vector-resolve": "components angle magnitude 2d",

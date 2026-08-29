@@ -22,6 +22,7 @@ const LANES = [
 const WORKFLOWS = [
   { href: "/hints?tool=calculator", label: "Calc + Graph" },
   { href: "/hints", label: "AI Toolbox" },
+  { href: "/code/editor", label: "One Code editor" },
   { href: "/code", label: "Code playgrounds" },
   { href: "/tools/code-board", label: "Code block adder" },
   { href: "/tools/write-convert", label: "Write & convert" },

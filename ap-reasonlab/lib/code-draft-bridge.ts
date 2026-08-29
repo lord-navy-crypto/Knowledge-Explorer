@@ -26,6 +26,30 @@ export function playgroundHref(language: CodeBoardLanguage): string | null {
   return null;
 }
 
+export type CodeEditorDesk = "json" | "encode" | "board";
+
+/** One-editor desk URL (JSON / Base64 / code board tabs). */
+export function codeEditorDeskHref(desk: CodeEditorDesk, lang?: string): string {
+  const params = new URLSearchParams();
+  if (lang) params.set("lang", lang);
+  params.set("desk", desk);
+  return `/code/editor?${params.toString()}`;
+}
+
+/** Stay on the fused editor when already there; otherwise open that desk. */
+export function openCodeEditorDesk(
+  router: { push: (href: string) => void; replace: (href: string, opts?: { scroll?: boolean }) => void },
+  desk: CodeEditorDesk
+) {
+  if (typeof window !== "undefined" && window.location.pathname.includes("/code/editor")) {
+    const params = new URLSearchParams(window.location.search);
+    params.set("desk", desk);
+    router.replace(`/code/editor?${params.toString()}`, { scroll: false });
+    return;
+  }
+  router.push(codeEditorDeskHref(desk));
+}
+
 const EDIT_ID_KEY = "ke-code-board-edit-id";
 
 /** Write code into the target playground draft before navigation. */

@@ -35,6 +35,7 @@ export default function MathPad({ focus = "calculator" }: Props) {
   const searchParams = useSearchParams();
   const [paste, setPaste] = useState("");
   const [graphY1, setGraphY1] = useState("");
+  const [graphY2, setGraphY2] = useState("");
   const [latexHandoff, setLatexHandoff] = useState("");
   const [pad, setPad] = useState<PadTab>(() => parsePad(searchParams.get("pad")));
 
@@ -51,12 +52,16 @@ export default function MathPad({ focus = "calculator" }: Props) {
     router.replace(`/hints?${params.toString()}`, { scroll: false });
   }
 
-  function sendToGraph(expr?: string) {
+  function sendToGraph(expr?: string, overlay?: string) {
     const next = (expr ?? paste).trim() || "sin(x)";
+    const y2 = (overlay ?? "").trim();
     setGraphY1(next);
+    setGraphY2(y2);
     const params = new URLSearchParams(searchParams.toString());
     params.set("tool", "calculator");
     params.set("y1", next);
+    if (y2) params.set("y2", y2);
+    else params.delete("y2");
     params.delete("pad");
     setPad("calc");
     router.replace(`/hints?${params.toString()}`, { scroll: false });
@@ -70,9 +75,7 @@ export default function MathPad({ focus = "calculator" }: Props) {
       <div>
         <h2 className="text-lg font-semibold text-slate-900">Calc + Graph desk</h2>
         <p className="mt-1 max-w-2xl text-sm text-slate-600">
-          Evaluate, plot Y1–Y4, run numeric d/dx and ∫, then convert units or resolve vectors without
-          leaving this desk. Plot f(x) writes Y1 immediately and scrolls to the grapher. Paste once to
-          import. Official-style AP STEM — original practice, not a licensed Casio/TI ROM.
+          Evaluate, plot Y1–Y4, run numeric d/dx, f″, ∫, average value, and Riemann sums.
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           {(
@@ -150,7 +153,7 @@ export default function MathPad({ focus = "calculator" }: Props) {
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Grapher
               </p>
-              <TIGrapher handoffY1={graphY1} />
+              <TIGrapher handoffY1={graphY1} handoffY2={graphY2} />
             </section>
           </div>
         </>

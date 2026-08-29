@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   deleteSavedSpecialFeature,
   listMatchingSpecialFeatures,
@@ -8,6 +8,7 @@ import {
   saveSpecialFeature,
   type SpecialFeature,
 } from "@/lib/ai-special-features";
+import { loadAiSpecialOpen, saveAiSpecialOpen } from "@/lib/ai-toolbox-prefs";
 
 type Props = {
   category: "ap" | "english" | "coding";
@@ -38,6 +39,11 @@ export default function AiSpecialFeatures({
   const [savedTick, setSavedTick] = useState(0);
   const [saveOpen, setSaveOpen] = useState(false);
   const [saveLabel, setSaveLabel] = useState("");
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    setOpen(loadAiSpecialOpen());
+  }, []);
 
   const features = useMemo(() => {
     void savedTick;
@@ -82,19 +88,38 @@ export default function AiSpecialFeatures({
             特殊功能 · Special features
           </p>
           <p className="mt-0.5 text-xs text-slate-500">
-            One-click starters & exam templates for this task — fill the box, then Ask AI.
+            {open
+              ? "One-click starters & exam templates for this task — fill the box, then Ask AI."
+              : `${features.length} starter${features.length === 1 ? "" : "s"} for this task.`}
           </p>
         </div>
-        <button
-          type="button"
-          className="text-xs font-medium text-brand-700 hover:underline"
-          onClick={() => setSaveOpen((v) => !v)}
-        >
-          {saveOpen ? "Cancel" : "Save current as special feature"}
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            className="text-xs font-medium text-brand-700 hover:underline"
+            onClick={() => {
+              setOpen((v) => {
+                const next = !v;
+                saveAiSpecialOpen(next);
+                return next;
+              });
+            }}
+          >
+            {open ? "Hide starters" : "Show starters"}
+          </button>
+          {open ? (
+            <button
+              type="button"
+              className="text-xs font-medium text-brand-700 hover:underline"
+              onClick={() => setSaveOpen((v) => !v)}
+            >
+              {saveOpen ? "Cancel" : "Save current as special feature"}
+            </button>
+          ) : null}
+        </div>
       </div>
 
-      {saveOpen ? (
+      {open && saveOpen ? (
         <div className="mt-2 flex flex-wrap items-end gap-2 rounded-lg border border-brand-200 bg-brand-50/50 p-2">
           <label className="min-w-[10rem] flex-1 text-xs font-medium text-slate-700">
             Name
@@ -116,6 +141,7 @@ export default function AiSpecialFeatures({
         </div>
       ) : null}
 
+      {open ? (
       <div className="mt-2.5 flex flex-wrap gap-1.5">
         {features.length === 0 ? (
           <p className="text-xs text-slate-500">No special features for this task yet.</p>
@@ -152,6 +178,7 @@ export default function AiSpecialFeatures({
           ))
         )}
       </div>
+      ) : null}
     </div>
   );
 }

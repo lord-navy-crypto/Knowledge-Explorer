@@ -51,7 +51,7 @@ export function saveLastCodeLang(lang: string) {
   browserStorage()?.setItem(LAST_CODE_LANG_KEY, lang);
 }
 
-function boardLang(editorLang: string): CodeBoardLanguage {
+export function boardLang(editorLang: string): CodeBoardLanguage {
   if (editorLang === "web") return "html";
   if (
     editorLang === "python" ||

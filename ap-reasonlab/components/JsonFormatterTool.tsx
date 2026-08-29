@@ -11,6 +11,7 @@ import {
   preloadEncodeDecode,
   preloadTextDiff,
 } from "@/lib/payload-handoff";
+import { openCodeEditorDesk } from "@/lib/code-draft-bridge";
 
 const SAMPLE = `{
   "name": "Knowledge Explorer",
@@ -113,7 +114,7 @@ export default function JsonFormatterTool({ embedded = false }: { embedded?: boo
   function sendToEncode() {
     const payload = output || input;
     preloadEncodeDecode(payload, "base64-encode");
-    router.push("/tools/encode-decode");
+    openCodeEditorDesk(router, "encode");
   }
 
   function saveToBoard() {
@@ -124,7 +125,7 @@ export default function JsonFormatterTool({ embedded = false }: { embedded?: boo
       code: payload,
       comment: "Saved from JSON formatter",
     });
-    setNote("Saved to code block adder.");
+    setNote("Saved to the code board on this editor.");
   }
 
   const body = (

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import StudyToolShell from "@/components/StudyToolShell";
 import {
@@ -10,6 +11,7 @@ import {
   type CodeBoardLanguage,
 } from "@/data/code-board";
 import { playgroundHref, preloadPlaygroundDraft } from "@/lib/code-draft-bridge";
+import { preloadForumComposer } from "@/lib/forum-local";
 
 const KEY = "ke-code-board-v1";
 
@@ -18,7 +20,8 @@ type SortMode = "newest" | "title" | "lang";
 
 type StoredBlock = CodeBoardBlock & { favorite?: boolean; updatedAt?: number };
 
-export default function CodeBoardTool() {
+export default function CodeBoardTool({ embedded = false }: { embedded?: boolean }) {
+  const router = useRouter();
   const [tab, setTab] = useState<Tab>("library");
   const [userBlocks, setUserBlocks] = useState<StoredBlock[]>([]);
   const [lang, setLang] = useState<CodeBoardLanguage | "all">("all");
@@ -196,12 +199,8 @@ export default function CodeBoardTool() {
     }
   }
 
-  return (
-    <StudyToolShell
-      title="Long code block adder"
-      description="Save common / long code blocks with comments, favorites, edit/duplicate, and JSON import/export. Stored in this browser."
-      tip="Use comments for “when to use this” notes. Copy code only, or copy with comment. Open playgrounds when you want to run a block."
-    >
+  const body = (
+    <>
       <div className="flex flex-wrap gap-2">
         {(
           [
@@ -225,6 +224,11 @@ export default function CodeBoardTool() {
         <Link href="/code" className="btn-ghost self-center text-xs">
           Code hub →
         </Link>
+        {!embedded ? (
+          <Link href="/code/editor?lang=python" className="btn-ghost self-center text-xs">
+            One editor →
+          </Link>
+        ) : null}
       </div>
 
       {tab === "add" ? (
@@ -418,6 +422,21 @@ export default function CodeBoardTool() {
                       ) : null}
                       <button
                         type="button"
+                        className="rounded-lg bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
+                        onClick={() => {
+                          const fenceLang = block.language === "html" ? "html" : block.language;
+                          preloadForumComposer({
+                            title: block.title,
+                            body: "```" + fenceLang + "\n" + block.code + "\n```",
+                            postCategory: "questions",
+                          });
+                          router.push("/forum");
+                        }}
+                      >
+                        Post to Forum
+                      </button>
+                      <button
+                        type="button"
                         className="rounded-lg bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200"
                         onClick={() => duplicateBlock(block)}
                       >
@@ -470,6 +489,18 @@ export default function CodeBoardTool() {
           </div>
         </>
       ) : null}
+    </>
+  );
+
+  if (embedded) return <div className="space-y-4">{body}</div>;
+
+  return (
+    <StudyToolShell
+      title="Long code block adder"
+      description="Save common / long code blocks with comments, favorites, edit/duplicate, and JSON import/export. Stored in this browser."
+      tip="Use comments for “when to use this” notes. Copy code only, or copy with comment. Open playgrounds when you want to run a block."
+    >
+      {body}
     </StudyToolShell>
   );
 }

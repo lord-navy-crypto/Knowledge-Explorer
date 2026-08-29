@@ -40,14 +40,14 @@ describe("tool clusters", () => {
     const code = TOOL_CLUSTERS.find((c) => c.id === "code-workbench");
     expect(code?.toolIds).toContain("json-formatter");
     expect(code?.toolIds).toContain("encode-decode");
-    expect(code?.blurb.toLowerCase()).toMatch(/json|base64|editor/);
+    expect(code?.blurb.toLowerCase()).toMatch(/json|base64|editor|board/);
   });
 
   it("includes math-pad in math cluster", async () => {
     const { TOOL_CLUSTERS } = await import("@/data/tool-clusters");
     const math = TOOL_CLUSTERS.find((c) => c.id === "math-science");
     expect(math?.toolIds).toContain("math-pad");
-    expect(math?.blurb.toLowerCase()).toMatch(/calc lab|d\/dx|integral|table|zeros|latex|formula/);
+    expect(math?.blurb.toLowerCase()).toMatch(/calc lab|d\/dx|integral|riemann|tangent|table|zeros|latex|formula/);
   });
 });
 
@@ -147,10 +147,13 @@ describe("code-board update", () => {
 
 describe("code editor fusion", () => {
   it("sends playground handoffs to the one editor", async () => {
-    const { playgroundHref } = await import("@/lib/code-draft-bridge");
+    const { playgroundHref, codeEditorDeskHref } = await import("@/lib/code-draft-bridge");
     expect(playgroundHref("python")).toBe("/code/editor?lang=python");
     expect(playgroundHref("html")).toBe("/code/editor?lang=web");
     expect(playgroundHref("javascript")).toBe("/code/editor?lang=javascript");
+    expect(codeEditorDeskHref("json")).toBe("/code/editor?desk=json");
+    expect(codeEditorDeskHref("encode", "python")).toBe("/code/editor?lang=python&desk=encode");
+    expect(codeEditorDeskHref("board")).toBe("/code/editor?desk=board");
   });
 });
 

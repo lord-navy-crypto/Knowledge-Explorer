@@ -331,6 +331,68 @@ export function numericDerivative(
   return (right - left) / (2 * h);
 }
 
+/** Numeric second derivative f''(x) via central second difference. */
+export function numericSecondDerivative(
+  expression: string,
+  x: number,
+  vars: Record<string, number> = {},
+  h = 1e-4
+): number {
+  const yp = evalAtX(expression, x + h, vars);
+  const y = evalAtX(expression, x, vars);
+  const ym = evalAtX(expression, x - h, vars);
+  return (yp - 2 * y + ym) / (h * h);
+}
+
+/** Grapher-friendly tangent line y = f'(x0)(x − x0) + f(x0). */
+export function tangentLineExpression(
+  expression: string,
+  x0: number,
+  vars: Record<string, number> = {}
+): string {
+  const y0 = evalAtX(expression, x0, vars);
+  const m = numericDerivative(expression, x0, vars);
+  return `${formatCalc(m)}*(x-(${formatCalc(x0)}))+(${formatCalc(y0)})`;
+}
+
+/** Average value of f on [a, b]: (1/(b−a)) ∫_a^b f(x) dx. */
+export function averageValue(
+  expression: string,
+  a: number,
+  b: number,
+  vars: Record<string, number> = {}
+): number {
+  if (a === b) throw new Error("average value needs a < b (or b < a)");
+  return numericIntegral(expression, a, b, vars) / (b - a);
+}
+
+export type RiemannMethod = "left" | "right" | "mid";
+
+/** Riemann sum on [a, b] with n subintervals (max 5000). */
+export function riemannSum(
+  expression: string,
+  a: number,
+  b: number,
+  n: number,
+  method: RiemannMethod = "mid",
+  vars: Record<string, number> = {}
+): number {
+  const slices = Math.trunc(n);
+  if (!Number.isFinite(a) || !Number.isFinite(b) || !Number.isFinite(slices)) {
+    throw new Error("Riemann bounds and n must be finite");
+  }
+  if (slices < 1) throw new Error("Riemann n must be ≥ 1");
+  if (slices > 5000) throw new Error("Riemann n too large (max 5000)");
+  const h = (b - a) / slices;
+  let sum = 0;
+  for (let i = 0; i < slices; i += 1) {
+    const x =
+      method === "left" ? a + i * h : method === "right" ? a + (i + 1) * h : a + (i + 0.5) * h;
+    sum += evalAtX(expression, x, vars);
+  }
+  return sum * h;
+}
+
 /** Approximate definite integral ∫_a^b f(x) dx (Simpson / trapezoid hybrid). */
 export function numericIntegral(
   expression: string,

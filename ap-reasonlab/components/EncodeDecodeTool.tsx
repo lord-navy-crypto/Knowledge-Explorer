@@ -22,6 +22,7 @@ import {
   preloadJsonFormatter,
   type EncodeHandoffMode,
 } from "@/lib/payload-handoff";
+import { openCodeEditorDesk } from "@/lib/code-draft-bridge";
 
 type Mode = EncodeHandoffMode;
 
@@ -91,7 +92,7 @@ export default function EncodeDecodeTool({ embedded = false }: { embedded?: bool
   function sendToJson() {
     if (!result.out) return;
     preloadJsonFormatter(result.out);
-    router.push("/tools/json-formatter");
+    openCodeEditorDesk(router, "json");
   }
 
   function onFile(file: File) {

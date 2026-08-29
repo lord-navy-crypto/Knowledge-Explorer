@@ -2,18 +2,26 @@
 
 import { useState } from "react";
 import {
+  averageValue,
   evalAtX,
   findZeros,
   formatCalc,
   newtonRoot,
   numericDerivative,
   numericIntegral,
+  numericSecondDerivative,
   numericSum,
+  riemannSum,
+  tangentLineExpression,
   valueTable,
 } from "@/lib/math-expr";
 
 /** Numeric calculus extras fused into Calc + Graph — original-practice AP STEM, not a licensed ROM. */
-export default function MathCalcLab({ onSendToGraph }: { onSendToGraph: (expr: string) => void }) {
+export default function MathCalcLab({
+  onSendToGraph,
+}: {
+  onSendToGraph: (expr: string, overlay?: string) => void;
+}) {
   const [expr, setExpr] = useState("x^2");
   const [x0, setX0] = useState("2");
   const [a, setA] = useState("0");
@@ -23,11 +31,14 @@ export default function MathCalcLab({ onSendToGraph }: { onSendToGraph: (expr: s
   const [xmin, setXmin] = useState("-2");
   const [xmax, setXmax] = useState("2");
   const [step, setStep] = useState("0.5");
+  const [slices, setSlices] = useState("8");
   const [out, setOut] = useState("");
   const [table, setTable] = useState<Array<{ x: string; y: string }>>([]);
   const [error, setError] = useState("");
 
-  function run(kind: "eval" | "deriv" | "int" | "sum" | "zeros" | "newton" | "table") {
+  function run(
+    kind: "eval" | "deriv" | "second" | "int" | "avg" | "riemann" | "sum" | "zeros" | "newton" | "table"
+  ) {
     setError("");
     setTable([]);
     try {
@@ -38,8 +49,23 @@ export default function MathCalcLab({ onSendToGraph }: { onSendToGraph: (expr: s
       } else if (kind === "deriv") {
         const x = Number(x0);
         setOut(`f'(${x0}) ≈ ${formatCalc(numericDerivative(f, x))}`);
+      } else if (kind === "second") {
+        const x = Number(x0);
+        setOut(`f''(${x0}) ≈ ${formatCalc(numericSecondDerivative(f, x))}`);
       } else if (kind === "int") {
         setOut(`∫ from ${a} to ${b} ≈ ${formatCalc(numericIntegral(f, Number(a), Number(b)))}`);
+      } else if (kind === "avg") {
+        setOut(
+          `avg on [${a}, ${b}] ≈ ${formatCalc(averageValue(f, Number(a), Number(b)))}`
+        );
+      } else if (kind === "riemann") {
+        const n = Number(slices);
+        const left = riemannSum(f, Number(a), Number(b), n, "left");
+        const mid = riemannSum(f, Number(a), Number(b), n, "mid");
+        const right = riemannSum(f, Number(a), Number(b), n, "right");
+        setOut(
+          `Riemann n=${slices} on [${a}, ${b}]: L=${formatCalc(left)}  M=${formatCalc(mid)}  R=${formatCalc(right)}`
+        );
       } else if (kind === "sum") {
         setOut(`Σ n=${n0}..${n1} ≈ ${formatCalc(numericSum(f, Number(n0), Number(n1)))}`);
       } else if (kind === "zeros") {
@@ -68,12 +94,26 @@ export default function MathCalcLab({ onSendToGraph }: { onSendToGraph: (expr: s
     }
   }
 
+  function plotTangent() {
+    setError("");
+    try {
+      const f = expr.trim() || "x";
+      const line = tangentLineExpression(f, Number(x0));
+      setOut(`tangent at x=${x0}: y = ${line}  (plotted as Y2)`);
+      onSendToGraph(f, line);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Could not build tangent.");
+    }
+  }
+
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4">
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Calc lab</p>
-          <h3 className="text-sm font-semibold text-slate-900">Evaluate · d/dx · ∫ · Σ · table · zeros</h3>
+          <h3 className="text-sm font-semibold text-slate-900">
+            Evaluate · d/dx · f″ · ∫ · avg · Riemann · Σ · table · zeros
+          </h3>
         </div>
         <button type="button" className="btn-secondary text-xs" onClick={() => onSendToGraph(expr.trim() || "x")}>
           Plot f(x)
@@ -126,6 +166,10 @@ export default function MathCalcLab({ onSendToGraph }: { onSendToGraph: (expr: s
           <input className="input mt-1" value={step} onChange={(e) => setStep(e.target.value)} />
         </label>
       </div>
+      <label className="mt-2 block max-w-[8rem] text-xs font-medium text-slate-600">
+        Riemann n
+        <input className="input mt-1" value={slices} onChange={(e) => setSlices(e.target.value)} />
+      </label>
       <div className="mt-3 flex flex-wrap gap-2">
         <button type="button" className="btn-primary text-xs" onClick={() => run("eval")}>
           f(x)
@@ -133,8 +177,20 @@ export default function MathCalcLab({ onSendToGraph }: { onSendToGraph: (expr: s
         <button type="button" className="btn-secondary text-xs" onClick={() => run("deriv")}>
           f′(x)
         </button>
+        <button type="button" className="btn-secondary text-xs" onClick={() => run("second")}>
+          f″(x)
+        </button>
+        <button type="button" className="btn-secondary text-xs" onClick={plotTangent}>
+          Tangent → Y2
+        </button>
         <button type="button" className="btn-secondary text-xs" onClick={() => run("int")}>
           ∫ f dx
+        </button>
+        <button type="button" className="btn-secondary text-xs" onClick={() => run("avg")}>
+          Avg value
+        </button>
+        <button type="button" className="btn-secondary text-xs" onClick={() => run("riemann")}>
+          Riemann L/M/R
         </button>
         <button type="button" className="btn-secondary text-xs" onClick={() => run("sum")}>
           Σ a_n

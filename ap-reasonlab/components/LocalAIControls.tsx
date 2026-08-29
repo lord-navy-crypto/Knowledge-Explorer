@@ -150,12 +150,14 @@ export default function LocalAIControls({ embedded = false }: Props) {
       }
     >
       <div>
-        <LocalAiRecommendation className="mb-3" />
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
+        {settingsOpen ? <LocalAiRecommendation className="mb-3" /> : null}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">AI settings</p>
-            <p className="mt-1 text-sm text-slate-600">
-              Path: <span className="font-semibold text-slate-900">{PATHS.find((p) => p.value === localAI.mode)?.label}</span>
+            <p className="mt-0.5 truncate text-sm text-slate-700">
+              <span className="font-semibold text-slate-900">
+                {PATHS.find((p) => p.value === localAI.mode)?.label}
+              </span>
               {localAI.mode === "local" && loaded ? (
                 <>
                   {" · "}
@@ -163,14 +165,46 @@ export default function LocalAIControls({ embedded = false }: Props) {
                 </>
               ) : null}
               {localAI.mode === "site" ? ` · ${localAI.siteModel}` : null}
-            </p>
-            <p className="mt-1 text-sm text-slate-600">
-              One shared panel: Local, Website API, or Your own API — then choose the work below.
+              {!settingsOpen && localAI.mode === "local" ? (
+                <span className="ml-2 text-xs font-semibold text-slate-500">
+                  {localAI.ready
+                    ? "Local on"
+                    : localAI.status === "loading"
+                      ? "Enabling…"
+                      : localAI.webGPUSupported === false
+                        ? "WebGPU off"
+                        : "Local off"}
+                </span>
+              ) : null}
             </p>
           </div>
-          <button type="button" className="btn-secondary text-xs" onClick={toggleSettings}>
-            {settingsOpen ? "Hide settings" : "AI settings · path / model"}
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            {!settingsOpen && localAI.mode === "local" && !localAI.ready ? (
+              <button
+                type="button"
+                className="btn-primary text-xs"
+                disabled={busy || !localAI.selectedModelId || localAI.webGPUSupported === false}
+                onClick={() => {
+                  if (localAI.mode !== "local") localAI.setMode("local");
+                  openLoadConfirmation();
+                }}
+              >
+                {localAI.status === "loading"
+                  ? "Enabling…"
+                  : selected?.cached
+                    ? "Enable Local"
+                    : "Enable Local / download"}
+              </button>
+            ) : null}
+            {!settingsOpen && localAI.ready ? (
+              <button type="button" className="btn-secondary text-xs" onClick={() => void localAI.stop()}>
+                Stop local
+              </button>
+            ) : null}
+            <button type="button" className="btn-secondary text-xs" onClick={toggleSettings}>
+              {settingsOpen ? "Hide settings" : "AI settings · path / model"}
+            </button>
+          </div>
         </div>
         {settingsOpen ? (
           <div className="mt-3 grid gap-2 md:grid-cols-3">
@@ -197,29 +231,48 @@ export default function LocalAIControls({ embedded = false }: Props) {
             ))}
           </div>
         ) : (
-          <p className="mt-2 text-xs text-slate-500">
-            Chat stays on this path. Open AI settings to switch Local / Website API / Your own API or
-            pick a Local model.
+          <p className="mt-1 text-xs text-slate-500">
+            Dialogue stays first. Open AI settings to switch Local / Website API / Your own API.
           </p>
         )}
-        <div className="mt-3 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/90 px-3 py-3 text-sm text-emerald-950">
-          <span
-            className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border border-emerald-500 bg-emerald-600 text-[10px] font-bold text-white"
-            aria-hidden="true"
-          >
-            ✓
-          </span>
-          <span>
-            <span className="font-semibold text-emerald-950">
-              Always search Knowledge Explorer
+        {settingsOpen ? (
+          <div className="mt-3 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/90 px-3 py-3 text-sm text-emerald-950">
+            <span
+              className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border border-emerald-500 bg-emerald-600 text-[10px] font-bold text-white"
+              aria-hidden="true"
+            >
+              ✓
             </span>
-            <span className="mt-0.5 block text-xs text-emerald-900/85">
-              On for every AI path (Local, Website API, Your own API). Before answering, the tutor
-              looks up matching concepts / formulas / practice / documents on this site and teaches
-              from those materials. Not Google / open-web search — Knowledge Explorer only.
+            <span>
+              <span className="font-semibold text-emerald-950">
+                Always search Knowledge Explorer
+              </span>
+              <span className="mt-0.5 block text-xs text-emerald-900/85">
+                On for every AI path (Local, Website API, Your own API). Before answering, the tutor
+                looks up matching concepts / formulas / practice / documents on this site and teaches
+                from those materials. Not Google / open-web search — Knowledge Explorer only.
+              </span>
             </span>
-          </span>
-        </div>
+          </div>
+        ) : (
+          <p className="mt-1 text-xs text-emerald-800">
+            Always search Knowledge Explorer is on for every path.
+          </p>
+        )}
+        {!settingsOpen && localAI.status === "loading" ? (
+          <div className="mt-2" aria-live="polite">
+            <div className="mb-1 flex justify-between text-xs text-slate-600">
+              <span>{localAI.statusText}</span>
+              <span>{Math.round(localAI.progress * 100)}%</span>
+            </div>
+            <progress className="h-2 w-full accent-slate-800" max={1} value={localAI.progress} />
+          </div>
+        ) : null}
+        {!settingsOpen && (localAI.error || loadError) ? (
+          <p className="mt-2 whitespace-pre-wrap text-sm text-red-700" role="alert">
+            {loadError || localAI.error}
+          </p>
+        ) : null}
       </div>
 
       {localAI.mode === "site" && (
@@ -246,6 +299,7 @@ export default function LocalAIControls({ embedded = false }: Props) {
         />
       )}
 
+      {settingsOpen ? (
       <div className="rounded-xl border border-slate-200 bg-white p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
@@ -328,6 +382,7 @@ export default function LocalAIControls({ embedded = false }: Props) {
           </p>
         )}
       </div>
+      ) : null}
 
       {settingsOpen ? (
       <div className="rounded-xl border border-slate-200 bg-white">
