@@ -18,77 +18,84 @@ import {
 import { readRecentTools, trackToolboxVisit, type RecentToolEntry } from "@/lib/recent-tools";
 import { toolSearchHaystack } from "@/lib/toolbox-search";
 
-const FUSED_CHILD_IDS = new Set([
-  "formula-board",
-  "latex",
-  "units",
-  "sci-notation",
-  "vector-resolve",
-  "code-board",
-  "json-formatter",
-  "encode-decode",
-  "dual",
-  "word-count",
-  "markdown-pdf",
-  "word-import",
-  "word-pdf",
-  "markdown-plain",
+const COMBINED_PRIORITY = new Map<string, number>([
+  ["math-pad", 0],
+  ["code-workbench", 1],
+  ["write-convert", 2],
+  ["pdf-tools", 3],
+  ["image-compress", 4],
+  ["ai", 5],
+  ["focus-desk", 6],
 ]);
 
-const FUSED_CHILD_HREFS = new Set([
-  "/tools/formula-board",
-  "/tools/latex",
-  "/tools/units",
-  "/tools/sci-notation",
-  "/tools/vector-resolve",
-  "/tools/code-board",
-  "/tools/json-formatter",
-  "/tools/encode-decode",
-  "/tools/dual",
-  "/tools/word-count",
-  "/tools/markdown-pdf",
-  "/tools/word-import",
-  "/tools/word-pdf",
-  "/tools/markdown-plain",
-]);
+function isCombinedTool(tool: StudyTool): boolean {
+  return COMBINED_PRIORITY.has(tool.id);
+}
 
 /**
- * Keep old routes working, but stop advertising every sub-tool as a separate product.
- * The catalog should lead with larger workbenches; embedded/hand-off tools remain reachable inside them.
+ * Keep the individual utilities available, but also add larger workbenches.
+ * The catalog renders these combined desks first and the individual tools later.
  */
-function fuseCatalogTools(tools: StudyTool[]): StudyTool[] {
+function buildCatalogTools(tools: StudyTool[]): StudyTool[] {
   const codeSource =
     tools.find((tool) => tool.id === "json-formatter") ||
     tools.find((tool) => tool.id === "encode-decode") ||
     tools.find((tool) => tool.id === "code-board");
 
-  const fused = tools
-    .filter((tool) => !FUSED_CHILD_IDS.has(tool.id))
-    .map((tool) => {
-      if (tool.id === "math-pad") {
-        return {
-          ...tool,
-          title: "Math workbench · Calc + Graph",
-          blurb:
-            "Calculator + grapher + calculus lab, with units, scientific notation, vectors, LaTeX checks, and formula references in one desk.",
-          badge: "Fused: Calc · Graph · Units · Vectors · LaTeX · Formulas",
-        };
-      }
-      if (tool.id === "write-convert") {
-        return {
-          ...tool,
-          title: "Write & convert workbench",
-          blurb:
-            "One draft pipeline for editing, word count, Markdown/plain cleanup, Word import, and PDF export. Open the smaller steps from inside this workbench.",
-          badge: "Fused entry: Edit · Count · Convert · Import · PDF",
-        };
-      }
-      return tool;
-    });
+  const withWorkbenchLabels = tools.map((tool) => {
+    if (tool.id === "math-pad") {
+      return {
+        ...tool,
+        title: "Math workbench · Calc + Graph",
+        blurb:
+          "Calculator + grapher + calculus lab, with units, scientific notation, vectors, LaTeX checks, and formula references in one desk.",
+        badge: "Combined: Calc · Graph · Units · Vectors · LaTeX · Formulas",
+      };
+    }
+    if (tool.id === "write-convert") {
+      return {
+        ...tool,
+        title: "Write & convert workbench",
+        blurb:
+          "One draft pipeline for editing, word count, Markdown/plain cleanup, Word import, and PDF export.",
+        badge: "Combined: Edit · Count · Convert · Import · PDF",
+      };
+    }
+    if (tool.id === "pdf-tools") {
+      return {
+        ...tool,
+        title: "PDF workbench",
+        badge: "Combined: Merge · Split · Rotate · Compress",
+      };
+    }
+    if (tool.id === "image-compress") {
+      return {
+        ...tool,
+        title: "Image workbench",
+        badge: "Combined: Compress · Convert · Crop · Annotate",
+      };
+    }
+    if (tool.id === "focus-desk") {
+      return {
+        ...tool,
+        title: "Focus workbench",
+        badge: "Combined: Timer · Breaks · Noise",
+      };
+    }
+    if (tool.id === "ai") {
+      return {
+        ...tool,
+        title: "AI workbench",
+        badge: "Combined: AP · English · Coding · Math",
+      };
+    }
+    return tool;
+  });
 
-  if (!codeSource) return fused;
+  if (!codeSource) return withWorkbenchLabels;
+
   return [
-    ...fused,
+    ...withWorkbenchLabels,
     {
       ...codeSource,
       id: "code-workbench",
@@ -96,7 +103,7 @@ function fuseCatalogTools(tools: StudyTool[]): StudyTool[] {
       href: "/code/editor?lang=python",
       blurb:
         "One editor for programming languages plus JSON formatting, Base64/URL encode-decode, and the saved Code board.",
-      badge: "Fused: Editor · JSON · Base64/URL · Code board",
+      badge: "Combined: Editor · JSON · Base64/URL · Code board",
     },
   ];
 }
@@ -131,6 +138,44 @@ function PinButton({ id, pinned, onToggle }: { id: string; pinned: boolean; onTo
   );
 }
 
+function ToolCard({
+  tool,
+  pinnedIds,
+  onPin,
+  combined = false,
+}: {
+  tool: StudyTool;
+  pinnedIds: string[];
+  onPin: (id: string) => void;
+  combined?: boolean;
+}) {
+  return (
+    <Link
+      href={tool.href}
+      onClick={() => trackToolboxVisit(tool.href, tool.title)}
+      className={
+        combined
+          ? "group relative flex min-h-[8rem] flex-col rounded-2xl border border-brand-200 bg-gradient-to-br from-brand-50 via-white to-sky-50 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md active:scale-[0.99]"
+          : "card-hover group relative flex min-h-[7.5rem] flex-col touch-manipulation active:scale-[0.99]"
+      }
+    >
+      <div className="absolute right-2 top-2">
+        <PinButton
+          id={tool.id}
+          pinned={isPinnedTool(tool.id) || pinnedIds.includes(tool.id)}
+          onToggle={onPin}
+        />
+      </div>
+      <div className="flex items-start justify-between gap-2 pr-8">
+        <h3 className="text-base font-bold text-slate-900 group-hover:text-brand-700">{tool.title}</h3>
+        <SecurityBadge level={tool.security} />
+      </div>
+      <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-600">{tool.blurb}</p>
+      {tool.badge ? <p className="mt-2 text-[11px] font-semibold text-brand-700">{tool.badge}</p> : null}
+    </Link>
+  );
+}
+
 export default function ToolsCatalog({ tools }: { tools: StudyTool[] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -139,7 +184,7 @@ export default function ToolsCatalog({ tools }: { tools: StudyTool[] }) {
   const [activeSecurity, setActiveSecurity] = useState<ToolSecurity | "all">("all");
   const [recent, setRecent] = useState<RecentToolEntry[]>([]);
   const [pinnedIds, setPinnedIds] = useState<string[]>([]);
-  const catalogTools = useMemo(() => fuseCatalogTools(tools), [tools]);
+  const catalogTools = useMemo(() => buildCatalogTools(tools), [tools]);
 
   useEffect(() => {
     setQuery(searchParams.get("q") || "");
@@ -149,11 +194,7 @@ export default function ToolsCatalog({ tools }: { tools: StudyTool[] }) {
     const sec = searchParams.get("sec");
     const validSec = sec && sec in TOOL_SECURITY_LABELS;
     setActiveSecurity(validSec ? (sec as ToolSecurity) : "all");
-    setRecent(
-      readRecentTools().filter(
-        (entry) => entry.href.startsWith("/tools/") && !FUSED_CHILD_HREFS.has(entry.href)
-      )
-    );
+    setRecent(readRecentTools().filter((entry) => entry.href.startsWith("/tools/") || entry.href.startsWith("/code/")));
     setPinnedIds(readPinnedToolIds());
   }, [searchParams]);
 
@@ -187,6 +228,16 @@ export default function ToolsCatalog({ tools }: { tools: StudyTool[] }) {
     });
   }, [catalogTools, query, activeCat, activeSecurity]);
 
+  const combinedTools = useMemo(
+    () =>
+      filtered
+        .filter(isCombinedTool)
+        .sort((a, b) => (COMBINED_PRIORITY.get(a.id) ?? 999) - (COMBINED_PRIORITY.get(b.id) ?? 999)),
+    [filtered]
+  );
+
+  const singleTools = useMemo(() => filtered.filter((tool) => !isCombinedTool(tool)), [filtered]);
+
   const pinnedTools = useMemo(
     () =>
       pinnedIds
@@ -210,7 +261,7 @@ export default function ToolsCatalog({ tools }: { tools: StudyTool[] }) {
   const showShortcuts = !query.trim() && activeCat === "all" && activeSecurity === "all";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       <section className="space-y-3 rounded-xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <label className="block min-w-0 flex-1 text-sm">
@@ -222,7 +273,7 @@ export default function ToolsCatalog({ tools }: { tools: StudyTool[] }) {
                 setQuery(e.target.value);
                 syncUrl({ q: e.target.value });
               }}
-              placeholder="Search workbenches or tasks… (json, base64, pdf, timer, graph)"
+              placeholder="Search workbenches or single tools… (json, base64, pdf, timer, graph)"
             />
           </label>
           <p className="text-xs tabular-nums text-slate-500">
@@ -230,7 +281,7 @@ export default function ToolsCatalog({ tools }: { tools: StudyTool[] }) {
           </p>
         </div>
         <p className="text-xs text-slate-500">
-          Similar utilities are grouped into larger workbenches. Old direct tool URLs still work.
+          Combined workbenches are always shown first. Individual tools stay available underneath.
         </p>
         <div className="flex flex-wrap gap-2">
           <button
@@ -266,9 +317,7 @@ export default function ToolsCatalog({ tools }: { tools: StudyTool[] }) {
           ))}
         </div>
         <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-3">
-          <span className="self-center text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-            Security
-          </span>
+          <span className="self-center text-[10px] font-semibold uppercase tracking-wide text-slate-400">Security</span>
           <button
             type="button"
             onClick={() => {
@@ -306,6 +355,31 @@ export default function ToolsCatalog({ tools }: { tools: StudyTool[] }) {
           })}
         </div>
       </section>
+
+      {combinedTools.length > 0 ? (
+        <section className="space-y-3" aria-labelledby="combined-workbenches-heading">
+          <div className="flex items-end justify-between gap-3 border-b border-brand-200 pb-2">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-brand-600">Start here</p>
+              <h2 id="combined-workbenches-heading" className="text-lg font-bold text-slate-900">
+                Combined workbenches
+              </h2>
+            </div>
+            <span className="text-[11px] tabular-nums text-brand-700">{combinedTools.length}</span>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {combinedTools.map((tool) => (
+              <ToolCard
+                key={tool.id}
+                tool={tool}
+                pinnedIds={pinnedIds}
+                onPin={handlePinToggle}
+                combined
+              />
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {showShortcuts && pinnedTools.length > 0 ? (
         <section className="space-y-2">
@@ -346,51 +420,34 @@ export default function ToolsCatalog({ tools }: { tools: StudyTool[] }) {
         <p className="rounded-xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500">
           No tools match. Try json, base64, graph, pdf, pomodoro, writing, or another task name.
         </p>
-      ) : (
-        STUDY_TOOL_CATEGORIES.map((category) => {
-          const items = filtered.filter((tool) => tool.category === category.id);
-          if (!items.length) return null;
-          if (activeCat !== "all" && activeCat !== category.id) return null;
-          return (
-            <section key={category.id} id={`tools-${category.id}`} className="scroll-mt-28 space-y-3">
-              <div className="flex items-end justify-between gap-3 border-b border-slate-200 pb-2">
-                <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                  {category.label}
-                </h2>
-                <span className="text-[11px] tabular-nums text-slate-400">{items.length}</span>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                {items.map((tool) => (
-                  <Link
-                    key={tool.id}
-                    href={tool.href}
-                    onClick={() => trackToolboxVisit(tool.href, tool.title)}
-                    className="card-hover group relative flex min-h-[7.5rem] flex-col touch-manipulation active:scale-[0.99]"
-                  >
-                    <div className="absolute right-2 top-2">
-                      <PinButton
-                        id={tool.id}
-                        pinned={isPinnedTool(tool.id) || pinnedIds.includes(tool.id)}
-                        onToggle={handlePinToggle}
-                      />
-                    </div>
-                    <div className="flex items-start justify-between gap-2 pr-8">
-                      <h3 className="text-base font-bold text-slate-900 group-hover:text-brand-700">
-                        {tool.title}
-                      </h3>
-                      <SecurityBadge level={tool.security} />
-                    </div>
-                    <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-600">{tool.blurb}</p>
-                    {tool.badge ? (
-                      <p className="mt-2 text-[11px] font-medium text-brand-700">{tool.badge}</p>
-                    ) : null}
-                  </Link>
-                ))}
-              </div>
-            </section>
-          );
-        })
-      )}
+      ) : null}
+
+      {singleTools.length > 0 ? (
+        <section className="space-y-5" aria-labelledby="single-tools-heading">
+          <div className="border-b border-slate-200 pb-2">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">More specific</p>
+            <h2 id="single-tools-heading" className="text-lg font-bold text-slate-900">Single tools</h2>
+          </div>
+          {STUDY_TOOL_CATEGORIES.map((category) => {
+            const items = singleTools.filter((tool) => tool.category === category.id);
+            if (!items.length) return null;
+            if (activeCat !== "all" && activeCat !== category.id) return null;
+            return (
+              <section key={category.id} id={`tools-${category.id}`} className="scroll-mt-28 space-y-3">
+                <div className="flex items-end justify-between gap-3 border-b border-slate-100 pb-2">
+                  <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">{category.label}</h3>
+                  <span className="text-[11px] tabular-nums text-slate-400">{items.length}</span>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                  {items.map((tool) => (
+                    <ToolCard key={tool.id} tool={tool} pinnedIds={pinnedIds} onPin={handlePinToggle} />
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+        </section>
+      ) : null}
     </div>
   );
 }
