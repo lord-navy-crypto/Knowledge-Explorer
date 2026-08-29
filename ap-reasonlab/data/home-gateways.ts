@@ -43,28 +43,23 @@ export const HOME_GATEWAYS: HomeGateway[] = [
     id: "tools-code",
     title: "Convenient Tools & Code",
     description:
-      "Everyday utilities (Calc + Graph, PDF desk, import/convert) plus one code editor with an in-editor language picker.",
+      "A few larger workbenches instead of duplicate mini-tools: Calc + Graph, writing/file desks, and one Code Workbench.",
     href: "/explore/tools-code",
     links: [
       {
         href: "/tools",
         title: "Convenient Tools",
-        description: "Timers, converters, Calc + Graph, PDF desk, and more.",
+        description: "Fused workbenches for math, writing, PDF/image work, focus, and utilities.",
       },
       {
         href: "/hints?tool=calculator",
         title: "Calc + Graph",
-        description: "One math desk: calculator, grapher, units, LaTeX, and formulas.",
-      },
-      {
-        href: "/code",
-        title: "Code",
-        description: "Language cards stay here; one editor is the fused workbench.",
+        description: "One math desk: calculator, grapher, calculus lab, units, vectors, LaTeX, and formulas.",
       },
       {
         href: "/code/editor?lang=python",
-        title: "One editor",
-        description: "Python, JS, TS, Web, SQL, Java, C# plus JSON / Base64 / code board tabs.",
+        title: "Code Workbench",
+        description: "One editor with language picker plus JSON, Base64/URL, and Code board tabs.",
       },
       {
         href: "/hints",
