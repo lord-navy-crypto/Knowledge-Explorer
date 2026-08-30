@@ -18,6 +18,8 @@ import { apInlineQuestionnaires } from "@/data/ap-questionnaires-inline";
 import { apPracticeDrillQuestionnaires } from "@/data/ap-practice-drills";
 import { apPracticeFullStemQuestionnaires } from "@/data/ap-practice-full-stems";
 import { recoveredApItemsBatch1 } from "@/data/ap-question-recovery-batch-1";
+import { recoveredApItemsBatch2 } from "@/data/ap-question-recovery-batch-2";
+import { recoveredApItemsBatch2Fix } from "@/data/ap-question-recovery-batch-2-fix";
 import { shapeApQuestionnaires } from "@/lib/ap-exam-format";
 import { normalizeApQuestionnaire } from "@/lib/question-normalize";
 import managed from "@/data/managed-content.json";
@@ -27,7 +29,7 @@ import managed from "@/data/managed-content.json";
  *
  * IMPORTANT: Every historical source file is aggregated here and passes through THREE layers:
  * 1) shapeApQuestionnaires — maps the item to the appropriate AP section/task family.
- * 2) audited recovery registry — replaces only specifically reviewed legacy items in place.
+ * 2) audited recovery registries — replace only specifically reviewed legacy items in place.
  * 3) normalizeApQuestionnaire — enforces answer/reference/rubric/response-mode quality rules.
  *
  * An unresolved MCQ with no defensible key is quarantined instead of being shown to learners.
@@ -58,9 +60,15 @@ const shapedQuestionnaires: Questionnaire[] = shapeApQuestionnaires([
   ...(((managed as { questionnaires?: Questionnaire[] }).questionnaires || []) as Questionnaire[]),
 ]);
 
+const recoveredApItems = {
+  ...recoveredApItemsBatch1,
+  ...recoveredApItemsBatch2,
+  ...recoveredApItemsBatch2Fix,
+};
+
 export const rawQuestionnaires: Questionnaire[] = shapedQuestionnaires.map((set) => ({
   ...set,
-  items: set.items.map((item) => recoveredApItemsBatch1[item.id] || item),
+  items: set.items.map((item) => recoveredApItems[item.id] || item),
 }));
 
 export const questionnaires: Questionnaire[] = rawQuestionnaires
