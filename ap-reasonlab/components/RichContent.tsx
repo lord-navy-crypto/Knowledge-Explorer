@@ -1,50 +1,28 @@
 "use client";
 
-import katex from "katex";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
-import { normalizeAiDialogueText, normalizeAuthoredText, stabilizeStreamingMath, toLatexSource } from "@/lib/unicode-math";
+import dynamic from "next/dynamic";
+import { normalizeAiDialogueText, normalizeAuthoredText, stabilizeStreamingMath } from "@/lib/unicode-math";
 
 type Mode = "markdown" | "math" | "inline-math";
 
 type Props = {
   children: string;
-  /** markdown = prose + $math$; math = display formula; inline-math = inline formula */
   mode?: Mode;
   className?: string;
-  /** Clamp long previews (e.g. list cards). Uses CSS line-clamp. */
   clampLines?: 2 | 3 | 4;
-  /** While AI tokens arrive — close unfinished TeX so KaTeX keeps painting. */
   streaming?: boolean;
-  /**
-   * AI Toolbox / concept chat bubbles: skip bare-TeX → $ promotion.
-   * Formulas should arrive via AiEquationCards, not invented dollars.
-   */
   aiDialogue?: boolean;
 };
 
-const KATEX_REHYPE_OPTIONS = {
-  throwOnError: false,
-  strict: "ignore" as const,
-  errorColor: "#b45309",
-  trust: false,
-};
-
-function renderKatex(source: string, displayMode: boolean): string {
-  return katex.renderToString(toLatexSource(source), {
-    throwOnError: false,
-    displayMode,
-    strict: "ignore",
-    trust: false,
-    errorColor: "#b45309",
-  });
-}
+const HeavyRenderer = dynamic(() => import("@/components/RichContentRenderer"), {
+  ssr: false,
+  loading: () => null,
+});
 
 /**
- * Shared Markdown + KaTeX renderer for authored study content.
- * Authors can write Markdown with $…$ / $$…$$; plain Unicode formulas also render in math modes.
+ * Lightweight content shell. Markdown/KaTeX dependencies are split into a
+ * separate chunk so navigation and card-list routes do not pay for the full
+ * renderer before the page itself is interactive.
  */
 export default function RichContent({
   children,
@@ -68,28 +46,19 @@ export default function RichContent({
           ? "line-clamp-4"
           : "";
 
-  if (mode === "math" || mode === "inline-math") {
-    const html = renderKatex(text, mode === "math");
-    return (
-      <div
-        className={`rich-content rich-math overflow-x-auto ${clampClass} ${className}`.trim()}
-        suppressHydrationWarning
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
-    );
-  }
-
+  // Keep useful text visible immediately while the richer renderer chunk loads.
+  // The absolutely positioned fallback is replaced as soon as HeavyRenderer mounts.
   return (
-    <div
-      className={`rich-content prose-study ${clampClass} ${className}`.trim()}
-      suppressHydrationWarning
-    >
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkMath]}
-        rehypePlugins={[[rehypeKatex, KATEX_REHYPE_OPTIONS]]}
+    <div className="relative">
+      <div
+        aria-hidden="true"
+        className={`${mode === "math" || mode === "inline-math" ? "font-mono" : "whitespace-pre-wrap"} ${clampClass} ${className} text-slate-600`.trim()}
       >
         {text}
-      </ReactMarkdown>
+      </div>
+      <div className="absolute inset-0 bg-inherit">
+        <HeavyRenderer text={text} mode={mode} className={className} clampClass={clampClass} />
+      </div>
     </div>
   );
 }
