@@ -24,7 +24,7 @@ export default function FolderGrid({
   return (
     <div className="grid gap-1 sm:grid-cols-2 lg:grid-cols-3">
       {folders.map((f) => (
-        <Link key={f.id} href={f.href} className="directory-link relative group">
+        <Link key={f.id} href={f.href} prefetch={false} className="directory-link relative group">
           <span
             className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded border border-[var(--ke-border)] bg-[var(--ke-surface)] font-display text-[10px] font-semibold uppercase tracking-wide text-[var(--ke-navy)]"
             aria-hidden
