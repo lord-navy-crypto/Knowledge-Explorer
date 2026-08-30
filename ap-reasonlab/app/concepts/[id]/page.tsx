@@ -6,7 +6,7 @@ import { questionnaires } from "@/data/questionnaires";
 import type { Questionnaire } from "@/lib/types";
 import { loadManagedContent } from "@/lib/managed-store";
 import RichContent, { FormulaMath } from "@/components/RichContent";
-import ConceptAskAi from "@/components/ConceptAskAi";
+import LazyConceptAskAi from "@/components/LazyConceptAskAi";
 import ConceptAiLinks from "@/components/ConceptAiLinks";
 import LearningResourceStructuredData from "@/components/LearningResourceStructuredData";
 
@@ -112,7 +112,7 @@ export default async function ConceptDetailPage({
         </section>
       )}
 
-      <ConceptAskAi
+      <LazyConceptAskAi
         defaultSubject={concept.subject}
         conceptTitle={concept.title}
         conceptSummary={concept.summary}
