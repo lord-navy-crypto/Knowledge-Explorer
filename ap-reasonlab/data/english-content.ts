@@ -10,6 +10,7 @@ import { authenticSatQuestions } from "./english-questions-authentic-sat";
 import { coreSatQuestions, coreToeflQuestions } from "./english-questions-core";
 import { withOfficialSkill } from "@/lib/english-exam-format";
 import { shapeOfficialEnglishQuestion } from "@/lib/english-official-shape";
+import { normalizeEnglishQuestion } from "@/lib/question-normalize";
 import type { AssessmentAuthenticity, ResponseMode } from "@/lib/types";
 
 export type EnglishPracticeQuestion = {
@@ -23,7 +24,7 @@ export type EnglishPracticeQuestion = {
   passage?: string;
   /** Current-exam-shaped original item versus intentionally simplified skill practice. */
   authenticity?: AssessmentAuthenticity;
-  /** What the real task asks the learner to produce; legacy MCQ strategy drills remain single_choice. */
+  /** What the real task asks the learner to produce. */
   responseMode?: ResponseMode;
   /** Original model response/reference answer for productive TOEFL tasks. */
   referenceAnswer?: string;
@@ -37,7 +38,12 @@ function withExamSkills(
   exam: "toefl" | "sat",
   items: EnglishPracticeQuestion[]
 ): EnglishPracticeQuestion[] {
-  return items.map((item) => shapeOfficialEnglishQuestion(exam, withOfficialSkill(exam, item)));
+  return items.map((item) =>
+    normalizeEnglishQuestion(
+      exam,
+      shapeOfficialEnglishQuestion(exam, withOfficialSkill(exam, item))
+    )
+  );
 }
 
 /** Exam tracks — exam-style practice questions and uploaded practice sets. */
@@ -47,14 +53,14 @@ export const englishExamAreas = [
     title: "TOEFL",
     icon: "T",
     description:
-      "Current TOEFL iBT task families plus an in-site bank of original items. Exam-authentic tasks are separated from simplified strategy drills.",
+      "Current TOEFL iBT task families plus an in-site bank of original items. Exam-style tasks are separated from simplified skill drills, and productive tasks use typed or spoken responses instead of fake MCQ scoring.",
   },
   {
     href: "/english/sat",
     title: "SAT",
     icon: "S",
     description:
-      "Digital SAT Reading and Writing domains + Math, with original short-passage, data, and student-produced-response practice.",
+      "Digital SAT Reading and Writing domains + Math, with original short-passage, data, selected-response, and student-produced-response practice.",
   },
 ] as const;
 
@@ -139,20 +145,38 @@ export const sentencePatterns = [
   { title: "Cautious academic claim", pattern: "The evidence suggests that [claim], although [uncertainty].", example: "The evidence suggests that sleep improved recall, although the study did not control diet." },
 ] as const;
 
-export const toeflQuestions: EnglishPracticeQuestion[] = withExamSkills("toefl", [
+export const rawToeflQuestions: EnglishPracticeQuestion[] = [
   ...authenticToeflQuestions,
   ...curatedToeflQuestions,
   ...curatedExtendedToeflQuestions,
   ...hardToeflQuestions,
   ...coreToeflQuestions,
   ...extraToeflQuestions,
-]);
+];
 
-export const satQuestions: EnglishPracticeQuestion[] = withExamSkills("sat", [
+export const rawSatQuestions: EnglishPracticeQuestion[] = [
   ...authenticSatQuestions,
   ...curatedSatQuestions,
   ...curatedExtendedSatQuestions,
   ...hardSatQuestions,
   ...coreSatQuestions,
   ...extraSatQuestions,
-]);
+];
+
+/** Every historical English question passes through current-format shaping + quality normalization. */
+export const toeflQuestions: EnglishPracticeQuestion[] = withExamSkills("toefl", rawToeflQuestions);
+export const satQuestions: EnglishPracticeQuestion[] = withExamSkills("sat", rawSatQuestions);
+
+export const englishQuestionBankStats = {
+  toefl: {
+    total: toeflQuestions.length,
+    examAuthentic: toeflQuestions.filter((q) => q.authenticity === "exam_authentic").length,
+    skillDrill: toeflQuestions.filter((q) => q.authenticity !== "exam_authentic").length,
+    productive: toeflQuestions.filter((q) => !["single_choice", "student_produced"].includes(q.responseMode || "single_choice")).length,
+  },
+  sat: {
+    total: satQuestions.length,
+    examAuthentic: satQuestions.filter((q) => q.authenticity === "exam_authentic").length,
+    skillDrill: satQuestions.filter((q) => q.authenticity !== "exam_authentic").length,
+  },
+};
