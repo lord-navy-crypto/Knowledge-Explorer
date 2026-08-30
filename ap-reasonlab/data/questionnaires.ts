@@ -21,22 +21,17 @@ import { recoveredApItemsBatch1 } from "@/data/ap-question-recovery-batch-1";
 import { recoveredApItemsBatch2 } from "@/data/ap-question-recovery-batch-2";
 import { recoveredApItemsBatch2Fix } from "@/data/ap-question-recovery-batch-2-fix";
 import { recoveredApItemsBatch3 } from "@/data/ap-question-recovery-batch-3";
+import { recoveredApItemsBatch4 } from "@/data/ap-question-recovery-batch-4";
+import { recoveredApItemsBatch4C } from "@/data/ap-question-recovery-batch-4c";
+import { recoveredApItemsBatch4Fix } from "@/data/ap-question-recovery-batch-4-fix";
+import { recoveredApItemsBatch4CD } from "@/data/ap-question-recovery-batch-4cd";
+import { recoveredApItemsBatch4EMcq } from "@/data/ap-question-recovery-batch-4e-mcq";
+import { recoveredApItemsBatch4EFrq } from "@/data/ap-question-recovery-batch-4e-frq";
+import { recoveredApItemsBatch4EPlus } from "@/data/ap-question-recovery-batch-4e-plus";
+import { recoveredApItemsBatch4FinalFix } from "@/data/ap-question-recovery-batch-4-final-fix";
 import { shapeApQuestionnaires } from "@/lib/ap-exam-format";
 import { normalizeApQuestionnaire } from "@/lib/question-normalize";
 import managed from "@/data/managed-content.json";
-
-/**
- * Generated original practice only. Do not paste College Board exam text or answer keys verbatim.
- *
- * IMPORTANT: Every historical source file is aggregated here and passes through THREE layers:
- * 1) shapeApQuestionnaires — maps the item to the appropriate AP section/task family.
- * 2) audited recovery registries — replace only specifically reviewed legacy items in place.
- * 3) normalizeApQuestionnaire — enforces answer/reference/rubric/response-mode quality rules.
- *
- * An unresolved MCQ with no defensible key is quarantined instead of being shown to learners.
- * Legacy items that are useful but not strong enough to claim current-exam fidelity remain visible
- * only as clearly labeled Skill drills.
- */
 
 const shapedQuestionnaires: Questionnaire[] = shapeApQuestionnaires([
   ...apInlineQuestionnaires,
@@ -66,6 +61,14 @@ const recoveredApItems = {
   ...recoveredApItemsBatch2,
   ...recoveredApItemsBatch2Fix,
   ...recoveredApItemsBatch3,
+  ...recoveredApItemsBatch4,
+  ...recoveredApItemsBatch4C,
+  ...recoveredApItemsBatch4Fix,
+  ...recoveredApItemsBatch4CD,
+  ...recoveredApItemsBatch4EMcq,
+  ...recoveredApItemsBatch4EFrq,
+  ...recoveredApItemsBatch4EPlus,
+  ...recoveredApItemsBatch4FinalFix,
 };
 
 export const rawQuestionnaires: Questionnaire[] = shapedQuestionnaires.map((set) => ({
