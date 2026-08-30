@@ -8,6 +8,7 @@ import { hardSatQuestions, hardToeflQuestions } from "./english-questions-hard";
 import { authenticToeflQuestions } from "./english-questions-authentic-toefl";
 import { authenticSatQuestions } from "./english-questions-authentic-sat";
 import { coreSatQuestions, coreToeflQuestions } from "./english-questions-core";
+import { recoveredEnglishItemsBatch1 } from "./english-question-recovery-batch-1";
 import { withOfficialSkill } from "@/lib/english-exam-format";
 import { shapeOfficialEnglishQuestion } from "@/lib/english-official-shape";
 import {
@@ -42,6 +43,7 @@ function withExamSkills(
   items: EnglishPracticeQuestion[]
 ): EnglishPracticeQuestion[] {
   return items
+    .map((item) => recoveredEnglishItemsBatch1[item.id] || item)
     .map((item) =>
       normalizeEnglishQuestion(
         exam,
