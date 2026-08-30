@@ -10,7 +10,10 @@ import { authenticSatQuestions } from "./english-questions-authentic-sat";
 import { coreSatQuestions, coreToeflQuestions } from "./english-questions-core";
 import { withOfficialSkill } from "@/lib/english-exam-format";
 import { shapeOfficialEnglishQuestion } from "@/lib/english-official-shape";
-import { normalizeEnglishQuestion } from "@/lib/question-normalize";
+import {
+  isPublicReadyEnglishQuestion,
+  normalizeEnglishQuestion,
+} from "@/lib/question-normalize";
 import type { AssessmentAuthenticity, ResponseMode } from "@/lib/types";
 
 export type EnglishPracticeQuestion = {
@@ -38,12 +41,14 @@ function withExamSkills(
   exam: "toefl" | "sat",
   items: EnglishPracticeQuestion[]
 ): EnglishPracticeQuestion[] {
-  return items.map((item) =>
-    normalizeEnglishQuestion(
-      exam,
-      shapeOfficialEnglishQuestion(exam, withOfficialSkill(exam, item))
+  return items
+    .map((item) =>
+      normalizeEnglishQuestion(
+        exam,
+        shapeOfficialEnglishQuestion(exam, withOfficialSkill(exam, item))
+      )
     )
-  );
+    .filter(isPublicReadyEnglishQuestion);
 }
 
 /** Exam tracks — exam-style practice questions and uploaded practice sets. */
@@ -169,13 +174,17 @@ export const satQuestions: EnglishPracticeQuestion[] = withExamSkills("sat", raw
 
 export const englishQuestionBankStats = {
   toefl: {
+    raw: rawToeflQuestions.length,
     total: toeflQuestions.length,
+    quarantined: rawToeflQuestions.length - toeflQuestions.length,
     examAuthentic: toeflQuestions.filter((q) => q.authenticity === "exam_authentic").length,
     skillDrill: toeflQuestions.filter((q) => q.authenticity !== "exam_authentic").length,
     productive: toeflQuestions.filter((q) => !["single_choice", "student_produced"].includes(q.responseMode || "single_choice")).length,
   },
   sat: {
+    raw: rawSatQuestions.length,
     total: satQuestions.length,
+    quarantined: rawSatQuestions.length - satQuestions.length,
     examAuthentic: satQuestions.filter((q) => q.authenticity === "exam_authentic").length,
     skillDrill: satQuestions.filter((q) => q.authenticity !== "exam_authentic").length,
   },
