@@ -55,7 +55,7 @@ export default function QuestionnaireDetailPage() {
 
   async function addItem(e: React.FormEvent) {
     e.preventDefault();
-    if (!quiz || !itemPrompt.trim() || !changeCode.trim()) return;
+    if (!quiz || !itemPrompt.trim() || !itemAnswerKey.trim() || !changeCode.trim()) return;
     setSaving(true);
     setError("");
     setNote("");
@@ -64,23 +64,111 @@ export default function QuestionnaireDetailPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ action: "add_questionnaire_item", setId: quiz.id, changeCode: changeCode.trim(), item: { prompt: itemPrompt.trim(), hint: itemHint.trim() || "Try yourself first.", answerKey: itemAnswerKey.trim() || undefined, format: "concept_check" } }),
+        body: JSON.stringify({
+          action: "add_questionnaire_item",
+          setId: quiz.id,
+          changeCode: changeCode.trim(),
+          item: {
+            prompt: itemPrompt.trim(),
+            hint: itemHint.trim() || "Try the task independently before opening the reference response.",
+            answerKey: itemAnswerKey.trim(),
+            format: "concept_check",
+            authenticity: "skill_drill",
+            responseMode: "short_response",
+          },
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Save failed");
       const updated = (data.content?.questionnaires || []).find((q: Questionnaire) => q.id === quiz.id);
       if (updated) setQuiz(updated);
-      setItemPrompt(""); setItemHint(""); setItemAnswerKey(""); setNote("Item added.");
+      setItemPrompt("");
+      setItemHint("");
+      setItemAnswerKey("");
+      setNote("Complete skill-drill item added.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Save failed");
-    } finally { setSaving(false); }
+    } finally {
+      setSaving(false);
+    }
   }
 
   if (loading) return <div className="text-sm text-slate-500">Loading set…</div>;
-  if (!quiz) return <div className="space-y-4"><Link href="/practice" className="text-sm font-medium text-brand-600 hover:underline">← Practice</Link><p className="text-sm text-red-600">{error || "Set not found."}</p></div>;
+  if (!quiz) {
+    return (
+      <div className="space-y-4">
+        <Link href="/practice" className="text-sm font-medium text-brand-600 hover:underline">← Practice</Link>
+        <p className="text-sm text-red-600">{error || "Set not found."}</p>
+      </div>
+    );
+  }
 
   const isManaged = quiz.id.startsWith("m-quiz");
   const relatedConceptIds = [...new Set((quiz.items || []).map((item) => item.conceptId).filter(Boolean) as string[])];
+  const authenticCount = (quiz.items || []).filter((item) => item.authenticity === "exam_authentic").length;
 
-  return <div className="practice-exam-page space-y-6"><Link href={`/practice?subject=${encodeURIComponent(quiz.subject)}`} className="text-sm font-medium text-brand-600 hover:underline">← {quiz.subject} practice</Link><section className="card practice-exam-header space-y-3 border-violet-100 bg-gradient-to-br from-white to-violet-50/30"><div className="flex flex-wrap gap-2"><span className="badge">{quiz.subject}</span><span className="badge-generated">AI GENERATED</span><span className="badge">~{quiz.estimatedMinutes} min</span>{quiz.difficultyTier ? <span className="badge">Tier {quiz.difficultyTier}</span> : null}{isManaged ? <span className="badge">UI-added</span> : null}</div><h1 className="text-3xl font-bold">{quiz.title}</h1><p className="text-slate-600"><RichContent>{quiz.description}</RichContent></p>{quiz.examFormatNote ? <p className="rounded-xl border border-violet-200 bg-violet-50 px-4 py-2 text-sm text-violet-950">{quiz.examFormatNote}</p> : null}<p className="rounded-xl bg-slate-50 px-4 py-2 text-sm text-slate-500">{quiz.generationNote}</p></section><EthicsBanner />{relatedConceptIds.length > 0 ? <section className="card space-y-2 border-brand-100 bg-brand-50/40"><h2 className="text-sm font-semibold uppercase tracking-wide text-slate-600">Related concepts</h2><div className="flex flex-wrap gap-2">{relatedConceptIds.map((conceptId) => <Link key={conceptId} href={`/concepts/${conceptId}`} className="rounded-full border border-brand-200 bg-white px-3 py-1 text-sm font-medium text-brand-800 hover:border-brand-400">{conceptId.replace(/-/g, " ")} →</Link>)}</div></section> : null}{(quiz.items || []).map((item, index) => <QuestionnaireItemCard key={item.id} item={item} index={index} />)}{isManaged ? <section className="card space-y-3 border-brand-200"><h2 className="font-semibold text-slate-900">+ Add item to this set</h2><p className="text-sm text-slate-600">Paste an original FRQ prompt. Hints always show; optional sample answer reveals only when you click Reveal.</p><form onSubmit={addItem} className="space-y-3"><MarkdownLatexField label="Question prompt" value={itemPrompt} onChange={setItemPrompt} required minHeightClass="min-h-[8rem]" placeholder="Paste FRQ / concept-check prompt (Markdown + $math$)…" /><MarkdownLatexField label="Hint (optional)" help="Hint text only — Markdown + LaTeX supported." value={itemHint} onChange={setItemHint} minHeightClass="min-h-[5rem]" placeholder="Strategy hint…" showPreview={Boolean(itemHint.trim())} /><MarkdownLatexField label="Sample answer (optional, hidden until reveal)" help="Self-check only — students must click Reveal sample answer." value={itemAnswerKey} onChange={setItemAnswerKey} minHeightClass="min-h-[5rem]" placeholder="Optional sample answer for self-check…" showPreview={Boolean(itemAnswerKey.trim())} /><input type="password" className="input" placeholder="Change code (required)" value={changeCode} onChange={(e) => setChangeCode(e.target.value)} required />{error ? <p className="text-sm text-red-600">{error}</p> : null}{note ? <p className="text-sm text-emerald-700">{note}</p> : null}<button type="submit" className="btn-primary" disabled={saving}>{saving ? "Saving..." : "Save item"}</button></form></section> : <section className="card space-y-3"><h2 className="font-semibold">Want another set like this?</h2><p className="text-sm text-slate-600">Go back to Practice → this subject → use <strong>+ Add generated practice set</strong>, or create one from the AP hub.</p><ChangePanel mode="questionnaire" label="+ Add generated practice set" defaultSubject={quiz.subject} folderArea="practice" spaceKey={quiz.subject} /></section>}</div>;
+  return (
+    <div className="practice-exam-page space-y-6">
+      <Link href={`/practice?subject=${encodeURIComponent(quiz.subject)}`} className="text-sm font-medium text-brand-600 hover:underline">← {quiz.subject} practice</Link>
+
+      <section className="card practice-exam-header space-y-3 border-violet-100 bg-gradient-to-br from-white to-violet-50/30">
+        <div className="flex flex-wrap gap-2">
+          <span className="badge">{quiz.subject}</span>
+          <span className={quiz.authenticity === "exam_authentic" ? "badge" : "badge-generated"}>
+            {quiz.authenticity === "exam_authentic" ? "Exam-style set" : "Skill-drill set"}
+          </span>
+          <span className="badge">Original practice</span>
+          <span className="badge">~{quiz.estimatedMinutes} min</span>
+          <span className="badge">{authenticCount}/{quiz.items.length} Exam-style items</span>
+          {quiz.difficultyTier ? <span className="badge">Tier {quiz.difficultyTier}</span> : null}
+          {isManaged ? <span className="badge">UI-added</span> : null}
+        </div>
+        <h1 className="text-3xl font-bold">{quiz.title}</h1>
+        <p className="text-slate-600"><RichContent>{quiz.description}</RichContent></p>
+        {quiz.examFormatNote ? <p className="rounded-xl border border-violet-200 bg-violet-50 px-4 py-2 text-sm text-violet-950">{quiz.examFormatNote}</p> : null}
+        <p className="rounded-xl bg-slate-50 px-4 py-2 text-sm text-slate-500">{quiz.generationNote}</p>
+      </section>
+
+      <EthicsBanner />
+
+      {relatedConceptIds.length > 0 ? (
+        <section className="card space-y-2 border-brand-100 bg-brand-50/40">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-600">Related concepts</h2>
+          <div className="flex flex-wrap gap-2">
+            {relatedConceptIds.map((conceptId) => (
+              <Link key={conceptId} href={`/concepts/${conceptId}`} className="rounded-full border border-brand-200 bg-white px-3 py-1 text-sm font-medium text-brand-800 hover:border-brand-400">
+                {conceptId.replace(/-/g, " ")} →
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {(quiz.items || []).map((item, index) => <QuestionnaireItemCard key={item.id} item={item} index={index} />)}
+
+      {isManaged ? (
+        <section className="card space-y-3 border-brand-200">
+          <h2 className="font-semibold text-slate-900">+ Add complete item to this set</h2>
+          <p className="text-sm text-slate-600">
+            New UI-added items enter as <strong>Skill drill</strong>. A complete prompt and reference answer are required; this prevents answerless placeholders from re-entering the public bank.
+          </p>
+          <form onSubmit={addItem} className="space-y-3">
+            <MarkdownLatexField label="Question prompt" value={itemPrompt} onChange={setItemPrompt} required minHeightClass="min-h-[8rem]" placeholder="Complete prompt with all context needed to answer…" />
+            <MarkdownLatexField label="Hint (optional)" help="Strategy guidance only — do not give away the answer here." value={itemHint} onChange={setItemHint} minHeightClass="min-h-[5rem]" placeholder="Strategy hint…" showPreview={Boolean(itemHint.trim())} />
+            <MarkdownLatexField label="Reference answer (required)" help="Required quality gate. Include the actual result/reasoning needed for self-check." value={itemAnswerKey} onChange={setItemAnswerKey} required minHeightClass="min-h-[7rem]" placeholder="Complete reference answer…" showPreview={Boolean(itemAnswerKey.trim())} />
+            <input type="password" className="input" placeholder="Change code (required)" value={changeCode} onChange={(e) => setChangeCode(e.target.value)} required />
+            {error ? <p className="text-sm text-red-600">{error}</p> : null}
+            {note ? <p className="text-sm text-emerald-700">{note}</p> : null}
+            <button type="submit" className="btn-primary" disabled={saving || !itemAnswerKey.trim()}>{saving ? "Saving..." : "Save complete item"}</button>
+          </form>
+        </section>
+      ) : (
+        <section className="card space-y-3">
+          <h2 className="font-semibold">Want another set like this?</h2>
+          <p className="text-sm text-slate-600">Go back to Practice → this subject → use <strong>+ Add generated practice set</strong>. New content should include a complete answer and explanation before publication.</p>
+          <ChangePanel mode="questionnaire" label="+ Add generated practice set" defaultSubject={quiz.subject} folderArea="practice" spaceKey={quiz.subject} />
+        </section>
+      )}
+    </div>
+  );
 }
