@@ -28,6 +28,7 @@ import { recoveredApItemsBatch4CD } from "@/data/ap-question-recovery-batch-4cd"
 import { recoveredApItemsBatch4EMcq } from "@/data/ap-question-recovery-batch-4e-mcq";
 import { recoveredApItemsBatch4EFrq } from "@/data/ap-question-recovery-batch-4e-frq";
 import { recoveredApItemsBatch4EPlus } from "@/data/ap-question-recovery-batch-4e-plus";
+import { recoveredApItemsBatch4FinalFix } from "@/data/ap-question-recovery-batch-4-final-fix";
 import { shapeApQuestionnaires } from "@/lib/ap-exam-format";
 import { normalizeApQuestionnaire } from "@/lib/question-normalize";
 import managed from "@/data/managed-content.json";
@@ -67,6 +68,7 @@ const recoveredApItems = {
   ...recoveredApItemsBatch4EMcq,
   ...recoveredApItemsBatch4EFrq,
   ...recoveredApItemsBatch4EPlus,
+  ...recoveredApItemsBatch4FinalFix,
 };
 
 export const rawQuestionnaires: Questionnaire[] = shapedQuestionnaires.map((set) => ({
