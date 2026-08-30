@@ -24,6 +24,10 @@ function compact(text?: string): string {
   return (text || "").replace(/\s+/g, " ").trim();
 }
 
+function wordCount(text?: string): number {
+  return compact(text).split(/\s+/).filter(Boolean).length;
+}
+
 function validChoiceIndex(choices: string[] | undefined, value: number | undefined): value is number {
   return Boolean(choices?.length && Number.isInteger(value) && value! >= 0 && value! < choices!.length);
 }
@@ -45,9 +49,7 @@ function responseModeForAp(item: QuestionnaireItem): ResponseMode {
   if (item.responseMode) return item.responseMode;
   if (item.format === "mcq") return "single_choice";
   const section = `${item.examSection || ""} ${item.prompt}`.toLowerCase();
-  if (/dbq|long essay|literary argument|synthesis|rhetorical analysis|poetry analysis|prose fiction/.test(section)) {
-    return "essay";
-  }
+  if (/dbq|long essay|literary argument|synthesis|rhetorical analysis|poetry analysis|prose fiction/.test(section)) return "essay";
   if (/short-answer|short frq|conceptual analysis/.test(section)) return "short_response";
   return "extended_response";
 }
@@ -89,16 +91,10 @@ function rubricFromAp(item: QuestionnaireItem, reference?: string): string[] | u
   return undefined;
 }
 
-/**
- * Every legacy AP item goes through this function before public display.
- * We never invent an unknown MCQ key: an unresolved selected-response item is quarantined (null).
- * Legacy constructed-response items can remain as clearly labeled skill drills when their hints/steps
- * support a defensible reference response; only explicitly authored exam_authentic items retain that label.
- */
+/** Every historical AP item is normalized before public display. Unknown MCQ keys are never invented. */
 export function normalizeApItem(item: QuestionnaireItem): QuestionnaireItem | null {
   const mcqAnswer = inferMcqIndex(item);
   if (item.format === "mcq" && !validChoiceIndex(item.choices, mcqAnswer)) return null;
-
   const reference = referenceFromAp(item, mcqAnswer);
   if (!reference) return null;
 
@@ -109,7 +105,7 @@ export function normalizeApItem(item: QuestionnaireItem): QuestionnaireItem | nu
     item.rationale?.trim() ||
     (item.format === "mcq"
       ? `${reference}${item.hints?.length ? ` ${item.hints.join(" ")}` : ""}`
-      : `A full-credit response should satisfy the reference answer and the listed scoring criteria.`);
+      : "A full-credit response should satisfy the reference answer and the listed scoring criteria.");
 
   return {
     ...item,
@@ -123,9 +119,7 @@ export function normalizeApItem(item: QuestionnaireItem): QuestionnaireItem | nu
 }
 
 export function normalizeApQuestionnaire(set: Questionnaire): Questionnaire | null {
-  const items = (set.items || [])
-    .map(normalizeApItem)
-    .filter((item): item is QuestionnaireItem => Boolean(item));
+  const items = (set.items || []).map(normalizeApItem).filter((item): item is QuestionnaireItem => Boolean(item));
   if (!items.length) return null;
   const authenticity: AssessmentAuthenticity =
     set.authenticity === "exam_authentic" && items.every((item) => item.authenticity === "exam_authentic")
@@ -171,7 +165,10 @@ function defaultEnglishGuide(mode: ResponseMode): string[] | undefined {
     ];
   }
   if (mode === "sentence_build") {
-    return ["Builds a grammatical sentence that preserves the intended meaning."];
+    return [
+      "Builds a grammatical sentence with complete required elements.",
+      "Preserves the intended meaning and logical word order.",
+    ];
   }
   if (mode === "spoken") {
     return [
@@ -197,25 +194,50 @@ function modelEnglishAnswer(q: EnglishQuestionLike, mode: ResponseMode): string 
   return undefined;
 }
 
-/**
- * Normalizes every SAT/TOEFL legacy item. Current productive TOEFL task names are converted to their
- * real response mode instead of remaining fake MCQs. The old correct option becomes an original model
- * response when one exists; the choices are retained only for historical data compatibility and are not
- * rendered by productive-response UI.
- */
-export function normalizeEnglishQuestion<T extends EnglishQuestionLike>(
-  exam: "sat" | "toefl",
-  source: T
-): T {
+const SAT_RW = new Set(["Information and Ideas", "Craft and Structure", "Expression of Ideas", "Standard English Conventions"]);
+const SAT_MATH = new Set(["Algebra", "Advanced Math", "Problem-Solving and Data Analysis", "Geometry and Trigonometry"]);
+const TOEFL_CURRENT = new Set([
+  "Complete the Words",
+  "Read in Daily Life",
+  "Read an Academic Passage",
+  "Listen and Choose a Response",
+  "Listen to a Conversation",
+  "Listen to an Announcement",
+  "Listen to an Academic Talk",
+  "Build a Sentence",
+  "Write an Email",
+  "Write for an Academic Discussion",
+  "Listen and Repeat",
+  "Take an Interview",
+]);
+
+function canKeepExamAuthentic(exam: "sat" | "toefl", q: EnglishQuestionLike, mode: ResponseMode, model?: string, guide?: string[]): boolean {
+  if (q.authenticity !== "exam_authentic") return false;
+  if (!compact(q.prompt) || !compact(q.explanation || model)) return false;
+  if (exam === "sat") {
+    if (!SAT_RW.has(q.skill) && !SAT_MATH.has(q.skill)) return false;
+    if (SAT_RW.has(q.skill) && (wordCount(q.passage) < 20 || wordCount(q.passage) > 180)) return false;
+    if (mode === "single_choice" && (!validChoiceIndex(q.choices, q.answer) || q.choices.length !== 4)) return false;
+    return true;
+  }
+  const task = q.taskType || q.skill;
+  if (!TOEFL_CURRENT.has(task)) return false;
+  if (wordCount(`${q.passage || ""} ${q.prompt}`) < 12) return false;
+  const productive = !["single_choice", "student_produced"].includes(mode);
+  if (productive && (!model || !guide || guide.length < 2)) return false;
+  if (!productive && !validChoiceIndex(q.choices, q.answer)) return false;
+  return true;
+}
+
+/** Convert every English legacy item to a truthful response mode and authenticity label. */
+export function normalizeEnglishQuestion<T extends EnglishQuestionLike>(exam: "sat" | "toefl", source: T): T {
   const taskType = source.taskType || source.skill;
   const responseMode = englishResponseMode(exam, source);
   const referenceAnswer = modelEnglishAnswer(source, responseMode);
   const scoringGuide = source.scoringGuide?.length ? source.scoringGuide : defaultEnglishGuide(responseMode);
-  const productive = !["single_choice", "student_produced"].includes(responseMode);
-  const authenticity: AssessmentAuthenticity =
-    source.authenticity === "exam_authentic" && (!productive || Boolean(referenceAnswer && scoringGuide?.length))
-      ? "exam_authentic"
-      : "skill_drill";
+  const authenticity: AssessmentAuthenticity = canKeepExamAuthentic(exam, source, responseMode, referenceAnswer, scoringGuide)
+    ? "exam_authentic"
+    : "skill_drill";
 
   return {
     ...source,
@@ -224,9 +246,16 @@ export function normalizeEnglishQuestion<T extends EnglishQuestionLike>(
     authenticity,
     referenceAnswer,
     scoringGuide,
-    explanation:
-      source.explanation?.trim() ||
-      referenceAnswer ||
-      "Review the task requirements and compare your response with the reference criteria.",
+    explanation: source.explanation?.trim() || referenceAnswer || "Compare the response with the task requirements and scoring criteria.",
   };
+}
+
+/** Public-bank gate: malformed historical entries are quarantined rather than shown with invented answers. */
+export function isPublicReadyEnglishQuestion(q: EnglishQuestionLike): boolean {
+  if (!compact(q.id) || !compact(q.prompt) || !compact(q.skill)) return false;
+  const mode = q.responseMode || "single_choice";
+  if (mode === "single_choice") {
+    return validChoiceIndex(q.choices, q.answer) && q.choices.length >= 2 && Boolean(compact(q.explanation));
+  }
+  return Boolean(compact(q.referenceAnswer) && q.scoringGuide?.length && compact(q.explanation));
 }
