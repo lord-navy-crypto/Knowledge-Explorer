@@ -1,29 +1,30 @@
 "use client";
 
-import UploadAndShow from "@/components/UploadAndShow";
+import dynamic from "next/dynamic";
+import { useState } from "react";
+
+const UploadAndShow = dynamic(() => import("@/components/UploadAndShow"), {
+  ssr: false,
+  loading: () => (
+    <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-500">
+      Loading files & editor…
+    </div>
+  ),
+});
 
 type AlsoShow = Array<
   "concept" | "topic" | "formula" | "document" | "member" | "folder" | "subject" | "questionnaire"
 >;
 
 type Props = {
-  /** Window title shown in the chrome bar */
   title?: string;
-  /** Shared site storage area key */
   folderArea: string;
-  /** Isolated space (subject name, slug, folder:id, _root) */
   spaceKey?: string;
   spaceBasePath?: string;
   defaultSubject?: string;
-  /** Collapse shared uploads by default */
   collapsedByDefault?: boolean;
   allowPublicContributions?: boolean;
-  /**
-   * Extra add actions for this page (topic, concept, formula, nested folder, subject…).
-   * Upload file is always available; include "document" for text documents.
-   */
   alsoShow?: AlsoShow;
-  /** Files/images/documents only — no concept/formula/practice in this panel. */
   mediaOnly?: boolean;
   onSubjectsChange?: (subjects: string[]) => void;
   onQuestionnairesChange?: (quizzes: unknown[]) => void;
@@ -31,8 +32,10 @@ type Props = {
 };
 
 /**
- * In-page shared media panel (scrolls with the page).
- * Optimized for browsing/downloading files; upload controls stay the same.
+ * Lightweight shell for the page media/editor panel.
+ * The heavy upload/editor implementation lives in a separate client chunk and is
+ * not requested until the panel is actually opened. This keeps browsing/navigation
+ * pages fast while preserving the full editor when a user asks for it.
  */
 export default function UnifiedMediaFrame({
   title = "Pictures, documents & files",
@@ -48,9 +51,9 @@ export default function UnifiedMediaFrame({
   onQuestionnairesChange,
   className = "",
 }: Props) {
+  const [open, setOpen] = useState(!collapsedByDefault);
   const mediaOnly =
     mediaOnlyProp ?? (folderArea === "ap-subject" || folderArea === "past-papers");
-  // Every page panel can create nested file folders (AP, Academic, Tools, Code, Forum…).
   const extras = mediaOnly
     ? (["folder", "document"] as AlsoShow)
     : (Array.from(new Set([...alsoShow, "folder", "document"])) as AlsoShow);
@@ -67,26 +70,37 @@ export default function UnifiedMediaFrame({
           <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
         </div>
         <p className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-800">{title}</p>
-        <span className="shrink-0 text-[10px] font-medium uppercase tracking-wide text-slate-400">
-          This page
-        </span>
+        <button
+          type="button"
+          onClick={() => setOpen((value) => !value)}
+          className="shrink-0 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+          aria-expanded={open}
+        >
+          {open ? "Hide" : "Open files"}
+        </button>
       </div>
 
-      <div className="p-3 md:p-4">
-        <UploadAndShow
-          title="Files"
-          folderArea={folderArea}
-          spaceKey={spaceKey}
-          spaceBasePath={spaceBasePath}
-          defaultSubject={defaultSubject}
-          collapsedByDefault={collapsedByDefault}
-          allowPublicContributions={allowPublicContributions}
-          alsoShow={extras}
-          mediaOnly={mediaOnly}
-          onSubjectsChange={onSubjectsChange}
-          onQuestionnairesChange={onQuestionnairesChange}
-        />
-      </div>
+      {open ? (
+        <div className="p-3 md:p-4">
+          <UploadAndShow
+            title="Files"
+            folderArea={folderArea}
+            spaceKey={spaceKey}
+            spaceBasePath={spaceBasePath}
+            defaultSubject={defaultSubject}
+            collapsedByDefault={false}
+            allowPublicContributions={allowPublicContributions}
+            alsoShow={extras}
+            mediaOnly={mediaOnly}
+            onSubjectsChange={onSubjectsChange}
+            onQuestionnairesChange={onQuestionnairesChange}
+          />
+        </div>
+      ) : (
+        <div className="px-4 py-3 text-sm text-slate-500">
+          Files and editing tools load only when opened.
+        </div>
+      )}
     </section>
   );
 }

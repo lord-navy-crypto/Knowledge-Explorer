@@ -1,21 +1,29 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import FrqPackCard from "@/components/FrqPackCard";
 import OfficialResourceLinks from "@/components/OfficialResourceLinks";
 import RichContent from "@/components/RichContent";
-import UnifiedAddContent from "@/components/UnifiedAddContent";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
-import ResourceEditor from "@/components/ResourceEditor";
 import { useEditorMode } from "@/components/EditorModeProvider";
 import { useSiteDialog } from "@/components/SiteDialog";
 import { getSubjectBySlug } from "@/data/ap-catalog";
 import { getApSubjectOfficial } from "@/data/official-resources";
 import type { ManagedContent, ManagedContentItem } from "@/lib/managed-types";
 import { canonicalizeSubjectId, subjectIdsMatch } from "@/lib/managed-types";
+
+const UnifiedAddContent = dynamic(() => import("@/components/UnifiedAddContent"), {
+  ssr: false,
+  loading: () => <span className="text-sm text-slate-500">Loading editor…</span>,
+});
+const ResourceEditor = dynamic(() => import("@/components/ResourceEditor"), {
+  ssr: false,
+  loading: () => null,
+});
 
 const sectionConfig = [
   { key: "concept", label: "Concepts", icon: "◇" },
@@ -48,11 +56,14 @@ function SubjectWorkspaceContent() {
   const [actionError, setActionError] = useState("");
 
   const refresh = useCallback(() => {
-    fetch("/api/edit", { cache: "no-store" })
+    fetch(
+      `/api/managed-study?view=subject-content&subject=${encodeURIComponent(params.subject)}`,
+      { cache: "no-store" }
+    )
       .then((response) => response.json())
       .then(setManaged)
       .catch(() => undefined);
-  }, []);
+  }, [params.subject]);
 
   useEffect(() => {
     refresh();
@@ -160,7 +171,7 @@ function SubjectWorkspaceContent() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Delete failed");
-      setManaged(data.content || {});
+      refresh();
     } catch (error) {
       setActionError(error instanceof Error ? error.message : "Delete failed");
     }
@@ -193,12 +204,8 @@ function SubjectWorkspaceContent() {
   const hrefFor = (key: string) => {
     if (key === "concept") return `/concepts?subject=${encodeURIComponent(subjectName)}`;
     if (key === "formula") return `/formulas?subject=${encodeURIComponent(subjectName)}`;
-    if (key === "practice") {
-      return `/practice?subject=${encodeURIComponent(subjectName)}`;
-    }
-    if (key === "hints") {
-      return `/hints?subject=${encodeURIComponent(subjectName)}&apTask=advice`;
-    }
+    if (key === "practice") return `/practice?subject=${encodeURIComponent(subjectName)}`;
+    if (key === "hints") return `/hints?subject=${encodeURIComponent(subjectName)}&apTask=advice`;
     return `#${key}`;
   };
 
@@ -218,16 +225,11 @@ function SubjectWorkspaceContent() {
       </section>
 
       <OfficialResourceLinks block={getApSubjectOfficial(params.subject, subjectName)} />
-
       {isStatistics ? <FrqPackCard /> : null}
 
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {sectionConfig.map((section) => (
-          <Link
-            key={section.key}
-            href={hrefFor(section.key)}
-            className="card-hover flex items-center gap-4"
-          >
+          <Link key={section.key} href={hrefFor(section.key)} className="card-hover flex items-center gap-4">
             <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-xl font-bold text-brand-700">
               {section.icon}
             </span>
@@ -261,6 +263,7 @@ function SubjectWorkspaceContent() {
           spaceKey={subjectName}
           defaultSubject={subjectName}
           alsoShow={["document", "folder"]}
+          collapsedByDefault
         />
       </section>
 
@@ -287,9 +290,7 @@ function SubjectWorkspaceContent() {
           >
             <option value="all">All types</option>
             {["concept", "formula", "practice"].map((value) => (
-              <option key={value} value={value}>
-                {value}
-              </option>
+              <option key={value} value={value}>{value}</option>
             ))}
           </select>
         </div>
@@ -307,7 +308,7 @@ function SubjectWorkspaceContent() {
                     <ResourceEditor
                       target="content_item"
                       item={item}
-                      onSaved={(content) => setManaged(content as ManagedContent)}
+                      onSaved={() => refresh()}
                     />
                     <button
                       type="button"
@@ -341,15 +342,14 @@ function SubjectWorkspaceContent() {
         <div>
           <h2 className="font-semibold text-slate-900">Add content for this subject</h2>
           <p className="mt-1 text-sm text-slate-500">
-            Editors can publish concepts, formulas, and practice here. Use the storage panel for
-            documents and files.
+            Editors can publish concepts, formulas, and practice here. Use the storage panel for documents and files.
           </p>
         </div>
-        <UnifiedAddContent
-          subjectId={managedSubjectId}
-          subjectName={subjectName}
-          onSaved={refresh}
-        />
+        {editMode ? (
+          <UnifiedAddContent subjectId={managedSubjectId} subjectName={subjectName} onSaved={refresh} />
+        ) : (
+          <span className="text-xs text-slate-400">Editor tools load only in edit mode.</span>
+        )}
       </section>
       {dialog}
     </div>
