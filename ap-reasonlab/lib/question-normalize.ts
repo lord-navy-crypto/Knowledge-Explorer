@@ -32,7 +32,7 @@ function inferMcqIndex(item: QuestionnaireItem): number | undefined {
   if (validChoiceIndex(item.choices, item.mcqAnswer)) return item.mcqAnswer;
   if (!item.choices?.length || !item.answerKey?.trim()) return undefined;
   const key = compact(item.answerKey);
-  const letter = key.match(/^\(?([A-D])\)?(?:[.):-]?\s*/i)?.[1];
+  const letter = key.match(/^\(?([A-D])\)?(?:[.):\-]\s*)?/i)?.[1];
   if (letter) {
     const index = letter.toUpperCase().charCodeAt(0) - 65;
     if (index >= 0 && index < item.choices.length) return index;
