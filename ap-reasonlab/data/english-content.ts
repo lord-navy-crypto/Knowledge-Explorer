@@ -10,6 +10,7 @@ import { authenticSatQuestions } from "./english-questions-authentic-sat";
 import { coreSatQuestions, coreToeflQuestions } from "./english-questions-core";
 import { withOfficialSkill } from "@/lib/english-exam-format";
 import { shapeOfficialEnglishQuestion } from "@/lib/english-official-shape";
+import type { AssessmentAuthenticity, ResponseMode } from "@/lib/types";
 
 export type EnglishPracticeQuestion = {
   id: string;
@@ -20,6 +21,16 @@ export type EnglishPracticeQuestion = {
   explanation: string;
   /** Short stimulus: Digital SAT passage, TOEFL notice, transcript, email scenario. */
   passage?: string;
+  /** Current-exam-shaped original item versus intentionally simplified skill practice. */
+  authenticity?: AssessmentAuthenticity;
+  /** What the real task asks the learner to produce; legacy MCQ strategy drills remain single_choice. */
+  responseMode?: ResponseMode;
+  /** Original model response/reference answer for productive TOEFL tasks. */
+  referenceAnswer?: string;
+  /** Human-readable criteria used to judge a speaking/writing response. */
+  scoringGuide?: string[];
+  /** Current official task family, e.g. Read an Academic Passage or Take an Interview. */
+  taskType?: string;
 };
 
 function withExamSkills(
@@ -36,14 +47,14 @@ export const englishExamAreas = [
     title: "TOEFL",
     icon: "T",
     description:
-      "ETS TOEFL iBT task types (Reading, Listening, Writing, Speaking) plus an in-site bank of original items. Upload articles, scripts, prompts, and dialogues.",
+      "Current TOEFL iBT task families plus an in-site bank of original items. Exam-authentic tasks are separated from simplified strategy drills.",
   },
   {
     href: "/english/sat",
     title: "SAT",
     icon: "S",
     description:
-      "Digital SAT folders (Reading and Writing domains + Math) plus 120+ original short-passage MCQs.",
+      "Digital SAT Reading and Writing domains + Math, with original short-passage, data, and student-produced-response practice.",
   },
 ] as const;
 
@@ -145,4 +156,3 @@ export const satQuestions: EnglishPracticeQuestion[] = withExamSkills("sat", [
   ...coreSatQuestions,
   ...extraSatQuestions,
 ]);
-
