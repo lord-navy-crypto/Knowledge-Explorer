@@ -20,6 +20,7 @@ import { apPracticeFullStemQuestionnaires } from "@/data/ap-practice-full-stems"
 import { recoveredApItemsBatch1 } from "@/data/ap-question-recovery-batch-1";
 import { recoveredApItemsBatch2 } from "@/data/ap-question-recovery-batch-2";
 import { recoveredApItemsBatch2Fix } from "@/data/ap-question-recovery-batch-2-fix";
+import { recoveredApItemsBatch3 } from "@/data/ap-question-recovery-batch-3";
 import { shapeApQuestionnaires } from "@/lib/ap-exam-format";
 import { normalizeApQuestionnaire } from "@/lib/question-normalize";
 import managed from "@/data/managed-content.json";
@@ -64,6 +65,7 @@ const recoveredApItems = {
   ...recoveredApItemsBatch1,
   ...recoveredApItemsBatch2,
   ...recoveredApItemsBatch2Fix,
+  ...recoveredApItemsBatch3,
 };
 
 export const rawQuestionnaires: Questionnaire[] = shapedQuestionnaires.map((set) => ({
