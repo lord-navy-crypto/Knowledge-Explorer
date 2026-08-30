@@ -215,7 +215,7 @@ export default function ApHubPage() {
               >
                 {favorites.includes(subject.slug) ? "★" : "☆"}
               </button>
-              <Link href={`/ap/${subject.slug}`} className="block pr-10">
+              <Link href={`/ap/${subject.slug}`} prefetch={false} className="block pr-10">
                 <div className="flex items-start gap-3">
                   <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-xl font-bold text-brand-700">
                     {subject.icon}
