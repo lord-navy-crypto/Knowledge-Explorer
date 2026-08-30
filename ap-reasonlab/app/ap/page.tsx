@@ -13,7 +13,6 @@ import type { ManagedContent } from "@/lib/managed-types";
 
 const groups: Array<"All" | SubjectGroup> = ["All", "STEM", "Social Science", "Humanities"];
 
-/** Never allow an empty built-in list — rebuild from names if the catalog export fails. */
 function builtInCatalog(): SubjectDefinition[] {
   if (Array.isArray(AP_CATALOG) && AP_CATALOG.length > 0) return AP_CATALOG;
   return AP_SUBJECTS.map((name, index) => ({
@@ -55,7 +54,7 @@ export default function ApHubPage() {
       /* ignore corrupt local favorites/recent */
     }
 
-    fetch("/api/edit", { cache: "no-store" })
+    fetch("/api/managed-study?view=subjects", { cache: "no-store" })
       .then((response) => response.json())
       .then((data: Partial<ManagedContent>) => {
         const rows = Array.isArray(data.subjects) ? data.subjects : [];
