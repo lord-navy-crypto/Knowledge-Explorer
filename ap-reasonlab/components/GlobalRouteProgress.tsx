@@ -3,24 +3,24 @@
 import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
-function isInternalNavigationClick(event: MouseEvent) {
-  if (event.defaultPrevented || event.button !== 0) return false;
-  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return false;
+function internalNavigationTarget(event: MouseEvent): string | null {
+  if (event.defaultPrevented || event.button !== 0) return null;
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return null;
 
   const target = event.target as Element | null;
   const anchor = target?.closest("a[href]") as HTMLAnchorElement | null;
-  if (!anchor) return false;
-  if (anchor.target && anchor.target !== "_self") return false;
-  if (anchor.hasAttribute("download")) return false;
+  if (!anchor) return null;
+  if (anchor.target && anchor.target !== "_self") return null;
+  if (anchor.hasAttribute("download")) return null;
 
   let next: URL;
   try {
     next = new URL(anchor.href, window.location.href);
   } catch {
-    return false;
+    return null;
   }
 
-  if (next.origin !== window.location.origin) return false;
+  if (next.origin !== window.location.origin) return null;
 
   const current = new URL(window.location.href);
   const onlyHashChanged =
@@ -28,12 +28,12 @@ function isInternalNavigationClick(event: MouseEvent) {
     next.search === current.search &&
     next.hash !== current.hash;
 
-  if (onlyHashChanged) return false;
+  if (onlyHashChanged) return null;
   if (next.pathname === current.pathname && next.search === current.search && next.hash === current.hash) {
-    return false;
+    return null;
   }
 
-  return true;
+  return next.href;
 }
 
 export default function GlobalRouteProgress() {
@@ -45,6 +45,8 @@ export default function GlobalRouteProgress() {
   const labelRef = useRef<HTMLSpanElement>(null);
   const intervalRef = useRef<number | null>(null);
   const hideRef = useRef<number | null>(null);
+  const recoveryRef = useRef<number | null>(null);
+  const pendingHrefRef = useRef<string | null>(null);
   const progressRef = useRef(0);
   const mountedRef = useRef(false);
 
@@ -58,6 +60,10 @@ export default function GlobalRouteProgress() {
         window.clearTimeout(hideRef.current);
         hideRef.current = null;
       }
+      if (recoveryRef.current !== null) {
+        window.clearTimeout(recoveryRef.current);
+        recoveryRef.current = null;
+      }
     };
 
     const render = (value: number) => {
@@ -67,8 +73,9 @@ export default function GlobalRouteProgress() {
       if (labelRef.current) labelRef.current.textContent = `Loading ${value}%`;
     };
 
-    const start = () => {
+    const start = (targetHref?: string | null) => {
       clearTimers();
+      pendingHrefRef.current = targetHref || null;
       render(7);
       intervalRef.current = window.setInterval(() => {
         const current = progressRef.current;
@@ -84,19 +91,36 @@ export default function GlobalRouteProgress() {
                   : current;
         render(Math.min(92, next));
       }, 170);
+
+      // If Next's client router genuinely stalls, do not leave the UI parked at
+      // 92% forever. Retry the exact same internal destination as a normal
+      // document navigation. Successful SPA navigations clear this timer below.
+      if (targetHref) {
+        recoveryRef.current = window.setTimeout(() => {
+          const pending = pendingHrefRef.current;
+          if (!pending) return;
+          const current = window.location.href;
+          if (current !== pending) {
+            if (labelRef.current) labelRef.current.textContent = "Retrying page…";
+            window.location.assign(pending);
+          }
+        }, 6000);
+      }
     };
 
     const onClick = (event: MouseEvent) => {
-      if (isInternalNavigationClick(event)) start();
+      const targetHref = internalNavigationTarget(event);
+      if (targetHref) start(targetHref);
     };
 
-    const onPopState = () => start();
+    const onPopState = () => start(null);
 
     document.addEventListener("click", onClick, true);
     window.addEventListener("popstate", onPopState);
 
     return () => {
       clearTimers();
+      pendingHrefRef.current = null;
       document.removeEventListener("click", onClick, true);
       window.removeEventListener("popstate", onPopState);
     };
@@ -112,6 +136,11 @@ export default function GlobalRouteProgress() {
       window.clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
+    if (recoveryRef.current !== null) {
+      window.clearTimeout(recoveryRef.current);
+      recoveryRef.current = null;
+    }
+    pendingHrefRef.current = null;
 
     progressRef.current = 100;
     if (barRef.current) barRef.current.style.width = "100%";
