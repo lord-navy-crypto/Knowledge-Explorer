@@ -91,6 +91,13 @@ function rubricFromAp(item: QuestionnaireItem, reference?: string): string[] | u
   return undefined;
 }
 
+function alignedBlankAnswers(item: QuestionnaireItem): string[] | undefined {
+  if (!item.blankAnswers?.length) return undefined;
+  if (!item.blankSteps?.length) return undefined;
+  if (item.blankAnswers.length !== item.blankSteps.length) return undefined;
+  return item.blankAnswers;
+}
+
 /** Every historical AP item is normalized before public display. Unknown MCQ keys are never invented. */
 export function normalizeApItem(item: QuestionnaireItem): QuestionnaireItem | null {
   const mcqAnswer = inferMcqIndex(item);
@@ -112,6 +119,7 @@ export function normalizeApItem(item: QuestionnaireItem): QuestionnaireItem | nu
     authenticity,
     responseMode,
     mcqAnswer,
+    blankAnswers: alignedBlankAnswers(item),
     answerKey: reference,
     rationale,
     scoringGuide,
