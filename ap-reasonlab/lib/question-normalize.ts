@@ -79,8 +79,9 @@ function rubricFromAp(item: QuestionnaireItem, reference?: string): string[] | u
   if (steps.length >= 2) {
     return steps.map((step, index) => `Point ${index + 1}: completes ${compact(step).replace(/_+/g, "the requested part")} with correct reasoning.`);
   }
-  if (item.visibleSteps?.length >= 2) {
-    return item.visibleSteps.map((step, index) => `Point ${index + 1}: ${compact(step)}`);
+  const visibleSteps = item.visibleSteps?.filter(Boolean) || [];
+  if (visibleSteps.length >= 2) {
+    return visibleSteps.map((step, index) => `Point ${index + 1}: ${compact(step)}`);
   }
   if (reference) {
     return [
