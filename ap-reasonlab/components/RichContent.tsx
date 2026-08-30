@@ -1,6 +1,6 @@
 "use client";
 
-import dynamic from "next/dynamic";
+import { lazy, Suspense } from "react";
 import { normalizeAiDialogueText, normalizeAuthoredText, stabilizeStreamingMath } from "@/lib/unicode-math";
 
 type Mode = "markdown" | "math" | "inline-math";
@@ -14,15 +14,12 @@ type Props = {
   aiDialogue?: boolean;
 };
 
-const HeavyRenderer = dynamic(() => import("@/components/RichContentRenderer"), {
-  ssr: false,
-  loading: () => null,
-});
+const HeavyRenderer = lazy(() => import("@/components/RichContentRenderer"));
 
 /**
- * Lightweight content shell. Markdown/KaTeX dependencies are split into a
- * separate chunk so navigation and card-list routes do not pay for the full
- * renderer before the page itself is interactive.
+ * Lightweight content shell. Markdown/KaTeX dependencies live in a separate
+ * chunk so navigation and card-list routes do not pay for the renderer before
+ * the page itself is interactive. Plain text stays visible while formatting loads.
  */
 export default function RichContent({
   children,
@@ -46,20 +43,14 @@ export default function RichContent({
           ? "line-clamp-4"
           : "";
 
-  // Keep useful text visible immediately while the richer renderer chunk loads.
-  // The absolutely positioned fallback is replaced as soon as HeavyRenderer mounts.
+  const fallbackClass = `${
+    mode === "math" || mode === "inline-math" ? "font-mono" : "whitespace-pre-wrap"
+  } ${clampClass} ${className}`.trim();
+
   return (
-    <div className="relative">
-      <div
-        aria-hidden="true"
-        className={`${mode === "math" || mode === "inline-math" ? "font-mono" : "whitespace-pre-wrap"} ${clampClass} ${className} text-slate-600`.trim()}
-      >
-        {text}
-      </div>
-      <div className="absolute inset-0 bg-inherit">
-        <HeavyRenderer text={text} mode={mode} className={className} clampClass={clampClass} />
-      </div>
-    </div>
+    <Suspense fallback={<div className={fallbackClass}>{text}</div>}>
+      <HeavyRenderer text={text} mode={mode} className={className} clampClass={clampClass} />
+    </Suspense>
   );
 }
 
