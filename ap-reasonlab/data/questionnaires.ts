@@ -18,16 +18,22 @@ import { apInlineQuestionnaires } from "@/data/ap-questionnaires-inline";
 import { apPracticeDrillQuestionnaires } from "@/data/ap-practice-drills";
 import { apPracticeFullStemQuestionnaires } from "@/data/ap-practice-full-stems";
 import { shapeApQuestionnaires } from "@/lib/ap-exam-format";
+import { normalizeApQuestionnaire } from "@/lib/question-normalize";
 import managed from "@/data/managed-content.json";
 
 /**
- * Generated question sets only.
- * Workflow: feed topic / sample problems to Claude or ChatGPT → get NEW items → paste here
- * OR use Practice UI (+ Add generated practice set) with a change code.
- * Do not paste College Board exam text verbatim.
+ * Generated original practice only. Do not paste College Board exam text or answer keys verbatim.
+ *
+ * IMPORTANT: Every historical source file is aggregated here and passes through TWO layers:
+ * 1) shapeApQuestionnaires — maps the item to the appropriate AP section/task family.
+ * 2) normalizeApQuestionnaire — enforces answer/reference/rubric/response-mode quality rules.
+ *
+ * An unresolved MCQ with no defensible key is quarantined instead of being shown to learners.
+ * Legacy items that are useful but not strong enough to claim current-exam fidelity remain visible
+ * only as clearly labeled Skill drills.
  */
 
-export const questionnaires: Questionnaire[] = shapeApQuestionnaires([
+export const rawQuestionnaires: Questionnaire[] = shapeApQuestionnaires([
   ...apInlineQuestionnaires,
   ...microQuestionnaires,
   ...macroQuestionnaires,
@@ -47,9 +53,19 @@ export const questionnaires: Questionnaire[] = shapeApQuestionnaires([
   ...apExamFormatAllQuestionnaires,
   ...apPracticeDrillQuestionnaires,
   ...apPracticeFullStemQuestionnaires,
-  ...(((managed as { questionnaires?: Questionnaire[] }).questionnaires ||
-    []) as Questionnaire[]),
+  ...(((managed as { questionnaires?: Questionnaire[] }).questionnaires || []) as Questionnaire[]),
 ]);
+
+export const questionnaires: Questionnaire[] = rawQuestionnaires
+  .map(normalizeApQuestionnaire)
+  .filter((set): set is Questionnaire => Boolean(set));
+
+export const apQuestionBankStats = {
+  rawSets: rawQuestionnaires.length,
+  publicSets: questionnaires.length,
+  rawItems: rawQuestionnaires.reduce((sum, set) => sum + set.items.length, 0),
+  publicItems: questionnaires.reduce((sum, set) => sum + set.items.length, 0),
+};
 
 export function getQuestionnaireById(id: string): Questionnaire | undefined {
   return questionnaires.find((q) => q.id === id);

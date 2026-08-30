@@ -10,6 +10,11 @@ import { authenticSatQuestions } from "./english-questions-authentic-sat";
 import { coreSatQuestions, coreToeflQuestions } from "./english-questions-core";
 import { withOfficialSkill } from "@/lib/english-exam-format";
 import { shapeOfficialEnglishQuestion } from "@/lib/english-official-shape";
+import {
+  isPublicReadyEnglishQuestion,
+  normalizeEnglishQuestion,
+} from "@/lib/question-normalize";
+import type { AssessmentAuthenticity, ResponseMode } from "@/lib/types";
 
 export type EnglishPracticeQuestion = {
   id: string;
@@ -20,13 +25,30 @@ export type EnglishPracticeQuestion = {
   explanation: string;
   /** Short stimulus: Digital SAT passage, TOEFL notice, transcript, email scenario. */
   passage?: string;
+  /** Current-exam-shaped original item versus intentionally simplified skill practice. */
+  authenticity?: AssessmentAuthenticity;
+  /** What the real task asks the learner to produce. */
+  responseMode?: ResponseMode;
+  /** Original model response/reference answer for productive TOEFL tasks. */
+  referenceAnswer?: string;
+  /** Human-readable criteria used to judge a speaking/writing response. */
+  scoringGuide?: string[];
+  /** Current official task family, e.g. Read an Academic Passage or Take an Interview. */
+  taskType?: string;
 };
 
 function withExamSkills(
   exam: "toefl" | "sat",
   items: EnglishPracticeQuestion[]
 ): EnglishPracticeQuestion[] {
-  return items.map((item) => shapeOfficialEnglishQuestion(exam, withOfficialSkill(exam, item)));
+  return items
+    .map((item) =>
+      normalizeEnglishQuestion(
+        exam,
+        shapeOfficialEnglishQuestion(exam, withOfficialSkill(exam, item))
+      )
+    )
+    .filter(isPublicReadyEnglishQuestion);
 }
 
 /** Exam tracks — exam-style practice questions and uploaded practice sets. */
@@ -36,14 +58,14 @@ export const englishExamAreas = [
     title: "TOEFL",
     icon: "T",
     description:
-      "ETS TOEFL iBT task types (Reading, Listening, Writing, Speaking) plus an in-site bank of original items. Upload articles, scripts, prompts, and dialogues.",
+      "Current TOEFL iBT task families plus an in-site bank of original items. Exam-style tasks are separated from simplified skill drills, and productive tasks use typed or spoken responses instead of fake MCQ scoring.",
   },
   {
     href: "/english/sat",
     title: "SAT",
     icon: "S",
     description:
-      "Digital SAT folders (Reading and Writing domains + Math) plus 120+ original short-passage MCQs.",
+      "Digital SAT Reading and Writing domains + Math, with original short-passage, data, selected-response, and student-produced-response practice.",
   },
 ] as const;
 
@@ -128,21 +150,42 @@ export const sentencePatterns = [
   { title: "Cautious academic claim", pattern: "The evidence suggests that [claim], although [uncertainty].", example: "The evidence suggests that sleep improved recall, although the study did not control diet." },
 ] as const;
 
-export const toeflQuestions: EnglishPracticeQuestion[] = withExamSkills("toefl", [
+export const rawToeflQuestions: EnglishPracticeQuestion[] = [
   ...authenticToeflQuestions,
   ...curatedToeflQuestions,
   ...curatedExtendedToeflQuestions,
   ...hardToeflQuestions,
   ...coreToeflQuestions,
   ...extraToeflQuestions,
-]);
+];
 
-export const satQuestions: EnglishPracticeQuestion[] = withExamSkills("sat", [
+export const rawSatQuestions: EnglishPracticeQuestion[] = [
   ...authenticSatQuestions,
   ...curatedSatQuestions,
   ...curatedExtendedSatQuestions,
   ...hardSatQuestions,
   ...coreSatQuestions,
   ...extraSatQuestions,
-]);
+];
 
+/** Every historical English question passes through current-format shaping + quality normalization. */
+export const toeflQuestions: EnglishPracticeQuestion[] = withExamSkills("toefl", rawToeflQuestions);
+export const satQuestions: EnglishPracticeQuestion[] = withExamSkills("sat", rawSatQuestions);
+
+export const englishQuestionBankStats = {
+  toefl: {
+    raw: rawToeflQuestions.length,
+    total: toeflQuestions.length,
+    quarantined: rawToeflQuestions.length - toeflQuestions.length,
+    examAuthentic: toeflQuestions.filter((q) => q.authenticity === "exam_authentic").length,
+    skillDrill: toeflQuestions.filter((q) => q.authenticity !== "exam_authentic").length,
+    productive: toeflQuestions.filter((q) => !["single_choice", "student_produced"].includes(q.responseMode || "single_choice")).length,
+  },
+  sat: {
+    raw: rawSatQuestions.length,
+    total: satQuestions.length,
+    quarantined: rawSatQuestions.length - satQuestions.length,
+    examAuthentic: satQuestions.filter((q) => q.authenticity === "exam_authentic").length,
+    skillDrill: satQuestions.filter((q) => q.authenticity !== "exam_authentic").length,
+  },
+};

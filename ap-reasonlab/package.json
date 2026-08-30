@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run validate:questions && next build",
     "start": "next start",
     "lint": "next lint",
     "check:ai-latex": "tsx scripts/check-ai-latex.ts",
@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "validate:english": "tsx scripts/validate-english-questions.ts",
+    "validate:questions": "tsx scripts/validate-question-bank.ts",
     "generate:english-batch3": "tsx scripts/generate-english-batch3.ts",
     "generate:curated-extended": "tsx scripts/generate-curated-extended.ts",
     "generate:hard-english": "tsx scripts/generate-hard-english.ts",

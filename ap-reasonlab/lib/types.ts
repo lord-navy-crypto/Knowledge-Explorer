@@ -15,6 +15,24 @@ export type QuestionFormat =
   | "concept_check"
   | "open";
 
+/**
+ * exam_authentic = original practice that mirrors the current assessment task shape.
+ * skill_drill = useful focused practice, but intentionally simplified and never presented as a mock exam item.
+ */
+export type AssessmentAuthenticity = "exam_authentic" | "skill_drill";
+
+export type ResponseMode =
+  | "single_choice"
+  | "student_produced"
+  | "short_response"
+  | "extended_response"
+  | "essay"
+  | "spoken"
+  | "listen_repeat"
+  | "email"
+  | "academic_discussion"
+  | "sentence_build";
+
 export interface PracticeQuestion {
   id: string;
   subject: string;
@@ -27,6 +45,14 @@ export interface PracticeQuestion {
   examSection?: string;
   format?: QuestionFormat;
   choices?: string[];
+  authenticity?: AssessmentAuthenticity;
+  responseMode?: ResponseMode;
+  /** Complete original stimulus/data/context needed to answer the question. */
+  stimulus?: string;
+  /** Instructor-facing explanation of why the reference answer earns credit. */
+  rationale?: string;
+  /** Point-by-point rubric or response criteria for constructed responses. */
+  scoringGuide?: string[];
 }
 
 export type HintLevel = 1 | 2 | 3;
@@ -47,16 +73,26 @@ export interface QuestionnaireItem {
   hints: string[];
   conceptId?: string;
   conceptIntro?: string;
-  /** Future: 1 = intro, 2 = standard, 3 = challenge */
+  /** 1 = intro, 2 = standard, 3 = challenge */
   difficultyTier?: DifficultyTier;
   /** Official exam section label (College Board format). */
   examSection?: string;
-  /** Reveal after attempt — sample / instructor reference, not College Board keys */
+  /** Reveal after attempt — original reference answer, never copied official keys. */
   answerKey?: string;
   /** MCQ: 0-based index into choices */
   mcqAnswer?: number;
   /** FRQ: sample fills aligned with blankSteps (same order) */
   blankAnswers?: string[];
+  /** Whether this is a current-exam-shaped item or a deliberately simplified drill. */
+  authenticity?: AssessmentAuthenticity;
+  /** Actual response behavior expected from the student. */
+  responseMode?: ResponseMode;
+  /** Complete passage, data description, source set, transcript, scenario, or other stimulus. */
+  stimulus?: string;
+  /** Why the answer is correct / what reasoning is expected. */
+  rationale?: string;
+  /** Point-by-point scoring criteria for FRQ/essay/open-response items. */
+  scoringGuide?: string[];
 }
 
 export interface Questionnaire {
@@ -74,6 +110,8 @@ export interface Questionnaire {
   examFormatNote?: string;
   /** Future: filter sets by tier */
   difficultyTier?: DifficultyTier;
+  /** Set-level declaration; individual items may override for mixed drill sets. */
+  authenticity?: AssessmentAuthenticity;
 }
 
 export type GuideCategory = "ap_content" | "ai_for_ap" | "study_skill";
