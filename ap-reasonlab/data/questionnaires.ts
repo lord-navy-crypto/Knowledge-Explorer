@@ -29,6 +29,7 @@ import { recoveredApItemsBatch4EMcq } from "@/data/ap-question-recovery-batch-4e
 import { recoveredApItemsBatch4EFrq } from "@/data/ap-question-recovery-batch-4e-frq";
 import { recoveredApItemsBatch4EPlus } from "@/data/ap-question-recovery-batch-4e-plus";
 import { recoveredApItemsBatch4FinalFix } from "@/data/ap-question-recovery-batch-4-final-fix";
+import { buildRecoveredApItemsBatch5 } from "@/data/ap-question-recovery-batch-5";
 import { shapeApQuestionnaires } from "@/lib/ap-exam-format";
 import { normalizeApQuestionnaire } from "@/lib/question-normalize";
 import managed from "@/data/managed-content.json";
@@ -56,7 +57,7 @@ const shapedQuestionnaires: Questionnaire[] = shapeApQuestionnaires([
   ...(((managed as { questionnaires?: Questionnaire[] }).questionnaires || []) as Questionnaire[]),
 ]);
 
-const recoveredApItems = {
+const recoveredApItemsBeforeBatch5 = {
   ...recoveredApItemsBatch1,
   ...recoveredApItemsBatch2,
   ...recoveredApItemsBatch2Fix,
@@ -69,6 +70,37 @@ const recoveredApItems = {
   ...recoveredApItemsBatch4EFrq,
   ...recoveredApItemsBatch4EPlus,
   ...recoveredApItemsBatch4FinalFix,
+};
+
+// Deliberately scan the authored source sets rather than the already-recovered bank.
+// Missing/unanswerable items are ranked ahead of merely thin public items inside the
+// Batch 5 builder. Existing recovery IDs are excluded so this batch cannot replace a
+// previously audited answer with a newly generated one.
+const batch5CandidateSets: Questionnaire[] = [
+  ...physics2Questionnaires,
+  ...statsQuestionnaires,
+  ...apPracticeFullStemQuestionnaires,
+  ...apPracticeSetB,
+  ...apPracticeSetC,
+  ...apPracticeSetD,
+  ...apCedPractice,
+  ...apPracticeExpansion,
+  ...apPracticeBySubject,
+  ...apPracticeDrillQuestionnaires,
+  ...apExamFormatAllQuestionnaires,
+  ...microQuestionnaires,
+  ...macroQuestionnaires,
+];
+
+export const apRecoveryBatch5 = buildRecoveredApItemsBatch5(
+  batch5CandidateSets,
+  new Set(Object.keys(recoveredApItemsBeforeBatch5)),
+  100
+);
+
+const recoveredApItems = {
+  ...recoveredApItemsBeforeBatch5,
+  ...apRecoveryBatch5.items,
 };
 
 export const rawQuestionnaires: Questionnaire[] = shapedQuestionnaires.map((set) => ({
@@ -85,6 +117,11 @@ export const apQuestionBankStats = {
   publicSets: questionnaires.length,
   rawItems: rawQuestionnaires.reduce((sum, set) => sum + set.items.length, 0),
   publicItems: questionnaires.reduce((sum, set) => sum + set.items.length, 0),
+  batch5: {
+    deeplyUpgraded: apRecoveryBatch5.ids.length,
+    severeMissingAnswer: apRecoveryBatch5.severeMissingAnswer,
+    severeStructural: apRecoveryBatch5.severeStructural,
+  },
 };
 
 export function getQuestionnaireById(id: string): Questionnaire | undefined {
