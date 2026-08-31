@@ -7,16 +7,13 @@ import UnifiedAiPanel from "@/components/UnifiedAiPanel";
 import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
 import EnglishPageHeader from "@/components/EnglishPageHeader";
 
-/**
- * Dedicated English AI page — same UnifiedAiPanel as the toolbox, but English-branded
- * (not a redirect into the AP-branded /hints hero).
- */
+/** Dedicated English AI workspace, separated from the former global AI Toolbox. */
 export default function EnglishAiPage() {
   return (
     <div className="space-y-8">
       <EnglishPageHeader
-        eyebrow="English · AI Tutor"
-        title="English AI"
+        eyebrow="English · AI for English"
+        title="AI for English"
         description="Grammar, Chinese ↔ English translation, writing feedback, language materials, exam strategy, and practice generators. Prefer Local AI when WebGPU is available — or use Website API / Your own API."
       />
 
@@ -24,19 +21,17 @@ export default function EnglishAiPage() {
         <Link href="/english" className="btn-secondary">
           English hub
         </Link>
-        <Link href="/hints?tool=english" className="btn-secondary">
-          Also in AI Toolbox
+        <Link href="/easy-local-ai" className="btn-secondary">
+          General Easy Local AI
         </Link>
       </section>
 
       <LocalAiRecommendation />
-
       <EthicsBanner />
-
       <UnifiedAiPanel defaultCategory="english" />
 
       <UnifiedMediaFrame
-        title="English AI · pictures, documents & files"
+        title="AI for English · pictures, documents & files"
         folderArea="english"
         spaceKey="ai"
         alsoShow={["document", "folder"]}
