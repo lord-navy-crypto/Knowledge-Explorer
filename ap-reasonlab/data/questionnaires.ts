@@ -1,4 +1,4 @@
-import { Questionnaire } from "@/lib/types";
+import { Questionnaire, QuestionnaireItem } from "@/lib/types";
 import { macroQuestionnaires } from "@/data/ap-macro";
 import { microQuestionnaires } from "@/data/ap-micro";
 import { physics2Questionnaires } from "@/data/ap-physics2";
@@ -72,11 +72,29 @@ const recoveredApItemsBeforeBatch5 = {
   ...recoveredApItemsBatch4FinalFix,
 };
 
-// Scan the complete shaped legacy bank, but Batch 5 itself only accepts supported
-// quantitative/social-science subjects and severe candidates. Existing recovery IDs
-// are excluded so this batch cannot replace any previously audited answer.
+function hasSourceDefensibleAnswer(item: QuestionnaireItem): boolean {
+  if (item.answerKey?.trim()) return true;
+  if (item.blankAnswers?.some((answer) => answer.trim())) return true;
+  return Boolean(
+    item.format === "mcq" &&
+      item.choices?.length &&
+      Number.isInteger(item.mcqAnswer) &&
+      Number(item.mcqAnswer) >= 0 &&
+      Number(item.mcqAnswer) < item.choices.length
+  );
+}
+
+// Build two non-overlapping views so genuinely missing/undefended answers are always
+// considered before structural-only defects, regardless of source-file ordering.
+const batch5MissingAnswerSets: Questionnaire[] = shapedQuestionnaires
+  .map((set) => ({ ...set, items: set.items.filter((item) => !hasSourceDefensibleAnswer(item)) }))
+  .filter((set) => set.items.length > 0);
+const batch5StructuralSets: Questionnaire[] = shapedQuestionnaires
+  .map((set) => ({ ...set, items: set.items.filter(hasSourceDefensibleAnswer) }))
+  .filter((set) => set.items.length > 0);
+
 export const apRecoveryBatch5 = buildRecoveredApItemsBatch5(
-  shapedQuestionnaires,
+  [...batch5MissingAnswerSets, ...batch5StructuralSets],
   new Set(Object.keys(recoveredApItemsBeforeBatch5)),
   100
 );
