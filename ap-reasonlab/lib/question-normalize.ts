@@ -196,10 +196,10 @@ function defaultEnglishGuide(mode: ResponseMode): string[] | undefined {
 }
 
 function modelEnglishAnswer(q: EnglishQuestionLike, mode: ResponseMode): string | undefined {
-  if (q.referenceAnswer?.trim()) return q.referenceAnswer.trim();
+  if (typeof q.referenceAnswer === "string" && q.referenceAnswer.trim()) return q.referenceAnswer.trim();
   if (mode === "listen_repeat") return compact(q.passage || q.prompt);
   if (validChoiceIndex(q.choices, q.answer)) return q.choices[q.answer].trim();
-  if (q.explanation?.trim()) return q.explanation.trim();
+  if (typeof q.explanation === "string" && q.explanation.trim()) return q.explanation.trim();
   return undefined;
 }
 
@@ -243,7 +243,7 @@ export function normalizeEnglishQuestion<T extends EnglishQuestionLike>(exam: "s
   const taskType = source.taskType || source.skill;
   const responseMode = englishResponseMode(exam, source);
   const referenceAnswer = modelEnglishAnswer(source, responseMode);
-  const scoringGuide = source.scoringGuide?.length ? source.scoringGuide : defaultEnglishGuide(responseMode);
+  const scoringGuide = Array.isArray(source.scoringGuide) && source.scoringGuide.length ? source.scoringGuide : defaultEnglishGuide(responseMode);
   const authenticity: AssessmentAuthenticity = canKeepExamAuthentic(exam, source, responseMode, referenceAnswer, scoringGuide)
     ? "exam_authentic"
     : "skill_drill";
@@ -255,7 +255,7 @@ export function normalizeEnglishQuestion<T extends EnglishQuestionLike>(exam: "s
     authenticity,
     referenceAnswer,
     scoringGuide,
-    explanation: source.explanation?.trim() || referenceAnswer || "Compare the response with the task requirements and scoring criteria.",
+    explanation: (typeof source.explanation === "string" && source.explanation.trim()) || referenceAnswer || "Compare the response with the task requirements and scoring criteria.",
   };
 }
 
