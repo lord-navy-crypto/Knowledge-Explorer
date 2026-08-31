@@ -13,6 +13,7 @@ import { recoveredEnglishItemsBatch2A } from "./english-question-recovery-batch-
 import { recoveredEnglishItemsBatch2B } from "./english-question-recovery-batch-2b";
 import { recoveredEnglishItemsBatch2BFix } from "./english-question-recovery-batch-2b-fix";
 import { recoveredEnglishItemsBatch3 } from "./english-question-recovery-batch-3";
+import { recoveredEnglishProductiveFix } from "./english-question-recovery-productive-fix";
 import { withOfficialSkill } from "@/lib/english-exam-format";
 import { shapeOfficialEnglishQuestion } from "@/lib/english-official-shape";
 import {
@@ -48,6 +49,7 @@ const recoveredEnglishItems: Record<string, EnglishPracticeQuestion> = {
   ...recoveredEnglishItemsBatch2B,
   ...recoveredEnglishItemsBatch2BFix,
   ...recoveredEnglishItemsBatch3,
+  ...recoveredEnglishProductiveFix,
 };
 
 function withExamSkills(
