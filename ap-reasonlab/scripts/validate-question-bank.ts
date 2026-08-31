@@ -1,4 +1,4 @@
-import { questionnaires, rawQuestionnaires, apQuestionBankStats, apRecoveryBatch5, apRecoveryBatch6, apRecoveryBatch7, apRecoveryBatch8, apRecoveryBatch9 } from "@/data/questionnaires";
+import { questionnaires, rawQuestionnaires, apQuestionBankStats, apRecoveryBatch5, apRecoveryBatch6, apRecoveryBatch7, apRecoveryBatch8, apRecoveryBatch9, apRecoveryBatch10 } from "@/data/questionnaires";
 import {
   toeflQuestions,
   satQuestions,
@@ -49,7 +49,7 @@ console.log("\nQUESTION BANK QUALITY REPORT");
 console.log("============================");
 console.log(`AP sets: ${apQuestionBankStats.publicSets}/${apQuestionBankStats.rawSets} public`);
 console.log(`AP items: ${publicApItems}/${rawApItems} public; ${quarantinedApItems} quarantined because no defensible complete answer could be established`);
-for (const [label, batch] of [["5", apRecoveryBatch5], ["6", apRecoveryBatch6], ["7", apRecoveryBatch7], ["8", apRecoveryBatch8], ["9", apRecoveryBatch9]] as const) {
+for (const [label, batch] of [["5", apRecoveryBatch5], ["6", apRecoveryBatch6], ["7", apRecoveryBatch7], ["8", apRecoveryBatch8], ["9", apRecoveryBatch9], ["10", apRecoveryBatch10]] as const) {
   console.log(`AP batch ${label}: ${batch.ids.length} deeply upgraded; ${batch.severeMissingAnswer} severe missing/undefended-answer candidates; ${batch.severeStructural} severe structural candidates`);
   console.log(`AP batch ${label} IDs: ${batch.ids.join(",")}`);
 }
