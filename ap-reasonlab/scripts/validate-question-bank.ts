@@ -1,4 +1,4 @@
-import { questionnaires, rawQuestionnaires, apQuestionBankStats } from "@/data/questionnaires";
+import { questionnaires, rawQuestionnaires, apQuestionBankStats, apRecoveryBatch5 } from "@/data/questionnaires";
 import {
   toeflQuestions,
   satQuestions,
@@ -49,6 +49,8 @@ console.log("\nQUESTION BANK QUALITY REPORT");
 console.log("============================");
 console.log(`AP sets: ${apQuestionBankStats.publicSets}/${apQuestionBankStats.rawSets} public`);
 console.log(`AP items: ${publicApItems}/${rawApItems} public; ${quarantinedApItems} quarantined because no defensible complete answer could be established`);
+console.log(`AP batch 5: ${apRecoveryBatch5.ids.length} deeply upgraded; ${apRecoveryBatch5.severeMissingAnswer} severe missing/undefended-answer candidates; ${apRecoveryBatch5.severeStructural} severe structural candidates`);
+console.log(`AP batch 5 IDs: ${apRecoveryBatch5.ids.join(",")}`);
 console.log(`SAT items: ${englishQuestionBankStats.sat.total} total; ${englishQuestionBankStats.sat.examAuthentic} Exam-style; ${englishQuestionBankStats.sat.skillDrill} Skill drill`);
 console.log(`TOEFL items: ${englishQuestionBankStats.toefl.total} total; ${englishQuestionBankStats.toefl.examAuthentic} Exam-style; ${englishQuestionBankStats.toefl.skillDrill} Skill drill; ${englishQuestionBankStats.toefl.productive} productive-response`);
 console.log(`Warnings: ${warnings.length}`);
