@@ -72,28 +72,11 @@ const recoveredApItemsBeforeBatch5 = {
   ...recoveredApItemsBatch4FinalFix,
 };
 
-// Deliberately scan the authored source sets rather than the already-recovered bank.
-// Missing/unanswerable items are ranked ahead of merely thin public items inside the
-// Batch 5 builder. Existing recovery IDs are excluded so this batch cannot replace a
-// previously audited answer with a newly generated one.
-const batch5CandidateSets: Questionnaire[] = [
-  ...physics2Questionnaires,
-  ...statsQuestionnaires,
-  ...apPracticeFullStemQuestionnaires,
-  ...apPracticeSetB,
-  ...apPracticeSetC,
-  ...apPracticeSetD,
-  ...apCedPractice,
-  ...apPracticeExpansion,
-  ...apPracticeBySubject,
-  ...apPracticeDrillQuestionnaires,
-  ...apExamFormatAllQuestionnaires,
-  ...microQuestionnaires,
-  ...macroQuestionnaires,
-];
-
+// Scan the complete shaped legacy bank, but Batch 5 itself only accepts supported
+// quantitative/social-science subjects and severe candidates. Existing recovery IDs
+// are excluded so this batch cannot replace any previously audited answer.
 export const apRecoveryBatch5 = buildRecoveredApItemsBatch5(
-  batch5CandidateSets,
+  shapedQuestionnaires,
   new Set(Object.keys(recoveredApItemsBeforeBatch5)),
   100
 );
