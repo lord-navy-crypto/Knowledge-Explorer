@@ -109,16 +109,16 @@ const recoveredApItemsBeforeBatch6 = {
 
 // Generate one continuous severe-first window so each later batch keeps a distinct
 // generation-index range instead of restarting template parameters at zero.
-const batch5To8Window = buildRecoveredApItemsBatch5(
+const batch5To9Window = buildRecoveredApItemsBatch5(
   severeOrderedSets,
   new Set(Object.keys(recoveredApItemsBeforeBatch5)),
-  400
+  500
 );
 
 function sliceRecoveryBatch(start: number, count: number) {
-  const ids = batch5To8Window.ids.slice(start, start + count);
+  const ids = batch5To9Window.ids.slice(start, start + count);
   const items: Record<string, QuestionnaireItem> = Object.fromEntries(
-    ids.map((id) => [id, batch5To8Window.items[id]])
+    ids.map((id) => [id, batch5To9Window.items[id]])
   );
   const severeMissingAnswer = ids.filter((id) => {
     const source = sourceItemById.get(id);
@@ -138,12 +138,17 @@ export const apRecoveryBatch8 = sliceRecoveryBatch(
   apRecoveryBatch5.ids.length + apRecoveryBatch6.ids.length + apRecoveryBatch7.ids.length,
   100
 );
+export const apRecoveryBatch9 = sliceRecoveryBatch(
+  apRecoveryBatch5.ids.length + apRecoveryBatch6.ids.length + apRecoveryBatch7.ids.length + apRecoveryBatch8.ids.length,
+  100
+);
 
 const recoveredApItems = {
   ...recoveredApItemsBeforeBatch6,
   ...apRecoveryBatch6.items,
   ...apRecoveryBatch7.items,
   ...apRecoveryBatch8.items,
+  ...apRecoveryBatch9.items,
 };
 
 export const rawQuestionnaires: Questionnaire[] = shapedQuestionnaires.map((set) => ({
@@ -179,6 +184,11 @@ export const apQuestionBankStats = {
     deeplyUpgraded: apRecoveryBatch8.ids.length,
     severeMissingAnswer: apRecoveryBatch8.severeMissingAnswer,
     severeStructural: apRecoveryBatch8.severeStructural,
+  },
+  batch9: {
+    deeplyUpgraded: apRecoveryBatch9.ids.length,
+    severeMissingAnswer: apRecoveryBatch9.severeMissingAnswer,
+    severeStructural: apRecoveryBatch9.severeStructural,
   },
 };
 
