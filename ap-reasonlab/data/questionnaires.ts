@@ -84,24 +84,39 @@ function hasSourceDefensibleAnswer(item: QuestionnaireItem): boolean {
   );
 }
 
-// Build two non-overlapping views so genuinely missing/undefended answers are always
-// considered before structural-only defects, regardless of source-file ordering.
-const batch5MissingAnswerSets: Questionnaire[] = shapedQuestionnaires
+// Build non-overlapping source views so genuinely missing/undefended answers always
+// outrank structural-only defects, independent of source-file ordering.
+const missingAnswerSets: Questionnaire[] = shapedQuestionnaires
   .map((set) => ({ ...set, items: set.items.filter((item) => !hasSourceDefensibleAnswer(item)) }))
   .filter((set) => set.items.length > 0);
-const batch5StructuralSets: Questionnaire[] = shapedQuestionnaires
+const structuralSets: Questionnaire[] = shapedQuestionnaires
   .map((set) => ({ ...set, items: set.items.filter(hasSourceDefensibleAnswer) }))
   .filter((set) => set.items.length > 0);
+const severeOrderedSets = [...missingAnswerSets, ...structuralSets];
 
 export const apRecoveryBatch5 = buildRecoveredApItemsBatch5(
-  [...batch5MissingAnswerSets, ...batch5StructuralSets],
+  severeOrderedSets,
   new Set(Object.keys(recoveredApItemsBeforeBatch5)),
   100
 );
 
-const recoveredApItems = {
+const recoveredApItemsBeforeBatch6 = {
   ...recoveredApItemsBeforeBatch5,
   ...apRecoveryBatch5.items,
+};
+
+// Batch 6 deliberately reuses the already-validated deep-rewrite factory while excluding
+// every ID recovered in batches 1–5. Because the source views remain severe-first, the
+// second call consumes the next untouched severe candidates rather than overwriting prior work.
+export const apRecoveryBatch6 = buildRecoveredApItemsBatch5(
+  severeOrderedSets,
+  new Set(Object.keys(recoveredApItemsBeforeBatch6)),
+  100
+);
+
+const recoveredApItems = {
+  ...recoveredApItemsBeforeBatch6,
+  ...apRecoveryBatch6.items,
 };
 
 export const rawQuestionnaires: Questionnaire[] = shapedQuestionnaires.map((set) => ({
@@ -122,6 +137,11 @@ export const apQuestionBankStats = {
     deeplyUpgraded: apRecoveryBatch5.ids.length,
     severeMissingAnswer: apRecoveryBatch5.severeMissingAnswer,
     severeStructural: apRecoveryBatch5.severeStructural,
+  },
+  batch6: {
+    deeplyUpgraded: apRecoveryBatch6.ids.length,
+    severeMissingAnswer: apRecoveryBatch6.severeMissingAnswer,
+    severeStructural: apRecoveryBatch6.severeStructural,
   },
 };
 
