@@ -84,24 +84,59 @@ function hasSourceDefensibleAnswer(item: QuestionnaireItem): boolean {
   );
 }
 
-// Build two non-overlapping views so genuinely missing/undefended answers are always
-// considered before structural-only defects, regardless of source-file ordering.
-const batch5MissingAnswerSets: Questionnaire[] = shapedQuestionnaires
+// Build non-overlapping source views so genuinely missing/undefended answers always
+// outrank structural-only defects, independent of source-file ordering.
+const missingAnswerSets: Questionnaire[] = shapedQuestionnaires
   .map((set) => ({ ...set, items: set.items.filter((item) => !hasSourceDefensibleAnswer(item)) }))
   .filter((set) => set.items.length > 0);
-const batch5StructuralSets: Questionnaire[] = shapedQuestionnaires
+const structuralSets: Questionnaire[] = shapedQuestionnaires
   .map((set) => ({ ...set, items: set.items.filter(hasSourceDefensibleAnswer) }))
   .filter((set) => set.items.length > 0);
+const severeOrderedSets = [...missingAnswerSets, ...structuralSets];
+const sourceItemById = new Map<string, QuestionnaireItem>();
+for (const set of shapedQuestionnaires) {
+  for (const item of set.items) sourceItemById.set(item.id, item);
+}
 
 export const apRecoveryBatch5 = buildRecoveredApItemsBatch5(
-  [...batch5MissingAnswerSets, ...batch5StructuralSets],
+  severeOrderedSets,
   new Set(Object.keys(recoveredApItemsBeforeBatch5)),
   100
 );
 
-const recoveredApItems = {
+const recoveredApItemsBeforeBatch6 = {
   ...recoveredApItemsBeforeBatch5,
   ...apRecoveryBatch5.items,
+};
+
+// Generate a 200-candidate window from the pre-Batch-5 exclusion state. The first 100
+// positions reproduce Batch 5's candidate order; Batch 6 takes positions 100–199. This
+// preserves severe-first selection while giving Batch 6 a distinct factory index range,
+// reducing accidental near-duplicate parameterizations across consecutive batches.
+const batch5And6Window = buildRecoveredApItemsBatch5(
+  severeOrderedSets,
+  new Set(Object.keys(recoveredApItemsBeforeBatch5)),
+  200
+);
+const batch6Ids = batch5And6Window.ids.slice(apRecoveryBatch5.ids.length, apRecoveryBatch5.ids.length + 100);
+const batch6Items: Record<string, QuestionnaireItem> = Object.fromEntries(
+  batch6Ids.map((id) => [id, batch5And6Window.items[id]])
+);
+const batch6Missing = batch6Ids.filter((id) => {
+  const source = sourceItemById.get(id);
+  return source ? !hasSourceDefensibleAnswer(source) : false;
+}).length;
+
+export const apRecoveryBatch6 = {
+  items: batch6Items,
+  ids: batch6Ids,
+  severeMissingAnswer: batch6Missing,
+  severeStructural: batch6Ids.length - batch6Missing,
+};
+
+const recoveredApItems = {
+  ...recoveredApItemsBeforeBatch6,
+  ...apRecoveryBatch6.items,
 };
 
 export const rawQuestionnaires: Questionnaire[] = shapedQuestionnaires.map((set) => ({
@@ -122,6 +157,11 @@ export const apQuestionBankStats = {
     deeplyUpgraded: apRecoveryBatch5.ids.length,
     severeMissingAnswer: apRecoveryBatch5.severeMissingAnswer,
     severeStructural: apRecoveryBatch5.severeStructural,
+  },
+  batch6: {
+    deeplyUpgraded: apRecoveryBatch6.ids.length,
+    severeMissingAnswer: apRecoveryBatch6.severeMissingAnswer,
+    severeStructural: apRecoveryBatch6.severeStructural,
   },
 };
 
