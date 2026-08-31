@@ -8,6 +8,12 @@ import { hardSatQuestions, hardToeflQuestions } from "./english-questions-hard";
 import { authenticToeflQuestions } from "./english-questions-authentic-toefl";
 import { authenticSatQuestions } from "./english-questions-authentic-sat";
 import { coreSatQuestions, coreToeflQuestions } from "./english-questions-core";
+import { recoveredEnglishItemsBatch1 } from "./english-question-recovery-batch-1";
+import { recoveredEnglishItemsBatch2A } from "./english-question-recovery-batch-2a";
+import { recoveredEnglishItemsBatch2B } from "./english-question-recovery-batch-2b";
+import { recoveredEnglishItemsBatch2BFix } from "./english-question-recovery-batch-2b-fix";
+import { recoveredEnglishItemsBatch3 } from "./english-question-recovery-batch-3";
+import { recoveredEnglishProductiveFix } from "./english-question-recovery-productive-fix";
 import { withOfficialSkill } from "@/lib/english-exam-format";
 import { shapeOfficialEnglishQuestion } from "@/lib/english-official-shape";
 import {
@@ -37,11 +43,21 @@ export type EnglishPracticeQuestion = {
   taskType?: string;
 };
 
+const recoveredEnglishItems: Record<string, EnglishPracticeQuestion> = {
+  ...recoveredEnglishItemsBatch1,
+  ...recoveredEnglishItemsBatch2A,
+  ...recoveredEnglishItemsBatch2B,
+  ...recoveredEnglishItemsBatch2BFix,
+  ...recoveredEnglishItemsBatch3,
+  ...recoveredEnglishProductiveFix,
+};
+
 function withExamSkills(
   exam: "toefl" | "sat",
   items: EnglishPracticeQuestion[]
 ): EnglishPracticeQuestion[] {
   return items
+    .map((item) => recoveredEnglishItems[item.id] || item)
     .map((item) =>
       normalizeEnglishQuestion(
         exam,
