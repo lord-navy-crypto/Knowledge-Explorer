@@ -1,4 +1,4 @@
-import { questionnaires, rawQuestionnaires, apQuestionBankStats, apRecoveryBatch5, apRecoveryBatch6 } from "@/data/questionnaires";
+import { questionnaires, rawQuestionnaires, apQuestionBankStats, apRecoveryBatch5, apRecoveryBatch6, apRecoveryBatch7 } from "@/data/questionnaires";
 import {
   toeflQuestions,
   satQuestions,
@@ -49,10 +49,10 @@ console.log("\nQUESTION BANK QUALITY REPORT");
 console.log("============================");
 console.log(`AP sets: ${apQuestionBankStats.publicSets}/${apQuestionBankStats.rawSets} public`);
 console.log(`AP items: ${publicApItems}/${rawApItems} public; ${quarantinedApItems} quarantined because no defensible complete answer could be established`);
-console.log(`AP batch 5: ${apRecoveryBatch5.ids.length} deeply upgraded; ${apRecoveryBatch5.severeMissingAnswer} severe missing/undefended-answer candidates; ${apRecoveryBatch5.severeStructural} severe structural candidates`);
-console.log(`AP batch 5 IDs: ${apRecoveryBatch5.ids.join(",")}`);
-console.log(`AP batch 6: ${apRecoveryBatch6.ids.length} deeply upgraded; ${apRecoveryBatch6.severeMissingAnswer} severe missing/undefended-answer candidates; ${apRecoveryBatch6.severeStructural} severe structural candidates`);
-console.log(`AP batch 6 IDs: ${apRecoveryBatch6.ids.join(",")}`);
+for (const [label, batch] of [["5", apRecoveryBatch5], ["6", apRecoveryBatch6], ["7", apRecoveryBatch7]] as const) {
+  console.log(`AP batch ${label}: ${batch.ids.length} deeply upgraded; ${batch.severeMissingAnswer} severe missing/undefended-answer candidates; ${batch.severeStructural} severe structural candidates`);
+  console.log(`AP batch ${label} IDs: ${batch.ids.join(",")}`);
+}
 console.log(`SAT items: ${englishQuestionBankStats.sat.total} total; ${englishQuestionBankStats.sat.examAuthentic} Exam-style; ${englishQuestionBankStats.sat.skillDrill} Skill drill`);
 console.log(`TOEFL items: ${englishQuestionBankStats.toefl.total} total; ${englishQuestionBankStats.toefl.examAuthentic} Exam-style; ${englishQuestionBankStats.toefl.skillDrill} Skill drill; ${englishQuestionBankStats.toefl.productive} productive-response`);
 console.log(`Warnings: ${warnings.length}`);
