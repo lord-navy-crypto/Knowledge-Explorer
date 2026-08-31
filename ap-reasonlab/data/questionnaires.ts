@@ -93,6 +93,10 @@ const structuralSets: Questionnaire[] = shapedQuestionnaires
   .map((set) => ({ ...set, items: set.items.filter(hasSourceDefensibleAnswer) }))
   .filter((set) => set.items.length > 0);
 const severeOrderedSets = [...missingAnswerSets, ...structuralSets];
+const sourceItemById = new Map<string, QuestionnaireItem>();
+for (const set of shapedQuestionnaires) {
+  for (const item of set.items) sourceItemById.set(item.id, item);
+}
 
 export const apRecoveryBatch5 = buildRecoveredApItemsBatch5(
   severeOrderedSets,
@@ -105,14 +109,30 @@ const recoveredApItemsBeforeBatch6 = {
   ...apRecoveryBatch5.items,
 };
 
-// Batch 6 deliberately reuses the already-validated deep-rewrite factory while excluding
-// every ID recovered in batches 1–5. Because the source views remain severe-first, the
-// second call consumes the next untouched severe candidates rather than overwriting prior work.
-export const apRecoveryBatch6 = buildRecoveredApItemsBatch5(
+// Generate a 200-candidate window from the pre-Batch-5 exclusion state. The first 100
+// positions reproduce Batch 5's candidate order; Batch 6 takes positions 100–199. This
+// preserves severe-first selection while giving Batch 6 a distinct factory index range,
+// reducing accidental near-duplicate parameterizations across consecutive batches.
+const batch5And6Window = buildRecoveredApItemsBatch5(
   severeOrderedSets,
-  new Set(Object.keys(recoveredApItemsBeforeBatch6)),
-  100
+  new Set(Object.keys(recoveredApItemsBeforeBatch5)),
+  200
 );
+const batch6Ids = batch5And6Window.ids.slice(apRecoveryBatch5.ids.length, apRecoveryBatch5.ids.length + 100);
+const batch6Items: Record<string, QuestionnaireItem> = Object.fromEntries(
+  batch6Ids.map((id) => [id, batch5And6Window.items[id]])
+);
+const batch6Missing = batch6Ids.filter((id) => {
+  const source = sourceItemById.get(id);
+  return source ? !hasSourceDefensibleAnswer(source) : false;
+}).length;
+
+export const apRecoveryBatch6 = {
+  items: batch6Items,
+  ids: batch6Ids,
+  severeMissingAnswer: batch6Missing,
+  severeStructural: batch6Ids.length - batch6Missing,
+};
 
 const recoveredApItems = {
   ...recoveredApItemsBeforeBatch6,
