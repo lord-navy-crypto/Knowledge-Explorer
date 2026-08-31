@@ -1,4 +1,4 @@
-import { Questionnaire } from "@/lib/types";
+import { Questionnaire, QuestionnaireItem } from "@/lib/types";
 import { macroQuestionnaires } from "@/data/ap-macro";
 import { microQuestionnaires } from "@/data/ap-micro";
 import { physics2Questionnaires } from "@/data/ap-physics2";
@@ -29,6 +29,7 @@ import { recoveredApItemsBatch4EMcq } from "@/data/ap-question-recovery-batch-4e
 import { recoveredApItemsBatch4EFrq } from "@/data/ap-question-recovery-batch-4e-frq";
 import { recoveredApItemsBatch4EPlus } from "@/data/ap-question-recovery-batch-4e-plus";
 import { recoveredApItemsBatch4FinalFix } from "@/data/ap-question-recovery-batch-4-final-fix";
+import { buildRecoveredApItemsBatch5 } from "@/data/ap-question-recovery-batch-5";
 import { shapeApQuestionnaires } from "@/lib/ap-exam-format";
 import { normalizeApQuestionnaire } from "@/lib/question-normalize";
 import managed from "@/data/managed-content.json";
@@ -56,7 +57,7 @@ const shapedQuestionnaires: Questionnaire[] = shapeApQuestionnaires([
   ...(((managed as { questionnaires?: Questionnaire[] }).questionnaires || []) as Questionnaire[]),
 ]);
 
-const recoveredApItems = {
+const recoveredApItemsBeforeBatch5 = {
   ...recoveredApItemsBatch1,
   ...recoveredApItemsBatch2,
   ...recoveredApItemsBatch2Fix,
@@ -69,6 +70,38 @@ const recoveredApItems = {
   ...recoveredApItemsBatch4EFrq,
   ...recoveredApItemsBatch4EPlus,
   ...recoveredApItemsBatch4FinalFix,
+};
+
+function hasSourceDefensibleAnswer(item: QuestionnaireItem): boolean {
+  if (item.answerKey?.trim()) return true;
+  if (item.blankAnswers?.some((answer) => answer.trim())) return true;
+  return Boolean(
+    item.format === "mcq" &&
+      item.choices?.length &&
+      Number.isInteger(item.mcqAnswer) &&
+      Number(item.mcqAnswer) >= 0 &&
+      Number(item.mcqAnswer) < item.choices.length
+  );
+}
+
+// Build two non-overlapping views so genuinely missing/undefended answers are always
+// considered before structural-only defects, regardless of source-file ordering.
+const batch5MissingAnswerSets: Questionnaire[] = shapedQuestionnaires
+  .map((set) => ({ ...set, items: set.items.filter((item) => !hasSourceDefensibleAnswer(item)) }))
+  .filter((set) => set.items.length > 0);
+const batch5StructuralSets: Questionnaire[] = shapedQuestionnaires
+  .map((set) => ({ ...set, items: set.items.filter(hasSourceDefensibleAnswer) }))
+  .filter((set) => set.items.length > 0);
+
+export const apRecoveryBatch5 = buildRecoveredApItemsBatch5(
+  [...batch5MissingAnswerSets, ...batch5StructuralSets],
+  new Set(Object.keys(recoveredApItemsBeforeBatch5)),
+  100
+);
+
+const recoveredApItems = {
+  ...recoveredApItemsBeforeBatch5,
+  ...apRecoveryBatch5.items,
 };
 
 export const rawQuestionnaires: Questionnaire[] = shapedQuestionnaires.map((set) => ({
@@ -85,6 +118,11 @@ export const apQuestionBankStats = {
   publicSets: questionnaires.length,
   rawItems: rawQuestionnaires.reduce((sum, set) => sum + set.items.length, 0),
   publicItems: questionnaires.reduce((sum, set) => sum + set.items.length, 0),
+  batch5: {
+    deeplyUpgraded: apRecoveryBatch5.ids.length,
+    severeMissingAnswer: apRecoveryBatch5.severeMissingAnswer,
+    severeStructural: apRecoveryBatch5.severeStructural,
+  },
 };
 
 export function getQuestionnaireById(id: string): Questionnaire | undefined {
