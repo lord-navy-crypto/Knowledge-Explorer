@@ -24,18 +24,28 @@ export const HOME_GATEWAYS: HomeGateway[] = [
     id: "ap-english",
     title: "AP & English",
     description:
-      "First plate of this personal site: AP subjects and English exams / skills — folders, practice, and study materials.",
+      "First plate of this personal site: AP subjects and English exams / skills — now with their own contextual AI assistants.",
     href: "/explore/ap-english",
     links: [
       {
         href: "/ap",
         title: "AP",
-        description: "Subject library — concepts, formulas, practice, and uploads.",
+        description: "Subject library — concepts, formulas, practice, uploads, and AI for AP.",
+      },
+      {
+        href: "/ai-for-ap",
+        title: "AI for AP",
+        description: "AP-focused hints, concepts, formulas, derivations, and practice generation.",
       },
       {
         href: "/english",
         title: "English",
         description: "TOEFL iBT and Digital SAT in official task formats, plus vocabulary and grammar.",
+      },
+      {
+        href: "/english/ai",
+        title: "AI for English",
+        description: "Writing feedback, grammar, translation, vocabulary help, and exam strategy.",
       },
     ],
   },
@@ -43,7 +53,7 @@ export const HOME_GATEWAYS: HomeGateway[] = [
     id: "tools-code",
     title: "Convenient Tools & Code",
     description:
-      "Workbench-only tool area: math, code, writing, files, study, English, classroom utilities and AI, with external connections kept separate.",
+      "Workbench-only tool area: math, code, files, study and classroom utilities, with coding AI kept beside the code workflow.",
     href: "/explore/tools-code",
     links: [
       {
@@ -57,14 +67,14 @@ export const HOME_GATEWAYS: HomeGateway[] = [
         description: "Editor plus code board, JSON, Base64/URL, compare, and presets under one workbench.",
       },
       {
+        href: "/code/ai",
+        title: "AI for Code",
+        description: "Debug, write, explain, and reason about code in a dedicated coding assistant.",
+      },
+      {
         href: "/tools/workbench/files",
         title: "File Workbench",
         description: "PDF, images, CSV/Markdown, and batch rename collected into one workbench.",
-      },
-      {
-        href: "/hints",
-        title: "AI Workbench",
-        description: "Unified AI — Local / Website API / Your own API, with AP, English, Coding, and Math tools.",
       },
       {
         href: "/explore/tools-code#external-tools",
@@ -94,20 +104,25 @@ export const HOME_GATEWAYS: HomeGateway[] = [
   },
   {
     id: "sentinel",
-    title: "Sentinel Mac",
+    title: "Sentinel Map and Easy Local AI",
     description:
-      "Local-first macOS system intelligence — download v2.2.0-beta (DMG) or open releases on GitHub.",
-    href: "/explore/sentinel",
+      "Two local-first paths: Sentinel Map for system intelligence and Easy Local AI for browser-local model testing and free chat without Ollama.",
+    href: "/easy-local-ai",
     accent: "sentinel",
     links: [
       {
         href: "/explore/sentinel",
-        title: "Download & overview",
-        description: "Install Sentinel.app, feature tour, and release notes on this site.",
+        title: "Sentinel Map",
+        description: "Open the existing Sentinel system intelligence, download, overview, and releases.",
+      },
+      {
+        href: "/easy-local-ai",
+        title: "Easy Local AI",
+        description: "Run WebLLM models directly in a compatible browser with WebGPU — no Ollama or local server setup.",
       },
       {
         href: "https://github.com/lord-navy-crypto/sentinel-macos/releases",
-        title: "GitHub Releases",
+        title: "Sentinel GitHub Releases",
         description: "Latest DMG, checksums, and full release documentation.",
       },
     ],
