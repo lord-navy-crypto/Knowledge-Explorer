@@ -3,12 +3,12 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import { brand } from "@/data/brand";
 
 export const metadata: Metadata = {
-  title: `Legacy AI & Math Redirect — ${brand.name}`,
+  title: `Calculator & Grapher — ${brand.name}`,
   description:
-    "Compatibility route for older Knowledge Explorer AI and math links. AI now lives in AP, English, Code, and Guide; calculator and graph links remain available here.",
+    "Legacy compatibility route for Knowledge Explorer's deterministic calculator and grapher. This route does not run an AI model.",
   openGraph: {
-    title: `Legacy AI & Math Redirect — ${brand.name}`,
-    description: "Compatibility route for contextual AI and math-tool links.",
+    title: `Calculator & Grapher — ${brand.name}`,
+    description: "Compatibility route for deterministic calculator and graphing links.",
     type: "website",
   },
 };
@@ -19,7 +19,7 @@ export default function HintsLayout({ children }: { children: React.ReactNode })
       <Breadcrumbs
         items={[
           { label: "Home", href: "/" },
-          { label: "Legacy AI & Math Redirect" },
+          { label: "Calculator & Grapher" },
         ]}
       />
       {children}
