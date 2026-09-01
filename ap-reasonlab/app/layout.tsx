@@ -18,6 +18,7 @@ import PageHierarchyNav from "@/components/PageHierarchyNav";
 import { EditorModeProvider } from "@/components/EditorModeProvider";
 import { LocalAIProvider } from "@/components/LocalAIProvider";
 import LocalAIWebLLMBootstrap from "@/components/LocalAIWebLLMBootstrap";
+import LocalAITaskBridge from "@/components/LocalAITaskBridge";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ToastProvider } from "@/components/ToastProvider";
 import SiteStructuredData from "@/components/SiteStructuredData";
@@ -108,6 +109,7 @@ export default function RootLayout({
             <TaskMonitorProvider>
               <EditorModeProvider>
                 <LocalAIProvider>
+                  <LocalAITaskBridge />
                   <QuickSearchProvider>
                     <SiteStructuredData />
                     <div className="academic-print" aria-hidden="true" />
