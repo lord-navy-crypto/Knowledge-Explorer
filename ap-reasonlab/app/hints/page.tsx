@@ -45,8 +45,7 @@ function LegacyToolboxRouter() {
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Convenient Tools</p>
           <h1 className="mt-1 text-2xl font-bold">Calc + Graph</h1>
           <p className="mt-2 text-sm text-slate-600">
-            The old AI Toolbox has been split into contextual AI areas. This legacy URL now keeps only
-            the calculator / graph utility for compatibility.
+            This compatibility URL keeps the deterministic calculator and graph utilities. Contextual assistants now live in their dedicated AP, English, Code, and Guide routes.
           </p>
         </section>
         <MathPad focus={tool === "grapher" || tool === "imagegen" ? "grapher" : "calculator"} />
@@ -54,12 +53,12 @@ function LegacyToolboxRouter() {
     );
   }
 
-  return <div className="card text-sm text-slate-500">Opening the new contextual AI workspace…</div>;
+  return <div className="card text-sm text-slate-500">Opening the matching contextual assistant…</div>;
 }
 
 export default function HintsPage() {
   return (
-    <Suspense fallback={<div className="card text-sm text-slate-500">Opening AI workspace…</div>}>
+    <Suspense fallback={<div className="card text-sm text-slate-500">Loading compatibility tools…</div>}>
       <LegacyToolboxRouter />
     </Suspense>
   );
