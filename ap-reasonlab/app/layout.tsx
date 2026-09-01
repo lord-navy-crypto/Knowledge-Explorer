@@ -23,6 +23,8 @@ import { ToastProvider } from "@/components/ToastProvider";
 import SiteStructuredData from "@/components/SiteStructuredData";
 import GlobalRouteProgress from "@/components/GlobalRouteProgress";
 import UsageTracker from "@/components/UsageTracker";
+import { TaskMonitorProvider } from "@/components/TaskMonitorProvider";
+import TaskMonitorFloating from "@/components/TaskMonitorFloating";
 import { brand } from "@/data/brand";
 
 const fontSans = IBM_Plex_Sans({
@@ -103,27 +105,30 @@ export default function RootLayout({
         </Suspense>
         <ThemeProvider>
           <ToastProvider>
-            <EditorModeProvider>
-              <LocalAIProvider>
-                <QuickSearchProvider>
-                  <SiteStructuredData />
-                  <div className="academic-print" aria-hidden="true" />
-                  <Nav />
-                  <EditorToolsChrome />
-                  <main className="relative z-[1] mx-auto max-w-6xl px-4 py-8 pb-24 md:pb-8">
-                    <PageHierarchyNav />
-                    {children}
-                    <SiteRelatedToolsBar />
-                  </main>
-                  <RandomPageButton />
-                  <TomatoCloudCircle />
-                  <StyleWindow />
-                  <EditModeButton />
-                  <MobileActionBar />
-                  <SiteFooter />
-                </QuickSearchProvider>
-              </LocalAIProvider>
-            </EditorModeProvider>
+            <TaskMonitorProvider>
+              <EditorModeProvider>
+                <LocalAIProvider>
+                  <QuickSearchProvider>
+                    <SiteStructuredData />
+                    <div className="academic-print" aria-hidden="true" />
+                    <Nav />
+                    <EditorToolsChrome />
+                    <main className="relative z-[1] mx-auto max-w-6xl px-4 py-8 pb-24 md:pb-8">
+                      <PageHierarchyNav />
+                      {children}
+                      <SiteRelatedToolsBar />
+                    </main>
+                    <RandomPageButton />
+                    <TomatoCloudCircle />
+                    <StyleWindow />
+                    <EditModeButton />
+                    <MobileActionBar />
+                    <TaskMonitorFloating />
+                    <SiteFooter />
+                  </QuickSearchProvider>
+                </LocalAIProvider>
+              </EditorModeProvider>
+            </TaskMonitorProvider>
           </ToastProvider>
         </ThemeProvider>
       </body>
