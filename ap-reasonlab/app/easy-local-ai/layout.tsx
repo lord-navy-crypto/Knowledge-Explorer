@@ -1,11 +1,6 @@
 import type { ReactNode } from "react";
-import LocalAIWebLLMBootstrap from "@/components/LocalAIWebLLMBootstrap";
+import LocalAIScope from "@/components/LocalAIScope";
 
 export default function EasyLocalAiLayout({ children }: { children: ReactNode }) {
-  return (
-    <>
-      <LocalAIWebLLMBootstrap />
-      {children}
-    </>
-  );
+  return <LocalAIScope>{children}</LocalAIScope>;
 }
