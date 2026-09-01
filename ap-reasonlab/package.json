@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npm run validate:questions && next build",
+    "build": "npm run check:webllm && npm run validate:questions && next build",
     "start": "next start",
     "lint": "next lint",
+    "check:webllm": "node scripts/check-webllm-version.mjs",
     "check:ai-latex": "tsx scripts/check-ai-latex.ts",
     "test": "vitest run",
     "test:watch": "vitest",
