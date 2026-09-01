@@ -30,6 +30,7 @@ import { recoveredApItemsBatch4EFrq } from "@/data/ap-question-recovery-batch-4e
 import { recoveredApItemsBatch4EPlus } from "@/data/ap-question-recovery-batch-4e-plus";
 import { recoveredApItemsBatch4FinalFix } from "@/data/ap-question-recovery-batch-4-final-fix";
 import { buildRecoveredApItemsBatch5 } from "@/data/ap-question-recovery-batch-5";
+import { buildHumanitiesRecoveryBatch } from "@/data/ap-question-recovery-batch-13-humanities";
 import { shapeApQuestionnaires } from "@/lib/ap-exam-format";
 import { normalizeApQuestionnaire } from "@/lib/question-normalize";
 import managed from "@/data/managed-content.json";
@@ -107,8 +108,8 @@ const recoveredApItemsBeforeBatch6 = {
   ...apRecoveryBatch5.items,
 };
 
-// Generate one continuous severe-first window so each later batch keeps a distinct
-// generation-index range instead of restarting template parameters at zero.
+// Generate one continuous severe-first window so each later STEM/social-science batch
+// keeps a distinct generation-index range instead of restarting template parameters.
 const batch5To12Window = buildRecoveredApItemsBatch5(
   severeOrderedSets,
   new Set(Object.keys(recoveredApItemsBeforeBatch5)),
@@ -155,7 +156,7 @@ export const apRecoveryBatch12 = sliceRecoveryBatch(
   100
 );
 
-const recoveredApItems = {
+const recoveredApItemsThroughBatch12 = {
   ...recoveredApItemsBeforeBatch6,
   ...apRecoveryBatch6.items,
   ...apRecoveryBatch7.items,
@@ -164,6 +165,32 @@ const recoveredApItems = {
   ...apRecoveryBatch10.items,
   ...apRecoveryBatch11.items,
   ...apRecoveryBatch12.items,
+};
+
+// Batch 13 deliberately targets the remaining humanities/history/English thin FRQs.
+// It uses a separate subject-aware generator so the already-published Batch 5–12
+// candidate order and replacements stay byte-for-byte stable.
+export const apRecoveryBatch13 = buildHumanitiesRecoveryBatch(
+  shapedQuestionnaires,
+  new Set(Object.keys(recoveredApItemsThroughBatch12)),
+  75
+);
+
+export const apRecoveryBatches = [
+  { label: "5", batch: apRecoveryBatch5 },
+  { label: "6", batch: apRecoveryBatch6 },
+  { label: "7", batch: apRecoveryBatch7 },
+  { label: "8", batch: apRecoveryBatch8 },
+  { label: "9", batch: apRecoveryBatch9 },
+  { label: "10", batch: apRecoveryBatch10 },
+  { label: "11", batch: apRecoveryBatch11 },
+  { label: "12", batch: apRecoveryBatch12 },
+  { label: "13", batch: apRecoveryBatch13 },
+] as const;
+
+const recoveredApItems = {
+  ...recoveredApItemsThroughBatch12,
+  ...apRecoveryBatch13.items,
 };
 
 export const rawQuestionnaires: Questionnaire[] = shapedQuestionnaires.map((set) => ({
@@ -175,51 +202,23 @@ export const questionnaires: Questionnaire[] = rawQuestionnaires
   .map(normalizeApQuestionnaire)
   .filter((set): set is Questionnaire => Boolean(set));
 
+const recoveryStats = Object.fromEntries(
+  apRecoveryBatches.map(({ label, batch }) => [
+    `batch${label}`,
+    {
+      deeplyUpgraded: batch.ids.length,
+      severeMissingAnswer: batch.severeMissingAnswer,
+      severeStructural: batch.severeStructural,
+    },
+  ])
+);
+
 export const apQuestionBankStats = {
   rawSets: rawQuestionnaires.length,
   publicSets: questionnaires.length,
   rawItems: rawQuestionnaires.reduce((sum, set) => sum + set.items.length, 0),
   publicItems: questionnaires.reduce((sum, set) => sum + set.items.length, 0),
-  batch5: {
-    deeplyUpgraded: apRecoveryBatch5.ids.length,
-    severeMissingAnswer: apRecoveryBatch5.severeMissingAnswer,
-    severeStructural: apRecoveryBatch5.severeStructural,
-  },
-  batch6: {
-    deeplyUpgraded: apRecoveryBatch6.ids.length,
-    severeMissingAnswer: apRecoveryBatch6.severeMissingAnswer,
-    severeStructural: apRecoveryBatch6.severeStructural,
-  },
-  batch7: {
-    deeplyUpgraded: apRecoveryBatch7.ids.length,
-    severeMissingAnswer: apRecoveryBatch7.severeMissingAnswer,
-    severeStructural: apRecoveryBatch7.severeStructural,
-  },
-  batch8: {
-    deeplyUpgraded: apRecoveryBatch8.ids.length,
-    severeMissingAnswer: apRecoveryBatch8.severeMissingAnswer,
-    severeStructural: apRecoveryBatch8.severeStructural,
-  },
-  batch9: {
-    deeplyUpgraded: apRecoveryBatch9.ids.length,
-    severeMissingAnswer: apRecoveryBatch9.severeMissingAnswer,
-    severeStructural: apRecoveryBatch9.severeStructural,
-  },
-  batch10: {
-    deeplyUpgraded: apRecoveryBatch10.ids.length,
-    severeMissingAnswer: apRecoveryBatch10.severeMissingAnswer,
-    severeStructural: apRecoveryBatch10.severeStructural,
-  },
-  batch11: {
-    deeplyUpgraded: apRecoveryBatch11.ids.length,
-    severeMissingAnswer: apRecoveryBatch11.severeMissingAnswer,
-    severeStructural: apRecoveryBatch11.severeStructural,
-  },
-  batch12: {
-    deeplyUpgraded: apRecoveryBatch12.ids.length,
-    severeMissingAnswer: apRecoveryBatch12.severeMissingAnswer,
-    severeStructural: apRecoveryBatch12.severeStructural,
-  },
+  ...recoveryStats,
 };
 
 export function getQuestionnaireById(id: string): Questionnaire | undefined {
