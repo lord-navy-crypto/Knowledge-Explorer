@@ -17,6 +17,7 @@ import SiteRelatedToolsBar from "@/components/SiteRelatedToolsBar";
 import PageHierarchyNav from "@/components/PageHierarchyNav";
 import { EditorModeProvider } from "@/components/EditorModeProvider";
 import { LocalAIProvider } from "@/components/LocalAIProvider";
+import LocalAIWebLLMBootstrap from "@/components/LocalAIWebLLMBootstrap";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ToastProvider } from "@/components/ToastProvider";
 import SiteStructuredData from "@/components/SiteStructuredData";
@@ -95,6 +96,7 @@ export default function RootLayout({
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: THEME_BOOT }}
         />
+        <LocalAIWebLLMBootstrap />
         <Suspense fallback={null}>
           <GlobalRouteProgress />
           <UsageTracker />
