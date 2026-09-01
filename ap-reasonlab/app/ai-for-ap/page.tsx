@@ -14,8 +14,8 @@ export default function AiForApPage() {
         </span>
         <h1 className="mt-3 text-3xl font-bold md:text-4xl">AI for AP</h1>
         <p className="mt-3 max-w-2xl text-blue-100">
-          The AP-focused assistant from the old AI Toolbox now lives inside the AP area: concept help,
-          hints, formulas, derivations, practice generation, and subject-specific study workflows.
+          The AP-focused assistant lives directly inside the AP area: concept help, hints, formulas,
+          derivations, practice generation, and subject-specific study workflows.
         </p>
         <div className="mt-5 flex flex-wrap gap-2">
           <Link href="/ap" className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-brand-800">
