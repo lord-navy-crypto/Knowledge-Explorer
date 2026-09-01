@@ -1,197 +1,66 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { Suspense, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import EthicsBanner from "@/components/EthicsBanner";
-import RecommendedStudyTools from "@/components/RecommendedStudyTools";
-import UnifiedMediaFrame from "@/components/UnifiedMediaFrame";
-import {
-  loadToolboxExtraTool,
-  saveToolboxExtraTool,
-  type ToolboxExtraTool,
-} from "@/lib/ai-toolbox-prefs";
-import { legacyToolToApTask, migrateEnglishTask } from "@/lib/ai-toolbox-url";
-import { decodeSpecialPrompt } from "@/lib/ai-special-features";
+import { Suspense, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const MathPad = dynamic(() => import("@/components/MathPad"), {
   loading: () => <div className="card text-sm text-slate-500">Loading Calc + Graph…</div>,
 });
-const UnifiedAiPanel = dynamic(() => import("@/components/UnifiedAiPanel"), {
-  ssr: false,
-  loading: () => <div className="card text-sm text-slate-500">Loading AI workspace…</div>,
-});
-const AiForApToolboxSection = dynamic(() => import("@/components/AiForApToolboxSection"), {
-  ssr: false,
-  loading: () => <div className="card text-sm text-slate-500">Loading AP AI guides…</div>,
-});
-const LocalAiRecommendation = dynamic(() => import("@/components/LocalAiRecommendation"), {
-  ssr: false,
-  loading: () => null,
-});
-const SiteAiStatusBanner = dynamic(() => import("@/components/SiteAiStatusBanner"), {
-  ssr: false,
-  loading: () => null,
-});
 
-type ExtraTool = ToolboxExtraTool;
-
-const AP_TASKS = new Set([
-  "advice",
-  "concept",
-  "guide",
-  "formula-derive",
-  "generate-questions",
-  "concept-extension",
-]);
-const CODING_TASKS = new Set(["debug", "write", "explain", "csa-frq"]);
-
-function resolveSubject(raw: string | null): string | undefined {
-  if (!raw?.trim()) return undefined;
-  return raw.trim();
-}
-
-function resolveExtraTool(raw: string | null): ExtraTool {
-  if (raw === "calculator" || raw === "grapher" || raw === "math") return raw === "grapher" ? "grapher" : "calculator";
-  if (raw === "english" || raw === "coding" || raw === "concept" || raw === "guide" || raw === "hint") return "ai";
-  if (raw === "imagegen") return "grapher";
-  return "ai";
-}
-
-function resolveCategory(raw: string | null): "ap" | "english" | "coding" {
-  if (raw === "english" || raw === "coding") return raw;
-  if (raw === "concept" || raw === "guide" || raw === "hint") return "ap";
-  return "ap";
-}
-
-function resolveApTask(searchParams: URLSearchParams, tool: string | null): string | undefined {
-  const direct = searchParams.get("apTask");
-  if (direct && AP_TASKS.has(direct)) return direct;
-  return legacyToolToApTask(tool);
-}
-
-function resolveEnglishTask(searchParams: URLSearchParams): string | undefined {
-  return migrateEnglishTask(searchParams.get("englishTask"));
-}
-
-function resolveCodingTask(searchParams: URLSearchParams): string | undefined {
-  const direct = searchParams.get("codingTask");
-  if (direct && CODING_TASKS.has(direct)) return direct;
-  return undefined;
-}
-
-function ToolboxContent() {
+function LegacyToolboxRouter() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const tool = searchParams.get("tool");
-  const [extra, setExtra] = useState<ExtraTool>(() => resolveExtraTool(tool));
-  const subject = resolveSubject(searchParams.get("subject"));
-  const category = resolveCategory(tool);
-  const apTask = resolveApTask(searchParams, tool);
-  const englishTask = resolveEnglishTask(searchParams);
-  const codingTask = resolveCodingTask(searchParams);
-  const prefillPrompt = decodeSpecialPrompt(searchParams.get("sf"));
+  const section = searchParams.get("section");
+
+  const isMath = tool === "calculator" || tool === "grapher" || tool === "math" || tool === "imagegen";
 
   useEffect(() => {
-    if (searchParams.get("section") === "ai-for-ap") {
-      setExtra("ai");
-      saveToolboxExtraTool("ai");
+    if (isMath) return;
+    const query = searchParams.toString();
+    if (tool === "english") {
+      router.replace(`/english/ai${query ? `?${query}` : ""}`);
       return;
     }
-    const fromUrl = searchParams.get("tool");
-    if (fromUrl) {
-      setExtra(resolveExtraTool(fromUrl));
+    if (tool === "coding") {
+      router.replace(`/code/ai${query ? `?${query}` : ""}`);
       return;
     }
-    const saved = loadToolboxExtraTool();
-    if (saved) setExtra(saved);
-  }, [searchParams]);
+    if (tool === "guide") {
+      router.replace(`/user-guide/ai${query ? `?${query}` : ""}`);
+      return;
+    }
+    if (section === "ai-for-ap" || tool === "concept" || tool === "hint") {
+      router.replace(`/ai-for-ap${query ? `?${query}` : ""}`);
+      return;
+    }
+    router.replace("/ai-for-ap");
+  }, [isMath, router, searchParams, section, tool]);
 
-  useEffect(() => {
-    if (searchParams.get("section") !== "ai-for-ap") return;
-    const timer = window.setTimeout(() => {
-      document.getElementById("ai-for-ap")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 160);
-    return () => window.clearTimeout(timer);
-  }, [searchParams]);
-
-  function selectExtra(next: ExtraTool) {
-    setExtra(next);
-    saveToolboxExtraTool(next);
+  if (isMath) {
+    return (
+      <div className="space-y-5">
+        <section className="card">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Convenient Tools</p>
+          <h1 className="mt-1 text-2xl font-bold">Calc + Graph</h1>
+          <p className="mt-2 text-sm text-slate-600">
+            The old AI Toolbox has been split into contextual AI areas. This legacy URL now keeps only
+            the calculator / graph utility for compatibility.
+          </p>
+        </section>
+        <MathPad focus={tool === "grapher" || tool === "imagegen" ? "grapher" : "calculator"} />
+      </div>
+    );
   }
 
-  return (
-    <div className="space-y-8">
-      <section className="hero-gradient rounded-3xl px-5 py-6 text-white shadow-lg md:px-9 md:py-9">
-        <span className="inline-block rounded-full bg-white/20 px-3 py-1 text-xs font-semibold">
-          AI TOOLBOX · AI FOR AP
-        </span>
-        <h1 className="mt-3 text-2xl font-bold md:text-4xl">AI Toolbox</h1>
-        <p className="mt-2 hidden max-w-2xl text-blue-100 sm:block">
-          One panel for study help. Choose Local, Website API, or Your own API — then pick AP,
-          English, or Coding. Extra tool: Calc + Graph. Heavy AI controls load after the toolbox shell
-          is interactive so opening this page no longer blocks on the full AI interface.
-        </p>
-        <p className="mt-2 text-sm text-blue-100 sm:hidden">
-          Local / Website API / Your key · AP · English · Coding · Calc + Graph
-        </p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <a href="#unified-ai-chat" className="rounded-lg border border-white/35 bg-white px-4 py-2 text-sm font-semibold text-brand-800 hover:bg-white/90 sm:hidden">Jump to chat</a>
-          <a href="#ai-for-ap" className="rounded-lg border border-white/35 bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20">AI for AP guides ↓</a>
-        </div>
-        <LocalAiRecommendation variant="hero" className="mt-4 max-w-2xl" />
-      </section>
-
-      <SiteAiStatusBanner />
-      <EthicsBanner />
-
-      <div className="sticky top-16 z-20 -mx-1 flex flex-wrap gap-2 scroll-mt-24 bg-slate-50/95 px-1 py-2 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80 md:static md:top-auto md:bg-transparent md:p-0 md:backdrop-blur-none" role="tablist" aria-label="Toolbox tools">
-        {([
-          { id: "ai", label: "Unified AI" },
-          { id: "calculator", label: "Calc + Graph" },
-        ] as const).map((item) => {
-          const selected = item.id === "ai" ? extra === "ai" : extra !== "ai";
-          return (
-            <button key={item.id} type="button" role="tab" aria-selected={selected} onClick={() => selectExtra(item.id)} className={`rounded-full border px-3 py-1.5 text-sm font-medium ${selected ? "border-brand-500 bg-brand-50 text-brand-800" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"}`}>
-              {item.label}
-            </button>
-          );
-        })}
-        {extra !== "ai" ? (
-          <button type="button" onClick={() => { selectExtra("ai"); window.setTimeout(() => document.getElementById("unified-ai-chat")?.scrollIntoView({ behavior: "smooth", block: "start" }), 80); }} className="rounded-full border border-brand-200 bg-white px-3 py-1.5 text-sm font-medium text-brand-800 hover:bg-brand-50">AI settings / chat</button>
-        ) : (
-          <a href="#unified-ai-chat" className="rounded-full border border-brand-200 bg-white px-3 py-1.5 text-sm font-medium text-brand-800 hover:bg-brand-50 md:hidden">↓ Chat</a>
-        )}
-      </div>
-
-      {extra === "ai" ? (
-        <UnifiedAiPanel
-          defaultCategory={category}
-          defaultSubject={subject}
-          defaultApTask={apTask}
-          defaultEnglishTask={englishTask}
-          defaultCodingTask={codingTask}
-          defaultPrefillPrompt={prefillPrompt || undefined}
-        />
-      ) : null}
-      {extra !== "ai" ? <MathPad focus={extra === "grapher" ? "grapher" : "calculator"} /> : null}
-      {extra === "ai" ? <AiForApToolboxSection /> : null}
-
-      <UnifiedMediaFrame
-        title="AI Toolbox · pictures, documents & files"
-        folderArea="hints"
-        alsoShow={["document", "folder"]}
-        collapsedByDefault
-      />
-
-      <RecommendedStudyTools context="hints" />
-    </div>
-  );
+  return <div className="card text-sm text-slate-500">Opening the new contextual AI workspace…</div>;
 }
 
 export default function HintsPage() {
   return (
-    <Suspense fallback={<div className="card text-sm text-slate-500">Loading AI Toolbox…</div>}>
-      <ToolboxContent />
+    <Suspense fallback={<div className="card text-sm text-slate-500">Opening AI workspace…</div>}>
+      <LegacyToolboxRouter />
     </Suspense>
   );
 }

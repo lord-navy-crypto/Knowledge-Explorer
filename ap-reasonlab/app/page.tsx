@@ -18,32 +18,18 @@ export default function HomePage() {
             {brand.name}
           </h1>
           <p className="mt-4 max-w-xl font-display text-xl font-medium leading-snug text-[#f7f4ee]/90 md:text-2xl">
-            Personal academic site — AP & English first, then tools, code, and Sentinel Mac.
+            Personal academic site — AP & English first, then tools, code, workshops, Sentinel Map, and local AI.
           </p>
-          <p className="mt-3 max-w-lg text-base leading-relaxed text-[#f7f4ee]/75">
-            Start with AP subjects and English exam practice. Convenient Tools (Calc + Graph, PDF
-            desk) and one Code editor sit in the next box. AI Toolbox, Forum, and Manage stay in the
-            top bar.
+          <p className="mt-3 max-w-2xl text-base leading-relaxed text-[#f7f4ee]/75">
+            AI is now placed where it belongs: AI for AP inside AP, AI for English inside English,
+            AI for Code beside the code workbench, and AI Guide inside the User Guide. Easy Local AI
+            is a separate browser-local playground for free chat and model testing without Ollama.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link
-              href="/user-guide"
-              className="inline-flex rounded-lg bg-white/15 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/25 hover:bg-white/25"
-            >
-              User Guide
-            </Link>
-            <Link
-              href="/search"
-              className="inline-flex rounded-lg bg-white/15 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/25 hover:bg-white/25"
-            >
-              Site search
-            </Link>
-            <Link
-              href="/about"
-              className="inline-flex rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-[#f7f4ee]/90 hover:bg-white/15"
-            >
-              About
-            </Link>
+            <Link href="/user-guide" className="inline-flex rounded-lg bg-white/15 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/25 hover:bg-white/25">User Guide</Link>
+            <Link href="/easy-local-ai" className="inline-flex rounded-lg bg-white/15 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/25 hover:bg-white/25">Easy Local AI</Link>
+            <Link href="/search" className="inline-flex rounded-lg bg-white/15 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/25 hover:bg-white/25">Site search</Link>
+            <Link href="/about" className="inline-flex rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-[#f7f4ee]/90 hover:bg-white/15">About</Link>
           </div>
         </div>
       </section>
@@ -52,8 +38,7 @@ export default function HomePage() {
         <div>
           <h2 className="section-title">Main boxes</h2>
           <p className="mt-1 text-sm text-slate-600">
-            Click a box to enter that area. AP & English is plate one. AI Toolbox is always in the
-            top bar.
+            Click a box to enter that area. The old top-level AI Toolbox has been split into contextual assistants; general local chat now lives with Sentinel Map and Easy Local AI.
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -67,74 +52,29 @@ export default function HomePage() {
             }`;
             const content = (
               <>
-                <div
-                  className={`pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-100 ${
-                    isSentinel
-                      ? "bg-gradient-to-br from-sky-500/10 via-transparent to-transparent"
-                      : "bg-gradient-to-br from-brand-50/80 via-transparent to-sky-50/40"
-                  }`}
-                  aria-hidden
-                />
+                <div className={`pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-100 ${isSentinel ? "bg-gradient-to-br from-sky-500/10 via-transparent to-transparent" : "bg-gradient-to-br from-brand-50/80 via-transparent to-sky-50/40"}`} aria-hidden />
                 <div className="relative">
-                  <p
-                    className={`font-display text-xs font-semibold tracking-[0.18em] ${
-                      isSentinel ? "text-sky-300" : "text-brand-600"
-                    }`}
-                  >
-                    BOX {mark}
-                    {box.comingSoon ? " · SOON" : isSentinel ? " · DOWNLOAD" : ""}
+                  <p className={`font-display text-xs font-semibold tracking-[0.18em] ${isSentinel ? "text-sky-300" : "text-brand-600"}`}>
+                    BOX {mark}{box.comingSoon ? " · SOON" : isSentinel ? " · LOCAL" : ""}
                   </p>
-                  <h3
-                    className={`mt-2 font-display text-2xl font-semibold group-hover:text-brand-900 ${
-                      isSentinel ? "text-white group-hover:text-sky-100" : "text-[var(--ke-ink)]"
-                    }`}
-                  >
-                    {box.title}
-                  </h3>
-                  <p className={`mt-2 text-sm leading-6 ${isSentinel ? "text-slate-300" : "text-slate-600"}`}>
-                    {box.description}
-                  </p>
-                  <p
-                    className={`mt-4 text-sm font-semibold ${
-                      isSentinel ? "text-sky-300 group-hover:text-sky-200" : "text-brand-700"
-                    }`}
-                  >
-                    {box.comingSoon ? "View placeholder →" : isSentinel ? "Download & overview →" : "Enter →"}
+                  <h3 className={`mt-2 font-display text-2xl font-semibold group-hover:text-brand-900 ${isSentinel ? "text-white group-hover:text-sky-100" : "text-[var(--ke-ink)]"}`}>{box.title}</h3>
+                  <p className={`mt-2 text-sm leading-6 ${isSentinel ? "text-slate-300" : "text-slate-600"}`}>{box.description}</p>
+                  <p className={`mt-4 text-sm font-semibold ${isSentinel ? "text-sky-300 group-hover:text-sky-200" : "text-brand-700"}`}>
+                    {box.comingSoon ? "View placeholder →" : isSentinel ? "Open local tools →" : "Enter →"}
                   </p>
                 </div>
               </>
             );
 
-            if (box.id === "tools-code") {
-              return (
-                <a key={box.id} href={box.href} className={className}>
-                  {content}
-                </a>
-              );
-            }
-
-            return (
-              <Link key={box.id} href={box.href} className={className}>
-                {content}
-              </Link>
-            );
+            if (box.id === "tools-code") return <a key={box.id} href={box.href} className={className}>{content}</a>;
+            return <Link key={box.id} href={box.href} className={className}>{content}</Link>;
           })}
         </div>
       </section>
 
-      <section
-        className="notranslate border border-amber-700/20 bg-amber-50 px-5 py-4 text-amber-950"
-        translate="no"
-        role="note"
-        aria-label="Do not use page translation"
-      >
-        <p className="font-display text-lg font-semibold text-amber-950">
-          请勿开启网页翻译。开启翻译可能导致网站显示异常。
-        </p>
-        <p className="mt-2 max-w-3xl text-sm text-amber-900/90">
-          Please do not turn on page translation. Translation may cause the website to display
-          abnormalities.
-        </p>
+      <section className="notranslate border border-amber-700/20 bg-amber-50 px-5 py-4 text-amber-950" translate="no" role="note" aria-label="Do not use page translation">
+        <p className="font-display text-lg font-semibold text-amber-950">请勿开启网页翻译。开启翻译可能导致网站显示异常。</p>
+        <p className="mt-2 max-w-3xl text-sm text-amber-900/90">Please do not turn on page translation. Translation may cause the website to display abnormalities.</p>
       </section>
 
       <DisclaimerPanel />
@@ -142,11 +82,8 @@ export default function HomePage() {
       <section className="border border-emerald-800/15 bg-emerald-50/70 px-5 py-4 text-emerald-950">
         <p className="font-display text-lg font-semibold text-emerald-950">{LOCAL_AI_RECOMMENDATION_ZH}</p>
         <p className="mt-2 max-w-2xl text-sm text-emerald-900/85">{LOCAL_AI_RECOMMENDATION_EN}</p>
-        <Link
-          href="/hints"
-          className="mt-3 inline-flex rounded-lg bg-emerald-800 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-900"
-        >
-          Open AI Toolbox · use Local AI
+        <Link href="/easy-local-ai" className="mt-3 inline-flex rounded-lg bg-emerald-800 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-900">
+          Open Easy Local AI · no Ollama
         </Link>
       </section>
 
@@ -155,14 +92,9 @@ export default function HomePage() {
       <section className="card space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="section-title">{brand.name} members</h2>
-          <Link href="/partners" className="text-sm font-medium text-brand-600 hover:underline">
-            Full roster & join →
-          </Link>
+          <Link href="/partners" className="text-sm font-medium text-brand-600 hover:underline">Full roster & join →</Link>
         </div>
-        <p className="text-sm text-slate-600">
-          People on {brand.name} with GitHub. Add anyone on Partners — free name + GitHub, not a
-          fixed single choice.
-        </p>
+        <p className="text-sm text-slate-600">People on {brand.name} with GitHub. Add anyone on Partners — free name + GitHub, not a fixed single choice.</p>
         <HomeMembersRoster />
       </section>
     </div>

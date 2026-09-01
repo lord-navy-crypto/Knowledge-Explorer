@@ -33,7 +33,7 @@ export default function SiteStructuredData() {
         name: "What is Knowledge Explorer?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Knowledge Explorer is an academic platform with AP subjects, English exam practice, study tools, Forum, and AI Toolbox.",
+          text: "Knowledge Explorer is an academic platform with AP subjects, English exam practice, study tools, contextual AI assistants, Forum, and browser-local Easy Local AI.",
         },
       },
       {
@@ -49,7 +49,7 @@ export default function SiteStructuredData() {
         name: "Where do I start studying?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Open Explore from the home page, choose AP & English or Tools & Code, then pick a subject folder or study tool.",
+          text: "Open Explore from the home page, choose AP & English, Tools & Code, workshops, or Sentinel Map and Easy Local AI, then enter the task-specific area you need.",
         },
       },
     ],
@@ -59,7 +59,7 @@ export default function SiteStructuredData() {
     "@context": "https://schema.org",
     "@type": "Course",
     name: "AP & English study hub",
-    description: "Concepts, formulas, practice, TOEFL/SAT lanes, and AI-assisted study workflows.",
+    description: "Concepts, formulas, practice, TOEFL/SAT lanes, and contextual AI-assisted study workflows.",
     provider: {
       "@type": "Organization",
       name: brand.name,
