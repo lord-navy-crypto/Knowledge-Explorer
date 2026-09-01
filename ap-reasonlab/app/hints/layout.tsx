@@ -3,12 +3,12 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import { brand } from "@/data/brand";
 
 export const metadata: Metadata = {
-  title: `AI Toolbox — ${brand.name}`,
+  title: `Legacy AI & Math Redirect — ${brand.name}`,
   description:
-    "Unified AI panel for AP hints, English tutoring, coding help, Calculator, and Grapher — Local AI, Website API, or your own key.",
+    "Compatibility route for older Knowledge Explorer AI and math links. AI now lives in AP, English, Code, and Guide; calculator and graph links remain available here.",
   openGraph: {
-    title: `AI Toolbox — ${brand.name}`,
-    description: "AP · English · Coding · Calculator · Grapher in one study panel.",
+    title: `Legacy AI & Math Redirect — ${brand.name}`,
+    description: "Compatibility route for contextual AI and math-tool links.",
     type: "website",
   },
 };
@@ -19,7 +19,7 @@ export default function HintsLayout({ children }: { children: React.ReactNode })
       <Breadcrumbs
         items={[
           { label: "Home", href: "/" },
-          { label: "AI Toolbox" },
+          { label: "Legacy AI & Math Redirect" },
         ]}
       />
       {children}
