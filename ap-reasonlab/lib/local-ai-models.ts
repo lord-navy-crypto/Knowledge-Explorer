@@ -1,12 +1,12 @@
 /**
  * Curated Local AI catalog for WebLLM (browser WebGPU).
- * Featured list = study-focused picks with flash-point tags.
- * Extended library = broader official WebLLM prebuilt list (opt-in).
+ * Keep the default/featured set conservative. The optional extended library is
+ * generated from WebLLM's runtime `prebuiltAppConfig.model_list`, so users can
+ * never select an extended model that the installed runtime does not know.
  */
 
 export type LocalModelGroup = "superlight" | "light" | "medium" | "heavy";
 
-/** Short flash points shown in the Local AI picker. */
 export type LocalModelTag =
   | "New"
   | "Bilingual"
@@ -29,116 +29,64 @@ export type LocalModelOption = {
   tags: LocalModelTag[];
   cached: boolean | null;
   recommended?: boolean;
-  /** True when pulled from the full WebLLM library (not curated). */
   extended?: boolean;
 };
 
-/** Safe default — newest light bilingual starter. */
-export const DEFAULT_LOCAL_MODEL_ID = "Qwen3.5-0.8B-q4f16_1-MLC";
+/** Stable small bilingual starter supported by the WebLLM generation used here. */
+export const DEFAULT_LOCAL_MODEL_ID = "Qwen3-0.6B-q4f16_1-MLC";
 
 /**
- * Featured Local AI series for Knowledge Explorer.
- * Prefer Qwen3 / Qwen3.5; keep specialist Math/Coder and English options.
+ * Conservative curated list. Newer model families belong in the runtime-discovered
+ * extended library until the pinned WebLLM version has been verified with them.
  */
 export const FEATURED_LOCAL_MODELS: LocalModelOption[] = [
-  // —— Super light ——
   {
-    id: "SmolLM2-135M-Instruct-q0f16-MLC",
-    label: "SmolLM2 Tiny",
+    id: "Qwen3-0.6B-q4f16_1-MLC",
+    label: "Qwen3 Micro",
     group: "superlight",
-    series: "SmolLM2",
-    summary: "Smallest smoke-test model — very fast, basic English only.",
-    bestFor: "Checking that Local AI works on weak devices",
-    parameterSize: "135M",
-    vramMB: 360,
-    tags: ["Tiny", "English"],
+    series: "Qwen3",
+    summary: "Small bilingual starter with low memory demand.",
+    bestFor: "First Local AI test and everyday Chinese / English chat",
+    parameterSize: "0.6B",
+    vramMB: 1403,
+    tags: ["Bilingual", "Tiny", "Recommended"],
     cached: null,
-  },
-  {
-    id: "gemma3-1b-it-q4f16_1-MLC",
-    label: "Gemma 3 1B",
-    group: "superlight",
-    series: "Gemma 3",
-    summary: "Google’s tiny instruct model — crisp short English replies.",
-    bestFor: "Short English rewrites on low VRAM",
-    parameterSize: "1B",
-    vramMB: 711,
-    tags: ["New", "English", "Tiny"],
-    cached: null,
+    recommended: true,
   },
   {
     id: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
     label: "Qwen2.5 Micro",
     group: "superlight",
     series: "Qwen2.5",
-    summary: "Proven ultra-light bilingual starter.",
-    bestFor: "Phones / Chromebooks when newer Qwen3.5 feels heavy",
+    summary: "Mature ultra-light bilingual fallback.",
+    bestFor: "Weak devices and a second smoke-test option",
     parameterSize: "0.5B",
     vramMB: 945,
     tags: ["Bilingual", "Tiny"],
     cached: null,
   },
   {
-    id: "Qwen3-0.6B-q4f16_1-MLC",
-    label: "Qwen3 Micro",
+    id: "Llama-3.2-1B-Instruct-q4f16_1-MLC",
+    label: "Llama 3.2 Light",
     group: "superlight",
-    series: "Qwen3",
-    summary: "Qwen3 micro — bilingual with light reasoning.",
-    bestFor: "Newer micro bilingual chat",
-    parameterSize: "0.6B",
-    vramMB: 1403,
-    tags: ["Bilingual", "Tiny"],
+    series: "Llama 3.2",
+    summary: "Compact English-first instruct model.",
+    bestFor: "English explanations and short drafting",
+    parameterSize: "1B",
+    vramMB: 879,
+    tags: ["English", "Tiny"],
     cached: null,
-  },
-  {
-    id: "Qwen3.5-0.8B-q4f16_1-MLC",
-    label: "Qwen3.5 Starter",
-    group: "superlight",
-    series: "Qwen3.5",
-    summary: "Newest light bilingual default for this site.",
-    bestFor: "Everyday Chinese / English study on modest GPUs",
-    parameterSize: "0.8B",
-    vramMB: 1629,
-    tags: ["New", "Bilingual", "Recommended"],
-    cached: null,
-    recommended: true,
   },
   {
     id: "Qwen2.5-Coder-0.5B-Instruct-q4f16_1-MLC",
     label: "Qwen2.5 Coder Micro",
     group: "superlight",
     series: "Qwen2.5 Coder",
-    summary: "Tiny coding helper for short snippets.",
-    bestFor: "Comments, tiny fixes, weak-device Coding AI",
+    summary: "Small code-focused local model.",
+    bestFor: "Short code explanations and small fixes",
     parameterSize: "0.5B",
     vramMB: 945,
     tags: ["Coding", "Tiny"],
-    cached: null,
-  },
-
-  // —— Light ——
-  {
-    id: "Llama-3.2-1B-Instruct-q4f16_1-MLC",
-    label: "Llama 3.2 Light",
-    group: "light",
-    series: "Llama 3.2",
-    summary: "Compact Meta model — strong English for its size.",
-    bestFor: "English explanations and light Q&A",
-    parameterSize: "1B",
-    vramMB: 879,
-    tags: ["English"],
-    cached: null,
-  },
-  {
-    id: "OLMo-2-0425-1B-Instruct-q4f16_1-MLC",
-    label: "OLMo 2 1B",
-    group: "light",
-    series: "OLMo 2",
-    summary: "Open English instruct model from AI2.",
-    bestFor: "Clear English tutoring on light hardware",
-    parameterSize: "1B",
-    vramMB: 1777,
-    tags: ["English", "New"],
     cached: null,
   },
   {
@@ -146,11 +94,11 @@ export const FEATURED_LOCAL_MODELS: LocalModelOption[] = [
     label: "Qwen3 Light+",
     group: "light",
     series: "Qwen3",
-    summary: "Best light bilingual jump up from the 0.8B starter.",
-    bestFor: "AP / English bilingual study without medium VRAM",
+    summary: "Stronger bilingual step up while staying laptop-friendly.",
+    bestFor: "AP / English bilingual study",
     parameterSize: "1.7B",
     vramMB: 2037,
-    tags: ["New", "Bilingual", "Recommended"],
+    tags: ["Bilingual", "Recommended"],
     cached: null,
     recommended: true,
   },
@@ -159,7 +107,7 @@ export const FEATURED_LOCAL_MODELS: LocalModelOption[] = [
     label: "Qwen2.5 Light",
     group: "light",
     series: "Qwen2.5",
-    summary: "Stable bilingual light model.",
+    summary: "Stable bilingual instruct model.",
     bestFor: "General Chinese / English help",
     parameterSize: "1.5B",
     vramMB: 1630,
@@ -171,8 +119,8 @@ export const FEATURED_LOCAL_MODELS: LocalModelOption[] = [
     label: "Qwen2.5 Math Light",
     group: "light",
     series: "Qwen2.5 Math",
-    summary: "Math-tuned light model for formula language.",
-    bestFor: "AP math hints and symbolic steps",
+    summary: "Math-tuned light model for equations and symbolic language.",
+    bestFor: "AP math hints and formulas",
     parameterSize: "1.5B",
     vramMB: 1630,
     tags: ["Math", "Bilingual"],
@@ -184,22 +132,10 @@ export const FEATURED_LOCAL_MODELS: LocalModelOption[] = [
     group: "light",
     series: "Qwen2.5 Coder",
     summary: "Code-focused light assistant.",
-    bestFor: "Small snippets and Coding AI on laptops",
+    bestFor: "Programming explanations on laptops",
     parameterSize: "1.5B",
     vramMB: 1630,
     tags: ["Coding"],
-    cached: null,
-  },
-  {
-    id: "SmolLM2-1.7B-Instruct-q4f16_1-MLC",
-    label: "SmolLM2 1.7B",
-    group: "light",
-    series: "SmolLM2",
-    summary: "Much stronger than Tiny/Mini while staying light.",
-    bestFor: "English summaries without jumping to 3B",
-    parameterSize: "1.7B",
-    vramMB: 1774,
-    tags: ["English"],
     cached: null,
   },
   {
@@ -207,27 +143,12 @@ export const FEATURED_LOCAL_MODELS: LocalModelOption[] = [
     label: "Gemma 2 2B",
     group: "light",
     series: "Gemma 2",
-    summary: "Google 2B instruct — fluent English tutoring.",
+    summary: "English-first 2B instruct model.",
     bestFor: "English writing feedback and explanations",
     parameterSize: "2B",
     vramMB: 1895,
     tags: ["English"],
     cached: null,
-  },
-
-  // —— Medium ——
-  {
-    id: "Qwen3.5-2B-q4f16_1-MLC",
-    label: "Qwen3.5 Medium",
-    group: "medium",
-    series: "Qwen3.5",
-    summary: "Newer mid-size bilingual Qwen3.5.",
-    bestFor: "Longer Chinese / English study answers",
-    parameterSize: "2B",
-    vramMB: 2245,
-    tags: ["New", "Bilingual", "Recommended"],
-    cached: null,
-    recommended: true,
   },
   {
     id: "Llama-3.2-3B-Instruct-q4f16_1-MLC",
@@ -235,34 +156,23 @@ export const FEATURED_LOCAL_MODELS: LocalModelOption[] = [
     group: "medium",
     series: "Llama 3.2",
     summary: "Solid English quality / speed balance.",
-    bestFor: "General English tutoring on desktops",
+    bestFor: "Longer English tutoring on capable laptops",
     parameterSize: "3B",
     vramMB: 2264,
-    tags: ["English"],
+    tags: ["English", "Recommended"],
     cached: null,
+    recommended: true,
   },
   {
-    id: "Hermes-3-Llama-3.2-3B-q4f16_1-MLC",
-    label: "Hermes 3 3B",
+    id: "Qwen2.5-Coder-3B-Instruct-q4f16_1-MLC",
+    label: "Qwen2.5 Coder Medium",
     group: "medium",
-    series: "Hermes 3",
-    summary: "Instruction-tuned Llama 3.2 — helpful chat style.",
-    bestFor: "Dialogue-style study coaching in English",
+    series: "Qwen2.5 Coder",
+    summary: "Stronger local coding model.",
+    bestFor: "Code explanations and AI Developer drafts",
     parameterSize: "3B",
-    vramMB: 2264,
-    tags: ["English", "Reasoning"],
-    cached: null,
-  },
-  {
-    id: "Ministral-3-3B-Instruct-2512-BF16-q4f16_1-MLC",
-    label: "Ministral 3 3B",
-    group: "medium",
-    series: "Ministral 3",
-    summary: "Mistral’s compact instruct model (2025-12).",
-    bestFor: "Crisp English reasoning on mid GPUs",
-    parameterSize: "3B",
-    vramMB: 2864,
-    tags: ["New", "English", "Reasoning"],
+    vramMB: 2505,
+    tags: ["Coding"],
     cached: null,
   },
   {
@@ -270,74 +180,11 @@ export const FEATURED_LOCAL_MODELS: LocalModelOption[] = [
     label: "Qwen3 Medium+",
     group: "medium",
     series: "Qwen3",
-    summary: "Strong bilingual mid model with light thinking.",
-    bestFor: "Harder AP bilingual help when VRAM allows",
+    summary: "Strong bilingual mid-size model.",
+    bestFor: "Harder bilingual study when device memory allows",
     parameterSize: "4B",
     vramMB: 3432,
     tags: ["Bilingual", "Reasoning"],
-    cached: null,
-  },
-  {
-    id: "Qwen3.5-4B-q4f16_1-MLC",
-    label: "Qwen3.5 Medium+",
-    group: "medium",
-    series: "Qwen3.5",
-    summary: "Newest 4B bilingual — best mid-tier quality pick.",
-    bestFor: "High-quality Chinese / English tutoring mid-size",
-    parameterSize: "4B",
-    vramMB: 3868,
-    tags: ["New", "Bilingual", "Recommended"],
-    cached: null,
-    recommended: true,
-  },
-  {
-    id: "Phi-4-mini-instruct-q4f16_1-MLC",
-    label: "Phi-4 Mini",
-    group: "medium",
-    series: "Phi-4",
-    summary: "Microsoft’s newer mini — careful structured answers.",
-    bestFor: "Step-by-step reasoning and short precise replies",
-    parameterSize: "3.8B",
-    vramMB: 3438,
-    tags: ["New", "Reasoning", "English"],
-    cached: null,
-  },
-  {
-    id: "Qwen2.5-Coder-3B-Instruct-q4f16_1-MLC",
-    label: "Qwen2.5 Coder Medium",
-    group: "medium",
-    series: "Qwen2.5 Coder",
-    summary: "Stronger local coding without jumping to 7B.",
-    bestFor: "Code explanations and AI Developer drafts",
-    parameterSize: "3B",
-    vramMB: 2505,
-    tags: ["Coding"],
-    cached: null,
-  },
-
-  // —— Heavy ——
-  {
-    id: "Qwen3-8B-q4f16_1-MLC",
-    label: "Qwen3 Heavy",
-    group: "heavy",
-    series: "Qwen3",
-    summary: "Flagship bilingual local general model — needs a strong GPU; start lighter if it feels laggy.",
-    bestFor: "Best all-round Chinese / English study answers on capable devices",
-    parameterSize: "8B",
-    vramMB: 5696,
-    tags: ["Bilingual"],
-    cached: null,
-  },
-  {
-    id: "Qwen3.5-9B-q4f16_1-MLC",
-    label: "Qwen3.5 Heavy",
-    group: "heavy",
-    series: "Qwen3.5",
-    summary: "Large bilingual Qwen — needs a strong GPU; Local waits for the full answer.",
-    bestFor: "Highest local quality when device memory allows",
-    parameterSize: "9B",
-    vramMB: 6433,
-    tags: ["Bilingual"],
     cached: null,
   },
   {
@@ -345,8 +192,8 @@ export const FEATURED_LOCAL_MODELS: LocalModelOption[] = [
     label: "Qwen2.5 Heavy",
     group: "heavy",
     series: "Qwen2.5",
-    summary: "Proven 7B bilingual fallback.",
-    bestFor: "High-quality study answers on ~5 GB VRAM",
+    summary: "Large bilingual option for strong GPUs.",
+    bestFor: "Higher-quality local study answers",
     parameterSize: "7B",
     vramMB: 5107,
     tags: ["Bilingual"],
@@ -358,34 +205,10 @@ export const FEATURED_LOCAL_MODELS: LocalModelOption[] = [
     group: "heavy",
     series: "Llama 3.1",
     summary: "Strong English 8B instruct model.",
-    bestFor: "Deep English tutoring and long-form writing",
+    bestFor: "Deep English tutoring on strong GPUs",
     parameterSize: "8B",
     vramMB: 5001,
     tags: ["English"],
-    cached: null,
-  },
-  {
-    id: "Mistral-7B-Instruct-v0.3-q4f16_1-MLC",
-    label: "Mistral 7B",
-    group: "heavy",
-    series: "Mistral",
-    summary: "Classic strong English instruct 7B.",
-    bestFor: "English reasoning and drafting",
-    parameterSize: "7B",
-    vramMB: 4573,
-    tags: ["English", "Reasoning"],
-    cached: null,
-  },
-  {
-    id: "Qwen2.5-Coder-7B-Instruct-q4f16_1-MLC",
-    label: "Qwen2.5 Coder Heavy",
-    group: "heavy",
-    series: "Qwen2.5 Coder",
-    summary: "Strongest featured coder.",
-    bestFor: "Complex code help and AI Developer work",
-    parameterSize: "7B",
-    vramMB: 5107,
-    tags: ["Coding"],
     cached: null,
   },
 ];
@@ -412,22 +235,16 @@ function guessSeries(modelId: string): string {
   if (/Qwen2\.5-Coder/i.test(modelId)) return "Qwen2.5 Coder";
   if (/Qwen2\.5-Math/i.test(modelId)) return "Qwen2.5 Math";
   if (/Qwen2\.5/i.test(modelId)) return "Qwen2.5";
-  if (/Qwen2/i.test(modelId)) return "Qwen2";
   if (/Llama-3\.2/i.test(modelId)) return "Llama 3.2";
   if (/Llama-3\.1/i.test(modelId)) return "Llama 3.1";
   if (/Llama-3/i.test(modelId)) return "Llama 3";
-  if (/Phi-4/i.test(modelId)) return "Phi-4";
-  if (/Phi-3/i.test(modelId)) return "Phi-3";
-  if (/gemma3/i.test(modelId)) return "Gemma 3";
-  if (/gemma-2/i.test(modelId)) return "Gemma 2";
-  if (/SmolLM2/i.test(modelId)) return "SmolLM2";
-  if (/Hermes-3/i.test(modelId)) return "Hermes 3";
-  if (/Hermes-2/i.test(modelId)) return "Hermes 2";
-  if (/Mistral/i.test(modelId)) return "Mistral";
+  if (/Phi/i.test(modelId)) return "Phi";
+  if (/gemma/i.test(modelId)) return "Gemma";
+  if (/SmolLM/i.test(modelId)) return "SmolLM";
+  if (/Hermes/i.test(modelId)) return "Hermes";
   if (/Ministral/i.test(modelId)) return "Ministral";
+  if (/Mistral/i.test(modelId)) return "Mistral";
   if (/OLMo/i.test(modelId)) return "OLMo";
-  if (/DeepSeek/i.test(modelId)) return "DeepSeek";
-  if (/WizardMath/i.test(modelId)) return "WizardMath";
   const head = modelId.split("-")[0];
   return head || "Other";
 }
@@ -435,9 +252,6 @@ function guessSeries(modelId: string): string {
 function groupFromVram(vramMB: number, parameterSize: string): LocalModelGroup {
   const n = Number.parseFloat(parameterSize);
   const isM = parameterSize.endsWith("M");
-  if (isM || (Number.isFinite(n) && n <= 1 && parameterSize.endsWith("B") && vramMB < 1700)) {
-    if (vramMB < 1700 || isM || n <= 0.8) return "superlight";
-  }
   if (vramMB >= 4500 || (Number.isFinite(n) && !isM && n >= 7)) return "heavy";
   if (vramMB >= 2200 || (Number.isFinite(n) && !isM && n >= 3)) return "medium";
   if (vramMB < 1200 || isM || (Number.isFinite(n) && n <= 1)) return "superlight";
@@ -446,28 +260,23 @@ function groupFromVram(vramMB: number, parameterSize: string): LocalModelGroup {
 
 function tagsFromId(modelId: string): LocalModelTag[] {
   const tags: LocalModelTag[] = [];
-  if (/Qwen3\.5|Qwen3-|Phi-4|gemma3|Ministral|OLMo-2-0425/i.test(modelId)) tags.push("New");
+  if (/Qwen3\.5|Qwen3-|Phi-4|gemma3|Ministral/i.test(modelId)) tags.push("New");
   if (/Qwen/i.test(modelId)) tags.push("Bilingual");
-  else if (/Llama|Phi|gemma|Mistral|Hermes|OLMo|Ministral|SmolLM/i.test(modelId)) tags.push("English");
+  else if (/Llama|Phi|gemma|Mistral|Hermes|OLMo|SmolLM/i.test(modelId)) tags.push("English");
   if (/Math|WizardMath/i.test(modelId)) tags.push("Math");
   if (/Coder|code/i.test(modelId)) tags.push("Coding");
-  if (/DeepSeek-R1|Reasoning|Hermes|Phi/i.test(modelId)) tags.push("Reasoning");
+  if (/Reasoning|Hermes|Phi/i.test(modelId)) tags.push("Reasoning");
   if (/0\.5B|0\.6B|0\.8B|135M|360M|1B-Instruct|gemma3-1b/i.test(modelId)) tags.push("Tiny");
   return tags;
 }
 
-/** Prefer q4f16 instruct variants; skip embeddings / vision / laggy reasoning dumps. */
 export function shouldIncludeExtendedModel(modelId: string): boolean {
   if (FEATURED_LOCAL_MODEL_IDS.has(modelId)) return false;
   if (/embed|Embedding|bge|e5|jina|Snowflake|Viper|binary/i.test(modelId)) return false;
   if (/vision|VL-/i.test(modelId)) return false;
-  // DeepSeek-R1 Distill reintroduces multi-minute hidden thinking lag in-browser.
   if (/DeepSeek-R1|R1-Distill/i.test(modelId)) return false;
-  // Prefer the common q4f16_1 build; allow q0f16 only for tiny SmolLM already featured.
   if (!/q4f16_1-MLC/.test(modelId)) return false;
-  // Skip short-context -1k forks when a normal id exists in featured/extended.
   if (/-1k$/i.test(modelId)) return false;
-  // Skip base (non-instruct) unless clearly it/instruct/chat.
   if (/Base-/i.test(modelId) && !/Instruct|it-|Chat/i.test(modelId)) return false;
   return true;
 }
@@ -485,8 +294,8 @@ export function buildExtendedLocalModels(records: WebLLMModelRecord[]): LocalMod
       label: id.replace(/-q4f16_1-MLC$/i, "").replace(/-/g, " "),
       group: groupFromVram(vramMB, parameterSize),
       series,
-      summary: `Full WebLLM library · ${series}.`,
-      bestFor: "Extra official WebLLM model (not in the curated study list)",
+      summary: `Runtime WebLLM library · ${series}.`,
+      bestFor: "Additional model verified by the installed WebLLM runtime",
       parameterSize,
       vramMB,
       tags: tagsFromId(id),
@@ -521,7 +330,6 @@ export function formatLocalModelTags(tags: LocalModelTag[]): string {
   return tags.filter((t) => t !== "Recommended").join(" · ");
 }
 
-/** Human labels for Local model weight groups (picker + suitability guide). */
 export const LOCAL_MODEL_GROUP_LABELS: Record<LocalModelGroup, string> = {
   superlight: "Super light",
   light: "Light",
@@ -536,15 +344,12 @@ export const LOCAL_MODEL_GROUP_ORDER: LocalModelGroup[] = [
   "heavy",
 ];
 
-/** Task-oriented quick picks drawn from the curated catalog. */
 export type LocalModelUseCase = {
   id: string;
   title: string;
   detail: string;
-  /** Match any of these tags, or fall back to id substrings. */
   preferTags?: LocalModelTag[];
   preferIdIncludes?: string[];
-  /** Prefer recommended curated models when present. */
   preferRecommended?: boolean;
 };
 
@@ -552,7 +357,7 @@ export const LOCAL_MODEL_USE_CASES: LocalModelUseCase[] = [
   {
     id: "bilingual-daily",
     title: "Everyday Chinese / English study",
-    detail: "Default path — Qwen3.5 / Qwen3 bilingual tutors.",
+    detail: "Default path — stable Qwen3 / Qwen2.5 bilingual tutors.",
     preferTags: ["Bilingual"],
     preferRecommended: true,
   },
@@ -571,19 +376,18 @@ export const LOCAL_MODEL_USE_CASES: LocalModelUseCase[] = [
   {
     id: "english-only",
     title: "English writing & explanations",
-    detail: "English-first instruct models (Gemma, Llama, Phi, OLMo…).",
+    detail: "English-first instruct models such as Llama and Gemma.",
     preferTags: ["English"],
   },
   {
     id: "weak-gpu",
     title: "Weak GPU / first enable",
-    detail: "Super-light starters to confirm WebGPU and keep VRAM low.",
+    detail: "Start with Qwen3 0.6B or another super-light model.",
     preferTags: ["Tiny"],
     preferRecommended: true,
   },
 ];
 
-/** Pick curated models that best match a use-case (for the suitability guide). */
 export function modelsForUseCase(
   models: LocalModelOption[],
   useCase: LocalModelUseCase,
@@ -597,9 +401,7 @@ export function modelsForUseCase(
       if (useCase.preferTags?.some((tag) => model.tags.includes(tag))) score += 3;
       if (useCase.preferIdIncludes?.some((part) => model.id.includes(part))) score += 2;
       if (useCase.id === "weak-gpu" && model.group === "superlight") score += 2;
-      if (useCase.id === "bilingual-daily" && /Qwen3\.5|Qwen3/.test(model.id) && !/Coder|Math/.test(model.id)) {
-        score += 2;
-      }
+      if (useCase.id === "bilingual-daily" && /Qwen3|Qwen2\.5/.test(model.id) && !/Coder|Math/.test(model.id)) score += 2;
       return { model, score };
     })
     .filter((row) => row.score > 0)

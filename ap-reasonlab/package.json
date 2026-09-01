@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npm run validate:questions && next build",
+    "build": "npm run check:webllm && npm run validate:questions && next build",
     "start": "next start",
     "lint": "next lint",
+    "check:webllm": "node scripts/check-webllm-version.mjs",
     "check:ai-latex": "tsx scripts/check-ai-latex.ts",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -19,7 +20,7 @@
     "generate:ap-units": "tsx scripts/generate-ap-units-from-formulas.ts"
   },
   "dependencies": {
-    "@mlc-ai/web-llm": "0.2.84",
+    "@mlc-ai/web-llm": "0.2.82",
     "katex": "^0.18.1",
     "mammoth": "^1.12.0",
     "next": "^15.1.0",
