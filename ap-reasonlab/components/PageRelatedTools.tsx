@@ -22,13 +22,25 @@ function pickExternal(ids: readonly string[] | undefined): ExternalTool[] {
   return ids.map((id) => map.get(id)).filter(Boolean) as ExternalTool[];
 }
 
+function normalizeLegacyAiTool(tool: StudyTool): StudyTool {
+  if (tool.id !== "ai") return tool;
+  return {
+    ...tool,
+    href: "/easy-local-ai",
+    title: "Easy Local AI",
+    blurb:
+      "General browser-local WebLLM sandbox with no Ollama. AP, English, and Code AI stay inside their own study areas.",
+    security: "safe",
+  };
+}
+
 /** Compact strip of related built-in + off-site tools for a study page. */
 export default function PageRelatedTools({
   title = "Related toolbox links",
   toolIds,
   externalIds,
 }: RelatedToolsSpec) {
-  const tools = pickTools(toolIds);
+  const tools = pickTools(toolIds).map(normalizeLegacyAiTool);
   const external = pickExternal(externalIds);
   if (!tools.length && !external.length) return null;
 
