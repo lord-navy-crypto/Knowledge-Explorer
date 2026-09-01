@@ -1,4 +1,4 @@
-/** Build deep links into the AI Toolbox with task + subject prefill. */
+/** Build deep links into the dedicated contextual AI routes with task + subject prefill. */
 
 export type ToolboxApTask =
   | "advice"
@@ -64,20 +64,24 @@ export function toolboxHref(params: {
   promptEncoded?: string;
 }): string {
   const q = new URLSearchParams();
+  let route = "/ai-for-ap";
+
   if (params.tool) {
+    route = "/hints";
     q.set("tool", params.tool);
   } else if (params.category === "english") {
-    q.set("tool", "english");
+    route = "/english/ai";
   } else if (params.category === "coding") {
-    q.set("tool", "coding");
+    route = "/code/ai";
   }
+
   if (params.apTask) q.set("apTask", params.apTask);
   if (params.englishTask) q.set("englishTask", params.englishTask);
   if (params.codingTask) q.set("codingTask", params.codingTask);
   if (params.subject) q.set("subject", params.subject);
   if (params.promptEncoded) q.set("sf", params.promptEncoded);
   const query = q.toString();
-  return query ? `/hints?${query}` : "/hints";
+  return query ? `${route}?${query}` : route;
 }
 
 /** Legacy `?tool=hint|concept|guide` → apTask */
@@ -88,7 +92,7 @@ export function legacyToolToApTask(tool: string | null): ToolboxApTask | undefin
   return undefined;
 }
 
-/** Per ai_for_ap guide id → recommended toolbox entry */
+/** Per ai_for_ap guide id → recommended contextual AI entry. */
 export const GUIDE_TOOLBOX_LINKS: Record<
   string,
   { href: string; label: string; blurb: string }
@@ -98,7 +102,7 @@ export const GUIDE_TOOLBOX_LINKS: Record<
       apTask: "concept",
       subject: "Study Skills / AI for AP",
     }),
-    label: "Open Concept explain in AI Toolbox",
+    label: "Open Concept explain in AI for AP",
     blurb: "Local AI first — rephrase concepts and get check questions without final answers.",
   },
   "guide-ai-images": {
@@ -111,7 +115,7 @@ export const GUIDE_TOOLBOX_LINKS: Record<
       apTask: "generate-questions",
       subject: "Study Skills / AI for AP",
     }),
-    label: "Generate practice in AI Toolbox",
+    label: "Generate practice in AI for AP",
     blurb: "Create original items, then save as a practice set when you are an editor.",
   },
   "guide-ai-concept-extension": {
@@ -119,7 +123,7 @@ export const GUIDE_TOOLBOX_LINKS: Record<
       apTask: "concept-extension",
       subject: "Study Skills / AI for AP",
     }),
-    label: "Open Concept extension in AI Toolbox",
+    label: "Open Concept extension in AI for AP",
     blurb: "Paste a basic concept or formula — map how AP exams stretch it into richer scenes.",
   },
   "guide-stats-ai-generate": {
