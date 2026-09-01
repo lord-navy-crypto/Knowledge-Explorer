@@ -3,6 +3,8 @@
 import { FormEvent, useMemo, useState } from "react";
 import type { ChatCompletionMessageParam } from "@mlc-ai/web-llm";
 import { useLocalAI } from "@/components/LocalAIProvider";
+import RichContent from "@/components/RichContent";
+import { repairAiMarkdownMath } from "@/lib/ai-latex-accuracy";
 
 type ChatMessage = { id: string; role: "user" | "assistant"; content: string };
 
@@ -82,7 +84,7 @@ export default function EasyLocalAIPlayground() {
     const payload: ChatCompletionMessageParam[] = [
       {
         role: "system",
-        content: "You are a general-purpose local assistant. Answer directly and naturally. Do not force an AP, English, or coding workflow unless the user asks for one.",
+        content: "You are a general-purpose local assistant. Answer directly and naturally. Use Markdown. For mathematics, write inline LaTeX as $...$ and display LaTeX as $$...$$; never put LaTeX inside code fences unless the user explicitly asks for source code. Do not force an AP, English, or coding workflow unless the user asks for one.",
       },
       ...history.map((message) => ({ role: message.role, content: message.content }) as ChatCompletionMessageParam),
     ];
@@ -94,12 +96,13 @@ export default function EasyLocalAIPlayground() {
           setMessages((current) => current.map((message) => message.id === assistantId ? { ...message, content: fullText } : message));
         },
         {
-          nudge: "Answer as a general-purpose assistant. Be direct, useful, and natural. Do not add an AP/English/Coding framework unless the user asks for one.",
-          retryNudge: "Return a complete visible answer directly, with no hidden reasoning block.",
+          nudge: "Answer as a general-purpose assistant in clean Markdown. Be direct, useful, and natural. When math is needed, use valid KaTeX-compatible LaTeX with $...$ inline or $$...$$ for display equations. Do not add an AP/English/Coding framework unless the user asks for one.",
+          retryNudge: "Return a complete visible answer directly, with no hidden reasoning block. Preserve valid Markdown and LaTeX delimiters.",
         }
       );
       if (!answer.trim()) throw new Error("The local model returned an empty response.");
-      setMessages((current) => current.map((message) => message.id === assistantId ? { ...message, content: answer } : message));
+      const repaired = repairAiMarkdownMath(answer).text;
+      setMessages((current) => current.map((message) => message.id === assistantId ? { ...message, content: repaired } : message));
     } catch (caught) {
       setUiError(caught instanceof Error ? caught.message : "Local generation failed.");
       setMessages((current) => current.filter((item) => item.id !== assistantId));
@@ -176,17 +179,28 @@ export default function EasyLocalAIPlayground() {
               <p className="text-lg font-semibold text-slate-900">Ask anything you want to test locally.</p>
               <p className="mt-2 text-sm text-slate-600">The engine is shared across Easy Local AI and the subject assistants; this page only changes the general-purpose system prompt.</p>
             </div>
-          ) : messages.map((message) => (
-            <div key={message.id} className={message.role === "user" ? "ml-auto max-w-3xl rounded-2xl bg-slate-900 px-4 py-3 text-sm leading-6 text-white" : "mr-auto max-w-3xl whitespace-pre-wrap rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-800"}>
-              {message.content || (sending ? "Thinking locally…" : "")}
-            </div>
-          ))}
+          ) : messages.map((message, index) => {
+            const isStreamingReply = sending && message.role === "assistant" && index === messages.length - 1;
+            return (
+              <div key={message.id} className={message.role === "user" ? "ml-auto max-w-3xl rounded-2xl bg-slate-900 px-4 py-3 text-sm leading-6 text-white" : "mr-auto max-w-3xl rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-800"}>
+                {message.role === "user" ? (
+                  <p className="whitespace-pre-wrap break-words">{message.content}</p>
+                ) : message.content ? (
+                  <RichContent className="min-w-0 text-sm" streaming={isStreamingReply} aiDialogue>
+                    {message.content}
+                  </RichContent>
+                ) : sending ? (
+                  "Thinking locally…"
+                ) : null}
+              </div>
+            );
+          })}
         </div>
 
         <form onSubmit={submit} className="border-t border-slate-200 p-4">
           <textarea className="input min-h-24 w-full resize-y" value={input} disabled={!ready || sending} placeholder={ready ? "Ask the shared local model…" : "Enable a compatible local model first…"} onChange={(event) => setInput(event.target.value)} />
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-xs text-slate-500">Same model engine and browser cache as AP, English, and Code AI.</p>
+            <p className="text-xs text-slate-500">Markdown + KaTeX rendering uses the same math pipeline as the subject AI tools.</p>
             <button type="submit" className="btn-primary" disabled={!ready || sending || !input.trim()}>{sending ? "Generating…" : "Send locally"}</button>
           </div>
         </form>
