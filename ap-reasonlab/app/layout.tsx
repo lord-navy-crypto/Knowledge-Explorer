@@ -21,6 +21,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { ToastProvider } from "@/components/ToastProvider";
 import SiteStructuredData from "@/components/SiteStructuredData";
 import GlobalRouteProgress from "@/components/GlobalRouteProgress";
+import UsageTracker from "@/components/UsageTracker";
 import { brand } from "@/data/brand";
 
 const fontSans = IBM_Plex_Sans({
@@ -65,8 +66,6 @@ export const metadata: Metadata = {
     description: brand.description,
     images: ["/opengraph-image"],
   },
-  // Discourage Chrome auto-translate — it mutates the DOM and causes React
-  // NotFoundError: Failed to execute 'insertBefore' on 'Node'.
   other: {
     google: "notranslate",
   },
@@ -98,6 +97,7 @@ export default function RootLayout({
         />
         <Suspense fallback={null}>
           <GlobalRouteProgress />
+          <UsageTracker />
         </Suspense>
         <ThemeProvider>
           <ToastProvider>
