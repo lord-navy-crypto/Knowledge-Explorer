@@ -3,17 +3,12 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
-const LOCAL_AI_PATH = /(?:^\/ai-for-ap(?:\/|$)|^\/english\/ai(?:\/|$)|^\/code\/ai(?:\/|$)|^\/easy-local-ai(?:\/|$)|^\/user-guide\/ai(?:\/|$)|^\/hints(?:\/|$))/;
+const LOCAL_AI_PATH = /(?:^\/ai-for-ap(?:\/|$)|^\/english\/ai(?:\/|$)|^\/code\/ai(?:\/|$)|^\/easy-local-ai(?:\/|$)|^\/user-guide\/ai(?:\/|$))/;
 
 /**
- * WebLLM 0.2.82 defaults to the browser Cache API unless the legacy
- * `useIndexedDBCache` flag is set on its shared module singleton.
- *
- * Keep that compatibility setting, but do not statically import the multi-MB
- * WebLLM runtime from the root layout. Ordinary AP/English/content pages should
- * not pay for the local-inference runtime unless the user actually enters an AI
- * surface. LocalAIProvider still dynamically imports WebLLM at the point of use;
- * this route bootstrap only makes sure the cache preference is configured first.
+ * WebLLM 0.2.82 defaults to the browser Cache API unless this compatibility
+ * flag is set on its shared module singleton. Load the runtime only on actual
+ * AI surfaces; deterministic legacy tools such as /hints must never wake it up.
  */
 export default function LocalAIWebLLMBootstrap() {
   const pathname = usePathname();
@@ -27,8 +22,7 @@ export default function LocalAIWebLLMBootstrap() {
         if (!cancelled) prebuiltAppConfig.useIndexedDBCache = true;
       })
       .catch(() => {
-        // The Local AI UI owns user-visible WebLLM load errors. This bootstrap is
-        // deliberately silent so a failed optional runtime never breaks the site shell.
+        // Local AI surfaces own user-visible runtime errors. Never break the shell.
       });
 
     return () => {
