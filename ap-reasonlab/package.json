@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "prepare:managed-content": "node scripts/prepare-managed-content.mjs",
+    "dev": "npm run prepare:managed-content && next dev",
     "build": "npm run check:webllm && npm run validate:questions && next build",
     "start": "next start",
     "lint": "next lint",
@@ -13,7 +14,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "validate:english": "tsx scripts/validate-english-questions.ts",
-    "validate:questions": "tsx scripts/validate-question-bank.ts",
+    "validate:questions": "npm run prepare:managed-content && tsx scripts/validate-question-bank.ts",
     "generate:english-batch3": "tsx scripts/generate-english-batch3.ts",
     "generate:curated-extended": "tsx scripts/generate-curated-extended.ts",
     "generate:hard-english": "tsx scripts/generate-hard-english.ts",
