@@ -19,68 +19,44 @@ export default function AdminRedirectPage() {
           after unlock.
         </p>
         <ol className="list-decimal space-y-2 pl-5">
-          <li>
-            Go to <strong>AP Area</strong> → Concepts / Formulas / Practice (or open a subject
-            folder).
-          </li>
+          <li>Go to <strong>AP Area</strong> → Concepts / Formulas / Practice (or open a subject folder).</li>
           <li>
             Use the matching <strong>+</strong> button:
             <ul className="mt-1 list-disc pl-5">
-              <li>
-                <strong>+ Add subject folder</strong> — Concepts / Formulas / Practice roots
-              </li>
-              <li>
-                <strong>+ Add topic</strong> — inside a Concepts subject
-              </li>
-              <li>
-                <strong>+ Add formula</strong> — inside a Formulas subject
-              </li>
-              <li>
-                <strong>+ Add generated practice set</strong> — inside Practice (e.g. AP Statistics)
-              </li>
+              <li><strong>+ Add subject folder</strong> — Concepts / Formulas / Practice roots</li>
+              <li><strong>+ Add topic</strong> — inside a Concepts subject</li>
+              <li><strong>+ Add formula</strong> — inside a Formulas subject</li>
+              <li><strong>+ Add generated practice set</strong> — inside Practice (e.g. AP Statistics)</li>
             </ul>
           </li>
-          <li>
-            Fill the form, then enter a <strong>change code</strong> (or use your unlocked session) to
-            save.
-          </li>
+          <li>Fill the form, then enter a <strong>change code</strong> (or use your unlocked session) to save.</li>
         </ol>
         <ul className="list-disc space-y-1 pl-5">
-          <li>
-            <strong>Content code</strong> — can change content and upload files; cannot add members.
-          </li>
-          <li>
-            <strong>Master code</strong> — can do everything, including partners/members.
-          </li>
+          <li><strong>Content code</strong> — can change content and upload files; cannot add members.</li>
+          <li><strong>Master code</strong> — can do everything, including partners/members.</li>
         </ul>
         <p className="text-xs text-slate-500">
-          Codes are set in Vercel as <code>CONTENT_CHANGE_CODE</code> and{" "}
-          <code>MASTER_CHANGE_CODE</code> (see project docs / About). On Vercel you still need{" "}
-          <code>GITHUB_TOKEN</code> so saves can publish.
+          Codes are set in Vercel as <code>CONTENT_CHANGE_CODE</code> and <code>MASTER_CHANGE_CODE</code> (see project docs / About). On Vercel you still need <code>GITHUB_TOKEN</code> so saves can publish.
         </p>
       </div>
+
+      <div className="card space-y-2 text-sm text-slate-700">
+        <h2 className="text-lg font-semibold text-slate-950">Usage logs</h2>
+        <p>
+          Privacy-minimal page usage events are written to the backend as structured <code>[usage]</code> Runtime Logs. They exclude AI conversation text, API keys, cookies, full referrer URLs, and application-collected client IPs.
+        </p>
+        <Link href="/admin/usage" className="font-semibold text-brand-700 underline">Open Usage Info</Link>
+      </div>
+
       <div className="flex flex-wrap gap-3">
-        <Link href="/ap" className="btn-primary">
-          Open AP Area
-        </Link>
-        <Link href="/manage" className="btn-secondary">
-          Manage console
-        </Link>
-        <Link href="/manage-guide" className="btn-secondary">
-          Manage Guide
-        </Link>
-        <Link href="/user-guide" className="btn-ghost">
-          User Guide (public)
-        </Link>
-        <Link href="/practice?subject=AP%20Statistics" className="btn-secondary">
-          AP Statistics practice
-        </Link>
-        <Link href="/concepts?subject=AP%20Statistics" className="btn-secondary">
-          AP Statistics topics
-        </Link>
-        <Link href="/partners" className="btn-ghost">
-          Partners / members
-        </Link>
+        <Link href="/ap" className="btn-primary">Open AP Area</Link>
+        <Link href="/manage" className="btn-secondary">Manage console</Link>
+        <Link href="/admin/usage" className="btn-secondary">Usage Info</Link>
+        <Link href="/manage-guide" className="btn-secondary">Manage Guide</Link>
+        <Link href="/user-guide" className="btn-ghost">User Guide (public)</Link>
+        <Link href="/practice?subject=AP%20Statistics" className="btn-secondary">AP Statistics practice</Link>
+        <Link href="/concepts?subject=AP%20Statistics" className="btn-secondary">AP Statistics topics</Link>
+        <Link href="/partners" className="btn-ghost">Partners / members</Link>
       </div>
     </div>
   );
