@@ -86,9 +86,14 @@ export const SITE_RELATED_PACKS = {
     externalIds: [],
   }),
   hints: withShortCode({
-    title: "AI Toolbox · related",
+    title: "Calculator & Grapher · related tools",
     toolIds: ["calculator", "grapher", "formula-board", "latex", "focus-desk"],
-    externalIds: ["ap-central", "desmos"],
+    externalIds: ["desmos"],
+  }),
+  "ai-assistant": withShortCode({
+    title: "Contextual AI · related tools",
+    toolIds: ["ai", "focus-desk", "formula-board", "latex", "mistake-notebook"],
+    externalIds: ["ap-central"],
   }),
   forum: withShortCode({
     title: "Forum · related tools",
@@ -136,7 +141,7 @@ export function shouldHideRelatedBar(pathname: string): boolean {
     p === "/login" ||
     p === "/register" ||
     p.startsWith("/admin") ||
-    p === "/tools/short-code" // already on the presets tool
+    p === "/tools/short-code"
   );
 }
 
@@ -164,8 +169,8 @@ export function relatedPackForPath(pathname: string): SiteRelatedPack {
   if (p.startsWith("/practice") || p.startsWith("/questionnaires")) return SITE_RELATED_PACKS.practice;
 
   if (p.startsWith("/code")) return SITE_RELATED_PACKS.code;
-  if (p.startsWith("/hints") || p.startsWith("/ai-for-ap") || p.startsWith("/ai-developer"))
-    return SITE_RELATED_PACKS.hints;
+  if (p.startsWith("/hints")) return SITE_RELATED_PACKS.hints;
+  if (p.startsWith("/ai-for-ap") || p.startsWith("/ai-developer")) return SITE_RELATED_PACKS["ai-assistant"];
   if (p.startsWith("/forum")) return SITE_RELATED_PACKS.forum;
   if (p.startsWith("/academic")) return SITE_RELATED_PACKS.academic;
   if (p.startsWith("/guide") || p.startsWith("/checklist") || p.startsWith("/learning-box"))

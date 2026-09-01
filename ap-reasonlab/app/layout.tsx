@@ -16,9 +16,6 @@ import SiteFooter from "@/components/SiteFooter";
 import SiteRelatedToolsBar from "@/components/SiteRelatedToolsBar";
 import PageHierarchyNav from "@/components/PageHierarchyNav";
 import { EditorModeProvider } from "@/components/EditorModeProvider";
-import { LocalAIProvider } from "@/components/LocalAIProvider";
-import LocalAIWebLLMBootstrap from "@/components/LocalAIWebLLMBootstrap";
-import LocalAITaskBridge from "@/components/LocalAITaskBridge";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ToastProvider } from "@/components/ToastProvider";
 import SiteStructuredData from "@/components/SiteStructuredData";
@@ -99,7 +96,6 @@ export default function RootLayout({
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: THEME_BOOT }}
         />
-        <LocalAIWebLLMBootstrap />
         <Suspense fallback={null}>
           <GlobalRouteProgress />
           <UsageTracker />
@@ -108,27 +104,24 @@ export default function RootLayout({
           <ToastProvider>
             <TaskMonitorProvider>
               <EditorModeProvider>
-                <LocalAIProvider>
-                  <LocalAITaskBridge />
-                  <QuickSearchProvider>
-                    <SiteStructuredData />
-                    <div className="academic-print" aria-hidden="true" />
-                    <Nav />
-                    <EditorToolsChrome />
-                    <main className="relative z-[1] mx-auto max-w-6xl px-4 py-8 pb-24 md:pb-8">
-                      <PageHierarchyNav />
-                      {children}
-                      <SiteRelatedToolsBar />
-                    </main>
-                    <RandomPageButton />
-                    <TomatoCloudCircle />
-                    <StyleWindow />
-                    <EditModeButton />
-                    <MobileActionBar />
-                    <TaskMonitorFloating />
-                    <SiteFooter />
-                  </QuickSearchProvider>
-                </LocalAIProvider>
+                <QuickSearchProvider>
+                  <SiteStructuredData />
+                  <div className="academic-print" aria-hidden="true" />
+                  <Nav />
+                  <EditorToolsChrome />
+                  <main className="relative z-[1] mx-auto max-w-6xl px-4 py-8 pb-24 md:pb-8">
+                    <PageHierarchyNav />
+                    {children}
+                    <SiteRelatedToolsBar />
+                  </main>
+                  <RandomPageButton />
+                  <TomatoCloudCircle />
+                  <StyleWindow />
+                  <EditModeButton />
+                  <MobileActionBar />
+                  <TaskMonitorFloating />
+                  <SiteFooter />
+                </QuickSearchProvider>
               </EditorModeProvider>
             </TaskMonitorProvider>
           </ToastProvider>
