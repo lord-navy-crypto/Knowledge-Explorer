@@ -1,6 +1,5 @@
 /** Bookmark-safe redirects — keep in sync with app redirect pages. */
 export const KNOWN_REDIRECTS: Array<{ from: string; to: string }> = [
-  { from: "/ai-for-ap", to: "/hints?section=ai-for-ap" },
   { from: "/tools/calculator", to: "/hints?tool=calculator" },
   { from: "/tools/grapher", to: "/hints?tool=grapher" },
   { from: "/tools/pdf-compress", to: "/tools/pdf-tools?mode=compress" },
