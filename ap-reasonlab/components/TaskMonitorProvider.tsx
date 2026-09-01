@@ -60,19 +60,17 @@ export function TaskMonitorProvider({ children }: { children: React.ReactNode })
   const startTask = useCallback((input: StartTaskInput) => {
     const now = Date.now();
     const id = makeId();
-    setTasks((current) => [
-      {
-        id,
-        title: input.title,
-        detail: input.detail,
-        source: input.source,
-        status: "running",
-        progress: clampProgress(input.progress ?? 2),
-        startedAt: now,
-        updatedAt: now,
-      },
-      ...current,
-    ].slice(0, 12));
+    const task: AppTask = {
+      id,
+      title: input.title,
+      detail: input.detail,
+      source: input.source,
+      status: "running",
+      progress: clampProgress(input.progress ?? 2),
+      startedAt: now,
+      updatedAt: now,
+    };
+    setTasks((current) => [task, ...current].slice(0, 12));
     return id;
   }, []);
 
@@ -132,7 +130,11 @@ export function TaskMonitorProvider({ children }: { children: React.ReactNode })
   }, []);
 
   const clearFinished = useCallback(() => {
-    setTasks((current) => current.filter((task) => task.status === "running" || task.status === "queued" || task.status === "stalled"));
+    setTasks((current) =>
+      current.filter(
+        (task) => task.status === "running" || task.status === "queued" || task.status === "stalled"
+      )
+    );
   }, []);
 
   useEffect(() => {
@@ -158,7 +160,9 @@ export function TaskMonitorProvider({ children }: { children: React.ReactNode })
 
   const value = useMemo<TaskMonitorValue>(() => ({
     tasks,
-    activeCount: tasks.filter((task) => task.status === "running" || task.status === "queued" || task.status === "stalled").length,
+    activeCount: tasks.filter(
+      (task) => task.status === "running" || task.status === "queued" || task.status === "stalled"
+    ).length,
     startTask,
     updateTask,
     finishTask,
