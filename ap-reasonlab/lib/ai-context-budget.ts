@@ -7,20 +7,24 @@ export function estimateTokens(...parts: string[]): number {
   return Math.max(0, Math.ceil(chars / 4));
 }
 
+/**
+ * Browser-local models mostly run with a ~4K context. Keep both modes below the
+ * old limits so prompt ingestion does not dominate first-token latency.
+ */
 export function localHistoryWindow(mode: ContextBudgetMode): number {
-  return mode === "speed" ? 2 : 6;
+  return mode === "speed" ? 2 : 4;
 }
 
 export function localTurnCap(mode: ContextBudgetMode): number {
-  return mode === "speed" ? 700 : 1200;
+  return mode === "speed" ? 600 : 900;
 }
 
 export function localUserCap(mode: ContextBudgetMode): number {
-  return mode === "speed" ? 3200 : 5500;
+  return mode === "speed" ? 2800 : 4200;
 }
 
 export function localSiteCap(mode: ContextBudgetMode): number {
-  return mode === "speed" ? 1800 : 3200;
+  return mode === "speed" ? 1400 : 2200;
 }
 
 /** Soft Local context wall (~WebLLM 4096). */
