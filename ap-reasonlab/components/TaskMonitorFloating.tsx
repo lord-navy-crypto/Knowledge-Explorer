@@ -29,7 +29,7 @@ export default function TaskMonitorFloating() {
   const visibleTasks = useMemo(() => tasks.slice(0, 8), [tasks]);
 
   return (
-    <div className="fixed bottom-24 left-3 z-[90] md:bottom-6 md:left-6 print:hidden">
+    <div className="fixed right-3 top-24 z-[90] md:right-6 md:top-28 print:hidden">
       {!open ? (
         <button
           type="button"
@@ -42,7 +42,7 @@ export default function TaskMonitorFloating() {
           ) : null}
         </button>
       ) : (
-        <section className="w-[min(92vw,23rem)] overflow-hidden rounded-2xl border border-slate-200 bg-white/95 shadow-2xl backdrop-blur">
+        <section className="w-[min(88vw,23rem)] overflow-hidden rounded-2xl border border-slate-200 bg-white/95 shadow-2xl backdrop-blur">
           <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/90 px-3 py-2.5">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">Live task monitor</p>
@@ -54,7 +54,7 @@ export default function TaskMonitorFloating() {
             </div>
           </div>
 
-          <div className="max-h-[min(55vh,28rem)] space-y-2 overflow-y-auto p-2.5">
+          <div className="max-h-[min(58vh,30rem)] space-y-2 overflow-y-auto p-2.5">
             {visibleTasks.length === 0 ? (
               <p className="px-2 py-8 text-center text-xs text-slate-500">Tasks will appear here when an action starts.</p>
             ) : visibleTasks.map((task) => {
