@@ -29,7 +29,7 @@ const WORKFLOW = [
   },
 ];
 
-/** AI for AP study guidance — embedded in the AI Toolbox (not a separate nav destination). */
+/** AI for AP study guidance embedded directly in the dedicated AI for AP route. */
 export default function AiForApToolboxSection() {
   const guides = listAiForApGuides();
 
@@ -42,8 +42,8 @@ export default function AiForApToolboxSection() {
         <h2 className="section-title">How to use AI for AP</h2>
         <p className="max-w-3xl text-sm text-slate-600">
           Safe tutor workflows — explain concepts, use diagrams as drafts, and build original
-          practice. Local AI is recommended; cloud API is backup. Guides below open prompts into
-          this Toolbox. Cross-check with College Board and ETS pages — AI can be confidently wrong.
+          practice. Local AI is recommended; cloud API is backup. Guides below open prompts directly
+          in AI for AP. Cross-check with College Board and ETS pages — AI can be confidently wrong.
         </p>
         <OfficialResourceLinks block={AP_PROGRAM_OFFICIAL} tone="slate" />
         <div className="flex flex-wrap gap-2 pt-1">
