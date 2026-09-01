@@ -27,7 +27,7 @@ export default function LocalAITaskBridge() {
   const { startTask, updateTask, finishTask, failTask } = useTaskMonitor();
   const taskIdRef = useRef<string>("");
   const previousStatusRef = useRef(localAI.status);
-  const generationTickRef = useRef(0);
+  const generationProgressRef = useRef(12);
 
   useEffect(() => {
     const source = sourceForPath(pathname || "");
@@ -53,19 +53,18 @@ export default function LocalAITaskBridge() {
       }
     } else if (status === "generating") {
       if (!taskIdRef.current || previous !== "generating") {
-        generationTickRef.current = 12;
+        generationProgressRef.current = 12;
         taskIdRef.current = startTask({
           title: `Generate with ${shortModel(localAI.loadedModelId || localAI.selectedModelId)}`,
           detail: localAI.statusText || "Preparing Local AI response…",
           source,
-          progress: generationTickRef.current,
+          progress: generationProgressRef.current,
         });
       } else {
-        generationTickRef.current = Math.min(94, generationTickRef.current + 3);
         updateTask(taskIdRef.current, {
           detail: localAI.statusText,
           source,
-          progress: generationTickRef.current,
+          progress: generationProgressRef.current,
           status: "running",
         });
       }
@@ -101,6 +100,24 @@ export default function LocalAITaskBridge() {
     startTask,
     updateTask,
   ]);
+
+  useEffect(() => {
+    if (localAI.status !== "generating") return;
+    const timer = window.setInterval(() => {
+      const id = taskIdRef.current;
+      if (!id) return;
+      generationProgressRef.current = Math.min(
+        92,
+        generationProgressRef.current + (generationProgressRef.current < 60 ? 4 : 2)
+      );
+      updateTask(id, {
+        progress: generationProgressRef.current,
+        detail: localAI.statusText || "Streaming Local AI response…",
+        status: "running",
+      });
+    }, 2_000);
+    return () => window.clearInterval(timer);
+  }, [localAI.status, localAI.statusText, updateTask]);
 
   return null;
 }
