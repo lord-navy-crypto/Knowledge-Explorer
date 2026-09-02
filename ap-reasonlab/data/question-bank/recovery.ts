@@ -15,6 +15,7 @@ import { recoveredApItemsBatch4FinalFix } from "@/data/ap-question-recovery-batc
 import { buildRecoveredApItemsBatch5 } from "@/data/ap-question-recovery-batch-5";
 import { buildHumanitiesRecoveryBatch } from "@/data/ap-question-recovery-batch-13-humanities";
 import { recoveredFinalThinMcqs } from "@/data/ap-question-recovery-final";
+import { buildFinalHumanitiesRecovery } from "@/data/ap-question-recovery-final-humanities";
 
 const recoveredApItemsBeforeBatch5 = {
   ...recoveredApItemsBatch1,
@@ -130,12 +131,13 @@ const recoveredApItemsThroughBatch14 = {
   ...apRecoveryBatch14.items,
 };
 
-// Final humanities pass: the validator reported 33 remaining thin constructed responses.
 export const apRecoveryBatch15 = buildHumanitiesRecoveryBatch(
   shapedQuestionnaires,
   new Set(Object.keys(recoveredApItemsThroughBatch14)),
   33
 );
+
+export const apRecoveryBatch16 = buildFinalHumanitiesRecovery(shapedQuestionnaires);
 
 export const apRecoveryBatches = [
   { label: "5", batch: apRecoveryBatch5 },
@@ -149,10 +151,12 @@ export const apRecoveryBatches = [
   { label: "13", batch: apRecoveryBatch13 },
   { label: "14", batch: apRecoveryBatch14 },
   { label: "15", batch: apRecoveryBatch15 },
+  { label: "16", batch: apRecoveryBatch16 },
 ] as const;
 
 export const recoveredApItems = {
   ...recoveredApItemsThroughBatch14,
   ...apRecoveryBatch15.items,
+  ...apRecoveryBatch16.items,
   ...recoveredFinalThinMcqs,
 };
