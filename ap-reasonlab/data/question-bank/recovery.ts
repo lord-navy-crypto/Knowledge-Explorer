@@ -14,6 +14,7 @@ import { recoveredApItemsBatch4EPlus } from "@/data/ap-question-recovery-batch-4
 import { recoveredApItemsBatch4FinalFix } from "@/data/ap-question-recovery-batch-4-final-fix";
 import { buildRecoveredApItemsBatch5 } from "@/data/ap-question-recovery-batch-5";
 import { buildHumanitiesRecoveryBatch } from "@/data/ap-question-recovery-batch-13-humanities";
+import { recoveredFinalThinMcqs } from "@/data/ap-question-recovery-final";
 
 const recoveredApItemsBeforeBatch5 = {
   ...recoveredApItemsBatch1,
@@ -118,11 +119,22 @@ const recoveredApItemsThroughBatch13 = {
   ...apRecoveryBatch13.items,
 };
 
-// Continue the same subject-aware recovery pipeline with the next 75 distinct IDs.
 export const apRecoveryBatch14 = buildHumanitiesRecoveryBatch(
   shapedQuestionnaires,
   new Set(Object.keys(recoveredApItemsThroughBatch13)),
   75
+);
+
+const recoveredApItemsThroughBatch14 = {
+  ...recoveredApItemsThroughBatch13,
+  ...apRecoveryBatch14.items,
+};
+
+// Final humanities pass: the validator reported 33 remaining thin constructed responses.
+export const apRecoveryBatch15 = buildHumanitiesRecoveryBatch(
+  shapedQuestionnaires,
+  new Set(Object.keys(recoveredApItemsThroughBatch14)),
+  33
 );
 
 export const apRecoveryBatches = [
@@ -136,9 +148,11 @@ export const apRecoveryBatches = [
   { label: "12", batch: apRecoveryBatch12 },
   { label: "13", batch: apRecoveryBatch13 },
   { label: "14", batch: apRecoveryBatch14 },
+  { label: "15", batch: apRecoveryBatch15 },
 ] as const;
 
 export const recoveredApItems = {
-  ...recoveredApItemsThroughBatch13,
-  ...apRecoveryBatch14.items,
+  ...recoveredApItemsThroughBatch14,
+  ...apRecoveryBatch15.items,
+  ...recoveredFinalThinMcqs,
 };
