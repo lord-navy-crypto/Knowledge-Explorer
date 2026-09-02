@@ -53,10 +53,6 @@ function push(
   issues.push({ code, message, severity });
 }
 
-/**
- * AP quality gate for newly refreshed content.
- * It does not mutate legacy questions. Exam-authentic items are held to a much higher bar than drills.
- */
 export function auditApItem(item: QuestionnaireItem): QuestionQualityResult {
   const issues: QuestionQualityIssue[] = [];
   const authentic = item.authenticity === "exam_authentic";
@@ -90,10 +86,19 @@ export function auditApItem(item: QuestionnaireItem): QuestionQualityResult {
   return { ok: errors === 0, score, issues };
 }
 
+function isExplicitSingleItemPractice(set: Questionnaire): boolean {
+  const label = [set.id, set.title, set.description, set.examFormatNote, ...(set.tags || [])]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  return /\b(single(?:-item)?|practice|drill|generated|gen|skill)\b/.test(label);
+}
+
 export function auditApSet(set: Questionnaire): QuestionQualityResult {
   const issues: QuestionQualityIssue[] = [];
   if (!set.items?.length) push(issues, "error", "empty-set", "Question set contains no items.");
-  if ((set.authenticity === "exam_authentic" || set.items.some((x) => x.authenticity === "exam_authentic")) && set.items.length < 2) {
+  const containsAuthentic = set.authenticity === "exam_authentic" || set.items.some((x) => x.authenticity === "exam_authentic");
+  if (containsAuthentic && set.items.length < 2 && !isExplicitSingleItemPractice(set)) {
     push(issues, "warning", "tiny-set", "An exam-authentic set should normally contain more than one item or be labeled as a single-item practice task.");
   }
   for (const item of set.items || []) {
@@ -107,7 +112,6 @@ export function auditApSet(set: Questionnaire): QuestionQualityResult {
   return { ok: errors === 0, score: Math.max(0, 100 - errors * 15 - warnings * 5), issues };
 }
 
-/** Quality gate shared by current Digital SAT and TOEFL iBT banks. */
 export function auditEnglishQuestion(exam: "sat" | "toefl", q: EnglishQuestionLike): QuestionQualityResult {
   const issues: QuestionQualityIssue[] = [];
   const authentic = q.authenticity === "exam_authentic";

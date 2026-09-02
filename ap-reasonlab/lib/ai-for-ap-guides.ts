@@ -20,7 +20,7 @@ export function toolboxLinkForGuide(guideId: string) {
   return (
     GUIDE_TOOLBOX_LINKS[guideId] || {
       href: toolboxHref({ apTask: "concept", subject: "Study Skills / AI for AP" }),
-      label: "Open AI Toolbox",
+      label: "Open AI for AP",
       blurb: "Local AI recommended — use as a Socratic tutor, not an answer key.",
     }
   );

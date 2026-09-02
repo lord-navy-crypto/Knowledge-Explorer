@@ -14,6 +14,8 @@ import { recoveredApItemsBatch4EPlus } from "@/data/ap-question-recovery-batch-4
 import { recoveredApItemsBatch4FinalFix } from "@/data/ap-question-recovery-batch-4-final-fix";
 import { buildRecoveredApItemsBatch5 } from "@/data/ap-question-recovery-batch-5";
 import { buildHumanitiesRecoveryBatch } from "@/data/ap-question-recovery-batch-13-humanities";
+import { recoveredFinalThinMcqs } from "@/data/ap-question-recovery-final";
+import { buildFinalHumanitiesRecovery } from "@/data/ap-question-recovery-final-humanities";
 
 const recoveredApItemsBeforeBatch5 = {
   ...recoveredApItemsBatch1,
@@ -118,12 +120,24 @@ const recoveredApItemsThroughBatch13 = {
   ...apRecoveryBatch13.items,
 };
 
-// Continue the same subject-aware recovery pipeline with the next 75 distinct IDs.
 export const apRecoveryBatch14 = buildHumanitiesRecoveryBatch(
   shapedQuestionnaires,
   new Set(Object.keys(recoveredApItemsThroughBatch13)),
   75
 );
+
+const recoveredApItemsThroughBatch14 = {
+  ...recoveredApItemsThroughBatch13,
+  ...apRecoveryBatch14.items,
+};
+
+export const apRecoveryBatch15 = buildHumanitiesRecoveryBatch(
+  shapedQuestionnaires,
+  new Set(Object.keys(recoveredApItemsThroughBatch14)),
+  33
+);
+
+export const apRecoveryBatch16 = buildFinalHumanitiesRecovery(shapedQuestionnaires);
 
 export const apRecoveryBatches = [
   { label: "5", batch: apRecoveryBatch5 },
@@ -136,9 +150,13 @@ export const apRecoveryBatches = [
   { label: "12", batch: apRecoveryBatch12 },
   { label: "13", batch: apRecoveryBatch13 },
   { label: "14", batch: apRecoveryBatch14 },
+  { label: "15", batch: apRecoveryBatch15 },
+  { label: "16", batch: apRecoveryBatch16 },
 ] as const;
 
 export const recoveredApItems = {
-  ...recoveredApItemsThroughBatch13,
-  ...apRecoveryBatch14.items,
+  ...recoveredApItemsThroughBatch14,
+  ...apRecoveryBatch15.items,
+  ...apRecoveryBatch16.items,
+  ...recoveredFinalThinMcqs,
 };
