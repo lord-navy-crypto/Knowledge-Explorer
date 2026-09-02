@@ -87,11 +87,11 @@ export function auditApItem(item: QuestionnaireItem): QuestionQualityResult {
 }
 
 function isExplicitSingleItemPractice(set: Questionnaire): boolean {
-  const label = [set.title, set.description, set.examFormatNote, ...(set.tags || [])]
+  const label = [set.id, set.title, set.description, set.examFormatNote, ...(set.tags || [])]
     .filter(Boolean)
     .join(" ")
     .toLowerCase();
-  return /\b(single(?:-item)?|practice|drill|generated practice|skill)\b/.test(label);
+  return /\b(single(?:-item)?|practice|drill|generated|gen|skill)\b/.test(label);
 }
 
 export function auditApSet(set: Questionnaire): QuestionQualityResult {
