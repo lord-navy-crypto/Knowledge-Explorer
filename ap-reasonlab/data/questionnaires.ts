@@ -3,6 +3,7 @@ import { normalizeApQuestionnaire } from "@/lib/question-normalize";
 import { shapedQuestionnaires } from "@/data/question-bank/source-registry";
 import { apRecoveryBatches, recoveredApItems } from "@/data/question-bank/recovery";
 import { buildApQuestionBankStats } from "@/data/question-bank/stats";
+import { singleItemPracticeSetIds } from "@/data/ap-question-recovery-final";
 
 export {
   apRecoveryBatch5,
@@ -15,11 +16,13 @@ export {
   apRecoveryBatch12,
   apRecoveryBatch13,
   apRecoveryBatch14,
+  apRecoveryBatch15,
   apRecoveryBatches,
 } from "@/data/question-bank/recovery";
 
 export const rawQuestionnaires: Questionnaire[] = shapedQuestionnaires.map((set) => ({
   ...set,
+  singleItemPractice: set.singleItemPractice || singleItemPracticeSetIds.has(set.id),
   items: set.items.map((item) => recoveredApItems[item.id] || item),
 }));
 
