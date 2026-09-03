@@ -112,6 +112,8 @@ export interface Questionnaire {
   difficultyTier?: DifficultyTier;
   /** Set-level declaration; individual items may override for mixed drill sets. */
   authenticity?: AssessmentAuthenticity;
+  /** Explicitly declares that a one-item set is intentionally a focused practice task, not an incomplete mock set. */
+  singleItemPractice?: boolean;
 }
 
 export type GuideCategory = "ap_content" | "ai_for_ap" | "study_skill";
