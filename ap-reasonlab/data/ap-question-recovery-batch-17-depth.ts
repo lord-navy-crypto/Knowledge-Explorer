@@ -4,47 +4,46 @@ import {
   type RecoveryBatch5Result,
 } from "@/data/ap-question-recovery-batch-5";
 
+function hasDefensibleSourceAnswer(item: QuestionnaireItem): boolean {
+  if (item.answerKey?.trim()) return true;
+  if (item.blankAnswers?.some((answer) => answer.trim())) return true;
+  return Boolean(
+    item.format === "mcq" &&
+      item.choices?.length &&
+      Number.isInteger(item.mcqAnswer) &&
+      Number(item.mcqAnswer) >= 0 &&
+      Number(item.mcqAnswer) < item.choices.length
+  );
+}
+
 /**
- * Batch 17 starts the post-recovery depth pass tracked in issue #236.
+ * Batch 17 continues issue #236 at the highest remaining severity level.
  *
- * Previous batches eliminated quarantine and validator warnings. This batch deliberately
- * selects public source items that have never been covered by a recovery overlay and sends
- * them through the same original, answer-independent deep-rewrite factories proven in the
- * science/economics/psychology/computing recovery batches.
- *
- * We blank legacy answer fields only in an in-memory candidate view so the factory never
- * trusts or propagates a legacy key. The source registry itself is untouched. Each selected
- * legacy ID is retained solely for traceability; the resulting prompt, answer, rationale,
- * hints, response mode, and scoring guide are all newly generated as one coherent task.
+ * The validator can report zero warnings while still quarantining source items for which no
+ * defensible complete answer exists. This batch selects only those unrecovered quarantine
+ * candidates, preserves each historical ID for traceability, and replaces the entire task
+ * through the proven answer-independent Batch 5 discipline factories. No legacy key is
+ * inferred or propagated: prompt, response mode, answer, rationale, hints, and scoring guide
+ * are generated together as a coherent multi-step assessment with misconception/boundary
+ * checks where appropriate.
  */
 export function buildPublicDepthBatch17(
   sets: Questionnaire[],
   excludedIds: Set<string>,
   target = 100
 ): RecoveryBatch5Result {
-  const unseenPublicSets: Questionnaire[] = sets
+  const severeQuarantineSets: Questionnaire[] = sets
     .map((set) => ({
       ...set,
-      items: (set.items || [])
-        .filter((item) => !excludedIds.has(item.id))
-        .map((item): QuestionnaireItem => ({
-          ...item,
-          // Force answer-independent reconstruction. These fields are modified only in the
-          // temporary candidate view passed to the deep-rewrite factory.
-          answerKey: undefined,
-          blankAnswers: undefined,
-          mcqAnswer: undefined,
-        })),
+      items: (set.items || []).filter(
+        (item) => !excludedIds.has(item.id) && !hasDefensibleSourceAnswer(item)
+      ),
     }))
     .filter((set) => set.items.length > 0);
 
-  const rebuilt = buildRecoveredApItemsBatch5(unseenPublicSets, new Set<string>(), target);
-
-  // These are depth-pass items, not newly discovered severe defects. Keep the shared batch
-  // shape for stats while avoiding false severe-defect accounting.
-  return {
-    ...rebuilt,
-    severeMissingAnswer: 0,
-    severeStructural: 0,
-  };
+  return buildRecoveredApItemsBatch5(
+    severeQuarantineSets,
+    new Set<string>(),
+    target
+  );
 }
