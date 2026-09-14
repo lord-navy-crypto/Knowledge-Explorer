@@ -162,7 +162,7 @@ const recoveredApItemsBeforeBatch18 = {
 export const apRecoveryBatch18 = buildPublicDepthBatch18(
   shapedQuestionnaires,
   new Set(Object.keys(recoveredApItemsBeforeBatch18)),
-  100
+  98
 );
 
 export const apRecoveryBatches = [
