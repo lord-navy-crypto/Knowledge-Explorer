@@ -17,6 +17,7 @@ import { buildHumanitiesRecoveryBatch } from "@/data/ap-question-recovery-batch-
 import { recoveredFinalThinMcqs } from "@/data/ap-question-recovery-final";
 import { buildFinalHumanitiesRecovery } from "@/data/ap-question-recovery-final-humanities";
 import { buildPublicDepthBatch17 } from "@/data/ap-question-recovery-batch-17-depth";
+import { buildPublicDepthBatch18 } from "@/data/ap-question-recovery-batch-18-depth";
 
 const recoveredApItemsBeforeBatch5 = {
   ...recoveredApItemsBatch1,
@@ -153,6 +154,17 @@ export const apRecoveryBatch17 = buildPublicDepthBatch17(
   100
 );
 
+const recoveredApItemsBeforeBatch18 = {
+  ...recoveredApItemsBeforeBatch17,
+  ...apRecoveryBatch17.items,
+};
+
+export const apRecoveryBatch18 = buildPublicDepthBatch18(
+  shapedQuestionnaires,
+  new Set(Object.keys(recoveredApItemsBeforeBatch18)),
+  98
+);
+
 export const apRecoveryBatches = [
   { label: "5", batch: apRecoveryBatch5 },
   { label: "6", batch: apRecoveryBatch6 },
@@ -167,9 +179,10 @@ export const apRecoveryBatches = [
   { label: "15", batch: apRecoveryBatch15 },
   { label: "16", batch: apRecoveryBatch16 },
   { label: "17", batch: apRecoveryBatch17 },
+  { label: "18", batch: apRecoveryBatch18 },
 ] as const;
 
 export const recoveredApItems = {
-  ...recoveredApItemsBeforeBatch17,
-  ...apRecoveryBatch17.items,
+  ...recoveredApItemsBeforeBatch18,
+  ...apRecoveryBatch18.items,
 };
