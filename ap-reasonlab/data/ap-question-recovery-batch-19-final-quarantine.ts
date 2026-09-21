@@ -8,12 +8,21 @@ import { buildHumanitiesRecoveryBatch } from "@/data/ap-question-recovery-batch-
 
 const STEM = /Physics|Calculus|Statistics|Chemistry|Biology|Environmental|Economics|Psychology|Computer Science/i;
 
+function forceDeepRewriteCandidate(item: QuestionnaireItem): QuestionnaireItem {
+  // The source has already failed the public gate. Remove legacy answer fields before routing so
+  // the recovery factory cannot accidentally treat an ambiguous/unparseable key as authoritative.
+  return {
+    ...item,
+    answerKey: undefined,
+    blankAnswers: undefined,
+    mcqAnswer: undefined,
+  };
+}
+
 /**
- * Batch 19 targets the final public-gate quarantine directly rather than inferring severity
- * from legacy metadata. A source item is selected only when normalizeApItem cannot publish it
- * and no earlier recovery owns its ID. The legacy key is not trusted or inferred: each selected
- * ID is routed through an established discipline-specific original-item factory that rebuilds
- * the task, answer, rationale, hints, and discriminating scoring guide together.
+ * Batch 19 targets the final public-gate quarantine directly. Historical IDs are retained only
+ * for traceability; unsupported legacy keys are never inferred. Each quarantined ID is converted
+ * into a forced deep-rewrite candidate and rebuilt by the established discipline factory.
  */
 export function buildFinalQuarantineBatch19(
   sets: Questionnaire[],
@@ -22,27 +31,31 @@ export function buildFinalQuarantineBatch19(
   const remaining: Questionnaire[] = sets
     .map((set) => ({
       ...set,
-      items: (set.items || []).filter(
-        (item) => !excludedIds.has(item.id) && normalizeApItem(item) === null
-      ),
+      items: (set.items || [])
+        .filter((item) => !excludedIds.has(item.id) && normalizeApItem(item) === null)
+        .map(forceDeepRewriteCandidate),
     }))
     .filter((set) => set.items.length > 0);
 
   const stemSets = remaining.filter((set) => STEM.test(set.subject));
   const humanitiesSets = remaining.filter((set) => !STEM.test(set.subject));
+  const stemCount = stemSets.reduce((sum, set) => sum + set.items.length, 0);
+  const humanitiesCount = humanitiesSets.reduce((sum, set) => sum + set.items.length, 0);
 
-  const stem = buildRecoveredApItemsBatch5(stemSets, new Set<string>(), 1000);
-  const humanities = buildHumanitiesRecoveryBatch(humanitiesSets, new Set<string>(), 1000);
+  const stem = stemCount
+    ? buildRecoveredApItemsBatch5(stemSets, new Set<string>(), stemCount)
+    : { items: {}, ids: [], severeMissingAnswer: 0, severeStructural: 0 };
+  const humanities = humanitiesCount
+    ? buildHumanitiesRecoveryBatch(humanitiesSets, new Set<string>(), humanitiesCount)
+    : { items: {}, ids: [], severeMissingAnswer: 0, severeStructural: 0 };
 
-  const items: Record<string, QuestionnaireItem> = {
-    ...stem.items,
-    ...humanities.items,
-  };
+  const items: Record<string, QuestionnaireItem> = { ...stem.items, ...humanities.items };
   const ids = [...stem.ids, ...humanities.ids];
+  const expected = stemCount + humanitiesCount;
+  if (ids.length !== expected) {
+    throw new Error(`Batch 19 expected to rebuild all ${expected} final-quarantine items but rebuilt ${ids.length}.`);
+  }
 
-  // This batch is deliberately bounded by the actual remaining quarantine. If a discipline
-  // factory cannot rebuild an item, the validator/public-count gate below exposes that gap
-  // instead of padding the batch or inventing an answer.
   return {
     items,
     ids,
