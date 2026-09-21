@@ -1,7 +1,11 @@
 import type { Questionnaire } from "@/lib/types";
 import { normalizeApQuestionnaire } from "@/lib/question-normalize";
 import { shapedQuestionnaires } from "@/data/question-bank/source-registry";
-import { apRecoveryBatches, recoveredApItems } from "@/data/question-bank/recovery";
+import {
+  apRecoveryBatches as apRecoveryBatchesBefore19,
+  recoveredApItems,
+} from "@/data/question-bank/recovery";
+import { buildFinalQuarantineBatch19 } from "@/data/ap-question-recovery-batch-19-final-quarantine";
 import { buildApQuestionBankStats } from "@/data/question-bank/stats";
 
 export {
@@ -15,12 +19,26 @@ export {
   apRecoveryBatch12,
   apRecoveryBatch13,
   apRecoveryBatch14,
-  apRecoveryBatches,
 } from "@/data/question-bank/recovery";
+
+export const apRecoveryBatch19 = buildFinalQuarantineBatch19(
+  shapedQuestionnaires,
+  new Set(Object.keys(recoveredApItems))
+);
+
+export const apRecoveryBatches = [
+  ...apRecoveryBatchesBefore19,
+  { label: "19", batch: apRecoveryBatch19 },
+] as const;
+
+const recoveredApItemsThroughBatch19 = {
+  ...recoveredApItems,
+  ...apRecoveryBatch19.items,
+};
 
 export const rawQuestionnaires: Questionnaire[] = shapedQuestionnaires.map((set) => ({
   ...set,
-  items: set.items.map((item) => recoveredApItems[item.id] || item),
+  items: set.items.map((item) => recoveredApItemsThroughBatch19[item.id] || item),
 }));
 
 export const questionnaires: Questionnaire[] = rawQuestionnaires
