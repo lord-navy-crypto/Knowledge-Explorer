@@ -7,6 +7,7 @@ import {
 } from "@/data/question-bank/recovery";
 import { buildFinalQuarantineBatch19 } from "@/data/ap-question-recovery-batch-19-final-quarantine";
 import { buildApQualityBatch20 } from "@/data/ap-question-quality-batch-20";
+import { buildApQualityBatch21 } from "@/data/ap-question-quality-batch-21";
 import { buildApQuestionBankStats } from "@/data/question-bank/stats";
 
 export {
@@ -39,14 +40,25 @@ const rawQuestionnairesThroughBatch19: Questionnaire[] = shapedQuestionnaires.ma
 
 export const apQualityBatch20 = buildApQualityBatch20(rawQuestionnairesThroughBatch19, 100);
 
+const rawQuestionnairesThroughBatch20: Questionnaire[] = rawQuestionnairesThroughBatch19.map((set) => ({
+  ...set,
+  items: set.items.map((item) => apQualityBatch20.items[item.id] || item),
+}));
+
+export const apQualityBatch21 = buildApQualityBatch21(
+  rawQuestionnairesThroughBatch20,
+  new Set(apQualityBatch20.ids),
+  100
+);
+
 export const apRecoveryBatches = [
   ...apRecoveryBatchesBefore19,
   { label: "19", batch: apRecoveryBatch19 },
 ] as const;
 
-export const rawQuestionnaires: Questionnaire[] = rawQuestionnairesThroughBatch19.map((set) => ({
+export const rawQuestionnaires: Questionnaire[] = rawQuestionnairesThroughBatch20.map((set) => ({
   ...set,
-  items: set.items.map((item) => apQualityBatch20.items[item.id] || item),
+  items: set.items.map((item) => apQualityBatch21.items[item.id] || item),
 }));
 
 export const questionnaires: Questionnaire[] = rawQuestionnaires
