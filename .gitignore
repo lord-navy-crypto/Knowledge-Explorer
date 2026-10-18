@@ -1,4 +1,4 @@
-# Node and frontend build artifacts
+# Node / frontend
 node_modules/
 **/node_modules/
 dist/
@@ -7,13 +7,13 @@ dist/
 **/.next/
 .turbo/
 
-# Rust / Tauri artifacts
+# Rust / Tauri
 target/
 **/target/
 apps/daily-desk/src-tauri/gen/
 apps/daily-desk/src-tauri/.tauri/
 
-# Local environment and IDE files
+# Local settings
 .env
 .env.*
 !.env.example
@@ -22,6 +22,6 @@ apps/daily-desk/src-tauri/.tauri/
 .vscode/
 *.log
 
-# macOS application bundles and installer artifacts
+# Desktop bundles must be attached to GitHub Releases, not source history
 *.dmg
 *.app
