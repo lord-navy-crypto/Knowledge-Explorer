@@ -92,6 +92,7 @@ function documentHtml() {
         <a href="/explore">Explore</a>
         <a href="/ap">AP</a>
         <a href="/english">English</a>
+        <a href="/productivity">Daily Desk</a>
         <a href="/forum">Forum</a>
       </nav>
     </header>
