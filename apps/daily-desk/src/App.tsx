@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { type CSSProperties, type FormEvent, useEffect, useMemo, useState } from "react";
 
 type Task = { id: string; title: string; done: boolean };
 type Tool = { title: string; description: string; kind: "ready" | "planned" };
@@ -48,7 +48,7 @@ export default function App() {
   const complete = tasks.filter((task) => task.done).length;
   const progress = useMemo(() => tasks.length ? Math.round(complete / tasks.length * 100) : 0, [complete, tasks.length]);
 
-  function addTask(event: React.FormEvent<HTMLFormElement>) {
+  function addTask(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const title = draft.trim();
     if (!title) return;
@@ -79,7 +79,7 @@ export default function App() {
 
           <section className="hero-card">
             <div><p className="card-eyebrow">TODAY'S PLAN</p><h2>Small steps add up.</h2><p className="muted">Start with one task you can move forward right now.</p></div>
-            <div className="progress-ring" style={{ "--progress": progress } as React.CSSProperties}><strong>{progress}%</strong><span>COMPLETE</span></div>
+            <div className="progress-ring" style={{ "--progress": progress } as CSSProperties}><strong>{progress}%</strong><span>COMPLETE</span></div>
           </section>
 
           <div className="section-heading"><div><h2>Task list</h2><p>Quick capture for things you want to get done.</p></div><span className="task-count">{complete} / {tasks.length} done</span></div>
