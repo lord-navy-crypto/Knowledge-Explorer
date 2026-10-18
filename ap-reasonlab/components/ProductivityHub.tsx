@@ -167,7 +167,7 @@ export default function ProductivityHub() {
             </div>
           </div>
 
-          <div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-100" aria-label={"Task completion: " + progress + "%"}>
+          <div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-100" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} aria-label="Task completion">
             <div className="h-full rounded-full bg-brand-600 transition-[width]" style={{ width: progress + "%" }} />
           </div>
 
