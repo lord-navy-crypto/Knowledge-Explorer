@@ -1,0 +1,27 @@
+# Node and frontend build artifacts
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+.next/
+**/.next/
+.turbo/
+
+# Rust / Tauri artifacts
+target/
+**/target/
+apps/daily-desk/src-tauri/gen/
+apps/daily-desk/src-tauri/.tauri/
+
+# Local environment and IDE files
+.env
+.env.*
+!.env.example
+.DS_Store
+.idea/
+.vscode/
+*.log
+
+# macOS application bundles and installer artifacts
+*.dmg
+*.app
