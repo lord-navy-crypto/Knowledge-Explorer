@@ -1,0 +1,27 @@
+# Node / frontend
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+.next/
+**/.next/
+.turbo/
+
+# Rust / Tauri
+target/
+**/target/
+apps/daily-desk/src-tauri/gen/
+apps/daily-desk/src-tauri/.tauri/
+
+# Local settings
+.env
+.env.*
+!.env.example
+.DS_Store
+.idea/
+.vscode/
+*.log
+
+# Desktop bundles must be attached to GitHub Releases, not source history
+*.dmg
+*.app
