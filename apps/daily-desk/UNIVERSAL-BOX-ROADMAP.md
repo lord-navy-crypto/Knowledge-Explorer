@@ -100,3 +100,12 @@ Every shipped tool must have: real local processing, input validation, visible e
 - Photo contact-sheet PNG/JPEG creator with captions and size-limited PNG/JPEG/WebP inputs.
 
 The opportunity queue above is preserved as a historical candidate list; the four rows listed here should now be read as delivered baseline implementations, with advanced WebVTT and high-resolution photo-workflow fidelity still remaining future improvements.
+
+## Delivered in v0.22 (October 2026)
+
+- Basic, bounded PCM16 WAV crop / peak normalization / short fades, without MP3/AAC or a proprietary codec backend.
+- Read-only ZIP central-directory metadata explorer and suspicious archive metadata flags. **ZIP extraction is still not implemented.** Flags are not antivirus verdicts.
+- Batch seven-size PNG icon exports in ZIP from a single local image, without assuming iOS/macOS icon branding.
+- Offline approximate RGB palette sampling from local pictures, not a commercial colour-matching service.
+
+Historical opportunity queue entries for WAV, icon sizing and palette have now been satisfied only at the baseline level; ZIP safe extraction and broader audio codecs remain future work.
