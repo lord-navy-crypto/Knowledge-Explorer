@@ -68,6 +68,9 @@ export async function tableToXlsx(table:DataTable):Promise<Uint8Array>{
  return bytes;
 }
 function xmlDecode(text:string):string{
+ // Validate the encoded input before decoding: &amp; legitimately becomes bare &.
+ const validEntity=/&(?:#(?:[xX][0-9a-fA-F]+|[0-9]+)|amp|lt|gt|quot|apos);/gu;
+ if(text.replace(validEntity,"").includes("&"))throw Error("Unsupported spreadsheet XML entity.");
  return text.replace(/&(#(?:[xX][0-9a-fA-F]+|[0-9]+)|amp|lt|gt|quot|apos);/gu,(_,token:string)=>{
    const known:Record<string,string>={amp:"&",lt:"<",gt:">",quot:'"',apos:"'"};
    if(Object.prototype.hasOwnProperty.call(known,token))return known[token];
@@ -75,8 +78,6 @@ function xmlDecode(text:string):string{
    if(!Number.isInteger(n)||n<1||n>0x10ffff||(n>=0xd800&&n<=0xdfff))
      throw Error("Invalid XML numeric character.");
    return String.fromCodePoint(n);
- }).replace(/&(?!(?:amp|lt|gt|quot|apos|#(?:[xX][0-9a-fA-F]+|[0-9]+));)/gu,()=>{
-   throw Error("Unsupported spreadsheet XML entity.");
  });
 }
 function nodes(xml:string,name:string):{attrs:string;body:string}[]{
