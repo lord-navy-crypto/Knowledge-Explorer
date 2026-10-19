@@ -125,7 +125,7 @@ export default function EverydayTools({ initial = "stats" }: { initial?: Utility
     const extIndex=file.name.lastIndexOf(".");
     const ext=extIndex>0?file.name.slice(extIndex):"";
     const base=extIndex>0?file.name.slice(0,extIndex):file.name;
-    const filename=(prefix+base.replaceAll(find || "\u0000",replace)+"-"+String(start+i).padStart(2,"0")+ext)
+    const filename=(prefix+(find ? base.split(find).join(replace) : base)+"-"+String(start+i).padStart(2,"0")+ext)
       .replace(/[\\/:*?"<>|]/gu,"-").slice(0,130);
     return {file,filename};
   });
