@@ -75,3 +75,11 @@ The **Tauri desktop app** stores workspace data as `workspace-v2.json` in its OS
 3. Cancel the import and export dialogs; verify no data is lost.
 4. Start a Focus session and navigate to other tools; the timer must continue.
 5. Push app-only changes and verify Vercel skips a new AP web deployment.
+
+## v0.5 preview: daily workflow parity improvements
+
+- Study deck names per flashcard, due-today filter, and simple interval-based reviews with **Again / Good / Easy** ratings.
+- Backward-compatible parsing for older flashcards that only contain a front/back question and answer. Restore and backup retain review metadata.
+- PDF desk supports saving selected pages together as one PDF, or individually as multiple one-page PDFs inside a ZIP (maximum 50 pages).
+- This scheduling system is intentionally simple; it should not be represented as the AP website's full study engine or a validated spaced-repetition algorithm.
+- Versioned desktop CI covers frontend build, Vitest, Rust tests and DMG bundling before integration.
