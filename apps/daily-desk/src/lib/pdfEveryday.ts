@@ -122,3 +122,33 @@ export async function fillPdfTextFields(
   // pdf-lib builds appearances with WinAnsi Helvetica; output values are limited to printable ASCII.
   return doc.save();
 }
+
+/** Extract or reorder PDF pages with explicit ranges such as 3,1-2,5. Duplicates intentionally supported. */
+export function parsePdfPageOrder(expression:string,total:number):number[]{
+  if(!Number.isSafeInteger(total)||total<1||total>200)throw Error("PDF must contain 1–200 pages.");
+  const tokens=expression.trim().split(",");
+  if(!expression.trim()||tokens.length>200)throw Error("Enter pages such as 3,1-2,5.");
+  const pages:number[]=[];
+  for(const token of tokens){
+    const match=/^\s*(\d+)(?:\s*-\s*(\d+))?\s*$/u.exec(token);
+    if(!match)throw Error("Use page numbers and ranges such as 3,1-2,5.");
+    const start=Number(match[1]),end=match[2]===undefined?start:Number(match[2]);
+    if(!Number.isSafeInteger(start)||!Number.isSafeInteger(end)||start<1||end<start||end>total)
+      throw Error("Page range exceeds the document or is reversed.");
+    for(let i=start;i<=end;i++){
+      pages.push(i-1);
+      if(pages.length>200)throw Error("Output may contain at most 200 pages.");
+    }
+  }
+  return pages;
+}
+export async function exportSelectedPdfPages(input:Uint8Array,expression:string):Promise<Uint8Array>{
+  const source=await loadInput(input);
+  const indices=parsePdfPageOrder(expression,source.getPageCount());
+  const output=await PDFDocument.create();
+  for(const index of indices){
+    const [page]=await output.copyPages(source,[index]);
+    output.addPage(page);
+  }
+  return output.save({useObjectStreams:true});
+}
