@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { type PointerEvent, useEffect, useRef, useState } from "react";
 import type { DeskStroke } from "../lib/workspace";
 import { exportFile } from "../lib/output";
 
@@ -33,11 +33,11 @@ export default function DrawingDesk({strokes,onChange}:Props) {
     strokes.forEach(path=>paint(ctx,path));
   };
   useEffect(()=>{redraw();},[strokes]);
-  const pointerPoint=(event:React.PointerEvent<HTMLCanvasElement>):[number,number]=>{
+  const pointerPoint=(event:PointerEvent<HTMLCanvasElement>):[number,number]=>{
     const rect=event.currentTarget.getBoundingClientRect();
     return [Math.max(0,Math.min(1,(event.clientX-rect.left)/rect.width)),Math.max(0,Math.min(1,(event.clientY-rect.top)/rect.height))];
   };
-  const down=(event:React.PointerEvent<HTMLCanvasElement>)=>{
+  const down=(event:PointerEvent<HTMLCanvasElement>)=>{
     if(event.button!==0&&event.pointerType==="mouse")return;
     event.currentTarget.setPointerCapture(event.pointerId);
     const p=pointerPoint(event);
@@ -45,7 +45,7 @@ export default function DrawingDesk({strokes,onChange}:Props) {
     const ctx=canvas.current?.getContext("2d");
     if(ctx)paint(ctx,active.current);
   };
-  const move=(event:React.PointerEvent<HTMLCanvasElement>)=>{
+  const move=(event:PointerEvent<HTMLCanvasElement>)=>{
     const current=active.current;
     if(!current)return;
     const p=pointerPoint(event),prev=current.points[current.points.length-1];
@@ -64,7 +64,9 @@ export default function DrawingDesk({strokes,onChange}:Props) {
   };
   const exportDrawing=async()=>{
     try{
-      const blob=await new Promise<Blob>((resolve,reject)=>canvas.current?.toBlob(v=>v?resolve(v):reject(new Error("Canvas export failed")),"image/png"));
+      const element=canvas.current;
+      if(!element)throw new Error("Drawing canvas unavailable");
+      const blob=await new Promise<Blob>((resolve,reject)=>element.toBlob(v=>v?resolve(v):reject(new Error("Canvas export failed")),"image/png"));
       const saved=await exportFile("daily-desk-drawing.png",new Uint8Array(await blob.arrayBuffer()));
       setStatus(saved?"Drawing saved to PNG.":"Save cancelled.");
     }catch(e){setStatus(e instanceof Error?e.message:String(e))}
