@@ -68,6 +68,15 @@ export function planSafeZipExtraction(
  });
  return {items,inspection,totalSize};
 }
+type ZipByteStream={
+  on(event:"data",handler:(chunk:Uint8Array)=>void):ZipByteStream;
+  on(event:"error",handler:(error:Error)=>void):ZipByteStream;
+  on(event:"end",handler:()=>void):ZipByteStream;
+  pause():void;
+  resume():void;
+};
+// JSZip runtime exposes ZipObject.internalStream; its public TypeScript type omits it.
+// Keep the narrow runtime interface here and verify behavior with actual ZIP Vitest fixtures.
 /** Stream each member with a strict actual-byte budget rather than calling file.async().
  * Checks observed length and CRC-32 against the original central directory. */
 async function readBounded(
@@ -76,7 +85,7 @@ async function readBounded(
  return new Promise((resolve,reject)=>{
    const chunks:Uint8Array[]=[];
    let total=0,crc=0xffffffff,settled=false;
-   const stream=file.internalStream("uint8array");
+   const stream=(file as JSZip.JSZipObject & {internalStream:(type:string)=>ZipByteStream}).internalStream("uint8array");
    const fail=(message:string)=>{
      if(settled)return;
      settled=true;stream.pause();reject(new Error(message));
