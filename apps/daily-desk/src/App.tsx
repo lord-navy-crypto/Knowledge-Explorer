@@ -342,7 +342,7 @@ export default function App() {
       +" access-reading-"+accessPreferences.reading}
       data-theme={theme} data-reading={accessPreferences.reading}>
       <a className="skip-to-content" href="#main-content">跳转到正文 / Skip to content</a>
-      <aside className="sidebar">
+      <aside className="sidebar" inert={commandOpen}>
         <button type="button" className="sidebar-brand" onClick={()=>openTool("overview")} aria-label="Universal Box Home">
           <span className="brand-mark">U</span><span className="sidebar-brand-text">
             <strong className="brand-name">Universal Box</strong><span className="brand-caption">YOUR TOOLS · YOUR DEVICE</span>
@@ -371,7 +371,7 @@ export default function App() {
         </div>
       </aside>
 
-      <section className="main-panel">
+      <section className="main-panel" inert={commandOpen}>
         <header className="topbar">
           <div className="topbar-title"><span className="topbar-location">WORKSPACE / {activeMenu.name}</span><strong>{activeMenu.name.split(" / ")[0]}</strong></div>
           <div className="topbar-actions">
@@ -475,7 +475,20 @@ export default function App() {
       </section>
       {commandOpen&&<div className="command-backdrop" onMouseDown={()=>setCommandOpen(false)}>
         <div className="command-dialog" ref={commandDialogRef} role="dialog" aria-modal="true" aria-label="Search all Universal Box tools"
-          onMouseDown={event=>event.stopPropagation()}>
+          onMouseDown={event=>event.stopPropagation()}
+          onKeyDown={event=>{
+            if(event.key!=="Tab")return;
+            const dialog=commandDialogRef.current;
+            if(!dialog)return;
+            const elements=Array.from(dialog.querySelectorAll<HTMLElement>(
+              'button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
+            )).filter(el=>el.getClientRects().length>0);
+            if(!elements.length){event.preventDefault();return;}
+            const first=elements[0],last=elements[elements.length-1];
+            const focused=document.activeElement;
+            if(event.shiftKey&&(focused===first||!dialog.contains(focused))){event.preventDefault();last.focus();}
+            else if(!event.shiftKey&&(focused===last||!dialog.contains(focused))){event.preventDefault();first.focus();}
+          }}>
           <div className="command-search-head"><span aria-hidden="true">⌕</span>
             <input ref={commandInputRef} className="command-input" type="search" placeholder="Find a tool or workspace…" value={commandQuery} onChange={event=>setCommandQuery(event.target.value)}
               onKeyDown={event=>{if(event.key==="Enter"&&commands[0])openTool(commands[0].view,commands[0].module);}}/>
