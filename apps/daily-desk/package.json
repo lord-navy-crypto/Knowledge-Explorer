@@ -22,7 +22,11 @@
     "mammoth": "^1.11.0",
     "qrcode": "^1.5.4",
     "mathjs": "^14.0.0",
-    "katex": "^0.16.22"
+    "katex": "^0.16.22",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
+    "remark-math": "^6.0.0",
+    "rehype-katex": "^7.0.1"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.5.0",
