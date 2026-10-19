@@ -9,6 +9,8 @@ describe("ported web units and constants",()=>{
    expect(convertUnits("Length",1,"Å","m")).toBeCloseTo(1e-10,18);
    expect(convertUnits("Charge",1,"μC","C")).toBeCloseTo(1e-6);
    expect(convertUnits("Force",1,"kN","N")).toBeCloseTo(1000);
+   expect(convertUnits("Energy",1,"Wh","J")).toBeCloseTo(3600);
+   expect(convertUnits("Speed",1,"kn","m/s")).toBeCloseTo(.514444);
    expect(convertUnits("Energy",1,"eV","J")).toBeCloseTo(1.602176634e-19,26);
  });
  it("handles temperature scales and rejects below absolute zero",()=>{
