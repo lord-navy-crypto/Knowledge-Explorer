@@ -1,4 +1,4 @@
-import {useMemo,useState} from "react";
+import {useEffect,useMemo,useState} from "react";
 
 export type LocalTool = {id:string;name:string;area:string;view:string;module?:string};
 export const LOCAL_TOOLS:LocalTool[] = [
@@ -83,26 +83,70 @@ const NOT_LOCAL = ["Website AI / cloud models (needs configured AI connection)",
 export default function ToolLaunchpad({onLaunch}:{onLaunch:(view:string,module?:string)=>void}) {
  const [search,setSearch]=useState("");
  const [category,setCategory]=useState("All");
- const groups=["All", ...Array.from(new Set(LOCAL_TOOLS.map(item=>item.area)))];
- const filtered=useMemo(()=>LOCAL_TOOLS.filter(item=>(category==="All"||item.area===category) && (item.name+" "+item.id+" "+item.area).toLowerCase().includes(search.toLowerCase())),[category,search]);
- return <section className="panel">
-   <p className="eyebrow">ALL EVERYDAY TOOLS · ONE CLICK</p>
-   <h2>All tools / 全部小工具</h2>
-   <p className="subtle">Search the website's everyday tool equivalents in the standalone Mac app. Click to open the real local feature, not a web link.</p>
-   <div className="actions">
-     <label htmlFor="all-tools-search" className="field-label">Search / 搜索</label>
-     <input className="field" id="all-tools-search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="PDF, CSV, vector, QR, code..."/>
-     <label className="field-label" htmlFor="all-tools-category">Category</label>
-     <select id="all-tools-category" className="field" value={category} onChange={e=>setCategory(e.target.value)}>{groups.map(c=><option key={c}>{c}</option>)}</select>
+ const [showFavorites,setShowFavorites]=useState(false);
+ const [favorites,setFavorites]=useState<string[]>(()=>{
+   try{
+     const parsed=JSON.parse(localStorage.getItem("universal-box-favorite-tools")||"[]") as unknown;
+     return Array.isArray(parsed)?parsed.filter((id):id is string=>typeof id==="string"&&LOCAL_TOOLS.some(tool=>tool.id===id)).slice(0,40):[];
+   }catch{return [];}
+ });
+ useEffect(()=>{
+   try{localStorage.setItem("universal-box-favorite-tools",JSON.stringify(favorites));}
+   catch{/* saved preferences are optional */}
+ },[favorites]);
+ const groups=["All",...Array.from(new Set(LOCAL_TOOLS.map(item=>item.area)))];
+ const filtered=useMemo(()=>{
+   const term=search.trim().toLocaleLowerCase();
+   const matches=LOCAL_TOOLS.filter(item=>
+     (category==="All"||item.area===category)
+     &&(!showFavorites||favorites.includes(item.id))
+     &&(!term||(item.name+" "+item.id+" "+item.area).toLocaleLowerCase().includes(term)));
+   return matches.sort((a,b)=>Number(favorites.includes(b.id))-Number(favorites.includes(a.id)));
+ },[category,search,favorites,showFavorites]);
+ function toggleFavorite(id:string){
+   setFavorites(old=>old.includes(id)?old.filter(x=>x!==id):[...old,id].slice(0,40));
+ }
+ return <section className="panel tool-catalog">
+   <div className="catalog-heading">
+     <div><p className="eyebrow">DISCOVER · CREATE · CONVERT · LEARN</p>
+       <h2>Explore your toolbox</h2>
+       <p className="subtle">Search for exactly what you need. Every local tool opens inside Universal Box; favorites are saved only on this device.</p>
+     </div>
+     <div className="catalog-count"><strong>{LOCAL_TOOLS.length}</strong><span>tool entries</span></div>
    </div>
-   <p className="subtle">{filtered.length} local tool entries · no need to open separate website tabs.</p>
-   <div className="tool-grid">{filtered.map(item=><button key={item.id} className="tool-card" type="button" onClick={()=>onLaunch(item.view,item.module)}>
-      <strong>{item.name}</strong><span className="subtle">{item.area}</span><span className="tool-state">OPEN TOOL →</span>
-   </button>)}</div>
-   <h3>Need more specialized features?</h3>
-   <p className="subtle">The curated External Tools hub opens official third-party websites explicitly in your default browser. No outside website is treated as a local feature.</p>
-   <button className="secondary-button" type="button" onClick={()=>onLaunch("external")}>Browse External Tools ↗</button>
-   <h3>Not represented as offline equivalents</h3>
-   <p className="subtle">{NOT_LOCAL.join(" · ")}. These cannot be honestly claimed as copied into the local application.</p>
+   <div className="catalog-filter-bar">
+     <label className="field-label" htmlFor="all-tools-search">Search the tool library
+       <input autoComplete="off" className="field" id="all-tools-search" value={search}
+         onChange={e=>setSearch(e.target.value)} placeholder="Try PDF, CSV, QR, image, audio, graph…" />
+     </label>
+     <button type="button" className={showFavorites?"secondary-button favorites-only enabled":"secondary-button favorites-only"}
+       onClick={()=>setShowFavorites(old=>!old)} aria-pressed={showFavorites}>★ Favorites ({favorites.length})</button>
+     {search&&<button type="button" className="secondary-button catalog-clear" onClick={()=>setSearch("")}>Clear</button>}
+   </div>
+   <div className="category-scroll" role="group" aria-label="Filter tool category">
+     {groups.map(group=><button type="button" key={group}
+       className={category===group?"pill active-pill":"pill"} aria-pressed={category===group}
+       onClick={()=>setCategory(group)}>{group}</button>)}
+   </div>
+   <div className="catalog-results-header"><span>{filtered.length} matching tools</span><span>{favorites.length?"★ Favorites appear first":"Star your most-used tools for faster access"}</span></div>
+   {filtered.length?<div className="tool-grid catalog-grid">
+     {filtered.map(item=><div key={item.id} className="catalog-card">
+       <button className="catalog-favorite" type="button" aria-label={favorites.includes(item.id)?"Remove "+item.name+" from favorites":"Add "+item.name+" to favorites"}
+         aria-pressed={favorites.includes(item.id)} onClick={()=>toggleFavorite(item.id)}>{favorites.includes(item.id)?"★":"☆"}</button>
+       <button className="catalog-open" type="button" onClick={()=>onLaunch(item.view,item.module)}>
+         <span className="catalog-icon" aria-hidden="true">{item.area==="Images"?"▧":item.area==="Math"?"∑":item.area==="Files"?"▤":item.area==="Office"?"▦":item.area==="Code"?"⌘":"◇"}</span>
+         <strong>{item.name}</strong><span className="catalog-area">{item.area}</span>
+         <span className="tool-state">OPEN TOOL →</span>
+       </button>
+     </div>)}
+   </div>:<div className="catalog-empty"><strong>No matching tools</strong><p className="subtle">Try a different keyword or clear the category and favorites filters.</p>
+     <button className="secondary-button" type="button" onClick={()=>{setCategory("All");setSearch("");setShowFavorites(false);}}>Reset filters</button>
+   </div>}
+   <div className="catalog-external">
+     <div><h3>Need something more advanced?</h3>
+       <p className="subtle">Optional third-party sites open in your default browser. They are clearly separate from your private local toolbox.</p></div>
+     <button className="secondary-button" type="button" onClick={()=>onLaunch("external")}>Browse external services ↗</button>
+   </div>
+   <p className="subtle">Not available as offline equivalents: {NOT_LOCAL.join(" · ")}.</p>
  </section>;
 }
