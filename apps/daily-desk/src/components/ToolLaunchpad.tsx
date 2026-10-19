@@ -34,7 +34,7 @@ export const LOCAL_TOOLS:LocalTool[] = [
  {id:"drawing",name:"Black Draft Board",area:"Writing",view:"drawing"},
  {id:"pdf",name:"PDF Preview & Tools",area:"Files",view:"files",module:"pdf"},
  {id:"pdf-organize",name:"PDF Reorder / Delete Pages",area:"Files",view:"files",module:"organize"},
- {id:"image",name:"Image Resize, Crop & Convert",area:"Files",view:"files",module:"images"},
+ {id:"image",name:"Interactive Image Crop, Rotate, Draw & Convert",area:"Files",view:"files",module:"images"},
  {id:"image-batch",name:"Batch Image Conversion → ZIP",area:"Files",view:"files",module:"images"},
  {id:"docx",name:"Word → Markdown / PDF Preview",area:"Files",view:"files",module:"word"},
  {id:"rename",name:"Batch Rename Copies",area:"Files",view:"utilities",module:"rename"},
