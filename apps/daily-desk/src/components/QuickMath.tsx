@@ -1,4 +1,5 @@
 import {useState} from "react";
+import {compile} from "mathjs";
 import {baseConvert,quadraticRoots,descriptiveStats,twoByTwo} from "../lib/quickMath";
 
 type Mode = "base"|"equation"|"stats"|"matrix"|"table";
@@ -26,8 +27,9 @@ export default function QuickMath(){
       }
       if(mode==="table"){
         if(!Number.isInteger(count)||count<2||count>50)throw Error("Rows must be between 2 and 50.");
-        // This is the same local mathjs expression engine already used in Graph.
-        setResult("Preparing table...");
+        const fn=compile(tableExpr);
+        const rows=Array.from({length:count},(_,i)=>{const x=start+i*step;const y:unknown=fn.evaluate({x});return x+"\t"+(typeof y==="number"&&Number.isFinite(y)?String(y):"undefined")});
+        setResult("x\tf(x)\n"+rows.join("\n"));
       }
     }catch(error){setResult("Error: "+String(error instanceof Error?error.message:error));}
   }
@@ -50,6 +52,12 @@ export default function QuickMath(){
         return <label key={key} className="field-label">{key}<input className="field" type="number" value={n} onChange={ev=>handler(Number(ev.target.value))}/></label>;
       })}</div>
     </>}
+    {mode==="table"&&<div className="tools-pair">
+      <label className="field-label">f(x) <input className="field" value={tableExpr} onChange={event=>setTableExpr(event.target.value)}/></label>
+      <label className="field-label">Start x <input className="field" type="number" value={start} onChange={event=>setStart(Number(event.target.value))}/></label>
+      <label className="field-label">Step <input className="field" type="number" value={step} onChange={event=>setStep(Number(event.target.value))}/></label>
+      <label className="field-label">Rows (2–50) <input className="field" type="number" min={2} max={50} value={count} onChange={event=>setCount(Number(event.target.value))}/></label>
+    </div>}
     {mode==="stats"&&<><label className="field-label">Numbers (comma or whitespace-separated)</label>
       <textarea className="field text-editor" rows={5} value={data} onChange={ev=>setData(ev.target.value)} /></>}
     {mode==="matrix"&&<>
