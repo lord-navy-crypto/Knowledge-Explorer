@@ -11,11 +11,18 @@ export type DeskCard = {
   front: string;
   back: string;
 };
+export type DeskExam = { id: string; name: string; date: string };
+export type DeskMistake = { id: string; topic: string; correction: string };
+export type DeskSnippet = { id: string; title: string; code: string };
 export type WorkspaceData = {
   version: 2;
   tasks: DeskTask[];
   cards: DeskCard[];
   notes: string;
+  exams?: DeskExam[];
+  mistakes?: DeskMistake[];
+  snippets?: DeskSnippet[];
+  readingNotes?: string;
 };
 
 const STORAGE_KEY = "daily-desk.workspace.v2";
@@ -24,7 +31,7 @@ const MAX_TASKS = 300;
 const MAX_CARDS = 500;
 
 export function emptyWorkspace(): WorkspaceData {
-  return { version: 2, tasks: [], cards: [], notes: "" };
+  return { version: 2, tasks: [], cards: [], notes: "", exams: [], mistakes: [], snippets: [], readingNotes: "" };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -81,6 +88,10 @@ export function parseWorkspace(raw: unknown): WorkspaceData {
     tasks,
     cards,
     notes: typeof raw.notes === "string" ? raw.notes.slice(0, 50000) : "",
+    exams: Array.isArray(raw.exams) ? raw.exams.slice(0,100).filter((e):e is DeskExam=>isRecord(e)&&typeof e.id==="string"&&typeof e.name==="string"&&typeof e.date==="string"&&/^\\d{4}-\\d{2}-\\d{2}$/.test(e.date)).map(e=>({...e,name:e.name.slice(0,160)})):[],
+    mistakes: Array.isArray(raw.mistakes) ? raw.mistakes.slice(0,300).filter((e):e is DeskMistake=>isRecord(e)&&typeof e.id==="string"&&typeof e.topic==="string"&&typeof e.correction==="string").map(e=>({...e,topic:e.topic.slice(0,300),correction:e.correction.slice(0,2000)})):[],
+    snippets: Array.isArray(raw.snippets) ? raw.snippets.slice(0,150).filter((e):e is DeskSnippet=>isRecord(e)&&typeof e.id==="string"&&typeof e.title==="string"&&typeof e.code==="string").map(e=>({...e,title:e.title.slice(0,120),code:e.code.slice(0,10000)})):[],
+    readingNotes: typeof raw.readingNotes === "string" ? raw.readingNotes.slice(0,30000) : "",
   };
 }
 
