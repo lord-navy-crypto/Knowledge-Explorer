@@ -83,6 +83,7 @@ export default function FileDesk({ onSendToWriting, initialTab = "pdf", initialP
   const [caption, setCaption] = useState("");
   const [imageSource, setImageSource] = useState("");
   const [imageWidth, setImageWidth] = useState(1600);
+  const [imageHeight, setImageHeight] = useState(1600);
   const [imageFormat, setImageFormat] = useState<ImageFormat>("image/jpeg");
   const [quality, setQuality] = useState(.82);
   const [doc, setDoc] = useState<File | null>(null);
@@ -201,7 +202,7 @@ export default function FileDesk({ onSendToWriting, initialTab = "pdf", initialP
         const sourceW = imageMode === "crop" ? Math.floor(img.naturalWidth * Math.min(cropWidth, 100 - cropLeft) / 100) : img.naturalWidth;
         const sourceH = imageMode === "crop" ? Math.floor(img.naturalHeight * Math.min(cropHeight, 100 - cropTop) / 100) : img.naturalHeight;
         if (sourceW < 1 || sourceH < 1) throw new Error("Crop rectangle is empty");
-        const scale = Math.min(1, imageWidth / sourceW);
+        const scale = Math.min(1, imageWidth / sourceW, imageHeight / sourceH);
         const width = Math.max(1, Math.round(sourceW * scale));
         const height = Math.max(1, Math.round(sourceH * scale));
         const canvas = document.createElement("canvas");
@@ -289,6 +290,8 @@ export default function FileDesk({ onSendToWriting, initialTab = "pdf", initialP
         <label className="field-label" htmlFor="image-caption">Optional text annotation</label><input id="image-caption" className="field" value={caption} maxLength={100} onChange={e=>setCaption(e.target.value)} placeholder="Add a short label to the output image" style={{width:"100%"}}/>
         <label className="field-label" htmlFor="image-width">Maximum width (keeps aspect ratio)</label>
         <input id="image-width" type="number" className="field" min={64} max={8192} value={imageWidth} onChange={(e) => setImageWidth(Math.max(64,Math.min(8192,Number(e.target.value)||1600)))} />
+        <label className="field-label" htmlFor="image-height">Maximum height (keeps aspect ratio)</label>
+        <input id="image-height" type="number" className="field" min={64} max={8192} value={imageHeight} onChange={(e) => setImageHeight(Math.max(64,Math.min(8192,Number(e.target.value)||1600)))} />
         <label className="field-label" htmlFor="image-format">Output format</label>
         <select id="image-format" className="field" value={imageFormat} onChange={(e) => setImageFormat(e.target.value as ImageFormat)}><option value="image/jpeg">JPEG</option><option value="image/webp">WebP</option><option value="image/png">PNG</option></select>
         <label className="field-label" htmlFor="image-quality">Quality · {Math.round(quality*100)}%</label>
