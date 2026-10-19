@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import FocusNoise from "./FocusNoise";
 
 type TimerMode = "focus" | "short" | "long";
 const durations: Record<TimerMode, number> = { focus: 25, short: 5, long: 15 };
@@ -67,6 +68,7 @@ export default function FocusTimer() {
         <button type="button" className="primary-button" onClick={toggle} disabled={remaining === 0}>{running ? "Pause session" : "Start session"}</button>
         <button type="button" className="secondary-button" onClick={() => chooseMode(mode)}>Reset</button>
       </div>
+      <FocusNoise />
       <p className="subtle session-note">{completed} focus session{completed === 1 ? "" : "s"} completed this visit. You can switch tools without losing your session.</p>
     </section>
   );

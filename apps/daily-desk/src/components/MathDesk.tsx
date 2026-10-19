@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { compile, evaluate } from "mathjs";
 import katex from "katex";
+import { combineVectors, significantFigures, roundSignificant } from "../lib/mathExtras";
 import "katex/dist/katex.min.css";
 
 type MathTab = "calculator" | "graph" | "units" | "notation" | "vector" | "formula" | "latex";
@@ -55,8 +56,14 @@ export default function MathDesk(){
   const [to,setTo]=useState("km");
   const [unitAmount,setUnitAmount]=useState(1000);
   const [notation,setNotation]=useState("12345.678");
+  const [otherNumber,setOtherNumber]=useState("2.1");
+  const [sigDigits,setSigDigits]=useState(3);
+  const [sigOperation,setSigOperation]=useState<"multiply"|"divide">("multiply");
   const [magnitude,setMagnitude]=useState(10);
   const [angle,setAngle]=useState(30);
+  const [magnitudeB,setMagnitudeB]=useState(5);
+  const [angleB,setAngleB]=useState(120);
+  const [vectorOperation,setVectorOperation]=useState<"add"|"subtract">("add");
   const [latex,setLatex]=useState("E=mc^2");
   const [status,setStatus]=useState("");
   const [yScale,setYScale]=useState(10);
@@ -65,6 +72,13 @@ export default function MathDesk(){
   const px=(x:number)=>310+x*31;
   const py=(y:number)=>200-y*(200/yScale);
   const formatted=useMemo(()=>{const n=Number(notation);return Number.isFinite(n)?n.toExponential(5):"Not a number";},[notation]);
+  const sigCount=significantFigures(notation);
+  const sigCountB=significantFigures(otherNumber);
+  const arithmetic=Number(notation) * (sigOperation==="multiply" ? Number(otherNumber) : 1);
+  const preciseResult=sigOperation==="divide" ? Number(notation)/Number(otherNumber) : arithmetic;
+  let sigResult="Enter valid nonzero numbers";
+  try { if(Number.isFinite(preciseResult)) sigResult=roundSignificant(preciseResult,sigDigits); } catch { /* invalid input shown above */ }
+  const vectorResult=combineVectors({magnitude,angle},{magnitude:magnitudeB,angle:angleB},vectorOperation==="subtract");
   const currentUnits=UNITS[unitType];
   const converted=unitAmount*currentUnits[from]/currentUnits[to];
   const mathHtml=useMemo(()=>{try{return katex.renderToString(latex,{throwOnError:false,trust:false,output:"html"})}catch{return ""}},[latex]);
@@ -108,15 +122,26 @@ export default function MathDesk(){
       <p className="subtle">Common constants: g≈9.80665 m/s² · c=299,792,458 m/s · h=6.62607015×10⁻³⁴ J·s</p>
     </>}
     {tab==="notation"&&<>
-      <label className="field-label" htmlFor="notation-number">Decimal number</label><input id="notation-number" className="field" value={notation} onChange={e=>setNotation(e.target.value)}/>
-      <p className="stat-pill">{formatted}</p><p className="subtle">Scientific notation uses six significant figures in this preview. Exact significant-figure inference depends on notation.</p>
+      <label className="field-label" htmlFor="notation-number">First number (as written)</label>
+      <input id="notation-number" className="field" value={notation} onChange={e=>setNotation(e.target.value)}/>
+      <div className="metrics"><span>Scientific notation: {formatted}</span><span>Estimated significant figures: {sigCount??"invalid"}</span></div>
+      <div className="tools-pair">
+        <label className="field-label">Second number <input className="field" value={otherNumber} onChange={e=>setOtherNumber(e.target.value)}/></label>
+        <label className="field-label">Operation <select className="field" value={sigOperation} onChange={e=>setSigOperation(e.target.value as "multiply"|"divide")}><option value="multiply">Multiply</option><option value="divide">Divide</option></select></label>
+        <label className="field-label">Result significant figures <input className="field" type="number" min={1} max={15} value={sigDigits} onChange={e=>setSigDigits(Math.max(1,Math.min(15,Number(e.target.value)||1)))}/></label>
+      </div>
+      <p className="stat-pill">Rounded result: {sigResult}</p>
+      <p className="subtle">Second input has {sigCountB??"unknown"} significant figures. The count of terminal zeros in an integer without a decimal point is ambiguous. Choose the result precision deliberately.</p>
     </>}
     {tab==="vector"&&<>
       <div className="tools-pair">
-        <label className="field-label">Magnitude <input className="field" type="number" value={magnitude} onChange={e=>setMagnitude(Number(e.target.value))}/></label>
-        <label className="field-label">Angle (degrees from +x) <input className="field" type="number" value={angle} onChange={e=>setAngle(Number(e.target.value))}/></label>
+        <label className="field-label">Vector A magnitude <input className="field" type="number" value={magnitude} onChange={e=>setMagnitude(Number(e.target.value))}/></label>
+        <label className="field-label">Vector A angle (°) <input className="field" type="number" value={angle} onChange={e=>setAngle(Number(e.target.value))}/></label>
+        <label className="field-label">Vector B magnitude <input className="field" type="number" value={magnitudeB} onChange={e=>setMagnitudeB(Number(e.target.value))}/></label>
+        <label className="field-label">Vector B angle (°) <input className="field" type="number" value={angleB} onChange={e=>setAngleB(Number(e.target.value))}/></label>
       </div>
-      <div className="metrics"><span>Ax = {(magnitude*Math.cos(angle*Math.PI/180)).toFixed(5)}</span><span>Ay = {(magnitude*Math.sin(angle*Math.PI/180)).toFixed(5)}</span></div>
+      <label className="field-label">Combine vectors <select className="field" value={vectorOperation} onChange={e=>setVectorOperation(e.target.value as "add"|"subtract")}><option value="add">A + B</option><option value="subtract">A − B</option></select></label>
+      <div className="metrics"><span>Rx = {vectorResult.x.toFixed(5)}</span><span>Ry = {vectorResult.y.toFixed(5)}</span><span>|R| = {vectorResult.magnitude.toFixed(5)}</span><span>θ = {vectorResult.angle.toFixed(3)}°</span></div>
     </>}
     {tab==="formula"&&<div className="tool-grid">{FORMULAS.map(row=><article key={row.title} className="tool-card"><strong>{row.title}</strong><div className="math-formula" dangerouslySetInnerHTML={{__html:katex.renderToString(row.math,{throwOnError:false,trust:false})}}/><button type="button" className="secondary-button" onClick={()=>{void navigator.clipboard.writeText(row.math).then(()=>setStatus("Copied LaTeX")).catch(()=>setStatus("Clipboard unavailable"));}}>Copy LaTeX</button></article>)}</div>}
     {tab==="latex"&&<>

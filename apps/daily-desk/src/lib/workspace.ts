@@ -18,6 +18,8 @@ export type DeskCard = {
 export type DeskExam = { id: string; name: string; date: string };
 export type DeskMistake = { id: string; topic: string; correction: string };
 export type DeskSnippet = { id: string; title: string; code: string };
+export type DeskPreset = { id: string; code: string; url: string; description: string };
+export type DeskHighlight = { id: string; start: number; end: number; color: string; note: string };
 export type DeskStroke = { color: string; width: number; points: [number,number][] };
 export type WorkspaceData = {
   version: 2;
@@ -30,6 +32,9 @@ export type WorkspaceData = {
   readingNotes?: string;
   documentMarkdown?: string;
   drawing?: DeskStroke[];
+  presets?: DeskPreset[];
+  readingText?: string;
+  highlights?: DeskHighlight[];
 };
 
 const STORAGE_KEY = "daily-desk.workspace.v2";
@@ -38,11 +43,20 @@ const MAX_TASKS = 300;
 const MAX_CARDS = 500;
 
 export function emptyWorkspace(): WorkspaceData {
-  return { version: 2, tasks: [], cards: [], notes: "", exams: [], mistakes: [], snippets: [], readingNotes: "", documentMarkdown: "", drawing: [] };
+  return { version: 2, tasks: [], cards: [], notes: "", exams: [], mistakes: [], snippets: [], readingNotes: "", documentMarkdown: "", drawing: [], presets: [], readingText: "", highlights: [] };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function validHighlight(value: unknown): value is DeskHighlight {
+  if (!isRecord(value)) return false;
+  return typeof value.id === "string" &&
+    typeof value.start === "number" && Number.isSafeInteger(value.start) &&
+    typeof value.end === "number" && Number.isSafeInteger(value.end) &&
+    value.start >= 0 && value.end > value.start && value.end <= 40000 &&
+    typeof value.color === "string" && typeof value.note === "string";
 }
 
 function readPriority(value: unknown): Priority {
@@ -104,6 +118,12 @@ export function parseWorkspace(raw: unknown): WorkspaceData {
     snippets: Array.isArray(raw.snippets) ? raw.snippets.slice(0,150).filter((e):e is DeskSnippet=>isRecord(e)&&typeof e.id==="string"&&typeof e.title==="string"&&typeof e.code==="string").map(e=>({...e,title:e.title.slice(0,120),code:e.code.slice(0,10000)})):[],
     readingNotes: typeof raw.readingNotes === "string" ? raw.readingNotes.slice(0,30000) : "",
     documentMarkdown: typeof raw.documentMarkdown === "string" ? raw.documentMarkdown.slice(0,50000) : "",
+    readingText: typeof raw.readingText === "string" ? raw.readingText.slice(0,40000) : "",
+    presets: Array.isArray(raw.presets) ? raw.presets.slice(0,100).filter((v):v is DeskPreset=>
+      isRecord(v) && typeof v.id==="string" && typeof v.code==="string" &&
+      typeof v.url==="string" && typeof v.description==="string"
+    ).map(v=>({id:v.id.slice(0,100),code:v.code.slice(0,50),url:v.url.slice(0,2000),description:v.description.slice(0,200)})):[],
+    highlights: Array.isArray(raw.highlights) ? raw.highlights.slice(0,300).filter(validHighlight).map(v=>({id:v.id.slice(0,100),start:v.start,end:v.end,color:v.color.slice(0,25),note:v.note.slice(0,500)})):[],
     drawing: Array.isArray(raw.drawing) ? raw.drawing.slice(0,100).filter((v):v is Record<string,unknown>=>isRecord(v)&&typeof v.color==="string"&&typeof v.width==="number"&&Array.isArray(v.points)).map(v=>({
       color: String(v.color).slice(0,16),
       width: Math.max(1,Math.min(24,Number(v.width))),

@@ -83,3 +83,13 @@ The **Tauri desktop app** stores workspace data as `workspace-v2.json` in its OS
 - PDF desk supports saving selected pages together as one PDF, or individually as multiple one-page PDFs inside a ZIP (maximum 50 pages).
 - This scheduling system is intentionally simple; it should not be represented as the AP website's full study engine or a validated spaced-repetition algorithm.
 - Versioned desktop CI covers frontend build, Vitest, Rust tests and DMG bundling before integration.
+
+## v0.6 preview: additional easy web tool equivalents
+
+- Offline short-code URL bookmarks saved as local presets (no public redirect service).
+- Reading passages with colored selection highlights and margin notes.
+- Temporary paste-to-flip cards, and random single-name selection.
+- Vector addition/subtraction and explicitly chosen significant-figure rounding.
+- White/pink/brown/soft locally synthesised focus audio beds (not streamed recordings).
+
+The desktop program remains separate from the AP website. These changes are not equivalent to web-hosted AI, speech recognition, or all advanced mathematics tools.
