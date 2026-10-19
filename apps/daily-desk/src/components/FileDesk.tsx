@@ -5,6 +5,7 @@ import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { exportFile } from "../lib/output";
 import PdfPagePreview from "./PdfPagePreview";
+import PdfTextDesk from "./PdfTextDesk";
 import { parsePdfOrder } from "../lib/pdfPageOrder";
 import BatchImageDesk from "./BatchImageDesk";
 
@@ -271,6 +272,7 @@ export default function FileDesk({ onSendToWriting, initialTab = "pdf", initialP
         {pdfMode === "compress" && <p className="subtle">Like the web's light-compress mode, this reserializes PDF objects. Scanned/image-heavy PDFs may not shrink.</p>}
         <div className="actions"><button type="button" className="primary-button" disabled={!files.length || busy} onClick={() => { void processPdf(); }}>{busy ? "Processing…" : "Process & save PDF"}</button></div>
         {files.length > 0 && <PdfPagePreview file={files[0]} onPickPage={page=>{if(pdfMode!=="organize")setPages(String(page));}} />}
+        {files.length > 0 && <PdfTextDesk file={files[0]} />}
       </>}
       {tab === "images" && <>
         <label className="field-label" htmlFor="image-picker">Choose an image</label>
