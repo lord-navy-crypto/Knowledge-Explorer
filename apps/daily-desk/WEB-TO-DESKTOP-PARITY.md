@@ -79,3 +79,11 @@ This first port covers the everyday tool set but is **not 100% feature parity** 
 - Still no cloud AI, shared shortlinks, online embeds, or speech-to-text transcription.
 
 - Local focus audio is synthetic Web Audio noise (not a copy of the site's real rain recordings). Playback starts only after a click and stops when switched Off.
+
+
+## v0.7 focused migration
+
+- Math tools add local numerical derivatives, tangents, Simpson definite integrals, sign-changing roots and intersections.
+- Math remaining gaps: full ClassWiz, symbolic calculus, parametric/polar charts, pan/zoom and higher-order analysis. Numerical estimates need validation around discontinuities.
+- Word-to-PDF gets a **partial** desktop workflow: Mammoth DOCX import → safe Markdown preview → editable Writing Desk → Print / Save PDF if supported by macOS WebView. Exact Word formatting is not preserved.
+- CI builds alone cannot verify macOS printing or real-world document fidelity.
