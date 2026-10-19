@@ -337,7 +337,7 @@ export default function App() {
   const activeMenu = menu.find((item) => item.id === view) ?? menu[0];
 
   return (
-    <main className={"app-shell "+(theme==="dark"?"theme-light")+(accessPreferences.highContrast?" access-contrast":"")
+    <main className={"app-shell "+(theme==="dark"?"theme-dark":"theme-light")+(accessPreferences.highContrast?" access-contrast":"")
       +(accessPreferences.simplerHome?" access-simple":"")+(accessPreferences.reducedMotion?" access-reduced-motion":"")
       +" access-reading-"+accessPreferences.reading}
       data-theme={theme} data-reading={accessPreferences.reading}>
