@@ -264,7 +264,7 @@ export default function App() {
       </aside>
 
       <section className="main-panel">
-        <header className="topbar"><span>Daily Desk / {activeMenu.name}</span><span className="version-pill">DESKTOP PREVIEW · v0.17</span></header>
+        <header className="topbar"><span>Daily Desk / {activeMenu.name}</span><span className="version-pill">DESKTOP PREVIEW · v0.18</span></header>
         <div className="content">
           {view === "overview" && <>
             <p className="eyebrow">GOOD TO HAVE YOU HERE</p><h1>Your day, in one place.</h1>
@@ -283,7 +283,7 @@ export default function App() {
           {view === "code" && <CodeDesk snippets={workspace.snippets??[]} onChange={snippets=>setWorkspace(current=>({...current,snippets}))} />}
           {view === "tables" && <DataDesk />}
           {view === "utilities" && <EverydayTools key={toolMode} initial={(toolMode || "stats") as Utility} />}
-          {view === "files" && <FileDesk key={toolMode} initialPdfMode={toolMode === "organize" ? "organize" : toolMode === "decorate" ? "decorate" : "merge"} initialTab={(toolMode === "organize" || toolMode === "decorate" ? "pdf" : toolMode || "pdf") as FileTab} onSendToWriting={markdown => {setWorkspace(current => ({...current, documentMarkdown: markdown})); setView("writing");}} />}
+          {view === "files" && <FileDesk key={toolMode} initialPdfMode={toolMode === "organize" ? "organize" : toolMode === "decorate" ? "decorate" : toolMode === "convert" ? "convert" : "merge"} initialTab={(toolMode === "organize" || toolMode === "decorate" || toolMode === "convert" ? "pdf" : toolMode || "pdf") as FileTab} onSendToWriting={markdown => {setWorkspace(current => ({...current, documentMarkdown: markdown})); setView("writing");}} />}
           {view === "math" && <MathDesk key={toolMode} initialTab={(toolMode||"calculator") as MathTab} />}
           {view === "learning" && <StudyExtras key={toolMode} initialMode={(toolMode||"countdown") as StudyMode} workspace={workspace} onChange={setWorkspace} />}
           {view === "reading" && <ReadingHighlights text={workspace.readingText ?? ""} highlights={workspace.highlights ?? []} onChange={(text, highlights)=>setWorkspace(current=>({...current,readingText:text,highlights}))} />}
