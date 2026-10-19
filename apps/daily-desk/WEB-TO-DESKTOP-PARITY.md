@@ -111,3 +111,11 @@ This first port covers the everyday tool set but is **not 100% feature parity** 
 - **Image batch:** `File desk → Images` can convert up to 12 local JPEG/PNG/WebP images to a common format/width and save a single ZIP. Conservative per-file, pixel and ZIP-size limits protect memory on 16 GB Apple Silicon machines.
 - The searchable All tools catalog includes the new entries; no AP ReasonLab website code is changed.
 - Notes: CSV is a flat table utility, not an XLSX formula editor. PDF editing rearranges page objects, not internal PDF text/annotations. Batch image conversion handles raster input only. Mac WebView interaction remains to be verified after CI build.
+
+## v0.11 local PDF text, Word formatting and batch rename
+
+- **PDF text desk** is available under `File desk → PDF`: opt-in text extraction using a bundled PDF.js worker, per-page text search with match counts, and TXT/Markdown export. Limits: 25 MB, 300 pages, 1 million extracted characters. Scanned PDFs without selectable text need OCR; this feature does not claim OCR support. No network uploads.
+- **Word DOCX export** preserves common inline Markdown formatting such as bold, italic, strikethrough and inline code, and writes actual Word bullet lists instead of plain bullet characters. Headings remain native Word headings. Rich tables, equations, hyperlinks, precise layout and embedded assets are not reproduced.
+- **Batch rename** adds one-click ZIP export of renamed copies, not 50 separate save dialogs. It enforces 50-file / 16 MB input bounds, checks duplicate names, and preserves originals. Single-file export remains available.
+- Main app version 0.11.0. All changes are confined to `apps/daily-desk/**`; AP ReasonLab website is unchanged.
+- **Acceptance boundary:** GitHub Actions tests and DMG packaging verify buildability, not macOS WebView PDF preview/print or Word document rendering fidelity. Manual on-device verification is still necessary.
