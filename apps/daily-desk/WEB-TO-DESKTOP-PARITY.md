@@ -87,3 +87,11 @@ This first port covers the everyday tool set but is **not 100% feature parity** 
 - Math remaining gaps: full ClassWiz, symbolic calculus, parametric/polar charts, pan/zoom and higher-order analysis. Numerical estimates need validation around discontinuities.
 - Word-to-PDF gets a **partial** desktop workflow: Mammoth DOCX import → safe Markdown preview → editable Writing Desk → Print / Save PDF if supported by macOS WebView. Exact Word formatting is not preserved.
 - CI builds alone cannot verify macOS printing or real-world document fidelity.
+
+## v0.8 advanced graph, PDF preview, and document editor
+
+- **Math → Graph**: Interactive drag-to-pan, zoom/reset, Cartesian Y(x), parametric x(t)/y(t), polar r(θ), up to four curves and SVG export. Calculations and sampling run locally. Numerical singularities may still need manual review.
+- **File desk → PDF**: Local PDF.js thumbnail render (8 visible at a time), page selection and zoomed selected-page preview. No document bytes are sent to a server. Initial preview is capped at 25 MB to bound device memory.
+- **Writing desk**: Markdown formatting toolbar, undo/redo history (up to 60 entries), find/replace, templates, heading outline, editor/preview modes, text/Markdown import and Word (.docx) export with basic heading and paragraph structure.
+- Existing Print / Save PDF remains dependent on the native WebView print dialog; Word export is basic structure, **not a full Word-compatible WYSIWYG editor**. PDF form editing, OCR and annotation are not included in this port.
+- Mac interactive testing remains necessary for PDF.js worker rendering, large documents, native DOCX output and system printing.
