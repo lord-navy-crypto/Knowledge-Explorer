@@ -96,3 +96,9 @@ Added local image-to-PDF multi-page creation, and selected PDF-page-to-PNG/JPEG 
 ## v0.19 desktop-only Universal Toolbox
 
 Added JSON→CSV, global UTC meeting clock, SHA-256 checksums, secure local password generator and photo pixel re-encoding to remove common metadata. Existing 44-entry website parity audit counts are unchanged because the new features are independent desktop utility additions, not exact existing web tools. The distinction between offline built-in tools and third-party External links remains explicit. Metadata clearing is not represented as a forensic or privacy certification.
+
+## v0.20 Universal Box (desktop-only extensions)
+
+Adds on-device static QR Wi-Fi/contact/batch creation with PNG/SVG/ZIP output; an RFC 5545 calendar .ics generator with UTC validation and safe content-line folding; and a cryptographically strong local UUID v4 batch tool. These are new conveniences and do **not** change the existing website's 44-entry equivalence audit counts. “Free static QR” does not claim hosted editable redirects, tracking analytics or subscriptions can operate without servers. The former basic QR generator remains present.
+
+First-party fee/limit comparisons and future opportunities: `UNIVERSAL-BOX-ROADMAP.md`.
