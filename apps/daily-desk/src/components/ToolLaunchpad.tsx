@@ -2,6 +2,10 @@ import {useMemo,useState} from "react";
 
 export type LocalTool = {id:string;name:string;area:string;view:string;module?:string};
 export const LOCAL_TOOLS:LocalTool[] = [
+ {id:"line-batch",name:"Batch Text Lines · Sort, Deduplicate, Prefix/Suffix",area:"Text",view:"universal-lab",module:"lines"},
+ {id:"subtitle-converter",name:"SRT ↔ WebVTT Subtitle Converter & Time Shifter",area:"Media",view:"universal-lab",module:"subtitles"},
+ {id:"photo-contact-sheet",name:"Photo Contact Sheet · 图片网格拼版",area:"Images",view:"universal-lab",module:"photo-sheet"},
+ {id:"url-parameter-inspector",name:"URL Query Parameter Inspector · 网址结构分析",area:"Code",view:"universal-lab",module:"url-inspector"},
  {id:"qr-studio-batch",name:"Free QR Studio · Wi-Fi, vCard, SVG Batch ZIP",area:"Classroom",view:"universal-box",module:"qr"},
  {id:"ics-calendar",name:"Calendar Invite File Generator (.ics) · No Account",area:"Office",view:"universal-box",module:"calendar"},
  {id:"uuid-batch",name:"Cryptographic UUID v4 Batch Generator",area:"Code",view:"universal-box",module:"uuid"},
