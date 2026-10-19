@@ -97,6 +97,30 @@ fn read_backup(path: String) -> Result<String, String> {
     Ok(contents)
 }
 
+#[tauri::command]
+fn write_output_file(path: String, bytes: Vec<u8>) -> Result<(), String> {
+    if bytes.len() > 20_000_000 {
+        return Err("The output file exceeds the 20 MB limit".into());
+    }
+    let location = PathBuf::from(path);
+    let extension = location
+        .extension()
+        .and_then(|ext| ext.to_str())
+        .unwrap_or("")
+        .to_ascii_lowercase();
+    if !matches!(
+        extension.as_str(),
+        "pdf" | "txt" | "md" | "csv" | "json" | "png" | "jpg" | "jpeg" | "webp"
+    ) {
+        return Err("Unsupported output file extension".into());
+    }
+    if !location.parent().is_some_and(Path::is_dir) {
+        return Err("The destination directory does not exist".into());
+    }
+    fs::write(&location, &bytes)
+        .map_err(|error| format!("Could not save output file: {error}"))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -123,7 +147,8 @@ pub fn run() {
             load_workspace,
             save_workspace,
             export_backup,
-            read_backup
+            read_backup,
+            write_output_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running Daily Desk");
