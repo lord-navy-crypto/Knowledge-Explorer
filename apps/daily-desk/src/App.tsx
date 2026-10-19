@@ -7,6 +7,7 @@ import UniversalDesk, {type UniversalMode} from "./components/UniversalDesk";
 import UniversalBoxDesk, {type UniversalBoxMode} from "./components/UniversalBoxDesk";
 import UniversalLabDesk, {type UniversalLabMode} from "./components/UniversalLabDesk";
 import MediaFilesDesk, {type MediaFilesMode} from "./components/MediaFilesDesk";
+import OfficePrivacyDesk, {type OfficePrivacyMode} from "./components/OfficePrivacyDesk";
 import QuickKitDesk, {type QuickKitMode} from "./components/QuickKitDesk";
 import ExternalTools from "./components/ExternalTools";
 import CodeDesk from "./components/CodeDesk";
@@ -32,7 +33,7 @@ import {
   persistWorkspace,
 } from "./lib/nativeStorage";
 
-type View = "media-files" | "universal-lab" | "universal-box" | "universal" | "quick-tools" | "external" | "all-tools" | "code" | "tables" | "overview" | "tasks" | "cards" | "focus" | "notes" | "utilities" | "data" | "files" | "math" | "learning" | "writing" | "drawing" | "reading" | "presets";
+type View = "office-privacy" | "media-files" | "universal-lab" | "universal-box" | "universal" | "quick-tools" | "external" | "all-tools" | "code" | "tables" | "overview" | "tasks" | "cards" | "focus" | "notes" | "utilities" | "data" | "files" | "math" | "learning" | "writing" | "drawing" | "reading" | "presets";
 
 const menu: { id: View; name: string; symbol: string; description: string }[] = [
   { id: "overview", name: "Overview", symbol: "◫", description: "Your workspace at a glance" },
@@ -42,6 +43,7 @@ const menu: { id: View; name: string; symbol: string; description: string }[] = 
   { id: "universal-box", name: "Universal Box / 万用工具箱", symbol: "▧", description: "Offline QR batches, calendar invites, ID generators" },
   { id: "universal-lab", name: "Universal Box Lab / 免费工具实验室", symbol: "▤", description: "Local text, subtitles, photo sheets and URL diagnostics" },
   { id: "media-files", name: "Media & Files / 媒体文件工具", symbol: "♫", description: "Offline audio WAV trimming, ZIP safety inspection, icon sizes and photo palette" },
+  { id: "office-privacy", name: "Office & Privacy / 办公与隐私工具", symbol: "▥", description: "CSV contacts, mail merge, duplicate file hashes, hidden Unicode" },
   { id: "external", name: "External Tools / 外部工具", symbol: "↗", description: "Curated official websites for advanced tools" },
   { id: "code", name: "Code editor", symbol: "</>", description: "Local code drafts and snippet library" },
   { id: "tables", name: "CSV Table Desk", symbol: "▤", description: "Filter, sort and export CSV or TSV data" },
@@ -272,7 +274,7 @@ export default function App() {
       </aside>
 
       <section className="main-panel">
-        <header className="topbar"><span>Daily Desk / {activeMenu.name}</span><span className="version-pill">DESKTOP PREVIEW · v0.22</span></header>
+        <header className="topbar"><span>Daily Desk / {activeMenu.name}</span><span className="version-pill">DESKTOP PREVIEW · v0.23</span></header>
         <div className="content">
           {view === "overview" && <>
             <p className="eyebrow">GOOD TO HAVE YOU HERE</p><h1>Your day, in one place.</h1>
@@ -291,6 +293,7 @@ export default function App() {
           {view === "universal-box" && <UniversalBoxDesk key={toolMode} initialMode={(toolMode||"qr") as UniversalBoxMode}/> }
           {view === "universal-lab" && <UniversalLabDesk key={toolMode} initialMode={(toolMode||"lines") as UniversalLabMode}/> }
           {view === "media-files" && <MediaFilesDesk key={toolMode} initialMode={(toolMode||"audio") as MediaFilesMode}/> }
+          {view === "office-privacy" && <OfficePrivacyDesk key={toolMode} initialMode={(toolMode||"contacts") as OfficePrivacyMode}/> }
           {view === "external" && <ExternalTools onOpenPresets={()=>openTool("presets")} />}
           {view === "code" && <CodeDesk snippets={workspace.snippets??[]} onChange={snippets=>setWorkspace(current=>({...current,snippets}))} />}
           {view === "tables" && <DataDesk />}
