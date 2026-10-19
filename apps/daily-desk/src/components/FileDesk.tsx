@@ -6,6 +6,7 @@ import remarkGfm from "remark-gfm";
 import { exportFile } from "../lib/output";
 import PdfPagePreview from "./PdfPagePreview";
 import { parsePdfOrder } from "../lib/pdfPageOrder";
+import BatchImageDesk from "./BatchImageDesk";
 
 export type FileTab = "pdf" | "images" | "word";
 type PdfMode = "merge" | "split" | "rotate" | "organize" | "compress";
@@ -291,6 +292,7 @@ export default function FileDesk({ onSendToWriting, initialTab = "pdf" }: { onSe
         <input id="image-quality" type="range" min={.3} max={1} step={.05} value={quality} onChange={(e) => setQuality(Number(e.target.value))} />
         <div className="actions"><button type="button" className="primary-button" disabled={!image || busy} onClick={() => { void processImage(); }}>{busy ? "Converting…" : "Convert & save image"}</button></div>
       </>}
+      {tab === "images" && <BatchImageDesk />}
       {tab === "word" && <>
         <label htmlFor="word-picker" className="field-label">Choose .docx Word document</label>
         <input id="word-picker" className="field" type="file" accept=".docx" onChange={(e) => setDoc(e.target.files?.[0] ?? null)} />
