@@ -106,3 +106,7 @@ First-party fee/limit comparisons and future opportunities: `UNIVERSAL-BOX-ROADM
 ## v0.21 additional offline tool suite
 
 Added four new desktop-only Universal Box Lab utilities: batch text-line processing, local subtitle SRT/VTT basic conversion plus timing offset, PNG/JPEG photo contact sheet generation, and offline URL component/query inspection. No existing 44-tool website equivalence totals are changed by these additions. Subtitle processing does not include speech transcription or advanced WebVTT styling, and URL inspection does not validate link safety.
+
+## v0.22 new standalone desktop capabilities
+
+Local PCM16 WAV trimming/normalization/fading, ZIP metadata inspection with traversal and decompression-risk indicators (no extraction), offline icon PNG dimension bundles, and approximate image palette extraction were added to Universal Box. These new modules do **not** modify the historical 44-entry web-site parity audit. No claim of advanced audio codec conversion, malware detection or certified colour matching is made.
