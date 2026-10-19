@@ -38,6 +38,7 @@ export const LOCAL_TOOLS:LocalTool[] = [
  {id:"notes",name:"Quick Notes",area:"Writing",view:"notes"},
  {id:"drawing",name:"Black Draft Board",area:"Writing",view:"drawing"},
  {id:"pdf",name:"PDF Preview & Tools",area:"Files",view:"files",module:"pdf"},
+ {id:"pdf-freedom",name:"PDF Freedom Studio · Add Text, Page Numbers, Watermarks, Signatures",area:"Files",view:"files",module:"decorate"},
  {id:"pdf-organize",name:"PDF Reorder / Delete Pages",area:"Files",view:"files",module:"organize"},
  {id:"image",name:"Image Resize, Crop & Convert",area:"Files",view:"files",module:"images"},
  {id:"image-interactive-crop",name:"Interactive Crop · 比例裁剪与旋转",area:"Files",view:"files",module:"images"},
