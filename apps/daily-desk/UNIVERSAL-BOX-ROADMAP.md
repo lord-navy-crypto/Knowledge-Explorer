@@ -146,3 +146,13 @@ Remaining important future features: packaged offline OCR with real language mod
 - Kept existing tools and routes, no auth/cloud/paid dependency added.
 
 QA follow-up: visual inspection of older modules in dark mode; keyboard focus trapping and tab ordering; audit display contrast and accessibility; replace remaining hardcoded color styles in specialist components. Future functionality includes verified offline OCR, advanced Office document interoperability and signed/notarized releases.
+
+## v0.27 implemented: everyday PDF mini editors
+
+- Standard PDF document properties inspection and edited copies (title, author, subject, keywords), with explicit limitations on XMP/creator privacy.
+- Visual CropBox margin editor with page selection; no false promise of secure redaction.
+- Insert blank pages at a chosen position in A4, US Letter or first-page-matching size.
+- Basic editable AcroForm text-field workflow with ASCII-only appearance support. XFA, image stamps, non-text controls and verified signatures remain future work.
+- Four new searchable tool catalog entries, new dedicated sidebar page, preview-based crop-page choice and regression tests.
+
+Follow-ups worth evaluating for daily use: offline OCR for scanned PDFs, complete form filling with a bundled or licensed CJK font, proper image downsampling PDF compression, safe full redaction, PDF/A checks, accessible tagged PDF inspection, and richer DOCX↔PDF compatibility. These are not shipped v0.27 features.
