@@ -252,7 +252,7 @@ export default function App() {
       </aside>
 
       <section className="main-panel">
-        <header className="topbar"><span>Daily Desk / {activeMenu.name}</span><span className="version-pill">DESKTOP PREVIEW · v0.6</span></header>
+        <header className="topbar"><span>Daily Desk / {activeMenu.name}</span><span className="version-pill">DESKTOP PREVIEW · v0.7</span></header>
         <div className="content">
           {view === "overview" && <>
             <p className="eyebrow">GOOD TO HAVE YOU HERE</p><h1>Your day, in one place.</h1>
@@ -266,7 +266,7 @@ export default function App() {
           <div hidden={view !== "focus"}><FocusTimer /></div>
           {view === "notes" && <section className="panel"><p className="eyebrow">LOCAL NOTES</p><h2>Keep ideas close at hand.</h2><p className="subtle">Your notes are automatically saved in this application. Export backups in Backup & privacy.</p><label className="field-label" htmlFor="my-notes">My notebook</label><textarea id="my-notes" className="field text-editor" rows={20} maxLength={50000} placeholder="Capture a thought, write a draft or summarise a concept…" value={workspace.notes} onChange={(event) => setWorkspace((current) => ({ ...current, notes: event.target.value }))}/><p className="subtle">{workspace.notes.length.toLocaleString()} characters</p></section>}
           {view === "utilities" && <EverydayTools />}
-          {view === "files" && <FileDesk />}
+          {view === "files" && <FileDesk onSendToWriting={markdown => {setWorkspace(current => ({...current, documentMarkdown: markdown})); setView("writing");}} />}
           {view === "math" && <MathDesk />}
           {view === "learning" && <StudyExtras workspace={workspace} onChange={setWorkspace} />}
           {view === "reading" && <ReadingHighlights text={workspace.readingText ?? ""} highlights={workspace.highlights ?? []} onChange={(text, highlights)=>setWorkspace(current=>({...current,readingText:text,highlights}))} />}

@@ -93,3 +93,11 @@ The **Tauri desktop app** stores workspace data as `workspace-v2.json` in its OS
 - White/pink/brown/soft locally synthesised focus audio beds (not streamed recordings).
 
 The desktop program remains separate from the AP website. These changes are not equivalent to web-hosted AI, speech recognition, or all advanced mathematics tools.
+
+
+## v0.7 preview: offline math and document tools
+
+- **Math calculus tab:** numeric f(x), derivative, tangent, Simpson integral, sign-changing root detection and intersections. Calculations are local approximations; singularities and touching roots need extra care.
+- **Word preview:** import a `.docx`, review its converted Markdown, send that content into the persistent Writing Desk, and open the system Print / Save PDF dialog where the macOS WebView supports it.
+- DOCX→PDF is **not pixel-identical** to Microsoft Word layout. Complex tables, figures and pagination may differ.
+- v0.7 is gated by TypeScript, Vitest, Rust tests and macOS DMG CI before integration. Real Mac printing interactions still need user verification.

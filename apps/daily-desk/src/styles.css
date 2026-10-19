@@ -160,3 +160,8 @@ pre { white-space:pre-wrap; word-break:break-word; }
 .noise-panel h3 { margin:0 0 4px; }
 .noise-panel .pill-row { margin:12px 0; }
 .noise-panel input[type="range"] { width:min(320px,100%); }
+
+
+/* v0.7 local numerical analysis */
+.numeric-workbench { padding: 8px 0 4px; max-width: 850px; }
+.analysis-result { border: 1px solid #cbddf1; background: #f2f7ff; color: #244b7d; border-radius: 12px; padding: 18px 20px; white-space: pre-wrap; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; font-weight: 700; }
