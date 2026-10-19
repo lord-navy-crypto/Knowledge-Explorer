@@ -4,11 +4,13 @@ import {
   dateDifference,shiftDate,parseGradeRows,calculateWeightedGrade,
 } from "../lib/quickKit";
 import {exportFile} from "../lib/output";
+import {addClip,combineClips} from "../lib/multiCopy";
 
-export type QuickKitMode="text"|"links"|"dates"|"grades";
+export type QuickKitMode="text"|"links"|"dates"|"grades"|"multi-copy";
 const title:Record<QuickKitMode,string>={
   text:"Text cleaner · 文本整理",links:"Tracking-link cleaner · 链接净化",
   dates:"Date planner · 日期计算",grades:"Weighted grades · 成绩规划",
+  "multi-copy":"Multi-copy · 多段合并复制",
 };
 const number=(n:number)=>String(Number(n.toFixed(6)));
 export default function QuickKitDesk({initialMode="text"}:{initialMode?:QuickKitMode}){
@@ -23,6 +25,9 @@ export default function QuickKitDesk({initialMode="text"}:{initialMode?:QuickKit
   const [gradeData,setGradeData]=useState("Homework,25,90\nTests,25,80\nFinal exam,50,?");
   const [target,setTarget]=useState("90");
   const [status,setStatus]=useState("");
+  const [clipDraft,setClipDraft]=useState("");
+  const [clips,setClips]=useState<string[]>([]);
+  const [clipSeparator,setClipSeparator]=useState<"newline"|"blank"|"space">("newline");
   const textResult=useMemo(()=>{
     try{return {value:cleanCopiedText(source,options),error:""};}
     catch(e){return {value:"",error:String(e instanceof Error?e.message:e)};}
@@ -60,7 +65,7 @@ export default function QuickKitDesk({initialMode="text"}:{initialMode?:QuickKit
     <h2>Quick Tools / 快捷小工具</h2>
     <p className="subtle">Four tiny tasks without accounts or online uploads. Local input stays in this window; text/links are exported only when you click. Date calculations use calendar days, not elapsed 24-hour periods.</p>
     <div className="pill-row" role="group" aria-label="Quick tool">
-      {(["text","links","dates","grades"] as const).map(key=><button type="button" key={key}
+      {(["text","links","multi-copy","dates","grades"] as const).map(key=><button type="button" key={key}
         className={mode===key?"pill active-pill":"pill"} onClick={()=>{setMode(key);setStatus("");}}>{title[key]}</button>)}
     </div>
     {mode==="text"&&<>
@@ -88,6 +93,27 @@ export default function QuickKitDesk({initialMode="text"}:{initialMode?:QuickKit
         <button className="secondary-button" type="button" disabled={!!(mode==="text"?textResult.error:linkResult.error)} onClick={()=>{void saveResult();}}>Save as TXT</button>
       </div>
       {(mode==="text"?textResult.error:linkResult.error)&&<p role="alert" className="subtle">{mode==="text"?textResult.error:linkResult.error}</p>}
+    </>}
+    {mode==="multi-copy"&&<>
+      <p className="subtle">Collect up to 30 text snippets in this window, reorder by removal, then copy them as one. No background clipboard monitoring; no saved history or cloud sync. Passwords and private data should not be collected.</p>
+      <label className="field-label" htmlFor="clip-draft">Text to add · 待添加文本</label>
+      <textarea id="clip-draft" className="field text-editor" rows={4} maxLength={20000} value={clipDraft} onChange={e=>setClipDraft(e.target.value)}/>
+      <div className="actions">
+        <button type="button" className="primary-button" onClick={()=>{try{setClips(old=>addClip(old,clipDraft));setClipDraft("");setStatus("Added snippet.");}catch(e){setStatus(String(e instanceof Error?e.message:e));}}}>Add snippet</button>
+        <button type="button" className="secondary-button" onClick={()=>{setClips([]);setStatus("Session clips cleared.");}} disabled={!clips.length}>Clear snippets</button>
+      </div>
+      <label className="field-label">Join snippets with
+        <select className="field" value={clipSeparator} onChange={e=>setClipSeparator(e.target.value as "newline"|"blank"|"space")}>
+          <option value="newline">One new line</option><option value="blank">Blank line</option><option value="space">Space</option>
+        </select>
+      </label>
+      {clips.map((clip,i)=><div className="task-row" key={i}>
+        <span className="task-copy">{i+1}. {clip.slice(0,180)}{clip.length>180?"…":""}</span>
+        <button type="button" className="secondary-button" onClick={()=>setClips(old=>old.filter((_,j)=>i!==j))}>Remove</button>
+      </div>)}
+      <label className="field-label" htmlFor="clip-combined">Combined preview · 合并结果 ({clips.length}/30)</label>
+      <textarea className="field text-editor" id="clip-combined" rows={6} readOnly value={clips.length?combineClips(clips,clipSeparator):""}/>
+      <button type="button" className="primary-button" disabled={!clips.length} onClick={()=>{void navigator.clipboard.writeText(combineClips(clips,clipSeparator)).then(()=>setStatus("Copied combined text locally."),()=>setStatus("Clipboard unavailable; select the preview text to copy manually."));}}>Copy combined text</button>
     </>}
     {mode==="dates"&&<>
       <div className="tools-pair">
