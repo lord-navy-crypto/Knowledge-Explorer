@@ -67,7 +67,7 @@ export default function FocusTimer() {
         <button type="button" className="primary-button" onClick={toggle} disabled={remaining === 0}>{running ? "Pause session" : "Start session"}</button>
         <button type="button" className="secondary-button" onClick={() => chooseMode(mode)}>Reset</button>
       </div>
-      <p className="subtle session-note">{completed} focus session{completed === 1 ? "" : "s"} completed this visit. Switching tools pauses the timer.</p>
+      <p className="subtle session-note">{completed} focus session{completed === 1 ? "" : "s"} completed this visit. You can switch tools without losing your session.</p>
     </section>
   );
 }

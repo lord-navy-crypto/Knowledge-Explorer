@@ -48,6 +48,9 @@ jobs:
       - name: Generate Tauri icons
         run: npx tauri icon src-tauri/app-icon.svg
 
+      - name: Rust storage validation tests
+        run: cargo test --manifest-path src-tauri/Cargo.toml
+
       - name: Build macOS desktop bundle
         run: npm run tauri:build -- --target aarch64-apple-darwin
 
