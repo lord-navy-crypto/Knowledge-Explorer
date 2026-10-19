@@ -7,6 +7,8 @@ import MathDesk from "./components/MathDesk";
 import StudyExtras from "./components/StudyExtras";
 import WritingDesk from "./components/WritingDesk";
 import DrawingDesk from "./components/DrawingDesk";
+import ReadingHighlights from "./components/ReadingHighlights";
+import QuickPresets from "./components/QuickPresets";
 import {
   type DeskTask,
   type Priority,
@@ -21,7 +23,7 @@ import {
   persistWorkspace,
 } from "./lib/nativeStorage";
 
-type View = "overview" | "tasks" | "cards" | "focus" | "notes" | "utilities" | "data" | "files" | "math" | "learning" | "writing" | "drawing";
+type View = "overview" | "tasks" | "cards" | "focus" | "notes" | "utilities" | "data" | "files" | "math" | "learning" | "writing" | "drawing" | "reading" | "presets";
 
 const menu: { id: View; name: string; symbol: string; description: string }[] = [
   { id: "overview", name: "Overview", symbol: "◫", description: "Your workspace at a glance" },
@@ -34,7 +36,9 @@ const menu: { id: View; name: string; symbol: string; description: string }[] = 
   { id: "writing", name: "Write & convert", symbol: "¶", description: "Markdown + LaTeX editor, PDF print and exports" },
   { id: "files", name: "File desk", symbol: "▣", description: "PDF merge/split/rotate, images and Word import" },
   { id: "math", name: "Math & science", symbol: "∑", description: "Calculator, graph, LaTeX, units and vectors" },
-  { id: "learning", name: "Study & English", symbol: "✦", description: "Mistake log, exam dates, dictation and reading" },
+  { id: "learning", name: "Study & English", symbol: "✦", description: "Mistake log, exam dates, dictation and instant flip cards" },
+  { id: "reading", name: "Reading highlights", symbol: "▧", description: "Select and highlight passages with margin notes" },
+  { id: "presets", name: "Link presets", symbol: "↗", description: "Saved short codes for useful websites" },
   { id: "data", name: "Backup & privacy", symbol: "▤", description: "Save or restore your workspace" },
 ];
 
@@ -248,7 +252,7 @@ export default function App() {
       </aside>
 
       <section className="main-panel">
-        <header className="topbar"><span>Daily Desk / {activeMenu.name}</span><span className="version-pill">DESKTOP PREVIEW · v0.5</span></header>
+        <header className="topbar"><span>Daily Desk / {activeMenu.name}</span><span className="version-pill">DESKTOP PREVIEW · v0.6</span></header>
         <div className="content">
           {view === "overview" && <>
             <p className="eyebrow">GOOD TO HAVE YOU HERE</p><h1>Your day, in one place.</h1>
@@ -265,6 +269,8 @@ export default function App() {
           {view === "files" && <FileDesk />}
           {view === "math" && <MathDesk />}
           {view === "learning" && <StudyExtras workspace={workspace} onChange={setWorkspace} />}
+          {view === "reading" && <ReadingHighlights text={workspace.readingText ?? ""} highlights={workspace.highlights ?? []} onChange={(text, highlights)=>setWorkspace(current=>({...current,readingText:text,highlights}))} />}
+          {view === "presets" && <QuickPresets presets={workspace.presets ?? []} onChange={presets=>setWorkspace(current=>({...current,presets}))} />}
           {view === "writing" && <WritingDesk markdown={workspace.documentMarkdown ?? ""} onChange={value=>setWorkspace(current=>({...current,documentMarkdown:value}))}/>}
           {view === "drawing" && <DrawingDesk strokes={workspace.drawing ?? []} onChange={value=>setWorkspace(current=>({...current,drawing:value}))}/>}
           {view === "data" && <section className="panel"><p className="eyebrow">PORTABLE WORKSPACE</p><h2>Backup & privacy</h2><p className="subtle">The desktop app now saves tasks, flashcards and notes in its own local app-data file using atomic writes. A browser preview still uses localStorage. Nothing is synced to the AP website or Vercel.</p><div className="actions"><button className="primary-button" type="button" onClick={() => { void exportBackup(); }}>Export JSON backup</button><button className="secondary-button" type="button" onClick={() => { void importFromNativeDialog(); }}>Import with native file picker</button></div><div className="import-group"><label className="field-label" htmlFor="import-workspace">Or restore from a Daily Desk v2 JSON backup using a file input</label><input className="field" type="file" id="import-workspace" accept=".json,application/json" onChange={(event) => { void importBackup(event); }} /></div>{dataMessage && <p className="subtle" role="status">{dataMessage}</p>}<p className="subtle">Tip: Export a backup before reinstalling or changing devices. Import replaces the current workspace only after confirmation.</p></section>}
