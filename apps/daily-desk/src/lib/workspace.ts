@@ -50,6 +50,15 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+function validHighlight(value: unknown): value is DeskHighlight {
+  if (!isRecord(value)) return false;
+  return typeof value.id === "string" &&
+    typeof value.start === "number" && Number.isSafeInteger(value.start) &&
+    typeof value.end === "number" && Number.isSafeInteger(value.end) &&
+    value.start >= 0 && value.end > value.start && value.end <= 40000 &&
+    typeof value.color === "string" && typeof value.note === "string";
+}
+
 function readPriority(value: unknown): Priority {
   return value === "low" || value === "high" ? value : "normal";
 }
@@ -114,11 +123,7 @@ export function parseWorkspace(raw: unknown): WorkspaceData {
       isRecord(v) && typeof v.id==="string" && typeof v.code==="string" &&
       typeof v.url==="string" && typeof v.description==="string"
     ).map(v=>({id:v.id.slice(0,100),code:v.code.slice(0,50),url:v.url.slice(0,2000),description:v.description.slice(0,200)})):[],
-    highlights: Array.isArray(raw.highlights) ? raw.highlights.slice(0,300).filter((v):v is DeskHighlight=>
-      isRecord(v) && typeof v.id==="string" && Number.isSafeInteger(v.start) &&
-      Number.isSafeInteger(v.end) && typeof v.color==="string" && typeof v.note==="string" &&
-      v.start >= 0 && v.end > v.start && v.end <= 40000
-    ).map(v=>({id:v.id.slice(0,100),start:v.start,end:v.end,color:v.color.slice(0,25),note:v.note.slice(0,500)})):[],
+    highlights: Array.isArray(raw.highlights) ? raw.highlights.slice(0,300).filter(validHighlight).map(v=>({id:v.id.slice(0,100),start:v.start,end:v.end,color:v.color.slice(0,25),note:v.note.slice(0,500)})):[],
     drawing: Array.isArray(raw.drawing) ? raw.drawing.slice(0,100).filter((v):v is Record<string,unknown>=>isRecord(v)&&typeof v.color==="string"&&typeof v.width==="number"&&Array.isArray(v.points)).map(v=>({
       color: String(v.color).slice(0,16),
       width: Math.max(1,Math.min(24,Number(v.width))),
