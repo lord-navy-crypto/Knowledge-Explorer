@@ -6,7 +6,7 @@ Browser extension MVP, not part of the packaged Tauri v0.29 app. Supports compat
 
 1. Open your Chromium browser's extensions page and enable developer mode.
 2. Load unpacked from `apps/web-capture-extension`.
-3. Open a webpage you are authorized to access, click the extension icon, then choose visible text, article Markdown or links CSV.
+3. Open a webpage you are authorized to access, click the extension icon, then choose visible text, article Markdown, links CSV or the first visible HTML table as CSV.
 4. Verify clipboard paste and result preview in both Chinese and English on at least five page types.
 
 ## Privacy / limitations
@@ -15,7 +15,7 @@ Browser extension MVP, not part of the packaged Tauri v0.29 app. Supports compat
 - Does not run in the background, monitor tabs, store content, bypass logins/paywalls, or make any network requests.
 - Browser internal pages, PDF viewers, extension stores, cross-origin frames and some protected sites may be inaccessible.
 - Visible text follows webpage `innerText`; virtualized/closed, lazy-loaded, shadow DOM, embedded images and canvas text may be incomplete. Markdown is a simple structure-preserving approximation, not a full fidelity HTML-to-Markdown engine.
-- CSV fields are escaped, links deduplicated and non-HTTP(S) links ignored. Test spreadsheet-import behavior before broad release.
+- CSV fields are escaped, spreadsheet-formula-like values are neutralized, links deduplicated and non-HTTP(S) links ignored. Table export deliberately rejects merged cells and only supports the first visible HTML table; complex table spans and non-HTML visual tables are outside this MVP. Test spreadsheet-import behavior before broad release.
 - Content is capped at 400,000 characters and first 2,000 links to bound memory and clipboard impact.
 - This prototype needs browser end-to-end manual testing before release; do not claim Safari compatibility.
 
