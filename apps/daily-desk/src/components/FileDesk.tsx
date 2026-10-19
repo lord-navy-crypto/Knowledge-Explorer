@@ -9,6 +9,7 @@ import PdfTextDesk from "./PdfTextDesk";
 import { parsePdfOrder } from "../lib/pdfPageOrder";
 import BatchImageDesk from "./BatchImageDesk";
 import ImageAnnotationDesk from "./ImageAnnotationDesk";
+import InteractiveCropDesk from "./InteractiveCropDesk";
 
 export type FileTab = "pdf" | "images" | "word";
 type PdfMode = "merge" | "split" | "rotate" | "organize" | "compress";
@@ -298,6 +299,7 @@ export default function FileDesk({ onSendToWriting, initialTab = "pdf", initialP
         <input id="image-quality" type="range" min={.3} max={1} step={.05} value={quality} onChange={(e) => setQuality(Number(e.target.value))} />
         <div className="actions"><button type="button" className="primary-button" disabled={!image || busy} onClick={() => { void processImage(); }}>{busy ? "Converting…" : "Convert & save image"}</button></div>
       </>}
+      {tab === "images" && <InteractiveCropDesk file={image} />}
       {tab === "images" && <ImageAnnotationDesk file={image} />}
       {tab === "images" && <BatchImageDesk />}
       {tab === "word" && <>
