@@ -197,3 +197,12 @@ A local **TTF/OTF** file can be optionally embedded for Chinese and other Unicod
 Safety limits: PDFs ≤25 MB / ≤300 pages, overlays ≤120 characters, image inputs ≤8 MB, font input ≤12 MB, export ≤20 MB. Some rotated pages require visual checking. The original PDF is never overwritten; all output is exported through the existing native file save dialog. CI verifies TypeScript, tests, Rust and Apple Silicon packaging; visual WebView preview and Mac print fidelity require real-device acceptance.
 
 The website `ap-reasonlab/` remains entirely separate; no new cloud upload, authentication or subscription is introduced.
+
+## v0.18 preview: local PDF/image conversions
+
+In **File desk → PDF → Image ↔ PDF**, you can now:
+- Convert **1–12** local PNG/JPEG files into a multi-page PDF in the file-picker order, with A4, US Letter or image-aspect page sizes. Each image must be ≤8 MB, all inputs combined ≤25 MB.
+- Render **up to 12 selected PDF pages** at a time into lossless PNG or JPEG images, placed together in one ZIP export. User-selected scale (0.75–2x), maximum 4 million rendered pixels per page, maximum 18 MB for image content and 20 MB output ZIP.
+- Keep all documents on-device with existing PDF.js local worker and `pdf-lib`. No online conversion API, file uploads, account gates or PDF watermarks are introduced.
+
+PDF-to-images is raster output and does not retain searchable text; original PDF remains unchanged. Some EXIF-oriented photographs may require prior rotation; Mac WebView dialogs/render behavior still require on-device QA.
