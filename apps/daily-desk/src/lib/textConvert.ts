@@ -3,8 +3,8 @@ export function markdownToPlain(input:string,keepLinks=false):string{
  return input
   .replace(/```[^\n]*\n?([\s\S]*?)```/gu,"$1")
   .replace(/`([^`\n]+)`/gu,"$1")
-  .replace(/!\[[^\]]*]\([^)]*\)/gu,"")
-  .replace(/\[([^\]]+)]\((https?:\/\/[^)]+)\)/gu,(_all,label:string,url:string)=>keepLinks?label+" ("+url+")":label)
+  .replace(/!\[[^\]]*\]\([^)]*\)/gu,"")
+  .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/gu,(_all,label:string,url:string)=>keepLinks?label+" ("+url+")":label)
   .replace(/^\s{0,3}#{1,6}\s+/gmu,"")
   .replace(/^\s*[-*+]\s+/gmu,"• ")
   .replace(/^\s*\d+\.\s+/gmu,"")
