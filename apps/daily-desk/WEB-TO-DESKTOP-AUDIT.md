@@ -118,3 +118,7 @@ Four independent desktop tools added: bulk CSV-to-vCard contacts, text-only CSV 
 ## v0.24 workflow integration
 
 A new Workflow Studio brings two real on-device workflows: selective CRC-verified ZIP repack, and a multi-step batch photo resize/re-encode/rename ZIP pipeline. Archive-controlled paths are never passed to disk writes. These additions do not change the historical web feature parity count; they are desktop additions. Real macOS input/output dialog and WebView graphics tests remain outstanding.
+
+## v0.25 additional local format converters
+
+Free Formats Lab adds bounded XLSX data interchange (first worksheet / cached values; no formula execution), pixel image diff and adjustable overlay, and HTML entity / Unicode normalization. These are separate desktop utilities, not changes to the historical AP website equivalent count. No cloud OCR, Excel macro/script execution or remote document conversion is included.

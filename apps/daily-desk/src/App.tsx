@@ -9,6 +9,7 @@ import UniversalLabDesk, {type UniversalLabMode} from "./components/UniversalLab
 import MediaFilesDesk, {type MediaFilesMode} from "./components/MediaFilesDesk";
 import OfficePrivacyDesk, {type OfficePrivacyMode} from "./components/OfficePrivacyDesk";
 import WorkflowDesk, {type WorkflowMode} from "./components/WorkflowDesk";
+import FreeFormatsDesk, {type FreeFormatsMode} from "./components/FreeFormatsDesk";
 import QuickKitDesk, {type QuickKitMode} from "./components/QuickKitDesk";
 import ExternalTools from "./components/ExternalTools";
 import CodeDesk from "./components/CodeDesk";
@@ -34,7 +35,7 @@ import {
   persistWorkspace,
 } from "./lib/nativeStorage";
 
-type View = "workflows" | "office-privacy" | "media-files" | "universal-lab" | "universal-box" | "universal" | "quick-tools" | "external" | "all-tools" | "code" | "tables" | "overview" | "tasks" | "cards" | "focus" | "notes" | "utilities" | "data" | "files" | "math" | "learning" | "writing" | "drawing" | "reading" | "presets";
+type View = "free-formats" | "workflows" | "office-privacy" | "media-files" | "universal-lab" | "universal-box" | "universal" | "quick-tools" | "external" | "all-tools" | "code" | "tables" | "overview" | "tasks" | "cards" | "focus" | "notes" | "utilities" | "data" | "files" | "math" | "learning" | "writing" | "drawing" | "reading" | "presets";
 
 const menu: { id: View; name: string; symbol: string; description: string }[] = [
   { id: "overview", name: "Overview", symbol: "◫", description: "Your workspace at a glance" },
@@ -46,6 +47,7 @@ const menu: { id: View; name: string; symbol: string; description: string }[] = 
   { id: "media-files", name: "Media & Files / 媒体文件工具", symbol: "♫", description: "Offline audio WAV trimming, ZIP safety inspection, icon sizes and photo palette" },
   { id: "office-privacy", name: "Office & Privacy / 办公与隐私工具", symbol: "▥", description: "CSV contacts, mail merge, duplicate file hashes, hidden Unicode" },
   { id: "workflows", name: "Workflow Studio / 批处理工作室", symbol: "⇄", description: "Safe selective ZIP export and image resize → convert → rename → ZIP" },
+  { id: "free-formats", name: "Free Formats / 格式自由工具", symbol: "▧", description: "Offline Excel interchange, photo differences and HTML / Unicode coding" },
   { id: "external", name: "External Tools / 外部工具", symbol: "↗", description: "Curated official websites for advanced tools" },
   { id: "code", name: "Code editor", symbol: "</>", description: "Local code drafts and snippet library" },
   { id: "tables", name: "CSV Table Desk", symbol: "▤", description: "Filter, sort and export CSV or TSV data" },
@@ -276,7 +278,7 @@ export default function App() {
       </aside>
 
       <section className="main-panel">
-        <header className="topbar"><span>Daily Desk / {activeMenu.name}</span><span className="version-pill">DESKTOP PREVIEW · v0.24</span></header>
+        <header className="topbar"><span>Daily Desk / {activeMenu.name}</span><span className="version-pill">DESKTOP PREVIEW · v0.25</span></header>
         <div className="content">
           {view === "overview" && <>
             <p className="eyebrow">GOOD TO HAVE YOU HERE</p><h1>Your day, in one place.</h1>
@@ -297,6 +299,7 @@ export default function App() {
           {view === "media-files" && <MediaFilesDesk key={toolMode} initialMode={(toolMode||"audio") as MediaFilesMode}/> }
           {view === "office-privacy" && <OfficePrivacyDesk key={toolMode} initialMode={(toolMode||"contacts") as OfficePrivacyMode}/> }
           {view === "workflows" && <WorkflowDesk key={toolMode} initialMode={(toolMode||"zip-selective") as WorkflowMode}/> }
+          {view === "free-formats" && <FreeFormatsDesk key={toolMode} initialMode={(toolMode||"spreadsheet") as FreeFormatsMode}/> }
           {view === "external" && <ExternalTools onOpenPresets={()=>openTool("presets")} />}
           {view === "code" && <CodeDesk snippets={workspace.snippets??[]} onChange={snippets=>setWorkspace(current=>({...current,snippets}))} />}
           {view === "tables" && <DataDesk />}

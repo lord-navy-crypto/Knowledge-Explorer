@@ -127,3 +127,12 @@ The queued larger-scale folder duplicate search, docx/PDF mail merge, image cont
 - Kept explicit byte/pixel ceilings and avoided claims of antivirus capability, unbounded archive extraction or advanced image codec parity.
 
 Next improvements should prioritize independent verified OCR and Office interoperability, visual comparison, selective media conversions and a formal signed/notarized release pipeline after Mac QA.
+
+## Delivered in v0.25 — spreadsheet interoperability and visual tooling
+
+- New local XLSX ↔ CSV/JSON data interchange for the first worksheet. Single-sheet export preserves all CSV data as literal text (leading zeros and formula-looking entries do not execute). Imported Excel files show cached values only, with explicit rejection of macros, links and unsafe worksheet relationships. Styling, formulas, merged cells and other advanced workbook semantics are not round-tripped.
+- Pixel-level two-image difference mask, adjustable overlay, statistics and local PNG save. Equal image resolution required; no misleading image auto-alignment.
+- HTML entity encoder/basic decoder plus NFC/NFKC Unicode normalization as plain-text tools.
+- Added Vitest for actual XLSX roundtrip, shared-string/numeric/formula-cache import, unsafe relationship rejection, macros, CJK, cell limits, pixel masks and numeric HTML entities.
+
+Remaining important future features: packaged offline OCR with real language models, full multi-sheet XLSX editing, video/audio codec integration, durable signed/notarized releases and real-device manual UI testing. Do not represent these as shipped.
