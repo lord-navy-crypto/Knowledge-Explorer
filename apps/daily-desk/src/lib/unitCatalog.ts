@@ -2,10 +2,10 @@
 export const UNIT_GROUPS={
   Length:{m:1,cm:.01,mm:.001,km:1000,ft:.3048,in:.0254,mi:1609.344,"Å":1e-10},
   Mass:{kg:1,g:.001,mg:1e-6,lb:.45359237,u:1.6605390666e-27},
-  Energy:{J:1,kJ:1000,eV:1.602176634e-19,keV:1.602176634e-16,cal:4.184,kWh:3.6e6},
-  Speed:{"m/s":1,"km/h":1000/3600,mph:.44704,c:2.99792458e8},
+  Energy:{J:1,kJ:1000,Wh:3600,eV:1.602176634e-19,keV:1.602176634e-16,cal:4.184,kWh:3.6e6},
+  Speed:{"m/s":1,"km/h":1000/3600,mph:.44704,kn:.514444,c:2.99792458e8},
   Force:{N:1,kN:1000,lbf:4.4482216152605,dyn:1e-5},
-  Pressure:{Pa:1,kPa:1000,atm:101325,bar:1e5,mmHg:133.322,psi:6894.76},
+  Pressure:{Pa:1,kPa:1000,atm:101325,bar:1e5,mmHg:133.322,psi:6894.757293},
   Charge:{C:1,mC:1e-3,"μC":1e-6,nC:1e-9,e:1.602176634e-19},
   Time:{s:1,ms:1e-3,min:60,h:3600,day:86400},
 } as const;
