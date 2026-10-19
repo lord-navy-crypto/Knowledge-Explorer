@@ -1,10 +1,12 @@
 import { type ChangeEvent, type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Flashcards from "./components/Flashcards";
 import FocusTimer from "./components/FocusTimer";
-import EverydayTools from "./components/EverydayTools";
-import FileDesk from "./components/FileDesk";
-import MathDesk from "./components/MathDesk";
-import StudyExtras from "./components/StudyExtras";
+import EverydayTools, {type Utility} from "./components/EverydayTools";
+import ToolLaunchpad from "./components/ToolLaunchpad";
+import CodeDesk from "./components/CodeDesk";
+import FileDesk, {type FileTab} from "./components/FileDesk";
+import MathDesk, {type MathTab} from "./components/MathDesk";
+import StudyExtras, {type StudyMode} from "./components/StudyExtras";
 import WritingDesk from "./components/WritingDesk";
 import DrawingDesk from "./components/DrawingDesk";
 import ReadingHighlights from "./components/ReadingHighlights";
@@ -23,10 +25,12 @@ import {
   persistWorkspace,
 } from "./lib/nativeStorage";
 
-type View = "overview" | "tasks" | "cards" | "focus" | "notes" | "utilities" | "data" | "files" | "math" | "learning" | "writing" | "drawing" | "reading" | "presets";
+type View = "all-tools" | "code" | "overview" | "tasks" | "cards" | "focus" | "notes" | "utilities" | "data" | "files" | "math" | "learning" | "writing" | "drawing" | "reading" | "presets";
 
 const menu: { id: View; name: string; symbol: string; description: string }[] = [
   { id: "overview", name: "Overview", symbol: "◫", description: "Your workspace at a glance" },
+  { id: "all-tools", name: "All tools / 全部工具", symbol: "▦", description: "Search and open every available tool" },
+  { id: "code", name: "Code editor", symbol: "</>", description: "Local code drafts and snippet library" },
   { id: "tasks", name: "Planner", symbol: "✓", description: "Prioritise the next step" },
   { id: "cards", name: "Flashcards", symbol: "Aa", description: "Practise active recall" },
   { id: "focus", name: "Focus timer", symbol: "◷", description: "Make space to focus" },
@@ -56,6 +60,8 @@ function taskSort(a: DeskTask, b: DeskTask): number {
 
 export default function App() {
   const [view, setView] = useState<View>("overview");
+  const [toolMode,setToolMode] = useState("");
+  function openTool(target: string, module?: string) { setToolMode(module??""); setView(target as View); }
   const [workspace, setWorkspace] = useState<WorkspaceData>(() => readWorkspace());
   const [savedStatus, setSavedStatus] = useState("Loading local workspace...");
   const [storageReady, setStorageReady] = useState(false);
@@ -243,7 +249,7 @@ export default function App() {
         <div className="nav-label">WORKSPACES</div>
         <nav aria-label="Daily Desk navigation">
           {menu.map((item) => (
-            <button type="button" key={item.id} className={view === item.id ? "nav-item active" : "nav-item"} aria-current={view === item.id ? "page" : undefined} onClick={() => setView(item.id)}>
+            <button type="button" key={item.id} className={view === item.id ? "nav-item active" : "nav-item"} aria-current={view === item.id ? "page" : undefined} onClick={() => {setToolMode("");setView(item.id);}}>
               <span aria-hidden="true">{item.symbol}</span><span>{item.name}</span>{item.id === "tasks" && <span className="nav-count">{openTasks}</span>}
             </button>
           ))}
@@ -252,23 +258,25 @@ export default function App() {
       </aside>
 
       <section className="main-panel">
-        <header className="topbar"><span>Daily Desk / {activeMenu.name}</span><span className="version-pill">DESKTOP PREVIEW · v0.8</span></header>
+        <header className="topbar"><span>Daily Desk / {activeMenu.name}</span><span className="version-pill">DESKTOP PREVIEW · v0.9</span></header>
         <div className="content">
           {view === "overview" && <>
             <p className="eyebrow">GOOD TO HAVE YOU HERE</p><h1>Your day, in one place.</h1>
             <p className="intro">Your local workspace for study, planning and lightweight office tools. Every module opens independently of the AP website.</p>
             <div className="hero-card"><div><p className="card-eyebrow">TODAY AT A GLANCE</p><h2>Small steps add up.</h2><p>{openTasks} things left to do · {workspace.cards.length} flashcards ready</p></div><div className="progress-summary"><strong>{progress}%</strong><span>of tasks complete</span></div></div>
             <div className="section-heading"><div><h2>Open a tool</h2><p>Choose a focused workspace.</p></div></div>
-            <div className="tool-grid">{menu.filter((item) => item.id !== "overview").map((item) => <button type="button" key={item.id} className="tool-card" onClick={() => setView(item.id)}><span className="tool-icon">{item.symbol}</span><strong>{item.name}</strong><span className="subtle">{item.description}</span><span className="tool-state">OPEN TOOL →</span></button>)}</div>
+            <div className="tool-grid">{menu.filter((item) => item.id !== "overview").map((item) => <button type="button" key={item.id} className="tool-card" onClick={() => {setToolMode("");setView(item.id);}}><span className="tool-icon">{item.symbol}</span><strong>{item.name}</strong><span className="subtle">{item.description}</span><span className="tool-state">OPEN TOOL →</span></button>)}</div>
           </>}
           {view === "tasks" && renderPlanner()}
           {view === "cards" && <Flashcards cards={workspace.cards} onChange={(cards) => setWorkspace((current) => ({ ...current, cards }))} />}
           <div hidden={view !== "focus"}><FocusTimer /></div>
           {view === "notes" && <section className="panel"><p className="eyebrow">LOCAL NOTES</p><h2>Keep ideas close at hand.</h2><p className="subtle">Your notes are automatically saved in this application. Export backups in Backup & privacy.</p><label className="field-label" htmlFor="my-notes">My notebook</label><textarea id="my-notes" className="field text-editor" rows={20} maxLength={50000} placeholder="Capture a thought, write a draft or summarise a concept…" value={workspace.notes} onChange={(event) => setWorkspace((current) => ({ ...current, notes: event.target.value }))}/><p className="subtle">{workspace.notes.length.toLocaleString()} characters</p></section>}
-          {view === "utilities" && <EverydayTools />}
-          {view === "files" && <FileDesk onSendToWriting={markdown => {setWorkspace(current => ({...current, documentMarkdown: markdown})); setView("writing");}} />}
-          {view === "math" && <MathDesk />}
-          {view === "learning" && <StudyExtras workspace={workspace} onChange={setWorkspace} />}
+          {view === "all-tools" && <ToolLaunchpad onLaunch={openTool} />}
+          {view === "code" && <CodeDesk snippets={workspace.snippets??[]} onChange={snippets=>setWorkspace(current=>({...current,snippets}))} />}
+          {view === "utilities" && <EverydayTools key={toolMode} initial={(toolMode || "stats") as Utility} />}
+          {view === "files" && <FileDesk key={toolMode} initialTab={(toolMode||"pdf") as FileTab} onSendToWriting={markdown => {setWorkspace(current => ({...current, documentMarkdown: markdown})); setView("writing");}} />}
+          {view === "math" && <MathDesk key={toolMode} initialTab={(toolMode||"calculator") as MathTab} />}
+          {view === "learning" && <StudyExtras key={toolMode} initialMode={(toolMode||"countdown") as StudyMode} workspace={workspace} onChange={setWorkspace} />}
           {view === "reading" && <ReadingHighlights text={workspace.readingText ?? ""} highlights={workspace.highlights ?? []} onChange={(text, highlights)=>setWorkspace(current=>({...current,readingText:text,highlights}))} />}
           {view === "presets" && <QuickPresets presets={workspace.presets ?? []} onChange={presets=>setWorkspace(current=>({...current,presets}))} />}
           {view === "writing" && <WritingDesk markdown={workspace.documentMarkdown ?? ""} onChange={value=>setWorkspace(current=>({...current,documentMarkdown:value}))}/>}
