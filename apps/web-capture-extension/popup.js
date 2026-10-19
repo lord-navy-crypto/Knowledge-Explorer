@@ -12,6 +12,14 @@ function capturePage(mode){
     const style=getComputedStyle(el);
     return style.display!=="none"&&style.visibility!=="hidden";
   }
+  function csv(rows){
+    return rows.map(cols=>cols.map(value=>{
+      let cell=String(value??"").replace(/\u0000/g,"").replace(/\r?\n/g," ").trim();
+      // Prevent spreadsheet formula evaluation even after quotation or whitespace trimming.
+      if(/^[=+@\-\t\r]/.test(cell))cell="'"+cell;
+      return '"'+cell.replace(/"/g,'""')+'"';
+    }).join(",")).join("\r\n");
+  }
   const root=document.querySelector("main article,article,main,[role='main']")||document.body;
   if(!root)throw Error("此页面没有可提取的正文。");
   if(mode==="text"){
@@ -28,7 +36,23 @@ function capturePage(mode){
       seen.add(url);rows.push([clean(a.innerText||a.textContent).slice(0,300),url]);
       if(rows.length>2001)break;
     }
-    return rows.map(cols=>cols.map(s=>'"'+s.replace(/"/g,'""').replace(/^[=+@\-\t\r]/,"'")+"\u0022").join(",")).join("\r\n").slice(0,LIMIT);
+    return csv(rows).slice(0,LIMIT);
+  }
+  if(mode==="tables"){
+    const table=[...document.querySelectorAll("table")].find(el=>allowed(el)&&el.querySelector("tr"));
+    if(!table)throw Error("没有找到可提取的 HTML 表格。");
+    const rows=[];
+    for(const row of table.querySelectorAll("tr")){
+      if(!allowed(row))continue;
+      const cells=[...row.children].filter(cell=>["TH","TD"].includes(cell.tagName));
+      if(!cells.length)continue;
+      if(cells.some(cell=>(cell.colSpan||1)!==1||(cell.rowSpan||1)!==1))
+        throw Error("该表格包含合并单元格，暂不支持无损 CSV 导出。");
+      rows.push(cells.map(cell=>clean(cell.innerText||cell.textContent).slice(0,20000)));
+      if(rows.length>=5000)break;
+    }
+    if(!rows.length)throw Error("此表格没有可用数据行。");
+    return csv(rows).slice(0,LIMIT);
   }
   const out=[],walk=(node,depth=0)=>{
     if(out.join("").length>=LIMIT||depth>36)return;
