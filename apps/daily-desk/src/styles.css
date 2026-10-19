@@ -145,3 +145,8 @@ pre { white-space:pre-wrap; word-break:break-word; }
   .printable-document, .printable-document * { visibility:visible !important; }
   .printable-document { position:absolute !important; left:0 !important; top:0 !important; width:100% !important; border:0 !important; padding:0 !important; overflow:visible !important; }
 }
+
+
+/* Standalone stylus/mouse draft board */
+.drawing-canvas { display:block; width:100%; height:auto; aspect-ratio:11/6; border:1px solid #5e6c83; border-radius:12px; background:#111b2b; cursor:crosshair; user-select:none; -webkit-user-select:none; }
+.drawing-canvas:focus-visible { outline:3px solid #8db9ef; }
