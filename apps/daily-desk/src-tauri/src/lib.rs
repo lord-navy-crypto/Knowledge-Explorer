@@ -97,6 +97,16 @@ fn read_backup(path: String) -> Result<String, String> {
     Ok(contents)
 }
 
+/// Keep the native writer aligned with the frontend allowlist.
+fn supports_output_extension(extension: &str) -> bool {
+    matches!(
+        extension,
+        "pdf" | "txt" | "md" | "csv" | "json" | "png" | "jpg" | "jpeg"
+            | "webp" | "gif" | "docx" | "xlsx" | "pptx" | "zip" | "svg"
+            | "ics" | "srt" | "vtt" | "wav" | "vcf"
+    )
+}
+
 #[tauri::command]
 fn write_output_file(path: String, bytes: Vec<u8>) -> Result<(), String> {
     if bytes.len() > 20_000_000 {
@@ -108,10 +118,7 @@ fn write_output_file(path: String, bytes: Vec<u8>) -> Result<(), String> {
         .and_then(|ext| ext.to_str())
         .unwrap_or("")
         .to_ascii_lowercase();
-    if !matches!(
-        extension.as_str(),
-        "pdf" | "txt" | "md" | "csv" | "json" | "png" | "jpg" | "jpeg" | "webp" | "gif" | "docx" | "xlsx" | "pptx" | "zip" | "svg"
-    ) {
+    if !supports_output_extension(&extension) {
         return Err("Unsupported output file extension".into());
     }
     if !location.parent().is_some_and(Path::is_dir) {
@@ -124,6 +131,16 @@ fn write_output_file(path: String, bytes: Vec<u8>) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn permits_all_desktop_media_and_contacts_exports() {
+        for ext in ["ics", "srt", "vtt", "wav", "vcf", "svg", "zip", "pdf"] {
+            assert!(supports_output_extension(ext), "missing output extension: {ext}");
+        }
+        for ext in ["exe", "sh", "html", "js", ""] {
+            assert!(!supports_output_extension(ext), "forbidden output extension: {ext}");
+        }
+    }
 
     #[test]
     fn accepts_valid_v2_workspace() {
