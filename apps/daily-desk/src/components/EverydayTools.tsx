@@ -2,8 +2,9 @@ import { useMemo, useState } from "react";
 import QRCode from "qrcode";
 import { exportFile } from "../lib/output";
 
-export type Utility = "stats" | "csv" | "diff" | "markdown" | "encode" | "groups" | "color" | "qr" | "rename";
+export type Utility = "json" | "stats" | "csv" | "diff" | "markdown" | "encode" | "groups" | "color" | "qr" | "rename";
 export const UTILITIES: { id: Utility; title: string; description: string }[] = [
+  { id: "json", title: "JSON formatter", description: "Validate, pretty print or minify JSON." },
   { id: "stats", title: "Word count & reading time", description: "Words, characters, paragraphs, sentences, reading time." },
   { id: "csv", title: "CSV → Markdown", description: "Convert correctly quoted CSV/TSV into a Markdown table." },
   { id: "diff", title: "Text comparator", description: "See line differences between drafts." },
@@ -131,7 +132,8 @@ export default function EverydayTools({ initial = "stats" }: { initial?: Utility
 
   function compute() {
     try {
-      if(tab==="csv") setOutput(markdownTable(csvRows(input,delimiter),header));
+      if(tab==="json") setOutput(JSON.stringify(JSON.parse(input) as unknown,null,2));
+      else if(tab==="csv") setOutput(markdownTable(csvRows(input,delimiter),header));
       else if(tab==="diff") {
         const left=input.split(/\r?\n/u),right=other.split(/\r?\n/u);
         const lines=Array.from({length:Math.max(left.length,right.length)},(_,i)=>{
@@ -196,6 +198,8 @@ export default function EverydayTools({ initial = "stats" }: { initial?: Utility
         <textarea className="field text-editor" id="utility-input" rows={tab==="diff"?8:6} value={input} onChange={e=>setInput(e.target.value)} />
         {tab==="diff"&&<><label className="field-label" htmlFor="utility-other">Revised text</label><textarea id="utility-other" className="field text-editor" rows={8} value={other} onChange={e=>setOther(e.target.value)}/></>}
         {tab==="csv"&&<div className="actions"><label>Delimiter <select className="field" value={delimiter} onChange={e=>setDelimiter(e.target.value as "," | "\t")}><option value=",">Comma</option><option value="\t">Tab</option></select></label><label><input type="checkbox" checked={header} onChange={e=>setHeader(e.target.checked)}/> First row is header</label></div>}
+        {tab==="json"&&<div className="actions"><button type="button" className="secondary-button" onClick={()=>{try{setOutput(JSON.stringify(JSON.parse(input) as unknown));setStatus("");}catch(e){setStatus(String(e));}}}>Minify JSON</button></div>}
+        {tab==="markdown"&&<div className="actions"><button type="button" className="secondary-button" onClick={()=>setOutput(input.split(/\\r?\\n/u).filter(Boolean).map(x=>"## "+x).join("\\n\\n"))}>Plain lines → headings</button></div>}
         {tab==="encode"&&<div className="actions"><label>Encoding <select className="field" value={codec} onChange={e=>setCodec(e.target.value as "base64"|"url")}><option value="base64">Base64 (UTF-8)</option><option value="url">URL component</option></select></label></div>}
         {tab==="groups"&&<label className="field-label">People per group <input type="number" className="field" min={1} max={50} value={groupSize} onChange={e=>setGroupSize(Math.max(1,Math.min(50,Number(e.target.value)||1)))}/></label>}
         {tab==="stats"?<div className="metrics"><span>{stats.words} words</span><span>{stats.characters} characters</span><span>{stats.sentences} sentences</span><span>{stats.paragraphs} paragraphs</span><span>{stats.lines} lines</span><span>~{stats.reading} min read</span></div>:<div className="actions">
