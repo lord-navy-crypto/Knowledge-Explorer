@@ -11,7 +11,7 @@ This first port covers the everyday tool set but is **not 100% feature parity** 
 | Website module(s) | Desktop implementation | Limits |
 | --- | --- | --- |
 | focus-desk / timer | Focus Timer | Does not reproduce colored noise beds |
-| flashcards / vocab-book | Saved Flashcards | No spaced-repetition scheduling or multiple decks yet |
+| flashcards / vocab-book | Saved Flashcards | Local subject decks, due-date filtering and interval reviews; not synced to web |
 | mistake-notebook | Study & English / Mistake notebook | Plain text entries |
 | exam-countdown | Study & English / Exam countdown | Local calendar dates |
 | code-board | Study & English / Code board | Snippet storage, not an IDE |
@@ -27,7 +27,7 @@ This first port covers the everyday tool set but is **not 100% feature parity** 
 | units | Math / Units | Major common unit groups |
 | sci-notation | Math / Scientific notation | Number notation, **not all sig-fig classroom modes** |
 | vector-resolve | Math / Vector components | Polar to Cartesian only |
-| pdf-tools / pdf-compress | File desk / PDF | Merge, selected-page split, rotate, reserialize |
+| pdf-tools / pdf-compress | File desk / PDF | Merge, selected-page split, separate-page ZIP export (≤50 pages), rotate, reserialize |
 | image-compress | File desk / Images | Resize, convert JPEG/WebP/PNG, percent-based crop and text caption; freehand annotation pending |
 | word-import | File desk / Word to Markdown | `.docx` HTML extraction converted to safe editable Markdown (some formatting loss) |
 | dual / write-convert / markdown-pdf | Writing workbench | Markdown + math live preview, file export, system print/PDF; Word→PDF print needs manual testing |
@@ -48,7 +48,7 @@ This first port covers the everyday tool set but is **not 100% feature parity** 
 - Full AP site's AI workbench, external providers/API keys and WebLLM: needs separate consent and platform-specific integration; **not ported**.
 - Speech-to-text / Whisper local microphone processing: **not ported**. Dictation TTS is not speech recognition.
 - The website's full ClassWiz calculator, calculus graph analysis (derivatives, roots, polar/parametric), advanced unit/math modes: **partial**.
-- PDF page-by-page splitting, GUI page preview, high-quality image compression and image crop/annotation: **partial**.
+- PDF individual-page ZIP splitting now supported (up to 50 pages); interactive page preview, heavy-duty scanned image recompression and freehand annotation on images remain **partial**.
 - Word→PDF via docx preview/print, full reading highlight UI and link presets: **not ported**. Markdown/LaTeX live editing, printing and a saved black drawing canvas have basic implementations.
 - Full code editor and off-site tools are not inherently offline; must remain separate from the desktop's core feature set.
 
