@@ -4,11 +4,12 @@ import {
   dateDifference,shiftDate,parseGradeRows,calculateWeightedGrade,
 } from "../lib/quickKit";
 import {exportFile} from "../lib/output";
+import {replaceTextLiteral} from "../lib/quickBatchText";
 
-export type QuickKitMode="text"|"links"|"dates"|"grades";
+export type QuickKitMode="text"|"links"|"dates"|"grades"|"replace";
 const title:Record<QuickKitMode,string>={
   text:"Text cleaner · 文本整理",links:"Tracking-link cleaner · 链接净化",
-  dates:"Date planner · 日期计算",grades:"Weighted grades · 成绩规划",
+  replace:"Literal replace · 批量查找替换",dates:"Date planner · 日期计算",grades:"Weighted grades · 成绩规划",
 };
 const number=(n:number)=>String(Number(n.toFixed(6)));
 export default function QuickKitDesk({initialMode="text"}:{initialMode?:QuickKitMode}){
@@ -23,6 +24,8 @@ export default function QuickKitDesk({initialMode="text"}:{initialMode?:QuickKit
   const [gradeData,setGradeData]=useState("Homework,25,90\nTests,25,80\nFinal exam,50,?");
   const [target,setTarget]=useState("90");
   const [status,setStatus]=useState("");
+  const [findLiteral,setFindLiteral]=useState("");
+  const [replacement,setReplacement]=useState("");
   const textResult=useMemo(()=>{
     try{return {value:cleanCopiedText(source,options),error:""};}
     catch(e){return {value:"",error:String(e instanceof Error?e.message:e)};}
@@ -41,7 +44,8 @@ export default function QuickKitDesk({initialMode="text"}:{initialMode?:QuickKit
     try{return {value:calculateWeightedGrade(parseGradeRows(gradeData),Number(target)),error:""};}
     catch(e){return {value:null,error:String(e instanceof Error?e.message:e)};}
   },[gradeData,target]);
-  const output=mode==="text"?textResult.value:mode==="links"?linkResult.text:"";
+  const replaceResult=useMemo(()=>{try{return {...replaceTextLiteral(source,findLiteral,replacement),error:""};}catch(e){return {text:"",count:0,error:String(e instanceof Error?e.message:e)};}},[source,findLiteral,replacement]);
+  const output=mode==="text"?textResult.value:mode==="links"?linkResult.text:mode==="replace"?replaceResult.text:"";
   async function copyResult(){
     try{
       await navigator.clipboard.writeText(output);
@@ -50,7 +54,7 @@ export default function QuickKitDesk({initialMode="text"}:{initialMode?:QuickKit
   }
   async function saveResult(){
     try{
-      const saved=await exportFile(mode==="links"?"clean-links.txt":"clean-text.txt",output);
+      const saved=await exportFile(mode==="links"?"clean-links.txt":mode==="replace"?"replaced-text.txt":"clean-text.txt",output);
       setStatus(saved?"Saved locally.":"Save cancelled.");
     }catch(e){setStatus(String(e instanceof Error?e.message:e));}
   }
@@ -60,7 +64,7 @@ export default function QuickKitDesk({initialMode="text"}:{initialMode?:QuickKit
     <h2>Quick Tools / 快捷小工具</h2>
     <p className="subtle">Four tiny tasks without accounts or online uploads. Local input stays in this window; text/links are exported only when you click. Date calculations use calendar days, not elapsed 24-hour periods.</p>
     <div className="pill-row" role="group" aria-label="Quick tool">
-      {(["text","links","dates","grades"] as const).map(key=><button type="button" key={key}
+      {(["text","links","replace","dates","grades"] as const).map(key=><button type="button" key={key}
         className={mode===key?"pill active-pill":"pill"} onClick={()=>{setMode(key);setStatus("");}}>{title[key]}</button>)}
     </div>
     {mode==="text"&&<>
@@ -80,11 +84,20 @@ export default function QuickKitDesk({initialMode="text"}:{initialMode?:QuickKit
       <p className="subtle">Strips common analytics tags such as utm_*, fbclid and gclid. Retains search parameters, anchors, tokens and URLs that could be necessary for links to work; it does not expand shortened URLs or contact websites.</p>
       {!linkResult.error&&<p className="stat-pill">{linkResult.count} links · {linkResult.removed} tracking parameters removed</p>}
     </>}
-    {(mode==="text"||mode==="links")&&<>
+    {mode==="replace"&&<>
+      <p className="subtle">Literal replacement only (not regular expressions); originals remain unchanged. Preview before exporting. Maximum 200,000 characters.</p>
+      <label className="field-label">Input text<textarea className="field text-editor" rows={5} maxLength={200000} value={source} onChange={e=>setSource(e.target.value)}/></label>
+      <div className="tools-pair">
+        <label className="field-label">Find<input className="field" maxLength={1000} value={findLiteral} onChange={e=>setFindLiteral(e.target.value)}/></label>
+        <label className="field-label">Replace with<input className="field" maxLength={10000} value={replacement} onChange={e=>setReplacement(e.target.value)}/></label>
+      </div>
+      {!replaceResult.error&&<p className="subtle">{replaceResult.count} matches · {output.length} output characters</p>}
+    </>}
+    {(mode==="text"||mode==="links"||mode==="replace")&&<>
       <label className="field-label" htmlFor="quick-result">Processed output</label>
       <textarea id="quick-result" className="field text-editor" rows={6} value={output} readOnly aria-label="Quick Tool output"/>
       <div className="actions">
-        <button className="primary-button" type="button" disabled={!!(mode==="text"?textResult.error:linkResult.error)} onClick={()=>{void copyResult();}}>Copy result</button>
+        <button className="primary-button" type="button" disabled={!!(mode==="text"?textResult.error:mode==="links"?linkResult.error:replaceResult.error)} onClick={()=>{void copyResult();}}>Copy result</button>
         <button className="secondary-button" type="button" disabled={!!(mode==="text"?textResult.error:linkResult.error)} onClick={()=>{void saveResult();}}>Save as TXT</button>
       </div>
       {(mode==="text"?textResult.error:linkResult.error)&&<p role="alert" className="subtle">{mode==="text"?textResult.error:linkResult.error}</p>}
