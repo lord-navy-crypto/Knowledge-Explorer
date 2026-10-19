@@ -93,7 +93,7 @@ export function makeIcsEvent(input:UtcEvent):string{
  if(end<=start)throw new Error("End time must be later than start time.");
  if(!/^[a-zA-Z0-9-]{6,100}@daily-desk\.local$/u.test(input.uid))
    throw new Error("Invalid local event identifier.");
- const now="20260101T000000Z"; // deterministic creation stamp; does not affect meeting timing
+ const now=new Date().toISOString().replace(/[-:]/gu,"").replace(/\\.\\d{3}/u,""); // actual UTC creation stamp
  const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Daily Desk//Universal Box//EN",
   "CALSCALE:GREGORIAN","METHOD:PUBLISH","BEGIN:VEVENT",`UID:${input.uid}`,
   `DTSTAMP:${now}`,`DTSTART:${start}`,`DTEND:${end}`,`SUMMARY:${summary}`];
