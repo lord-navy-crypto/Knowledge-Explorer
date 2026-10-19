@@ -197,7 +197,7 @@ export default function WritingDesk({ markdown, onChange }: Props) {
         </article>
       </div>}
     </div>
-    <p className="subtle">Word export preserves headings and paragraph/list text, but may simplify tables, complex inline styles and LaTeX. The system Print dialog and PDF layout need testing on macOS.</p>
+    <p className="subtle">Word export now retains headings, actual bullet lists and basic bold/italic/strike/inline-code styling. Complex tables, links, embedded images and LaTeX remain simplified. The system Print dialog and PDF layout still need Mac testing.</p>
     {status&&<p className="subtle" role="status">{status}</p>}
   </section>;
 }
