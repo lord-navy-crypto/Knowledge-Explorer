@@ -24,3 +24,5 @@ Add automated DOM fixtures and Chromium extension integration tests, then a user
 
 ## Additional local actions
 After extraction, **Clean preview** normalizes spaces and excess blank lines in plain text/Markdown only (not CSV), and **Save** downloads the current preview as UTF-8 TXT, Markdown or CSV. Both actions require an explicit click and do not read browser data in the background. Save is subject to browser download configuration; user should verify the resulting file before relying on it.
+
+The user-click **Print webpage / Save as PDF** action invokes the browser print dialog for the authorized current http(s) tab; output is user-selected and browser-dependent. No background capture or file upload.
