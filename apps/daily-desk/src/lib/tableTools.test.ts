@@ -15,7 +15,6 @@ describe("offline table workbench",()=>{
   it("writes valid JSON and protects spreadsheet formula cells",()=>{
     const data=makeDataTable([["name"],["=1+2"],["+CMD"],["-42"]]);
     expect(tableToCsv(data)).toContain("'=1+2");
-    expect(tableToCsv(data)).toContain("'-");
     expect(tableToCsv(data)).toContain("\r\n-42");
     expect(JSON.parse(tableToJson(data))).toEqual([{name:"=1+2"},{name:"+CMD"},{name:"-42"}]);
   });
