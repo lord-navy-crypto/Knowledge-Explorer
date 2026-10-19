@@ -68,6 +68,14 @@ const menu: { id: View; name: string; symbol: string; description: string }[] = 
   { id: "data", name: "Backup & privacy", symbol: "▤", description: "Save or restore your workspace" },
 ];
 
+const navigationGroups:{title:string;items:View[]}[]=[
+  {title:"DISCOVER",items:["overview","all-tools","charts"]},
+  {title:"FILES & CREATION",items:["files","free-formats","writing","drawing","tables"]},
+  {title:"UNIVERSAL BOX",items:["quick-tools","universal","universal-box","universal-lab","media-files","office-privacy","workflows","utilities","external"]},
+  {title:"STUDY & SCIENCE",items:["math","learning","reading","cards","focus"]},
+  {title:"PERSONAL WORKSPACE",items:["tasks","notes","code","presets","data"]},
+];
+
 function todayIso(): string {
   const date = new Date();
   const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
@@ -314,23 +322,50 @@ export default function App() {
   const activeMenu = menu.find((item) => item.id === view) ?? menu[0];
 
   return (
-    <main className="app-shell">
+    <main className={"app-shell "+(theme==="dark"?"theme-dark":"theme-light")} data-theme={theme}>
       <aside className="sidebar">
-        <div className="brand-mark">D</div><div className="brand-name">Daily Desk</div>
-        <p className="brand-caption">LOCAL-FIRST PRODUCTIVITY</p>
-        <div className="nav-label">WORKSPACES</div>
-        <nav aria-label="Daily Desk navigation">
-          {menu.map((item) => (
-            <button type="button" key={item.id} className={view === item.id ? "nav-item active" : "nav-item"} aria-current={view === item.id ? "page" : undefined} onClick={() => {setToolMode("");setView(item.id);}}>
-              <span aria-hidden="true">{item.symbol}</span><span>{item.name}</span>{item.id === "tasks" && <span className="nav-count">{openTasks}</span>}
-            </button>
-          ))}
+        <button type="button" className="sidebar-brand" onClick={()=>openTool("overview")} aria-label="Universal Box Home">
+          <span className="brand-mark">U</span><span className="sidebar-brand-text">
+            <strong className="brand-name">Universal Box</strong><span className="brand-caption">YOUR TOOLS · YOUR DEVICE</span>
+          </span>
+        </button>
+        <button className="sidebar-quick-search" type="button" onClick={()=>{setCommandOpen(true);setCommandQuery("");}}>
+          <span aria-hidden="true">⌕</span><span>Search tools</span><kbd>⌘ K</kbd>
+        </button>
+        <nav aria-label="Universal Box workspaces" className="sidebar-nav">
+          {navigationGroups.map(group=><details className="nav-group" key={group.title} open>
+            <summary className="nav-label">{group.title}</summary>
+            {group.items.map(id=>{
+              const item=menu.find(value=>value.id===id)!;
+              return <button type="button" key={id} className={view===id?"nav-item active":"nav-item"}
+                aria-current={view===id?"page":undefined} onClick={()=>openTool(id)}>
+                <span className="nav-symbol" aria-hidden="true">{item.symbol}</span>
+                <span className="nav-name">{item.name}</span>
+                {item.id==="tasks"&&<span className="nav-count">{openTasks}</span>}
+              </button>;
+            })}
+          </details>)}
         </nav>
-        <div className="sidebar-bottom"><span className="status-dot" /> <span role="status">{savedStatus}</span><p>No sign-in. No Vercel connection. Native app data is stored locally; export a backup before changing computers.</p></div>
+        <div className="sidebar-bottom">
+          <div className="sidebar-health"><span className="status-dot" /><span role="status">{savedStatus}</span></div>
+          <p>Private by default. Your work stays on your device. Export a backup before switching computers.</p>
+        </div>
       </aside>
 
       <section className="main-panel">
-        <header className="topbar"><span>Daily Desk / {activeMenu.name}</span><span className="version-pill">DESKTOP PREVIEW · v0.26</span></header>
+        <header className="topbar">
+          <div className="topbar-title"><span className="topbar-location">WORKSPACE / {activeMenu.name}</span><strong>{activeMenu.name.split(" / ")[0]}</strong></div>
+          <div className="topbar-actions">
+            <button className="topbar-control topbar-search" type="button" title="Search tools (⌘/Ctrl+K)" onClick={()=>{setCommandOpen(true);setCommandQuery("");}}>⌕ <span>Find a tool</span> <kbd>⌘K</kbd></button>
+            <button className="topbar-control icon-control" type="button" onClick={()=>toggleFavorite(view)} title={favoriteViews.includes(view)?"Remove workspace favorite":"Favorite this workspace"}
+              aria-label={favoriteViews.includes(view)?"Remove favorite":"Add workspace favorite"} aria-pressed={favoriteViews.includes(view)}>{favoriteViews.includes(view)?"★":"☆"}</button>
+            <button className="topbar-control icon-control" type="button" onClick={()=>setTheme(previous=>previous==="light"?"dark":"light")}
+              title={theme==="light"?"Switch to dark mode":"Switch to light mode"} aria-label={theme==="light"?"Switch to dark mode":"Switch to light mode"}>
+              {theme==="light"?"◐":"☀"}
+            </button>
+            <span className="version-pill">v0.26</span>
+          </div>
+        </header>
         <div className="content">
           {view === "overview" && <>
             <p className="eyebrow">GOOD TO HAVE YOU HERE</p><h1>Your day, in one place.</h1>
