@@ -165,3 +165,11 @@ Follow-ups worth evaluating for daily use: offline OCR for scanned PDFs, complet
 - On-device help examples and three-step usage guide, index entries, responsive styles and automated tests for preferences, non-existent route rejection and real-catalog availability.
 
 These are first accessibility steps, not universal WCAG 2.2 AA certification. Test 200% zoom/reflow, real screen reader interaction, high-contrast colors inside legacy tools and Mac keyboard behavior before claiming full accessibility. Next: robust packaged offline OCR language models, verified community templates, and clear source licensing/contribution policies (subject to repository owner's consent).
+
+## v0.29 — Easy Local AI browser-port milestone
+
+- Ported the AP Website's WebLLM/WebGPU *local* chat path to Universal Box, with six curated Qwen/Llama model IDs, local cache status/removal, downloading progress, streaming, interruption and model unloading. **No three-mode API switch**: all in-app inference is local.
+- Added an explicit browser fallback for macOS WKWebView incompatibilities; URL selection is validated and never transmits prompt parameters.
+- Prioritize real-hardware Mac acceptance of WebGPU and WebLLM download/cache before declaring native-WebView inference proven. The web browser path should be tested separately.
+- Follow-up: if WebGPU inside the macOS WebView remains unreliable, consider a dedicated secure browser-hosted Local AI page or Apple Silicon Metal-native engine; this is outside v0.29.
+- Other future work (OCR/office/application planners) stays independent of the AI port.
