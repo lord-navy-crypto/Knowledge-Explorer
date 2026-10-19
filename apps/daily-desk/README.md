@@ -118,3 +118,11 @@ The desktop program remains separate from the AP website. These changes are not 
 - **CSV text-file import**: choose .csv or .tsv and process its data locally.
 - The existing math, file, writing, study, English, classroom and quick tools remain part of the app. The internet-dependent AI backend, automatic speech recognition and shared/public cloud tools are not described as offline ports.
 - All changes are restricted to `apps/daily-desk/` and do not affect the AP website on Vercel.
+
+## v0.10 offline office tools
+
+- **CSV Table Desk:** opens local `.csv` or `.tsv` files or pasted content, up to 2 MB / 2,000 rows / 100 columns. Includes searching all/one column, numeric-aware sort, deduplicate whole rows, first-80-row preview, non-destructive filtered exports in CSV, JSON and Markdown. CSV output guards against opening untrusted formula-like cells in spreadsheet programs.
+- **PDF organizer:** `File desk → PDF → Organize` takes explicit one-based page order such as `3,1,2,5-7`; omitting a page removes it. Rejects duplicate or out-of-range page numbers, saves a new PDF and preserves original.
+- **Image batch:** `File desk → Images` can convert up to 12 local JPEG/PNG/WebP images to a common format/width and save a single ZIP. Conservative per-file, pixel and ZIP-size limits protect memory on 16 GB Apple Silicon machines.
+- The searchable All tools catalog includes the new entries; no AP ReasonLab website code is changed.
+- Notes: CSV is a flat table utility, not an XLSX formula editor. PDF editing rearranges page objects, not internal PDF text/annotations. Batch image conversion handles raster input only. Mac WebView interaction remains to be verified after CI build.
