@@ -49,6 +49,9 @@ jobs:
       - name: Check TypeScript and build frontend
         run: npm run build
 
+      - name: Test transplanted everyday tools
+        run: npm test
+
       - name: Generate Tauri icons
         run: npx tauri icon src-tauri/app-icon.svg
 
