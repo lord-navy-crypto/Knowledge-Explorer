@@ -267,7 +267,7 @@ export default function FileDesk({ onSendToWriting, initialTab = "pdf", initialP
         <div className="pill-row compact" role="group" aria-label="PDF operation">
           {(["merge", "split", "rotate", "organize", "decorate", "convert", "compress"] as const).map((item) => <button type="button" key={item} onClick={() => { setPdfMode(item); setFiles([]); setStatus(""); }} className={pdfMode === item ? "pill active-pill" : "pill"}>{item === "compress" ? "Optimize (light)" : item === "decorate" ? "Add text / sign / watermark" : item === "convert" ? "Image ↔ PDF" : item[0].toUpperCase() + item.slice(1)}</button>)}
         </div>
-        <label htmlFor="pdf-picker" className="field-label">{pdfMode === "merge" ? "Choose up to 20 PDFs in order" : "Choose a PDF"}</label>
+        <label htmlFor="pdf-picker" className="field-label">{pdfMode === "merge" ? "Choose up to 20 PDFs in order" : pdfMode === "convert" ? "Optional PDF source (for PDF → images)" : "Choose a PDF"}</label>
         <input id="pdf-picker" className="field" type="file" accept=".pdf,application/pdf" multiple={pdfMode === "merge"} onChange={(event) => { void onPdfChange(event); }} />
         {files.length > 0 && <p className="subtle">Selected: {files.map((file) => file.name).join(" · ")} {pdfCount > 0 && `· first PDF ${pdfCount} page(s)`}</p>}
         {(pdfMode === "split" || pdfMode === "rotate" || pdfMode === "organize") && <><label className="field-label" htmlFor="pdf-pages">{pdfMode === "organize" ? "Pages in desired order (e.g. 3,1,2,5-8). Omit pages to remove them." : "Pages (e.g. 1-3,5,7-)"}</label><input id="pdf-pages" className="field" value={pages} onChange={(e) => setPages(e.target.value)} /></>}
