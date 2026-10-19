@@ -328,3 +328,22 @@ Adds a dedicated **Universal Access / 无障碍与工具助手** workspace with 
 Guidance follows W3C WAI principles including keyboard access, visible focus and sensible resizing. These improvements move toward accessibility, but are not a formal conformance audit. Existing 79 previously searchable entries remain; 2 accessibility entries were added, and the already available Chart Studio received its previously missing searchable index entry.
 
 This work supports digital public-interest software by making common tools easier to discover without required accounts, ads, paid quotas or uploading private files. It does **not** claim that a desktop app alone creates a political or economic system. No new license is imposed on existing repo authors or third-party contributors.
+
+## v0.29 — Easy Local AI transplanted from AP Website (one mode only)
+
+Universal Box now has a dedicated **Easy Local AI / 本地 AI** workspace built around **WebLLM 0.2.82** and WebGPU, using AP ReasonLab's curated, light Qwen and Llama model IDs. This is intentionally a single local-browser-inference mode: **no Website API, BYOK, API keys, hosted inference, or Ollama**.
+
+### What actually works in a WebGPU-capable environment
+
+- Explicit WebGPU adapter detection and a simple Chinese/English AI chat window, with locally streamed text, clear conversation, stop generation and model unloading. Chats stay in transient UI memory and are not automatically saved.
+- WebLLM lazy-loads only when the user opens the AI workspace and chooses a model. The page does not preload GPU models, download anything by itself or wake a native daemon.
+- Curated Qwen 0.6B / 1.7B, Qwen2.5 Micro/Coder, Llama 1B/3B models are selected from the AP Website. Model loading shows progress and uses a dedicated Web Worker when supported, falling back to main-thread WebGPU if the worker fails.
+- Browser-managed IndexedDB cache can be inspected and selected models explicitly deleted after a confirmation. First download needs internet and disk space; cached models may work offline, subject to browser cache retention.
+- The Tauri CSP permits WebLLM worker/WASM and model downloads from Hugging Face/model library hosts. It does **not** enable arbitrary AI API calls or execute local shell processes.
+- Optional **browser fallback**: enter the real HTTPS origin of your AP Website; the app can open its `/easy-local-ai` page in your default browser. The URL is stored locally and no prompts/files are attached. Hugging Face Models/Spaces buttons are separately marked as third-party online services.
+
+### Compatibility boundaries
+
+**macOS Tauri uses system WKWebView.** Whether WebGPU / WebLLM actually works inside the app depends on the OS, GPU drivers and WebView; a green TypeScript/CI/DMG build does not demonstrate hardware WebGPU support. If GPU is unavailable, use the AP Website in a compatible external browser (Chrome/Edge etc.). The two browser engines use separate caches. Model downloads can be hundreds of megabytes or more; there is no bundled model in the small DMG. AI outputs can be wrong and should be checked, especially for application materials.
+
+Existing PDF, office, text, image, math, and AP study tools are preserved; AP ReasonLab website code remains unchanged.

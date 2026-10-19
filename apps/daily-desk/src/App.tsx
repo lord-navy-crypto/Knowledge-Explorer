@@ -13,6 +13,7 @@ import FreeFormatsDesk, {type FreeFormatsMode} from "./components/FreeFormatsDes
 import ChartDesk from "./components/ChartDesk";
 import PdfEverydayDesk, {type PdfEverydayMode} from "./components/PdfEverydayDesk";
 import UniversalAccessDesk from "./components/UniversalAccessDesk";
+import LocalAIDesk from "./components/LocalAIDesk";
 import {readAccessPreferences,writeAccessPreferences,type AccessPreferences} from "./lib/accessPreferences";
 import QuickKitDesk, {type QuickKitMode} from "./components/QuickKitDesk";
 import ExternalTools from "./components/ExternalTools";
@@ -39,7 +40,7 @@ import {
   persistWorkspace,
 } from "./lib/nativeStorage";
 
-type View = "access" | "pdf-mini" | "charts" | "free-formats" | "workflows" | "office-privacy" | "media-files" | "universal-lab" | "universal-box" | "universal" | "quick-tools" | "external" | "all-tools" | "code" | "tables" | "overview" | "tasks" | "cards" | "focus" | "notes" | "utilities" | "data" | "files" | "math" | "learning" | "writing" | "drawing" | "reading" | "presets";
+type View = "local-ai" | "access" | "pdf-mini" | "charts" | "free-formats" | "workflows" | "office-privacy" | "media-files" | "universal-lab" | "universal-box" | "universal" | "quick-tools" | "external" | "all-tools" | "code" | "tables" | "overview" | "tasks" | "cards" | "focus" | "notes" | "utilities" | "data" | "files" | "math" | "learning" | "writing" | "drawing" | "reading" | "presets";
 
 const menu: { id: View; name: string; symbol: string; description: string }[] = [
   { id: "overview", name: "Overview", symbol: "◫", description: "Your workspace at a glance" },
@@ -55,6 +56,7 @@ const menu: { id: View; name: string; symbol: string; description: string }[] = 
   { id: "charts", name: "Chart Studio / 数据可视化", symbol: "▥", description: "CSV data → bar/line charts, aggregation and SVG export" },
   { id: "pdf-mini", name: "PDF Mini Editor / PDF 日常编辑", symbol: "▣", description: "Edit PDF metadata, visually crop margins, insert blanks and fill basic text forms" },
   { id: "access", name: "Universal Access / 无障碍与工具助手", symbol: "✳", description: "Readable UI, simple home, keyboard guidance and private task-to-tool recommendations" },
+  { id: "local-ai", name: "Easy Local AI / 本地 AI", symbol: "✦", description: "WebLLM on-device chat with WebGPU, model downloads and browser cache management" },
   { id: "external", name: "External Tools / 外部工具", symbol: "↗", description: "Curated official websites for advanced tools" },
   { id: "code", name: "Code editor", symbol: "</>", description: "Local code drafts and snippet library" },
   { id: "tables", name: "CSV Table Desk", symbol: "▤", description: "Filter, sort and export CSV or TSV data" },
@@ -77,7 +79,7 @@ const navigationGroups:{title:string;items:View[]}[]=[
   {title:"DISCOVER",items:["overview","access","all-tools","charts"]},
   {title:"FILES & CREATION",items:["files","pdf-mini","free-formats","writing","drawing","tables"]},
   {title:"UNIVERSAL BOX",items:["quick-tools","universal","universal-box","universal-lab","media-files","office-privacy","workflows","utilities","external"]},
-  {title:"STUDY & SCIENCE",items:["math","learning","reading","cards","focus"]},
+  {title:"STUDY & SCIENCE",items:["local-ai","math","learning","reading","cards","focus"]},
   {title:"PERSONAL WORKSPACE",items:["tasks","notes","code","presets","data"]},
 ];
 
@@ -384,7 +386,7 @@ export default function App() {
             </button>
             <button className="topbar-control topbar-access" type="button" onClick={()=>openTool("access")}
               aria-label="Open Universal Access: larger text, contrast and help" title="Accessibility & help">Aa <span>无障碍</span></button>
-            <span className="version-pill">v0.28</span>
+            <span className="version-pill">v0.29</span>
           </div>
         </header>
         <div id="main-content" className="content" tabIndex={-1}>
@@ -457,6 +459,7 @@ export default function App() {
           {view === "free-formats" && <FreeFormatsDesk key={toolMode} initialMode={(toolMode||"spreadsheet") as FreeFormatsMode}/> }
           {view === "charts" && <ChartDesk /> }
           {view === "access" && <UniversalAccessDesk preferences={accessPreferences} onChange={setAccessPreferences} onOpenTool={openTool}/> }
+          {view === "local-ai" && <LocalAIDesk/> }
           {view === "pdf-mini" && <PdfEverydayDesk key={toolMode} initialMode={(toolMode||"metadata") as PdfEverydayMode} /> }
           {view === "external" && <ExternalTools onOpenPresets={()=>openTool("presets")} />}
           {view === "code" && <CodeDesk snippets={workspace.snippets??[]} onChange={snippets=>setWorkspace(current=>({...current,snippets}))} />}
