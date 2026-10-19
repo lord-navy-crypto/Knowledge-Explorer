@@ -65,7 +65,7 @@ describe("Unicode inspection",()=>{
 describe("local duplicate file checks",()=>{
  const fake=(name:string,data:string)=>({
    name,size:new TextEncoder().encode(data).length,
-   arrayBuffer:async()=>new TextEncoder().encode(data).buffer,
+   arrayBuffer:async()=>new TextEncoder().encode(data).buffer as ArrayBuffer,
  });
  it("groups exact duplicate content even under different names, without deleting files",async()=>{
    const report=await findDuplicateFiles([fake("a.txt","same"),fake("b.txt","different"),fake("c.txt","same")]);
