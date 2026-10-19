@@ -10,7 +10,7 @@ This first port covers the everyday tool set but is **not 100% feature parity** 
 
 | Website module(s) | Desktop implementation | Limits |
 | --- | --- | --- |
-| focus-desk / timer | Focus Timer | Does not reproduce colored noise beds |
+| focus-desk / timer | Focus Timer | White/pink/brown/soft synthetic local sound beds; original recordings not reproduced |
 | flashcards / vocab-book | Saved Flashcards | Local subject decks, due-date filtering and interval reviews; not synced to web |
 | mistake-notebook | Study & English / Mistake notebook | Plain text entries |
 | exam-countdown | Study & English / Exam countdown | Local calendar dates |
@@ -77,3 +77,5 @@ This first port covers the everyday tool set but is **not 100% feature parity** 
 - Randomly pick one name in addition to random group assignment.
 - Basic vector addition/subtraction and selected significant-figure rounding.
 - Still no cloud AI, shared shortlinks, online embeds, or speech-to-text transcription.
+
+- Local focus audio is synthetic Web Audio noise (not a copy of the site's real rain recordings). Playback starts only after a click and stops when switched Off.
