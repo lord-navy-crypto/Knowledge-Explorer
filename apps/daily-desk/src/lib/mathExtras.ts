@@ -15,7 +15,7 @@ export function combineVectors(a: Vector2, b: Vector2, subtract = false) {
  */
 export function significantFigures(source: string): number | null {
   const compact=source.trim().replace(/^[+-]/u,"");
-  if(!/^\d*\.?\d+(?:e[+-]?\d+)?$/iu.test(compact))return null;
+  if(!/^(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/iu.test(compact))return null;
   const mantissa=compact.split(/e/iu)[0];
   const hasDot=mantissa.includes(".");
   let digits=mantissa.replace(".","");
