@@ -1,8 +1,10 @@
 import { type FormEvent, useMemo, useState } from "react";
 import type { WorkspaceData } from "../lib/workspace";
+import PasteCards from "./PasteCards";
 
-type Mode = "countdown" | "mistakes" | "code" | "dictation" | "rewrite" | "typewriter" | "reading";
+type Mode = "paste" | "countdown" | "mistakes" | "code" | "dictation" | "rewrite" | "typewriter" | "reading";
 const MODULES:{id:Mode;label:string}[] = [
+  {id:"paste",label:"Instant flip cards"},
   {id:"countdown",label:"Exam countdown"},
   {id:"mistakes",label:"Mistake notebook"},
   {id:"code",label:"Code board"},
@@ -90,6 +92,7 @@ export default function StudyExtras({workspace,onChange}:{workspace:WorkspaceDat
       {mode==="typewriter"&&<><p className="subtle">Showing {Math.min(reveal,lines.length)} of {lines.length} lines.</p><pre className="study-reveal">{lines.slice(0,reveal).join("\n")||"Press Reveal next to start."}</pre><div className="actions"><button className="primary-button" type="button" onClick={()=>setReveal(r=>Math.min(lines.length,r+1))}>Reveal next line</button><button className="secondary-button" type="button" onClick={()=>setReveal(0)}>Reset</button></div></>}
       {mode==="reading"&&<p className="subtle">Reading passage and notes are autosaved with your local workspace. Rich in-text highlighting is a later step.</p>}
     </>}
+    {mode==="paste"&&<PasteCards/>}
     {status&&<p className="subtle" role="status">{status}</p>}
   </section>;
 }
