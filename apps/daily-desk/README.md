@@ -286,3 +286,15 @@ New desktop **Free Formats / 格式自由工具** workspace, with three searchab
 - **HTML entities & Unicode normalization:** basic HTML-sensitive-character escaping, selected common HTML entity decoding (plus numeric entities), explicit Unicode NFC and NFKC transformations. All results remain plain text, not executable HTML. Unrecognized named entities stay unchanged; NFKC can change compatibility characters and should be reviewed before export.
 
 All three tools use explicit local input/output, preserve prior Universal Box workflows and keep the 20 MB native export ceiling. Native Apple Silicon CI performs TypeScript, Vite, Vitest, Rust and DMG packaging; manual macOS tests remain a separate acceptance step. Chinese/English **OCR has not been implemented** here: reliable offline recognition requires language model distribution and real-world image tests.
+
+## v0.26 — Universal Box visual redesign and offline Data Chart Studio
+
+The desktop UI has a substantial coordinated visual update while preserving existing tools and saved workspace data:
+
+- **Application shell:** new Universal Box dashboard, soft indigo modern card design, typography/spacing/hover/focus upgrades, grouped collapsible left navigation, compact persistent top bar, enhanced category-based tool launcher, quick access controls and responsive compact-sidebar mode. The desktop bundle's internal app name remains Daily Desk for backward compatibility.
+- **Theme:** light/dark switch with local-only preferences, improved focus outlines and reduced-motion support. Dark mode covers the primary shell and major components; older chart previews and some specialized legacy modules may require later visual QA.
+- **Command launcher:** `⌘K` on macOS / `Ctrl+K` on other keyboards shows an in-app searchable command palette covering workspaces and indexed tools; Enter opens the first matching result; Escape closes. No remote search requests.
+- **Favorites & recents:** star workspaces from the top bar and individual tools from the All Tools directory, show pinned workspaces and recently opened destinations on the dashboard. Preferences live in localStorage (UI convenience only), separate from the persisted JSON user workspace. Optional localStorage failures do not block normal tools.
+- **New Data Chart Studio:** import CSV (≤120 KB, ≤700 rows, ≤25 columns), choose group/value columns, sum/average/count, and bar or connected-line chart. Produces a sanitized, fully local vector SVG preview/export and aggregated CSV. Up to 24 distinct categories; invalid numeric values are rejected, blanks are skipped for sum/average. SVG text is XML-escaped, contains no embedded scripts, and is usable offline.
+
+The new charts are added to the searchable All Tools catalog and main navigation. The previous PDF, study, office, ZIP, image, WAV and format-conversion modules are left intact. Automated tests include chart statistics, mixed-sign and missing data, SVG escaping and limits. CI builds TypeScript/Vite/Vitest, validates Rust and packages Apple Silicon macOS DMG. **Automated CI is not equivalent to full visual inspection on a physical Mac**; UI acceptance still requires a real-device pass.
