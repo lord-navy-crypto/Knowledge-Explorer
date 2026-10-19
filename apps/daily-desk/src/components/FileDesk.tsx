@@ -8,6 +8,7 @@ import PdfPagePreview from "./PdfPagePreview";
 import PdfTextDesk from "./PdfTextDesk";
 import { parsePdfOrder } from "../lib/pdfPageOrder";
 import BatchImageDesk from "./BatchImageDesk";
+import ImageAnnotationDesk from "./ImageAnnotationDesk";
 
 export type FileTab = "pdf" | "images" | "word";
 type PdfMode = "merge" | "split" | "rotate" | "organize" | "compress";
@@ -278,7 +279,7 @@ export default function FileDesk({ onSendToWriting, initialTab = "pdf", initialP
         <label className="field-label" htmlFor="image-picker">Choose an image</label>
         <input id="image-picker" className="field" type="file" accept="image/*" onChange={(e) => setImage(e.target.files?.[0] ?? null)} />
         {imageSource && <img src={imageSource} alt="Selected file preview" style={{ maxWidth: 320, maxHeight: 220, objectFit: "contain", display: "block", marginTop: 16 }} />}
-        <div className="pill-row compact" role="group" aria-label="Image operation"><button type="button" className={imageMode==="convert"?"pill active-pill":"pill"} onClick={()=>setImageMode("convert")}>Resize & convert</button><button type="button" className={imageMode==="crop"?"pill active-pill":"pill"} onClick={()=>setImageMode("crop")}>Crop & annotate</button></div>
+        <div className="pill-row compact" role="group" aria-label="Image operation"><button type="button" className={imageMode==="convert"?"pill active-pill":"pill"} onClick={()=>setImageMode("convert")}>Resize & convert</button><button type="button" className={imageMode==="crop"?"pill active-pill":"pill"} onClick={()=>setImageMode("crop")}>Crop & caption</button></div>
         {imageMode==="crop"&&<div className="tools-pair">
           <label className="field-label">Left % <input type="number" className="field" min={0} max={99} value={cropLeft} onChange={e=>setCropLeft(Math.max(0,Math.min(99,Number(e.target.value)||0)))}/></label>
           <label className="field-label">Top % <input type="number" className="field" min={0} max={99} value={cropTop} onChange={e=>setCropTop(Math.max(0,Math.min(99,Number(e.target.value)||0)))}/></label>
@@ -294,6 +295,7 @@ export default function FileDesk({ onSendToWriting, initialTab = "pdf", initialP
         <input id="image-quality" type="range" min={.3} max={1} step={.05} value={quality} onChange={(e) => setQuality(Number(e.target.value))} />
         <div className="actions"><button type="button" className="primary-button" disabled={!image || busy} onClick={() => { void processImage(); }}>{busy ? "Converting…" : "Convert & save image"}</button></div>
       </>}
+      {tab === "images" && <ImageAnnotationDesk file={image} />}
       {tab === "images" && <BatchImageDesk />}
       {tab === "word" && <>
         <label htmlFor="word-picker" className="field-label">Choose .docx Word document</label>
