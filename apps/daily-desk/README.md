@@ -161,3 +161,13 @@ The existing v0.13 main branch already contains interactive crop/rotate and a fu
 - Added all fourteen reference physical constants, searchable, with copy and calculator insertion.
 - Added deterministic unit tests for category/constant counts, precise unit factors and temperature calculations.
 - Still local-only, no cloud AI or speech-to-text. macOS GUI acceptance testing remains necessary.
+
+## v0.15 preview: advanced calculator modes
+
+The local Math Workbench now has a separate **ClassWiz** tab (also available from **All tools**). The four additional modes are:
+- **Complex**: parse real/imaginary scientific notation, add/subtract/multiply/divide, conjugate, magnitude, and argument in degrees.
+- **Matrix**: 2×2 / 3×3 square matrices, add/subtract/multiply/transpose, determinant, and numerical inverse with partial-pivot singular checks.
+- **STAT 2-var**: paired observations, sample SD, sample covariance, Pearson r, linear regression slope/intercept and R²; constant-X inputs are rejected and constant-Y correlation is labelled undefined.
+- **DIST**: normal PDF and lower-tail CDF (numerical approximation), binomial PMF and lower-tail CDF (max 200 trials).
+
+Tests exercise representative values, malformed inputs, singular matrices, complex divisions and distribution edge cases. All implementations live only in `apps/daily-desk/`. This is a functional expansion, not a claim of complete pixel-identical ClassWiz parity or macOS on-device QA. The existing basic calculator, numerical methods, formula board, image crop, unit conversions, and website source remain untouched.
