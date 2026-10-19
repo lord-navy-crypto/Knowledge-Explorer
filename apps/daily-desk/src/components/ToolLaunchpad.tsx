@@ -2,6 +2,9 @@ import {useMemo,useState} from "react";
 
 export type LocalTool = {id:string;name:string;area:string;view:string;module?:string};
 export const LOCAL_TOOLS:LocalTool[] = [
+ {id:"qr-studio-batch",name:"Free QR Studio · Wi-Fi, vCard, SVG Batch ZIP",area:"Classroom",view:"universal-box",module:"qr"},
+ {id:"ics-calendar",name:"Calendar Invite File Generator (.ics) · No Account",area:"Office",view:"universal-box",module:"calendar"},
+ {id:"uuid-batch",name:"Cryptographic UUID v4 Batch Generator",area:"Code",view:"universal-box",module:"uuid"},
  {id:"json-to-csv",name:"JSON Records → CSV · Safe Export",area:"Data",view:"universal",module:"json-csv"},
  {id:"world-meeting-clock",name:"World Meeting Clock · 国际时区对照",area:"Study",view:"universal",module:"timezones"},
  {id:"sha256-check",name:"SHA-256 File Checksum Verifier",area:"Files",view:"universal",module:"checksum"},
@@ -52,7 +55,7 @@ export const LOCAL_TOOLS:LocalTool[] = [
  {id:"docx",name:"Word → Markdown / PDF Preview",area:"Files",view:"files",module:"word"},
  {id:"rename",name:"Batch Rename Copies",area:"Files",view:"utilities",module:"rename"},
  {id:"color",name:"Color Contrast",area:"Classroom",view:"utilities",module:"color"},
- {id:"qr",name:"QR Code",area:"Classroom",view:"utilities",module:"qr"},
+ {id:"qr",name:"Basic QR Code / 简单二维码",area:"Classroom",view:"utilities",module:"qr"},
  {id:"groups",name:"Random Picker & Groups",area:"Classroom",view:"utilities",module:"groups"},
  {id:"presets",name:"Short Codes / Link Presets",area:"Classroom",view:"presets"},
  {id:"planner",name:"Tasks & Planner",area:"Study",view:"tasks"},

@@ -218,3 +218,15 @@ Added a dedicated **Universal Tools / 综合工具** sidebar view and five All T
 - **Photo metadata cleaner**: re-encode PNG/JPEG/WebP pixels to a new PNG/JPEG/WebP via local Canvas (≤8 MB input, ≤20 million pixels). This ordinarily drops the original EXIF/location/comment tags but is not a certified metadata audit. Orientation, transparency and colour profiles can change.
 
 No account, subscription, internet lookup or cloud API is required for these features. All operations stay in the standalone `apps/daily-desk/**` project. File imports are explicit and originals are unchanged. Real macOS WebView checks remain required after CI (especially image codecs, file dialogs and clipboard permissions).
+
+## v0.20 preview: Universal Box · freely reproducible everyday generators
+
+Added a dedicated **Universal Box / 万用工具箱** section. New offline features:
+
+- **QR Studio**: plain text/URL, local Wi-Fi network and vCard contact QR codes; save unbranded PNG and vector SVG. Generate up to 40 named static QR SVG files in a ZIP archive (duplicate filenames are safely uniquified). There is no remote link redirect, scanning analytics or service-based expiration.
+- **Calendar file maker**: generate an RFC 5545 `.ics` event with UTC start/end, location and notes; import it into a calendar app. This is *not* a calendar booking, invitation sending or synchronization system.
+- **UUID v4 generator**: generate up to 100 cryptographically random UUID identifiers on-device, with copy and TXT export.
+
+Supported generated formats `.svg`, `.zip`, `.ics` and `.txt` pass through the existing explicit save dialogs and 20 MB maximum output guard. Please keep QR foreground/background contrast high. Printed Wi-Fi QR includes its network password and should be shared only with people authorized to use that network.
+
+For scope and evidence from official vendor pricing pages, see **[UNIVERSAL-BOX-ROADMAP.md](UNIVERSAL-BOX-ROADMAP.md)**. The new QR Studio complements, rather than removes, the existing single-code QR tool. The application continues to operate without required user accounts, advertising, subscription checks or automatic network requests.
