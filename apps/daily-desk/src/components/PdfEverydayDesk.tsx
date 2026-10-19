@@ -165,7 +165,7 @@ export default function PdfEverydayDesk({initialMode="metadata"}:{initialMode?:P
         {pageCount>50&&<p className="subtle">Showing first 50 of {pageCount} pages.</p>}
       </details>}
       <div className="pdf-mini-original"><p className="subtle">Original file preview — output is saved as a new copy.</p>
-        <PdfPagePreview file={file}/></div>
+        <PdfPagePreview file={file} onPickPage={page=>{setCropPage(String(page));setMode("crop");}}/></div>
     </>}
     {status&&<p className="subtle" role="status">{status}</p>}
   </section>;
