@@ -84,3 +84,7 @@ The website `calculator` entry remains **partial**: the desktop Math Workbench n
 ## v0.16 standalone Quick Tools and external navigation
 
 This release **adds** four Daily Desk-only QuickKit helpers (copy/paste text cleanup, link tracking parameter cleanup, date shift/difference and grade planning). The original website's 44-entry equivalence audit is unchanged because these are newly designed desktop conveniences, not ports of existing website entries. The app's separate External Tools catalog explicitly opens real third-party official websites and must **never be counted** as a local feature migration. macOS manual testing is still required.
+
+## v0.17 PDF overlay capabilities (desktop-only expansion)
+
+New `PDF Freedom Studio` functionality extends the existing `pdf-tools` desktop implementation with printable text labels, simple diagonal watermarks, sequential page numbering, custom-font Unicode support and PNG/JPEG image/signature overlays. These additions are available offline in the desktop app. The 44-entry website equivalence audit counts remain unchanged: this is added capability, not proof of exact website UI/workflow parity. Crucially, **an overlay is not secure redaction, editable underlying PDF text or a certified digital signature**. The original source remains unchanged.
