@@ -2,7 +2,7 @@
 
 Audit date: 2026-10-19. Compared with the website's `ap-reasonlab/data/study-tools.ts` catalogue and `ap-reasonlab/data/tool-workbenches.ts`. This is an **implementation coverage audit, not a claim of pixel-identical UI parity or on-device QA**.
 
-Website catalogue includes **44 entries**, including hidden aliases/deep-links and externally hosted functionality. Classified as **20 core desktop equivalents**, **21 partial / non-identical equivalents**, **3 not ported / intentionally external**. A core equivalent means the main local job works, *not* that every website knob or workflow is identical.
+Website catalogue includes **44 entries**, including hidden aliases/deep-links and externally hosted functionality. Classified as **21 core desktop equivalents**, **20 partial / non-identical equivalents**, **3 not ported / intentionally external**. A core equivalent means the main local job works, *not* that every website knob or workflow is identical.
 
 | Website tool ID | Current status | Evidence / remaining difference |
 | --- | --- | --- |
@@ -24,7 +24,7 @@ Website catalogue includes **44 entries**, including hidden aliases/deep-links a
 | `reading-highlight` | Partial / non-identical | Color highlights and notes exist; rich website behavior differs. |
 | `formula-board` | Core desktop equivalent | Migrated full canonical AP formula collection: categories, cross-category search, LaTeX and plain copy, local favorites and Markdown favorites export (v0.13). |
 | `latex` | Core desktop equivalent | KaTeX preview in math and writing desks. |
-| `units` | Partial / non-identical | Common convertersconstants, not exhaustive website sets. |
+| `units` | Core desktop equivalent | All eight source categories, °C/°F/K, 14 constants, copy and calculator handoff (v0.14). |
 | `sci-notation` | Partial / non-identical | Notation and sig figs, some classroom rounding cases differ. |
 | `vector-resolve` | Partial / non-identical | 2D vectors; diagram and all advanced interaction not identical. |
 | `write-convert` | Partial / non-identical | Workbenches exist; wizard step-to-step handoff parity missing. |
@@ -72,3 +72,7 @@ Website catalogue includes **44 entries**, including hidden aliases/deep-links a
 - Image crop adds draggable crop rectangle, fixed ratio presets (1:1, 4:3, 16:9, 3:2), 90-degree rotation, dimension sliders and native full-resolution PNG export; the original image is not overwritten.
 - Migrated the complete website formula data from `ap-reasonlab/data/formula-board.ts` into a desktop-only local module, with category tabs, search, favorites, LaTeX/plain copy and Markdown export.
 - This audit tracks website functional equivalence, not visual or on-device macOS acceptance. **20 core / 21 partial / 3 external** remains an approximate implementation-status classification over 44 catalogue entries, including aliases.
+
+## v0.14 units follow-up
+
+Units & constants is now a core desktop equivalent. Advanced matrix/complex/statistical ClassWiz modes and native speech-to-text are still incomplete. This audit remains feature-level, not a guarantee of pixel-identical workflows.
