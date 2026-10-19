@@ -83,8 +83,18 @@ fn export_backup(path: String, contents: String) -> Result<(), String> {
     if location.extension().and_then(|part| part.to_str()) != Some("json") {
         return Err("Backup file must end in .json".to_string());
     }
-    fs::write(&location, contents)
-        .map_err(|error| format!("Could not export the backup: {error}"))
+    atomic_write(&location, &contents)
+}
+
+#[tauri::command]
+fn read_backup(path: String) -> Result<String, String> {
+    let location = PathBuf::from(path);
+    if location.extension().and_then(|part| part.to_str()) != Some("json") {
+        return Err("Backup file must end in .json".to_string());
+    }
+    let contents = read_limited(&location, MAX_WORKSPACE_BYTES)?;
+    check_workspace(&contents)?;
+    Ok(contents)
 }
 
 #[cfg(test)]
@@ -112,7 +122,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             load_workspace,
             save_workspace,
-            export_backup
+            export_backup,
+            read_backup
         ])
         .run(tauri::generate_context!())
         .expect("error while running Daily Desk");
