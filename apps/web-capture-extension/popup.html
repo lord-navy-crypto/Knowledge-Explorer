@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Universal Box Web Capture</title>
+<style>body{width:340px;padding:16px;font:14px system-ui,-apple-system,sans-serif;color:#19283b;background:#f8fafc}h1{font-size:17px;margin:0 0 6px}.desc{color:#526274;font-size:12px;line-height:1.5}button{display:block;width:100%;margin:9px 0;padding:11px;border:0;border-radius:8px;background:#1757a7;color:#fff;cursor:pointer;font-weight:600}button:disabled{opacity:.55;cursor:wait}#status{font-size:12px;min-height:25px;white-space:pre-wrap}textarea{width:100%;height:105px;box-sizing:border-box;resize:vertical;margin-top:8px;border:1px solid #b4c2d1;border-radius:6px;padding:7px}button:focus-visible{outline:3px solid #e5a000}small{color:#526274}</style></head>
+<body><h1>Universal Box · 网页提取</h1><p class="desc">只在你点击时读取当前标签页。内容在本地处理，不上传服务器。不支持绕过登录或订阅限制。</p>
+<button data-mode="text">复制页面可见文字</button>
+<button data-mode="markdown">复制正文 Markdown</button>
+<button data-mode="links">复制网页链接 CSV</button>
+<p id="status" role="status" aria-live="polite"></p><label for="preview"><small>提取结果预览（复制失败时可手动复制）</small></label><textarea id="preview" readonly spellcheck="false"></textarea>
+<script src="popup.js"></script></body></html>
