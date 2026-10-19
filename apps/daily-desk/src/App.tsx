@@ -4,6 +4,7 @@ import FocusTimer from "./components/FocusTimer";
 import EverydayTools, {type Utility} from "./components/EverydayTools";
 import ToolLaunchpad from "./components/ToolLaunchpad";
 import CodeDesk from "./components/CodeDesk";
+import DataDesk from "./components/DataDesk";
 import FileDesk, {type FileTab} from "./components/FileDesk";
 import MathDesk, {type MathTab} from "./components/MathDesk";
 import StudyExtras, {type StudyMode} from "./components/StudyExtras";
@@ -25,12 +26,13 @@ import {
   persistWorkspace,
 } from "./lib/nativeStorage";
 
-type View = "all-tools" | "code" | "overview" | "tasks" | "cards" | "focus" | "notes" | "utilities" | "data" | "files" | "math" | "learning" | "writing" | "drawing" | "reading" | "presets";
+type View = "all-tools" | "code" | "tables" | "overview" | "tasks" | "cards" | "focus" | "notes" | "utilities" | "data" | "files" | "math" | "learning" | "writing" | "drawing" | "reading" | "presets";
 
 const menu: { id: View; name: string; symbol: string; description: string }[] = [
   { id: "overview", name: "Overview", symbol: "◫", description: "Your workspace at a glance" },
   { id: "all-tools", name: "All tools / 全部工具", symbol: "▦", description: "Search and open every available tool" },
   { id: "code", name: "Code editor", symbol: "</>", description: "Local code drafts and snippet library" },
+  { id: "tables", name: "CSV Table Desk", symbol: "▤", description: "Filter, sort and export CSV or TSV data" },
   { id: "tasks", name: "Planner", symbol: "✓", description: "Prioritise the next step" },
   { id: "cards", name: "Flashcards", symbol: "Aa", description: "Practise active recall" },
   { id: "focus", name: "Focus timer", symbol: "◷", description: "Make space to focus" },
@@ -258,7 +260,7 @@ export default function App() {
       </aside>
 
       <section className="main-panel">
-        <header className="topbar"><span>Daily Desk / {activeMenu.name}</span><span className="version-pill">DESKTOP PREVIEW · v0.9</span></header>
+        <header className="topbar"><span>Daily Desk / {activeMenu.name}</span><span className="version-pill">DESKTOP PREVIEW · v0.10</span></header>
         <div className="content">
           {view === "overview" && <>
             <p className="eyebrow">GOOD TO HAVE YOU HERE</p><h1>Your day, in one place.</h1>
@@ -273,8 +275,9 @@ export default function App() {
           {view === "notes" && <section className="panel"><p className="eyebrow">LOCAL NOTES</p><h2>Keep ideas close at hand.</h2><p className="subtle">Your notes are automatically saved in this application. Export backups in Backup & privacy.</p><label className="field-label" htmlFor="my-notes">My notebook</label><textarea id="my-notes" className="field text-editor" rows={20} maxLength={50000} placeholder="Capture a thought, write a draft or summarise a concept…" value={workspace.notes} onChange={(event) => setWorkspace((current) => ({ ...current, notes: event.target.value }))}/><p className="subtle">{workspace.notes.length.toLocaleString()} characters</p></section>}
           {view === "all-tools" && <ToolLaunchpad onLaunch={openTool} />}
           {view === "code" && <CodeDesk snippets={workspace.snippets??[]} onChange={snippets=>setWorkspace(current=>({...current,snippets}))} />}
+          {view === "tables" && <DataDesk />}
           {view === "utilities" && <EverydayTools key={toolMode} initial={(toolMode || "stats") as Utility} />}
-          {view === "files" && <FileDesk key={toolMode} initialTab={(toolMode||"pdf") as FileTab} onSendToWriting={markdown => {setWorkspace(current => ({...current, documentMarkdown: markdown})); setView("writing");}} />}
+          {view === "files" && <FileDesk key={toolMode} initialPdfMode={toolMode === "organize" ? "organize" : "merge"} initialTab={(toolMode === "organize" ? "pdf" : toolMode || "pdf") as FileTab} onSendToWriting={markdown => {setWorkspace(current => ({...current, documentMarkdown: markdown})); setView("writing");}} />}
           {view === "math" && <MathDesk key={toolMode} initialTab={(toolMode||"calculator") as MathTab} />}
           {view === "learning" && <StudyExtras key={toolMode} initialMode={(toolMode||"countdown") as StudyMode} workspace={workspace} onChange={setWorkspace} />}
           {view === "reading" && <ReadingHighlights text={workspace.readingText ?? ""} highlights={workspace.highlights ?? []} onChange={(text, highlights)=>setWorkspace(current=>({...current,readingText:text,highlights}))} />}

@@ -103,3 +103,11 @@ This first port covers the everyday tool set but is **not 100% feature parity** 
 - Added BASE-N conversions, quadratic solver, basic 1-variable statistics and 2×2 simultaneous equation solver.
 - CSV→Markdown now accepts local .csv/.tsv input in addition to pasted content.
 - Remaining important non-local features: full website AI chat/local-LLM plumbing, speech-to-text transcription, public shared links, and full advanced ClassWiz modes (complex matrices, distributions, regressions, symbolic calculus). These are deliberately not mislabelled as completed ports.
+
+## v0.10 offline office tools
+
+- **CSV Table Desk:** opens local `.csv` or `.tsv` files or pasted content, up to 2 MB / 2,000 rows / 100 columns. Includes searching all/one column, numeric-aware sort, deduplicate whole rows, first-80-row preview, non-destructive filtered exports in CSV, JSON and Markdown. CSV output guards against opening untrusted formula-like cells in spreadsheet programs.
+- **PDF organizer:** `File desk → PDF → Organize` takes explicit one-based page order such as `3,1,2,5-7`; omitting a page removes it. Rejects duplicate or out-of-range page numbers, saves a new PDF and preserves original.
+- **Image batch:** `File desk → Images` can convert up to 12 local JPEG/PNG/WebP images to a common format/width and save a single ZIP. Conservative per-file, pixel and ZIP-size limits protect memory on 16 GB Apple Silicon machines.
+- The searchable All tools catalog includes the new entries; no AP ReasonLab website code is changed.
+- Notes: CSV is a flat table utility, not an XLSX formula editor. PDF editing rearranges page objects, not internal PDF text/annotations. Batch image conversion handles raster input only. Mac WebView interaction remains to be verified after CI build.
