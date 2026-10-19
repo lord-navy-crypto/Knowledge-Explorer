@@ -136,3 +136,13 @@ This first port covers the everyday tool set but is **not 100% feature parity** 
 - **Audit quality**: repaired malformed slash-separated description text in the 44-entry parity audit. Formula board now counts as a core desktop equivalent; image UX remains partial until hands-on validation.
 - **Project isolation**: all modifications are under `apps/daily-desk/**`; AP web source and Vercel settings are unchanged.
 - **Limits**: no OCR, no AI/cloud services, no guarantee of macOS pointer/print fidelity without manual acceptance; neither crop nor annotated export overwrites the imported image.
+
+## v0.14 unit and constant parity (reconciled with v0.13)
+
+The existing v0.13 main branch already contains interactive crop/rotate and a full Formula Board from PR #284; **this release preserves those components unchanged** rather than introducing duplicate versions.
+
+- Migrated the original website's eight unit categories (Length, Mass, Energy, Speed, Force, Pressure, Charge, Time), including Å, atomic mass units, elementary charges and selected engineering units.
+- Added °C / °F / K conversion with an absolute-zero sanity check.
+- Added all fourteen reference physical constants, searchable, with copy and calculator insertion.
+- Added deterministic unit tests for category/constant counts, precise unit factors and temperature calculations.
+- Still local-only, no cloud AI or speech-to-text. macOS GUI acceptance testing remains necessary.
