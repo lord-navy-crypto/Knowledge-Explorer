@@ -1,15 +1,19 @@
-import { type ChangeEvent, type FormEvent, useEffect, useMemo, useState } from "react";
+import { type ChangeEvent, type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Flashcards from "./components/Flashcards";
 import FocusTimer from "./components/FocusTimer";
 import {
   type DeskTask,
   type Priority,
   type WorkspaceData,
-  downloadWorkspace,
   parseWorkspace,
   readWorkspace,
-  saveWorkspace,
 } from "./lib/workspace";
+import {
+  exportWorkspaceBackup,
+  importNativeBackup,
+  loadPersistentWorkspace,
+  persistWorkspace,
+} from "./lib/nativeStorage";
 
 type View = "overview" | "tasks" | "cards" | "focus" | "notes" | "utilities" | "data";
 
@@ -38,7 +42,10 @@ function taskSort(a: DeskTask, b: DeskTask): number {
 export default function App() {
   const [view, setView] = useState<View>("overview");
   const [workspace, setWorkspace] = useState<WorkspaceData>(() => readWorkspace());
-  const [savedStatus, setSavedStatus] = useState("Saved on this device");
+  const [savedStatus, setSavedStatus] = useState("Loading local workspace...");
+  const [storageReady, setStorageReady] = useState(false);
+  const saveQueue = useRef<Promise<void>>(Promise.resolve());
+  const saveRevision = useRef(0);
   const [draftTask, setDraftTask] = useState("");
   const [taskPriority, setTaskPriority] = useState<Priority>("normal");
   const [taskDue, setTaskDue] = useState("");
@@ -48,8 +55,35 @@ export default function App() {
   const [dataMessage, setDataMessage] = useState("");
 
   useEffect(() => {
-    setSavedStatus(saveWorkspace(workspace) ? "Saved on this device" : "Storage unavailable — export a backup");
-  }, [workspace]);
+    let active = true;
+    void loadPersistentWorkspace().then((data) => {
+      if (!active) return;
+      setWorkspace(data);
+      setStorageReady(true);
+    }).catch((error: unknown) => {
+      if (!active) return;
+      const reason = error instanceof Error ? error.message : String(error);
+      // Keep edits in memory but never overwrite an unreadable native file.
+      setSavedStatus("Storage unavailable: " + reason + ". Export a backup; changes are not being saved.");
+    });
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    if (!storageReady) return;
+    const revision = ++saveRevision.current;
+    setSavedStatus("Saving locally...");
+    // Serialise asynchronous native writes: an older write cannot overwrite a newer edit.
+    saveQueue.current = saveQueue.current.catch(() => {}).then(() => persistWorkspace(workspace));
+    void saveQueue.current.then(() => {
+      if (saveRevision.current === revision) setSavedStatus("Saved locally on this device");
+    }).catch((error: unknown) => {
+      if (saveRevision.current === revision) {
+        const reason = error instanceof Error ? error.message : String(error);
+        setSavedStatus("Storage error: " + reason + ". Export a backup.");
+      }
+    });
+  }, [workspace, storageReady]);
 
   const tasks = workspace.tasks;
   const completed = tasks.filter((task) => task.done).length;
@@ -101,9 +135,40 @@ export default function App() {
         return;
       }
       setWorkspace(data);
+      setStorageReady(true);
       setDataMessage(`Imported ${data.tasks.length} tasks and ${data.cards.length} flashcards.`);
     } catch (error) {
       setDataMessage(error instanceof Error ? error.message : "Could not read this backup.");
+    }
+  }
+
+  async function importFromNativeDialog() {
+    setDataMessage("");
+    try {
+      const data = await importNativeBackup();
+      if (data === null) {
+        setDataMessage("Import cancelled.");
+        return;
+      }
+      if (!window.confirm("Replace your existing workspace with this backup? This cannot be undone.")) {
+        setDataMessage("Import cancelled. Your workspace is unchanged.");
+        return;
+      }
+      setWorkspace(data);
+      setStorageReady(true);
+      setDataMessage(`Restored ${data.tasks.length} tasks and ${data.cards.length} flashcards.`);
+    } catch (error) {
+      setDataMessage(error instanceof Error ? error.message : String(error));
+    }
+  }
+
+  async function exportBackup() {
+    setDataMessage("");
+    try {
+      const message = await exportWorkspaceBackup(workspace);
+      setDataMessage(message);
+    } catch (error) {
+      setDataMessage(error instanceof Error ? error.message : String(error));
     }
   }
 
@@ -168,11 +233,11 @@ export default function App() {
             </button>
           ))}
         </nav>
-        <div className="sidebar-bottom"><span className="status-dot" /> {savedStatus}<p>No sign-in. No Vercel connection. Export a backup before changing computers.</p></div>
+        <div className="sidebar-bottom"><span className="status-dot" /> <span role="status">{savedStatus}</span><p>No sign-in. No Vercel connection. Native app data is stored locally; export a backup before changing computers.</p></div>
       </aside>
 
       <section className="main-panel">
-        <header className="topbar"><span>Daily Desk / {activeMenu.name}</span><span className="version-pill">DESKTOP PREVIEW · v0.2</span></header>
+        <header className="topbar"><span>Daily Desk / {activeMenu.name}</span><span className="version-pill">DESKTOP PREVIEW · v0.3</span></header>
         <div className="content">
           {view === "overview" && <>
             <p className="eyebrow">GOOD TO HAVE YOU HERE</p><h1>Your day, in one place.</h1>
@@ -183,10 +248,10 @@ export default function App() {
           </>}
           {view === "tasks" && renderPlanner()}
           {view === "cards" && <Flashcards cards={workspace.cards} onChange={(cards) => setWorkspace((current) => ({ ...current, cards }))} />}
-          {view === "focus" && <FocusTimer />}
+          <div hidden={view !== "focus"}><FocusTimer /></div>
           {view === "notes" && <section className="panel"><p className="eyebrow">LOCAL NOTES</p><h2>Keep ideas close at hand.</h2><p className="subtle">Your notes are automatically saved in this application. Export backups in Backup & privacy.</p><label className="field-label" htmlFor="my-notes">My notebook</label><textarea id="my-notes" className="field text-editor" rows={20} maxLength={50000} placeholder="Capture a thought, write a draft or summarise a concept…" value={workspace.notes} onChange={(event) => setWorkspace((current) => ({ ...current, notes: event.target.value }))}/><p className="subtle">{workspace.notes.length.toLocaleString()} characters</p></section>}
           {view === "utilities" && renderUtilities()}
-          {view === "data" && <section className="panel"><p className="eyebrow">PORTABLE WORKSPACE</p><h2>Backup & privacy</h2><p className="subtle">Tasks, flashcards and notes are stored inside this application's local WebView storage. They are not synced to the AP website or uploaded to Vercel.</p><div className="actions"><button className="primary-button" type="button" onClick={() => { downloadWorkspace(workspace); setDataMessage("Backup download requested. Check your Downloads folder."); }}>Export workspace JSON</button></div><div className="import-group"><label className="field-label" htmlFor="import-workspace">Restore from a Daily Desk v2 JSON backup (replaces current data)</label><input className="field" type="file" id="import-workspace" accept=".json,application/json" onChange={(event) => { void importBackup(event); }} /></div>{dataMessage && <p className="subtle" role="status">{dataMessage}</p>}<p className="subtle">Tip: Keep occasional copies outside this app, especially before reinstalling or switching devices. Import never makes network requests.</p></section>}
+          {view === "data" && <section className="panel"><p className="eyebrow">PORTABLE WORKSPACE</p><h2>Backup & privacy</h2><p className="subtle">The desktop app now saves tasks, flashcards and notes in its own local app-data file using atomic writes. A browser preview still uses localStorage. Nothing is synced to the AP website or Vercel.</p><div className="actions"><button className="primary-button" type="button" onClick={() => { void exportBackup(); }}>Export JSON backup</button><button className="secondary-button" type="button" onClick={() => { void importFromNativeDialog(); }}>Import with native file picker</button></div><div className="import-group"><label className="field-label" htmlFor="import-workspace">Or restore from a Daily Desk v2 JSON backup using a file input</label><input className="field" type="file" id="import-workspace" accept=".json,application/json" onChange={(event) => { void importBackup(event); }} /></div>{dataMessage && <p className="subtle" role="status">{dataMessage}</p>}<p className="subtle">Tip: Export a backup before reinstalling or changing devices. Import replaces the current workspace only after confirmation.</p></section>}
           <footer>DAILY DESK <span>Separate desktop app · Knowledge-Explorer monorepo</span></footer>
         </div>
       </section>
