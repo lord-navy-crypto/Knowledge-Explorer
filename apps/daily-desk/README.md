@@ -109,3 +109,12 @@ The desktop program remains separate from the AP website. These changes are not 
 - **Document editor**: Local Markdown toolbar, find-and-replace, undo/redo, templates, document outline, split/edit/preview views, Markdown/plain-text import, and basic DOCX generation using the `docx` library.
 - **No cloud uploads** are required for these modules. The desktop source continues to be separate from the `ap-reasonlab/` Next.js website.
 - Word export simplifies rich styles, equations and tables; verify the output using a desktop Word reader. Print-to-PDF still depends on macOS WebView behavior.
+
+## v0.9 one-click bulk migration
+
+- **All tools / 全部工具**: searchable navigation index for the offline equivalents of Knowledge Explorer everyday tools. Choose an item and jump directly into the relevant module rather than navigating separate tabs.
+- **Code editor**: local code text editing with language-specific templates, file import, find/replace, JSON formatting, plain-text export, and saved code snippet integration.
+- **Calculator extras**: BASE-N conversion (BigInt integers), quadratic equations, 1-variable sample/population statistics, and 2×2 simultaneous linear equations.
+- **CSV text-file import**: choose .csv or .tsv and process its data locally.
+- The existing math, file, writing, study, English, classroom and quick tools remain part of the app. The internet-dependent AI backend, automatic speech recognition and shared/public cloud tools are not described as offline ports.
+- All changes are restricted to `apps/daily-desk/` and do not affect the AP website on Vercel.
