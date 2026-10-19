@@ -23,6 +23,7 @@ export type WorkspaceData = {
   mistakes?: DeskMistake[];
   snippets?: DeskSnippet[];
   readingNotes?: string;
+  documentMarkdown?: string;
 };
 
 const STORAGE_KEY = "daily-desk.workspace.v2";
@@ -31,7 +32,7 @@ const MAX_TASKS = 300;
 const MAX_CARDS = 500;
 
 export function emptyWorkspace(): WorkspaceData {
-  return { version: 2, tasks: [], cards: [], notes: "", exams: [], mistakes: [], snippets: [], readingNotes: "" };
+  return { version: 2, tasks: [], cards: [], notes: "", exams: [], mistakes: [], snippets: [], readingNotes: "", documentMarkdown: "" };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -92,6 +93,7 @@ export function parseWorkspace(raw: unknown): WorkspaceData {
     mistakes: Array.isArray(raw.mistakes) ? raw.mistakes.slice(0,300).filter((e):e is DeskMistake=>isRecord(e)&&typeof e.id==="string"&&typeof e.topic==="string"&&typeof e.correction==="string").map(e=>({...e,topic:e.topic.slice(0,300),correction:e.correction.slice(0,2000)})):[],
     snippets: Array.isArray(raw.snippets) ? raw.snippets.slice(0,150).filter((e):e is DeskSnippet=>isRecord(e)&&typeof e.id==="string"&&typeof e.title==="string"&&typeof e.code==="string").map(e=>({...e,title:e.title.slice(0,120),code:e.code.slice(0,10000)})):[],
     readingNotes: typeof raw.readingNotes === "string" ? raw.readingNotes.slice(0,30000) : "",
+    documentMarkdown: typeof raw.documentMarkdown === "string" ? raw.documentMarkdown.slice(0,50000) : "",
   };
 }
 
