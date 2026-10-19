@@ -8,7 +8,7 @@ export const LOCAL_TOOLS:LocalTool[] = [
  {id:"math-extras",name:"BASE-N, Equations, Statistics, Matrix",area:"Math",view:"math",module:"extras"},
  {id:"formula-board",name:"Formula Board",area:"Math",view:"math",module:"formula"},
  {id:"latex",name:"LaTeX Preview",area:"Math",view:"math",module:"latex"},
- {id:"units",name:"Units & Constants",area:"Math",view:"math",module:"units"},
+ {id:"units",name:"Full Units · Temperature · Physical Constants",area:"Math",view:"math",module:"units"},
  {id:"sci-notation",name:"Scientific Notation & Sig Figs",area:"Math",view:"math",module:"notation"},
  {id:"vector",name:"Vector Arithmetic",area:"Math",view:"math",module:"vector"},
  {id:"focus",name:"Pomodoro / Focus Sound",area:"Study",view:"focus"},
