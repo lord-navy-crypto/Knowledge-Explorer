@@ -6,13 +6,14 @@ import remarkGfm from "remark-gfm";
 import { exportFile } from "../lib/output";
 import PdfPagePreview from "./PdfPagePreview";
 import PdfTextDesk from "./PdfTextDesk";
+import PdfFreedomDesk from "./PdfFreedomDesk";
 import { parsePdfOrder } from "../lib/pdfPageOrder";
 import BatchImageDesk from "./BatchImageDesk";
 import ImageAnnotationDesk from "./ImageAnnotationDesk";
 import InteractiveCropDesk from "./InteractiveCropDesk";
 
 export type FileTab = "pdf" | "images" | "word";
-type PdfMode = "merge" | "split" | "rotate" | "organize" | "compress";
+type PdfMode = "merge" | "split" | "rotate" | "organize" | "compress" | "decorate";
 type ImageFormat = "image/jpeg" | "image/png" | "image/webp";
 
 function errorMessage(error: unknown): string {
@@ -263,7 +264,7 @@ export default function FileDesk({ onSendToWriting, initialTab = "pdf", initialP
       </div>
       {tab === "pdf" && <>
         <div className="pill-row compact" role="group" aria-label="PDF operation">
-          {(["merge", "split", "rotate", "organize", "compress"] as const).map((item) => <button type="button" key={item} onClick={() => { setPdfMode(item); setFiles([]); setStatus(""); }} className={pdfMode === item ? "pill active-pill" : "pill"}>{item === "compress" ? "Optimize (light)" : item[0].toUpperCase() + item.slice(1)}</button>)}
+          {(["merge", "split", "rotate", "organize", "decorate", "compress"] as const).map((item) => <button type="button" key={item} onClick={() => { setPdfMode(item); setFiles([]); setStatus(""); }} className={pdfMode === item ? "pill active-pill" : "pill"}>{item === "compress" ? "Optimize (light)" : item === "decorate" ? "Add text / sign / watermark" : item[0].toUpperCase() + item.slice(1)}</button>)}
         </div>
         <label htmlFor="pdf-picker" className="field-label">{pdfMode === "merge" ? "Choose up to 20 PDFs in order" : "Choose a PDF"}</label>
         <input id="pdf-picker" className="field" type="file" accept=".pdf,application/pdf" multiple={pdfMode === "merge"} onChange={(event) => { void onPdfChange(event); }} />
@@ -273,7 +274,8 @@ export default function FileDesk({ onSendToWriting, initialTab = "pdf", initialP
         {pdfMode === "split" && <label className="field-label"><input type="checkbox" checked={splitEach} onChange={e => setSplitEach(e.target.checked)} /> Export each selected page as its own PDF inside a ZIP (up to 50 pages)</label>}
         {pdfMode === "rotate" && <><label className="field-label" htmlFor="pdf-angle">Degrees clockwise</label><select id="pdf-angle" className="field" value={rotation} onChange={(e) => setRotation(Number(e.target.value))}><option value={90}>90°</option><option value={180}>180°</option><option value={270}>270°</option></select></>}
         {pdfMode === "compress" && <p className="subtle">Like the web's light-compress mode, this reserializes PDF objects. Scanned/image-heavy PDFs may not shrink.</p>}
-        <div className="actions"><button type="button" className="primary-button" disabled={!files.length || busy} onClick={() => { void processPdf(); }}>{busy ? "Processing…" : "Process & save PDF"}</button></div>
+        {pdfMode !== "decorate" && <div className="actions"><button type="button" className="primary-button" disabled={!files.length || busy} onClick={() => { void processPdf(); }}>{busy ? "Processing…" : "Process & save PDF"}</button></div>}
+        {pdfMode === "decorate" && <PdfFreedomDesk file={files[0]??null} pageCount={pdfCount}/>}
         {files.length > 0 && <PdfPagePreview file={files[0]} onPickPage={page=>{if(pdfMode!=="organize")setPages(String(page));}} />}
         {files.length > 0 && <PdfTextDesk file={files[0]} />}
       </>}
