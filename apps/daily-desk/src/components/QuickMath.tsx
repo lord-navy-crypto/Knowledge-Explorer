@@ -37,7 +37,7 @@ export default function QuickMath(){
     <h3>Calculator extras · local</h3>
     <p className="subtle">Fast classroom conversions, quadratic equations, basic statistics, and two simultaneous equations.</p>
     <div className="pill-row" role="group" aria-label="Calculator extras">
-      {([["base","BASE-N"],["equation","Quadratic"],["stats","1-var STAT"],["matrix","2×2 equations"]] as const).map(([id,label])=>
+      {([["base","BASE-N"],["equation","Quadratic"],["stats","1-var STAT"],["matrix","2×2 equations"],["table","Function table"]] as const).map(([id,label])=>
       <button key={id} className={mode===id?"pill active-pill":"pill"} onClick={()=>{setMode(id);setResult("");}} type="button">{label}</button>)}
     </div>
     {mode==="base"&&<div className="tools-pair">
