@@ -88,3 +88,7 @@ This release **adds** four Daily Desk-only QuickKit helpers (copy/paste text cle
 ## v0.17 PDF overlay capabilities (desktop-only expansion)
 
 New `PDF Freedom Studio` functionality extends the existing `pdf-tools` desktop implementation with printable text labels, simple diagonal watermarks, sequential page numbering, custom-font Unicode support and PNG/JPEG image/signature overlays. These additions are available offline in the desktop app. The 44-entry website equivalence audit counts remain unchanged: this is added capability, not proof of exact website UI/workflow parity. Crucially, **an overlay is not secure redaction, editable underlying PDF text or a certified digital signature**. The original source remains unchanged.
+
+## v0.18 PDF/image file conversion expansion
+
+Added local image-to-PDF multi-page creation, and selected PDF-page-to-PNG/JPEG ZIP exports with conservative batch, byte and pixel limits. This extends the already local PDF workbench; it does not imply OCR, original text editing, certified signing or full website visual parity. No changes to the original 44-website-tool classification.
