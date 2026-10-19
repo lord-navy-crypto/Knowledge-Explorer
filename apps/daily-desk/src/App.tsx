@@ -337,7 +337,7 @@ export default function App() {
             <summary className="nav-label">{group.title}</summary>
             {group.items.map(id=>{
               const item=menu.find(value=>value.id===id)!;
-              return <button type="button" key={id} className={view===id?"nav-item active":"nav-item"}
+              return <button type="button" key={id} aria-label={item.name} title={item.name} className={view===id?"nav-item active":"nav-item"}
                 aria-current={view===id?"page":undefined} onClick={()=>openTool(id)}>
                 <span className="nav-symbol" aria-hidden="true">{item.symbol}</span>
                 <span className="nav-name">{item.name}</span>
@@ -379,7 +379,7 @@ export default function App() {
                 <h2>Your tools.<br/>Your rules.</h2>
                 <p>Work faster with a connected desktop toolbox, not a maze of websites.</p>
                 <div className="hero-actions">
-                  <button type="button" className="hero-primary" onClick={()=>openTool("all-tools")}>Explore all {LOCAL_TOOLS.length} tools <span aria-hidden="true">↗</span></button>
+                  <button type="button" className="hero-primary" onClick={()=>openTool("all-tools")}>Explore {LOCAL_TOOLS.length} tool entries <span aria-hidden="true">↗</span></button>
                   <button type="button" className="hero-secondary" onClick={()=>{setCommandOpen(true);setCommandQuery("");}}>⌘K Quick launch</button>
                 </div>
               </div>
