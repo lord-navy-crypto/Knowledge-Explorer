@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Universal Box Web Capture",
+  "version": "0.1.0",
+  "description": "User-initiated local webpage text, Markdown and link capture.",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "clipboardWrite"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Universal Box Web Capture"
+  }
+}
