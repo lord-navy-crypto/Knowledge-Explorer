@@ -368,11 +368,58 @@ export default function App() {
         </header>
         <div className="content">
           {view === "overview" && <>
-            <p className="eyebrow">GOOD TO HAVE YOU HERE</p><h1>Your day, in one place.</h1>
-            <p className="intro">Your local workspace for study, planning and lightweight office tools. Every module opens independently of the AP website.</p>
-            <div className="hero-card"><div><p className="card-eyebrow">TODAY AT A GLANCE</p><h2>Small steps add up.</h2><p>{openTasks} things left to do · {workspace.cards.length} flashcards ready</p></div><div className="progress-summary"><strong>{progress}%</strong><span>of tasks complete</span></div></div>
-            <div className="section-heading"><div><h2>Open a tool</h2><p>Choose a focused workspace.</p></div></div>
-            <div className="tool-grid">{menu.filter((item) => item.id !== "overview").map((item) => <button type="button" key={item.id} className="tool-card" onClick={() => {setToolMode("");setView(item.id);}}><span className="tool-icon">{item.symbol}</span><strong>{item.name}</strong><span className="subtle">{item.description}</span><span className="tool-state">OPEN TOOL →</span></button>)}</div>
+            <div className="welcome-heading"><div>
+              <p className="eyebrow">YOUR PRIVATE DIGITAL TOOLBOX</p>
+              <h1>Everything useful. All in one place.</h1>
+              <p className="intro">Create, organize, convert and visualize — with real tools that run on your device. No required account, ads or pay-per-click unlocks.</p>
+            </div></div>
+            <div className="hero-card">
+              <div className="hero-copy">
+                <p className="card-eyebrow">WELCOME TO UNIVERSAL BOX</p>
+                <h2>Your tools.<br/>Your rules.</h2>
+                <p>Work faster with a connected desktop toolbox, not a maze of websites.</p>
+                <div className="hero-actions">
+                  <button type="button" className="hero-primary" onClick={()=>openTool("all-tools")}>Explore all {LOCAL_TOOLS.length} tools <span aria-hidden="true">↗</span></button>
+                  <button type="button" className="hero-secondary" onClick={()=>{setCommandOpen(true);setCommandQuery("");}}>⌘K Quick launch</button>
+                </div>
+              </div>
+              <div className="hero-visual" aria-hidden="true">
+                <div className="visual-orbit orbit-one"/><div className="visual-orbit orbit-two"/>
+                <div className="visual-core">U</div>
+                <div className="visual-chip chip-top">✦ &nbsp; Create</div>
+                <div className="visual-chip chip-right">◈ &nbsp; Convert</div>
+                <div className="visual-chip chip-bottom">▥ &nbsp; Visualize</div>
+              </div>
+            </div>
+            <div className="overview-insights">
+              <div className="insight-card"><span>READY TO USE</span><strong>{LOCAL_TOOLS.length}</strong><small>searchable tool entries</small></div>
+              <div className="insight-card"><span>YOUR MOMENTUM</span><strong>{progress}%</strong><small>tasks completed</small>
+                <div className="insight-progress"><span style={{width:progress+"%"}} /></div>
+              </div>
+              <div className="insight-card"><span>LOCAL WORKSPACE</span><strong>{workspace.cards.length}</strong><small>flashcards available</small></div>
+            </div>
+            <div className="section-heading"><div><p className="eyebrow">GO STRAIGHT TO WHAT MATTERS</p><h2>{favoriteViews.length?"Your favorites":"Start creating"}</h2>
+              <p className="subtle">Pin workspaces with the star in the top bar. Favorite choices stay on this device.</p></div>
+              <button className="secondary-button" type="button" onClick={()=>openTool("all-tools")}>All tools ↗</button>
+            </div>
+            <div className="tool-grid overview-grid">
+              {(favoriteViews.length?favoriteViews:["files","workflows","free-formats","charts","office-privacy","universal-box"] as View[]).map(id=>{
+                const item=menu.find(m=>m.id===id)!;
+                return <button key={id} type="button" className="tool-card" onClick={()=>openTool(id)}>
+                  <span className="tool-icon">{item.symbol}</span><strong>{item.name}</strong>
+                  <span className="subtle">{item.description}</span><span className="tool-state">OPEN WORKSPACE →</span>
+                </button>;
+              })}
+            </div>
+            {recentViews.length>0&&<>
+              <div className="section-heading"><div><p className="eyebrow">PICK UP WHERE YOU LEFT OFF</p><h2>Recently opened</h2></div></div>
+              <div className="recent-strip">{recentViews.slice(0,6).map(id=>{
+                const item=menu.find(x=>x.id===id)!;
+                return <button className="recent-link" type="button" key={id} onClick={()=>openTool(id)}>
+                  <span aria-hidden="true">{item.symbol}</span>{item.name}<span aria-hidden="true">↗</span>
+                </button>;
+              })}</div>
+            </>}
           </>}
           {view === "tasks" && renderPlanner()}
           {view === "cards" && <Flashcards cards={workspace.cards} onChange={(cards) => setWorkspace((current) => ({ ...current, cards }))} />}
@@ -400,9 +447,30 @@ export default function App() {
           {view === "writing" && <WritingDesk markdown={workspace.documentMarkdown ?? ""} onChange={value=>setWorkspace(current=>({...current,documentMarkdown:value}))}/>}
           {view === "drawing" && <DrawingDesk strokes={workspace.drawing ?? []} onChange={value=>setWorkspace(current=>({...current,drawing:value}))}/>}
           {view === "data" && <section className="panel"><p className="eyebrow">PORTABLE WORKSPACE</p><h2>Backup & privacy</h2><p className="subtle">The desktop app now saves tasks, flashcards and notes in its own local app-data file using atomic writes. A browser preview still uses localStorage. Nothing is synced to the AP website or Vercel.</p><div className="actions"><button className="primary-button" type="button" onClick={() => { void exportBackup(); }}>Export JSON backup</button><button className="secondary-button" type="button" onClick={() => { void importFromNativeDialog(); }}>Import with native file picker</button></div><div className="import-group"><label className="field-label" htmlFor="import-workspace">Or restore from a Daily Desk v2 JSON backup using a file input</label><input className="field" type="file" id="import-workspace" accept=".json,application/json" onChange={(event) => { void importBackup(event); }} /></div>{dataMessage && <p className="subtle" role="status">{dataMessage}</p>}<p className="subtle">Tip: Export a backup before reinstalling or changing devices. Import replaces the current workspace only after confirmation.</p></section>}
-          <footer>DAILY DESK <span>Separate desktop app · Knowledge-Explorer monorepo</span></footer>
+          <footer>UNIVERSAL BOX <span>Local-first desktop toolkit · powered by Daily Desk</span></footer>
         </div>
       </section>
+      {commandOpen&&<div className="command-backdrop" onMouseDown={()=>setCommandOpen(false)}>
+        <div className="command-dialog" role="dialog" aria-modal="true" aria-label="Search all Universal Box tools"
+          onMouseDown={event=>event.stopPropagation()}>
+          <div className="command-search-head"><span aria-hidden="true">⌕</span>
+            <input autoFocus className="command-input" type="search" placeholder="Find a tool or workspace…" value={commandQuery} onChange={event=>setCommandQuery(event.target.value)}
+              onKeyDown={event=>{if(event.key==="Enter"&&commands[0])openTool(commands[0].view,commands[0].module);}}/>
+            <button type="button" className="command-close" onClick={()=>setCommandOpen(false)} aria-label="Close tool search">ESC</button>
+          </div>
+          <div className="command-meta">{commandQuery?"MATCHING TOOLS":"SUGGESTED WORKSPACES"}</div>
+          <div className="command-results">
+            {commands.length===0?<p className="empty-state">No matches. Try PDF, Excel, image, chart or ZIP.</p>
+              :commands.map((item,index)=><button key={item.id} type="button" className="command-result"
+                onClick={()=>openTool(item.view,item.module)}>
+                <span className="command-result-icon">{item.module?"◇":"▦"}</span>
+                <span className="command-result-text"><strong>{item.name}</strong><small>{item.description}</small></span>
+                {index===0&&<kbd>↵</kbd>}
+              </button>)}
+          </div>
+          <div className="command-footer"><span>Enter opens first match · Esc closes</span><span>PRIVATE • ON DEVICE</span></div>
+        </div>
+      </div>}
     </main>
   );
 }
