@@ -91,3 +91,12 @@ References are snapshots: pricing, quotas and features change; verify official s
 ## Definition of done
 
 Every shipped tool must have: real local processing, input validation, visible error states, output safety, tests for tricky edge cases, clear capability limits, and a green macOS Apple Silicon CI build. Do not merge on TS success alone; user-driven Mac WebView QA remains separate from CI.
+
+## Implemented in v0.21 (removed from the "not yet implemented" queue)
+
+- Text line sorting/deduplication/blank trimming/case change/prefixes/suffixes.
+- URL structure and repeated query parameter inspector, no network request.
+- Local SRT ↔ WebVTT conversion with bounded timestamp shifting and explicit rejection of unsupported subtitle styles or cue settings.
+- Photo contact-sheet PNG/JPEG creator with captions and size-limited PNG/JPEG/WebP inputs.
+
+The opportunity queue above is preserved as a historical candidate list; the four rows listed here should now be read as delivered baseline implementations, with advanced WebVTT and high-resolution photo-workflow fidelity still remaining future improvements.

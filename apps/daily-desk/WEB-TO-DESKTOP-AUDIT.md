@@ -102,3 +102,7 @@ Added JSON→CSV, global UTC meeting clock, SHA-256 checksums, secure local pass
 Adds on-device static QR Wi-Fi/contact/batch creation with PNG/SVG/ZIP output; an RFC 5545 calendar .ics generator with UTC validation and safe content-line folding; and a cryptographically strong local UUID v4 batch tool. These are new conveniences and do **not** change the existing website's 44-entry equivalence audit counts. “Free static QR” does not claim hosted editable redirects, tracking analytics or subscriptions can operate without servers. The former basic QR generator remains present.
 
 First-party fee/limit comparisons and future opportunities: `UNIVERSAL-BOX-ROADMAP.md`.
+
+## v0.21 additional offline tool suite
+
+Added four new desktop-only Universal Box Lab utilities: batch text-line processing, local subtitle SRT/VTT basic conversion plus timing offset, PNG/JPEG photo contact sheet generation, and offline URL component/query inspection. No existing 44-tool website equivalence totals are changed by these additions. Subtitle processing does not include speech transcription or advanced WebVTT styling, and URL inspection does not validate link safety.

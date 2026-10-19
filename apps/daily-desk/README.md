@@ -230,3 +230,14 @@ Added a dedicated **Universal Box / 万用工具箱** section. New offline featu
 Supported generated formats `.svg`, `.zip`, `.ics` and `.txt` pass through the existing explicit save dialogs and 20 MB maximum output guard. Please keep QR foreground/background contrast high. Printed Wi-Fi QR includes its network password and should be shared only with people authorized to use that network.
 
 For scope and evidence from official vendor pricing pages, see **[UNIVERSAL-BOX-ROADMAP.md](UNIVERSAL-BOX-ROADMAP.md)**. The new QR Studio complements, rather than removes, the existing single-code QR tool. The application continues to operate without required user accounts, advertising, subscription checks or automatic network requests.
+
+## v0.21 preview: Universal Box Lab (free text, subtitle, image and URL tools)
+
+**Universal Box Lab / 更多免费小工具** is a new desktop workspace with four real local processing tools (also searchable from All Tools):
+
+- **Batch line editor:** trim, deduplicate, discard blank lines, sort A→Z or Z→A, convert case, add user-defined line prefixes/suffixes. Up to 200,000 source characters and 20,000 lines. Output copy/TXT export includes full text, with a shortened in-app preview on large results.
+- **Subtitle SRT ⇄ WebVTT:** import SRT/VTT or paste subtitles; convert timestamps and shift every cue by ±1 hour in whole milliseconds. Preserve basic multiline subtitle text and Unicode; explicitly reject unsupported WebVTT cue settings/STYLE/REGION instead of silently dropping them. Output as a new `.srt` or `.vtt`, up to 1,000 cues / 2 MB source text. This does **not** transcribe speech, translate subtitles or preserve advanced WebVTT layout features.
+- **Photo contact sheet:** combine 1–12 local PNG/JPEG/WebP source images into a labelled, aspect-preserving tiled PNG/JPEG output. Choose columns, cell size, gaps and captions. Input bound: 8 MB per image, 24 MB total; each decoded image ≤8 million pixels and output canvas ≤12 million pixels. Originals stay unchanged. EXIF orientation, colour profiles and animated image behaviour may vary in the macOS WebView.
+- **URL inspector:** parse a full HTTP(S) URL locally into scheme, host, origin, path, fragment and decoded query parameter pairs; duplicate query keys are preserved. No navigation, link fetching, reputation service or phishing detection is performed.
+
+The source code remains under `apps/daily-desk/**`, isolated from the AP ReasonLab website. No added advertisements, accounts, uploads, subscription enforcement or remote processing. File conversion limitations and normal local-memory safety ceilings remain visible. Core helpers and geometry have deterministic Vitest coverage; CI builds the Apple Silicon macOS package. Real-device WebView checks remain necessary for image codecs, file dialogs and text rendering.
