@@ -11,7 +11,8 @@
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.5.0",
@@ -37,6 +38,7 @@
     "vite": "^6.2.0",
     "@types/node": "^22.10.0",
     "@types/qrcode": "^1.5.5",
-    "@types/katex": "^0.16.7"
+    "@types/katex": "^0.16.7",
+    "vitest": "^3.2.4"
   }
 }
