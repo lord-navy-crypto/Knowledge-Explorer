@@ -2,6 +2,10 @@ import {useMemo,useState} from "react";
 
 export type LocalTool = {id:string;name:string;area:string;view:string;module?:string};
 export const LOCAL_TOOLS:LocalTool[] = [
+ {id:"contacts-csv-vcf",name:"CSV → vCard Contacts (.vcf) · Batch Address Book",area:"Office",view:"office-privacy",module:"contacts"},
+ {id:"text-mail-merge",name:"Free Mail Merge · CSV Template → TXT ZIP",area:"Office",view:"office-privacy",module:"mail-merge"},
+ {id:"duplicate-files",name:"SHA-256 Duplicate File Finder · Local Only",area:"Files",view:"office-privacy",module:"duplicates"},
+ {id:"unicode-hidden",name:"Unicode Hidden Character & Bidi Inspector",area:"Privacy",view:"office-privacy",module:"unicode"},
  {id:"wav-studio",name:"WAV Audio Editor · Trim, Normalize, Fade",area:"Media",view:"media-files",module:"audio"},
  {id:"zip-inspector",name:"ZIP Archive Metadata & Safety Inspector",area:"Files",view:"media-files",module:"zip-inspect"},
  {id:"icon-maker",name:"Icon Generator · 7 PNG Sizes into ZIP",area:"Images",view:"media-files",module:"icons"},

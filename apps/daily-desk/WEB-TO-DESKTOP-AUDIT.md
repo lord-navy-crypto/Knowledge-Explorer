@@ -110,3 +110,7 @@ Added four new desktop-only Universal Box Lab utilities: batch text-line process
 ## v0.22 new standalone desktop capabilities
 
 Local PCM16 WAV trimming/normalization/fading, ZIP metadata inspection with traversal and decompression-risk indicators (no extraction), offline icon PNG dimension bundles, and approximate image palette extraction were added to Universal Box. These new modules do **not** modify the historical 44-entry web-site parity audit. No claim of advanced audio codec conversion, malware detection or certified colour matching is made.
+
+## v0.23 standalone offline office/identity utilities
+
+Four independent desktop tools added: bulk CSV-to-vCard contacts, text-only CSV mail merge ZIP, read-only local selected-file duplicate hashing, and a Unicode hidden-character inspector. These extend the desktop product but do not change the historical web-site parity audit count. In addition, native Rust writer extension alignment repairs macOS saving for prior ICS, subtitles and WAV features; new VCF extension is tested too.

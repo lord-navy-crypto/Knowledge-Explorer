@@ -109,3 +109,13 @@ The opportunity queue above is preserved as a historical candidate list; the fou
 - Offline approximate RGB palette sampling from local pictures, not a commercial colour-matching service.
 
 Historical opportunity queue entries for WAV, icon sizing and palette have now been satisfied only at the baseline level; ZIP safe extraction and broader audio codecs remain future work.
+
+## Implemented in v0.23
+
+- CSV address book conversion to standard vCard 3.0 contact file (.vcf) with Chinese/English header recognition and per-row validation, up to 300 records.
+- Text-only CSV mail merge producing up to 100 separately numbered, safe TXT ZIP entries without outbound email.
+- SHA-256 duplicate detection for an explicitly selected bounded file set; reports only, **never deletes files**.
+- Unicode invisible/bidirectional/control mark inspector with positions and no destructive auto-removal.
+- **Native export bugfix**: macOS Tauri writer now accepts pre-existing ICS/SRT/VTT/WAV outputs and new VCF output, consistent with frontend export buttons. Guarded by Rust tests.
+
+The queued larger-scale folder duplicate search, docx/PDF mail merge, image contrast and AI tools remain future opportunities. v0.23 implements safe baseline workflows rather than claiming feature-for-feature proprietary suite parity.

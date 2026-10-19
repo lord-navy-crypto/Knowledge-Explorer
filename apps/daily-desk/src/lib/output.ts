@@ -21,6 +21,7 @@ const MIME: Record<string, string> = {
   srt: "application/x-subrip;charset=utf-8",
   vtt: "text/vtt;charset=utf-8",
   wav: "audio/wav",
+  vcf: "text/vcard;charset=utf-8",
 };
 
 /** Save an output from one of our local tools, without network or broad filesystem access. */
