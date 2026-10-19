@@ -128,3 +128,11 @@ This first port covers the everyday tool set but is **not 100% feature parity** 
 - Image desk: on-device mouse/stylus annotation, adjustable pen, undo, save new PNG; constrain image resizing by both width and height, preserving aspect ratio.
 - All changes remain under `apps/daily-desk/**`. No remote API or website changes, no Ollama dependency.
 - The interactive Mac UI (pointer capture, clipboard and file dialogs) still needs real-device acceptance tests.
+
+## v0.13 interactive image crop and website formula parity
+
+- **File Desk → Images → Interactive crop**: drag the on-image crop rectangle, choose a fixed aspect (free/1:1/4:3/16:9/3:2), change width/height via sliders, rotate in 90° steps and save a full-source-resolution cropped PNG. Crop and source are bounded to 20 million pixels; selected images ≤8 MB. The original image remains unchanged.
+- **Math → Formula Board**: migrated the website's complete `ap-reasonlab/data/formula-board.ts` category dataset to desktop `src/lib/formulaBoard.ts`. Added category switching, search, LaTeX/plain copy, local favorites and Markdown favorites export, replacing the previous 8-formula sample.
+- **Audit quality**: repaired malformed slash-separated description text in the 44-entry parity audit. Formula board now counts as a core desktop equivalent; image UX remains partial until hands-on validation.
+- **Project isolation**: all modifications are under `apps/daily-desk/**`; AP web source and Vercel settings are unchanged.
+- **Limits**: no OCR, no AI/cloud services, no guarantee of macOS pointer/print fidelity without manual acceptance; neither crop nor annotated export overwrites the imported image.
