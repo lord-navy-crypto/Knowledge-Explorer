@@ -70,7 +70,7 @@ export async function tableToXlsx(table:DataTable):Promise<Uint8Array>{
 function xmlDecode(text:string):string{
  return text.replace(/&(#(?:[xX][0-9a-fA-F]+|[0-9]+)|amp|lt|gt|quot|apos);/gu,(_,token:string)=>{
    const known:Record<string,string>={amp:"&",lt:"<",gt:">",quot:'"',apos:"'"};
-   if(Object.hasOwn(known,token))return known[token];
+   if(Object.prototype.hasOwnProperty.call(known,token))return known[token];
    const hex=/^#x/iu.test(token),n=parseInt(token.slice(hex?2:1),hex?16:10);
    if(!Number.isInteger(n)||n<1||n>0x10ffff||(n>=0xd800&&n<=0xdfff))
      throw Error("Invalid XML numeric character.");
