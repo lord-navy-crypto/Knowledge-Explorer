@@ -22,6 +22,18 @@ function capturePage(mode){
   }
   const root=document.querySelector("main article,article,main,[role='main']")||document.body;
   if(!root)throw Error("此页面没有可提取的正文。");
+  if(mode==="source"){
+    const title=clean(document.title).slice(0,500);
+    const url=location.href;
+    if(!/^https?:\/\//i.test(url))throw Error("仅支持 http(s) 网页。");
+    return ("标题: "+title+"\n来源: "+url).slice(0,LIMIT);
+  }
+  if(mode==="outline"){
+    const headings=[...document.querySelectorAll("h1,h2,h3,h4,h5,h6")].filter(allowed).slice(0,250);
+    if(!headings.length)throw Error("当前页面没有可访问的标题。");
+    return headings.map(el=>"  ".repeat(Number(el.tagName[1])-1)+
+      "- "+clean(el.innerText||el.textContent).replace(/\s+/g," ").slice(0,500)).join("\n").slice(0,LIMIT);
+  }
   if(mode==="text"){
     const clone=document.body.cloneNode(true);
     clone.querySelectorAll("script,style,noscript,template,svg,canvas").forEach(el=>el.remove());
