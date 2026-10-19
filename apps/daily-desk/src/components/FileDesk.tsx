@@ -1,6 +1,8 @@
 import { type ChangeEvent, useEffect, useState } from "react";
 import { PDFDocument, degrees } from "pdf-lib";
 import JSZip from "jszip";
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { exportFile } from "../lib/output";
 
 type Tab = "pdf" | "images" | "word";
@@ -59,7 +61,7 @@ function htmlToMarkdown(html: string): string {
   return Array.from(parsed.body.childNodes).map(render).join("").replace(/\n{3,}/g,"\n\n").trim();
 }
 
-export default function FileDesk() {
+export default function FileDesk({ onSendToWriting }: { onSendToWriting?: (markdown: string) => void }) {
   const [tab, setTab] = useState<Tab>("pdf");
   const [pdfMode, setPdfMode] = useState<PdfMode>("merge");
   const [files, setFiles] = useState<File[]>([]);
@@ -228,6 +230,7 @@ export default function FileDesk() {
     setStatus("");
     try {
       if (!/\.docx$/i.test(doc.name)) throw new Error("Only .docx files are supported.");
+      if (doc.size > 15_000_000) throw new Error("Word import limit is 15 MB.");
       const mammoth = await import("mammoth");
       const result = await mammoth.convertToHtml({ arrayBuffer: await doc.arrayBuffer() });
       setMarkdown(htmlToMarkdown(result.value || ""));
@@ -280,8 +283,20 @@ export default function FileDesk() {
       {tab === "word" && <>
         <label htmlFor="word-picker" className="field-label">Choose .docx Word document</label>
         <input id="word-picker" className="field" type="file" accept=".docx" onChange={(e) => setDoc(e.target.files?.[0] ?? null)} />
-        <div className="actions"><button className="primary-button" type="button" disabled={!doc || busy} onClick={() => { void convertWord(); }}>Import document</button><button type="button" className="secondary-button" disabled={!markdown} onClick={() => { void exportFile(safeName(doc?.name || "document") + ".md", markdown).then(ok=>setStatus(ok?"Markdown saved.":"Save cancelled.")).catch(e=>setStatus(errorMessage(e))); }}>Save Markdown</button></div>
-        {markdown && <><label htmlFor="word-converted" className="field-label">Editable Markdown</label><textarea id="word-converted" className="field text-editor" rows={12} value={markdown} onChange={(e) => setMarkdown(e.target.value)} /></>}
+        <p className="subtle">Word → PDF is produced from a reconstructed Markdown preview, not a pixel-identical Word layout. Complex tables, floating shapes and pagination may change.</p>
+        <div className="actions"><button className="primary-button" type="button" disabled={!doc || busy} onClick={() => { void convertWord(); }}>Import document</button>
+          <button type="button" className="secondary-button" disabled={!markdown} onClick={() => { void exportFile(safeName(doc?.name || "document") + ".md", markdown).then(ok=>setStatus(ok?"Markdown saved.":"Save cancelled.")).catch(e=>setStatus(errorMessage(e))); }}>Save Markdown</button>
+          <button type="button" className="secondary-button" disabled={!markdown} onClick={() => { onSendToWriting?.(markdown); }} hidden={!onSendToWriting}>Send to writing desk</button>
+          <button type="button" className="secondary-button" disabled={!markdown} onClick={() => window.print()}>Print preview / save PDF</button>
+        </div>
+        {markdown && <>
+          <label htmlFor="word-converted" className="field-label">Editable Markdown</label>
+          <textarea id="word-converted" className="field text-editor" rows={9} value={markdown} onChange={(e) => setMarkdown(e.target.value)} />
+          <p className="field-label">Formatted print preview</p>
+          <article className="markdown-preview printable-document" aria-label="Converted Word document print preview">
+            <Markdown remarkPlugins={[remarkGfm]}>{markdown}</Markdown>
+          </article>
+        </>}
       </>}
       {status && <p role="status" className="subtle">{status}</p>}
     </section>
