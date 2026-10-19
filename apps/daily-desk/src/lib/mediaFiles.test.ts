@@ -78,6 +78,10 @@ describe("v0.22 read-only ZIP inspector",()=>{
    const broken=bytes.slice(),view=new DataView(broken.buffer);
    view.setUint32(0,0,true);
    expect(()=>inspectZip(broken)).toThrow(/local file header/);
+   const mismatched=bytes.slice();
+   // Local filename begins at byte 30 for a normal ZIP with its first entry at offset 0.
+   mismatched[30]^=1;
+   expect(()=>inspectZip(mismatched)).toThrow(/filenames differ/);
    expect(()=>inspectZip(new Uint8Array(10))).toThrow(/22 bytes/);
  });
 });
