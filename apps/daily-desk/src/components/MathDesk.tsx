@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { evaluate } from "mathjs";
 import AdvancedGrapher from "./AdvancedGrapher";
 import QuickMath from "./QuickMath";
+import ClassWizDesk from "./ClassWizDesk";
 import FormulaBoardDesk from "./FormulaBoardDesk";
 import UnitsDesk from "./UnitsDesk";
 import katex from "katex";
@@ -9,7 +10,7 @@ import NumericalWorkbench from "./NumericalWorkbench";
 import { combineVectors, significantFigures, roundSignificant } from "../lib/mathExtras";
 import "katex/dist/katex.min.css";
 
-export type MathTab = "extras" | "calculator" | "graph" | "calculus" | "units" | "notation" | "vector" | "formula" | "latex";
+export type MathTab = "classwiz" | "extras" | "calculator" | "graph" | "calculus" | "units" | "notation" | "vector" | "formula" | "latex";
 export default function MathDesk({initialTab="calculator"}:{initialTab?:MathTab}){
   const [tab,setTab]=useState<MathTab>(initialTab);
   const [expression,setExpression]=useState("sin(pi/2) + sqrt(16)");
@@ -38,8 +39,8 @@ export default function MathDesk({initialTab="calculator"}:{initialTab?:MathTab}
 
   return <section className="panel">
     <p className="eyebrow">MATH WORKBENCH · LOCAL CALCULATIONS</p><h2>Math & science utilities</h2>
-    <p className="subtle">Calculator, graphs, units, vectors, scientific notation, formulas and LaTeX. Calculation runs locally; the graph preview is a simpler subset of the website's advanced grapher.</p>
-    <div className="pill-row" role="group" aria-label="Math tool">{(["calculator","graph","calculus","extras","units","notation","vector","formula","latex"] as const).map(k=><button className={tab===k?"pill active-pill":"pill"} key={k} onClick={()=>{setTab(k);setStatus("");}} type="button">{k[0].toUpperCase()+k.slice(1)}</button>)}</div>
+    <p className="subtle">Calculator, advanced complex/matrix/statistics/distribution modes, graphs, units, vectors, scientific notation, formulas and LaTeX. Calculation runs locally; the graph preview is a simpler subset of the website's advanced grapher.</p>
+    <div className="pill-row" role="group" aria-label="Math tool">{(["calculator","classwiz","graph","calculus","extras","units","notation","vector","formula","latex"] as const).map(k=><button className={tab===k?"pill active-pill":"pill"} key={k} onClick={()=>{setTab(k);setStatus("");}} type="button">{k[0].toUpperCase()+k.slice(1)}</button>)}</div>
     {tab==="calculator"&&<>
       <label htmlFor="calc-expression" className="field-label">Expression · sin, cos, sqrt, log, pi, matrices</label>
       <input className="field" style={{width:"100%"}} id="calc-expression" value={expression} onChange={e=>setExpression(e.target.value)} />
@@ -48,6 +49,7 @@ export default function MathDesk({initialTab="calculator"}:{initialTab?:MathTab}
     </>}
     {tab==="graph"&&<AdvancedGrapher onChooseY1={expr=>{setPlot([expr]);setTab("calculus");}}/>}
     {tab==="calculus"&&<NumericalWorkbench initialFunction={plot[0]??"x"}/>}
+    {tab==="classwiz"&&<ClassWizDesk/>}
     {tab==="extras"&&<QuickMath/>}
     {tab==="units"&&<UnitsDesk onInsert={value=>{setExpression(value);setTab("calculator");}} />}
     {tab==="notation"&&<>

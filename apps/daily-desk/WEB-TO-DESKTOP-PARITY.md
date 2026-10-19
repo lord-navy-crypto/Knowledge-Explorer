@@ -146,3 +146,7 @@ The existing v0.13 main branch already contains interactive crop/rotate and a fu
 - Added all fourteen reference physical constants, searchable, with copy and calculator insertion.
 - Added deterministic unit tests for category/constant counts, precise unit factors and temperature calculations.
 - Still local-only, no cloud AI or speech-to-text. macOS GUI acceptance testing remains necessary.
+
+## v0.15 ClassWiz-style calculation coverage
+
+Added four local advanced calculator modes: complex numbers, 2×2/3×3 matrices, two-variable linear regression and normal/binomial probabilities. Deterministic tests cover arithmetic, parsing, singular matrices, invalid data and probability bounds. Website calculator parity remains partial; the desktop's numerical limits and GUI differ. Mac interaction requires manual acceptance. The AP website was not changed.
