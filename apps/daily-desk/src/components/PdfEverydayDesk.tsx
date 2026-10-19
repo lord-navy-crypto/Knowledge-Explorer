@@ -2,16 +2,17 @@ import {type ChangeEvent,useState} from "react";
 import {exportFile} from "../lib/output";
 import {
   type PdfBasicInfo,type PdfMetadataEdit,type PdfCropMargins,type PdfFormText,type PageFormat,
-  inspectPdfEveryday,savePdfMetadata,cropPdfPages,insertBlankPdfPages,inspectPdfTextFields,fillPdfTextFields,
+  inspectPdfEveryday,savePdfMetadata,cropPdfPages,insertBlankPdfPages,inspectPdfTextFields,fillPdfTextFields,exportSelectedPdfPages,
 } from "../lib/pdfEveryday";
 import PdfPagePreview from "./PdfPagePreview";
 
-export type PdfEverydayMode="metadata"|"crop"|"blank"|"form";
+export type PdfEverydayMode="metadata"|"crop"|"blank"|"form"|"pages";
 const tabs:{id:PdfEverydayMode;label:string}[]=[
   {id:"metadata",label:"Properties · 文件属性"},
   {id:"crop",label:"Crop margins · 裁边"},
   {id:"blank",label:"Insert pages · 插入空白页"},
   {id:"form",label:"Fill text forms · 填写表单"},
+  {id:"pages",label:"Extract & reorder · 提取排序"},
 ];
 const EMPTY_METADATA:PdfMetadataEdit={title:"",author:"",subject:"",keywords:""};
 const EMPTY_CROP:PdfCropMargins={left:0,right:0,top:0,bottom:0};
@@ -27,6 +28,7 @@ export default function PdfEverydayDesk({initialMode="metadata"}:{initialMode?:P
   const [afterPage,setAfterPage]=useState(0);
   const [blankCount,setBlankCount]=useState(1);
   const [format,setFormat]=useState<PageFormat>("a4");
+  const [pageExpression,setPageExpression]=useState("1");
   const [fields,setFields]=useState<PdfFormText[]|null>(null);
   const [formValues,setFormValues]=useState<Record<string,string>>({});
   const [busy,setBusy]=useState(false);
@@ -34,7 +36,7 @@ export default function PdfEverydayDesk({initialMode="metadata"}:{initialMode?:P
   async function importPdf(event:ChangeEvent<HTMLInputElement>){
     const selected=event.target.files?.[0];event.target.value="";
     setFile(null);setBytes(null);setInfo(null);setFields(null);setFormValues({});
-    setMetadata(EMPTY_METADATA);setStatus("");
+    setMetadata(EMPTY_METADATA);setPageExpression("1");setStatus("");
     if(!selected)return;
     setBusy(true);
     try{
@@ -73,7 +75,7 @@ export default function PdfEverydayDesk({initialMode="metadata"}:{initialMode?:P
   return <section className="panel pdf-everyday-desk">
     <p className="eyebrow">UNIVERSAL BOX · FREE PDF EVERYDAY EDITORS</p>
     <h2>PDF Mini Editor / PDF 日常编辑器</h2>
-    <p className="subtle">Four small, real PDF utilities that process a file locally: edit document properties, crop visible page margins, insert blank pages or fill standard text form fields. No paid plan, cloud upload or forced registration.</p>
+    <p className="subtle">Free PDF utilities that process a file locally: edit properties, crop visible margins, insert blank pages, fill standard text forms, or extract and reorder pages. No paid plan, cloud upload or forced registration.</p>
     <div className="pill-row" role="group" aria-label="PDF mini editor modes">
       {tabs.map(tab=><button key={tab.id} type="button" className={tab.id===mode?"pill active-pill":"pill"}
         aria-pressed={tab.id===mode} onClick={()=>{setMode(tab.id);setStatus("");}}>{tab.label}</button>)}
@@ -140,6 +142,16 @@ export default function PdfEverydayDesk({initialMode="metadata"}:{initialMode?:P
         <button className="primary-button" type="button" disabled={busy}
           onClick={()=>{void savePdf("universal-box-pdf-with-blanks.pdf",()=>insertBlankPdfPages(bytes!,afterPage,blankCount,format));}}>
           Insert and save a new PDF
+        </button>
+      </>}
+      {mode==="pages"&&<>
+        <p className="subtle">Export chosen PDF pages in your specified order. Use e.g. 3,1-2,5 to output page 3, then pages 1–2, then 5. Repeating page numbers duplicates pages in the output. A fresh PDF is saved locally; the original stays unchanged. Some document-level features such as outlines or embedded forms may not transfer to the new PDF.</p>
+        <label className="field-label">Page order / 页面顺序 (1–{pageCount})
+          <input className="field" type="text" maxLength={600} value={pageExpression} onChange={e=>setPageExpression(e.target.value)} placeholder="3,1-2,5"/>
+        </label>
+        <button className="primary-button" type="button" disabled={busy}
+          onClick={()=>{void savePdf("universal-box-selected-pages.pdf",()=>exportSelectedPdfPages(bytes!,pageExpression));}}>
+          Extract / reorder and save new PDF
         </button>
       </>}
       {mode==="form"&&<>
