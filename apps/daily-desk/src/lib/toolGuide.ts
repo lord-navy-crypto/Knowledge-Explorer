@@ -4,13 +4,13 @@ export type GuideSuggestion={id:string;name:string;view:string;module?:string;st
 export type GuideAnswer={kind:"available"|"planned"|"unknown";message:string;suggestions:GuideSuggestion[]};
 type Recipe={id:string;patterns:RegExp[];steps:string[];caution?:string};
 const recipes:Recipe[]=[
- {id:"pdf-converters",patterns:[/图片.*(转|做|成|合).*(pdf)/iu,/(photo|image|picture).*(to|into).*(pdf)/iu,/(png|jpeg|jpg).*(pdf)/iu,/(pdf).*转.*(图片|图像)/iu],
+ {id:"pdf-converters",patterns:[/(图片|照片).*(转|做|成|合).*pdf/iu,/(photo|image|picture).*(to|into).*(pdf)/iu,/(png|jpeg|jpg).*(pdf)/iu,/(pdf).*转.*(图片|图像)/iu],
  steps:["打开图片与 PDF 转换工具","选择自己的文件，检查顺序和输出格式","预览结果并另存新文件"]},
  {id:"pdf-organize",patterns:[/(pdf).*(排序|重排|删除.*页|调整.*顺序)/iu,/(reorder|remove page|delete page).*pdf/iu],
  steps:["打开 PDF 页面整理","选中页码，调整顺序或移除不需要的页","另存新 PDF，保留原件"]},
  {id:"pdf-crop",patterns:[/(pdf|文档).*(裁边|裁剪|白边|边距)/iu,/(crop|trim).*(pdf)/iu],
  steps:["打开 PDF 页面裁边工具","选择页面与上下左右边距比例","另存新 PDF"],caution:"裁边只改变可见区域，并不是安全删除隐藏内容。"},
- {id:"pdf-add-blank",patterns:[/(pdf).*(空白页|添加页|插入页)/iu,/(blank page|insert pages).*pdf/iu],
+ {id:"pdf-add-blank",patterns:[/(pdf).*(空白页|添加页|插入页)/iu,/pdf.*(添加|插入).*(空白|页)/iu,/(blank page|insert pages).*pdf/iu],
  steps:["打开 PDF 空白页工具","指定插入位置、纸张尺寸与页数","保存新的 PDF 文件"]},
  {id:"pdf-fill-form",patterns:[/(pdf).*(填写|填表|表单|文本字段)/iu,/(fill|form field).*pdf/iu],
  steps:["打开 PDF 文本表单填写器","导入已有可填写 PDF，查看文本字段","填写并保存新的 PDF"],caution:"基础填写器目前仅支持英文可打印字符，不支持数字签名或复杂表单。"},
