@@ -18,6 +18,8 @@ const MIME: Record<string, string> = {
   zip: "application/zip",
   svg: "image/svg+xml",
   ics: "text/calendar;charset=utf-8",
+  srt: "application/x-subrip;charset=utf-8",
+  vtt: "text/vtt;charset=utf-8",
 };
 
 /** Save an output from one of our local tools, without network or broad filesystem access. */
