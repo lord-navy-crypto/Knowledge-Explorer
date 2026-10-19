@@ -14,6 +14,7 @@ export type DeskCard = {
 export type DeskExam = { id: string; name: string; date: string };
 export type DeskMistake = { id: string; topic: string; correction: string };
 export type DeskSnippet = { id: string; title: string; code: string };
+export type DeskStroke = { color: string; width: number; points: [number,number][] };
 export type WorkspaceData = {
   version: 2;
   tasks: DeskTask[];
@@ -24,6 +25,7 @@ export type WorkspaceData = {
   snippets?: DeskSnippet[];
   readingNotes?: string;
   documentMarkdown?: string;
+  drawing?: DeskStroke[];
 };
 
 const STORAGE_KEY = "daily-desk.workspace.v2";
@@ -32,7 +34,7 @@ const MAX_TASKS = 300;
 const MAX_CARDS = 500;
 
 export function emptyWorkspace(): WorkspaceData {
-  return { version: 2, tasks: [], cards: [], notes: "", exams: [], mistakes: [], snippets: [], readingNotes: "", documentMarkdown: "" };
+  return { version: 2, tasks: [], cards: [], notes: "", exams: [], mistakes: [], snippets: [], readingNotes: "", documentMarkdown: "", drawing: [] };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -94,6 +96,11 @@ export function parseWorkspace(raw: unknown): WorkspaceData {
     snippets: Array.isArray(raw.snippets) ? raw.snippets.slice(0,150).filter((e):e is DeskSnippet=>isRecord(e)&&typeof e.id==="string"&&typeof e.title==="string"&&typeof e.code==="string").map(e=>({...e,title:e.title.slice(0,120),code:e.code.slice(0,10000)})):[],
     readingNotes: typeof raw.readingNotes === "string" ? raw.readingNotes.slice(0,30000) : "",
     documentMarkdown: typeof raw.documentMarkdown === "string" ? raw.documentMarkdown.slice(0,50000) : "",
+    drawing: Array.isArray(raw.drawing) ? raw.drawing.slice(0,100).filter((v):v is Record<string,unknown>=>isRecord(v)&&typeof v.color==="string"&&typeof v.width==="number"&&Array.isArray(v.points)).map(v=>({
+      color: String(v.color).slice(0,16),
+      width: Math.max(1,Math.min(24,Number(v.width))),
+      points: (v.points as unknown[]).slice(0,400).filter((p):p is [number,number]=>Array.isArray(p)&&p.length===2&&p.every(n=>typeof n==="number"&&Number.isFinite(n))).map(p=>[Math.max(0,Math.min(1,p[0])),Math.max(0,Math.min(1,p[1]))] as [number,number]),
+    })):[],
   };
 }
 
