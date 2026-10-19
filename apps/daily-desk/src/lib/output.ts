@@ -17,6 +17,7 @@ const MIME: Record<string, string> = {
   pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
   zip: "application/zip",
   svg: "image/svg+xml",
+  ics: "text/calendar;charset=utf-8",
 };
 
 /** Save an output from one of our local tools, without network or broad filesystem access. */
