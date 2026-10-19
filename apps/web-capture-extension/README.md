@@ -6,7 +6,7 @@ Browser extension MVP, not part of the packaged Tauri v0.29 app. Supports compat
 
 1. Open your Chromium browser's extensions page and enable developer mode.
 2. Load unpacked from `apps/web-capture-extension`.
-3. Open a webpage you are authorized to access, click the extension icon, then choose visible text, article Markdown, links CSV or the first visible HTML table as CSV.
+3. Open a webpage you are authorized to access, click the extension icon, then choose visible text, article Markdown, links CSV or the first visible HTML table as CSV, a source/title block, or a page-heading outline.
 4. Verify clipboard paste and result preview in both Chinese and English on at least five page types.
 
 ## Privacy / limitations
