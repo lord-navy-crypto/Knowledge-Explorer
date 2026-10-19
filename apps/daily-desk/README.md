@@ -206,3 +206,15 @@ In **File desk → PDF → Image ↔ PDF**, you can now:
 - Keep all documents on-device with existing PDF.js local worker and `pdf-lib`. No online conversion API, file uploads, account gates or PDF watermarks are introduced.
 
 PDF-to-images is raster output and does not retain searchable text; original PDF remains unchanged. Some EXIF-oriented photographs may require prior rotation; Mac WebView dialogs/render behavior still require on-device QA.
+
+## v0.19 preview: Universal Toolbox (beyond PDF)
+
+Added a dedicated **Universal Tools / 综合工具** sidebar view and five All Tools shortcuts. These are new desktop tools, not claims that existing web tools reached full parity:
+
+- **JSON records → CSV**: accepts a bounded flat JSON array (up to 2 MB, 2,000 records and 100 columns); rejects nested objects rather than silently flattening them; uses the existing CSV export sanitizer to prevent spreadsheet formula execution. The reverse CSV→JSON flow remains in CSV Table Desk.
+- **World meeting clock**: a single explicit UTC reference minute rendered in ten global IANA timezones, with daylight-saving changes handled by the operating system timezone database. Input is intentionally UTC to avoid ambiguous local clocks at DST transitions.
+- **SHA-256 file verifier**: user-picked file up to 20 MB, hashed locally with Web Crypto, with an optional published digest for comparison. Matching checksums confirm byte-for-byte agreement, not publisher trust or document safety.
+- **Secure password generator**: system cryptographic randomness with unbiased index selection; configurable 8–64 characters and guaranteed inclusion of each enabled character group. Passwords are never stored in the Daily Desk workspace or transmitted.
+- **Photo metadata cleaner**: re-encode PNG/JPEG/WebP pixels to a new PNG/JPEG/WebP via local Canvas (≤8 MB input, ≤20 million pixels). This ordinarily drops the original EXIF/location/comment tags but is not a certified metadata audit. Orientation, transparency and colour profiles can change.
+
+No account, subscription, internet lookup or cloud API is required for these features. All operations stay in the standalone `apps/daily-desk/**` project. File imports are explicit and originals are unchanged. Real macOS WebView checks remain required after CI (especially image codecs, file dialogs and clipboard permissions).

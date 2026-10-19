@@ -92,3 +92,7 @@ New `PDF Freedom Studio` functionality extends the existing `pdf-tools` desktop 
 ## v0.18 PDF/image file conversion expansion
 
 Added local image-to-PDF multi-page creation, and selected PDF-page-to-PNG/JPEG ZIP exports with conservative batch, byte and pixel limits. This extends the already local PDF workbench; it does not imply OCR, original text editing, certified signing or full website visual parity. No changes to the original 44-website-tool classification.
+
+## v0.19 desktop-only Universal Toolbox
+
+Added JSON→CSV, global UTC meeting clock, SHA-256 checksums, secure local password generator and photo pixel re-encoding to remove common metadata. Existing 44-entry website parity audit counts are unchanged because the new features are independent desktop utility additions, not exact existing web tools. The distinction between offline built-in tools and third-party External links remains explicit. Metadata clearing is not represented as a forensic or privacy certification.

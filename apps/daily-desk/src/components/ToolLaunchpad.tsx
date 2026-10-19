@@ -2,6 +2,11 @@ import {useMemo,useState} from "react";
 
 export type LocalTool = {id:string;name:string;area:string;view:string;module?:string};
 export const LOCAL_TOOLS:LocalTool[] = [
+ {id:"json-to-csv",name:"JSON Records → CSV · Safe Export",area:"Data",view:"universal",module:"json-csv"},
+ {id:"world-meeting-clock",name:"World Meeting Clock · 国际时区对照",area:"Study",view:"universal",module:"timezones"},
+ {id:"sha256-check",name:"SHA-256 File Checksum Verifier",area:"Files",view:"universal",module:"checksum"},
+ {id:"secure-password",name:"Local Password Generator",area:"Privacy",view:"universal",module:"password"},
+ {id:"photo-metadata-clean",name:"Image Metadata Cleaner · 照片隐私清理",area:"Privacy",view:"universal",module:"image-privacy"},
  {id:"quick-clean-text",name:"Text Cleaner · 一键文本整理",area:"Text",view:"quick-tools",module:"text"},
  {id:"quick-clean-links",name:"Tracking Link Cleaner · 清理追踪链接",area:"Text",view:"quick-tools",module:"links"},
  {id:"quick-date",name:"Date Difference & Date Shift",area:"Study",view:"quick-tools",module:"dates"},
