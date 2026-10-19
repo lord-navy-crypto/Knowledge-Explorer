@@ -4,37 +4,17 @@ import AdvancedGrapher from "./AdvancedGrapher";
 import QuickMath from "./QuickMath";
 import katex from "katex";
 import NumericalWorkbench from "./NumericalWorkbench";
+import FormulaDesk from "./FormulaDesk";
+import UnitsDesk from "./UnitsDesk";
 import { combineVectors, significantFigures, roundSignificant } from "../lib/mathExtras";
 import "katex/dist/katex.min.css";
 
 export type MathTab = "extras" | "calculator" | "graph" | "calculus" | "units" | "notation" | "vector" | "formula" | "latex";
-const FORMULAS = [
-  { title: "Newton's second law", math: "F_{net}=ma" },
-  { title: "Kinematic displacement", math: "\\Delta x = v_0 t + \\frac12 at^2" },
-  { title: "Work", math: "W=Fd\\cos\\theta" },
-  { title: "Electric field", math: "E=\\frac{F}{q}" },
-  { title: "Ohm's law", math: "V=IR" },
-  { title: "Capacitance", math: "C=\\frac{Q}{V}" },
-  { title: "Derivative", math: "\\frac{d}{dx} x^n = nx^{n-1}" },
-  { title: "Normal distribution", math: "z=\\frac{x-\\mu}{\\sigma}" },
-];
-const UNITS: Record<string, Record<string, number>> = {
-  Length: { m: 1, km: 1000, cm: .01, mm: .001, mi: 1609.344, ft: .3048, in: .0254 },
-  Mass: { kg: 1, g: .001, mg: .000001, lb: .45359237 },
-  Time: { s: 1, ms: .001, min: 60, h: 3600, day: 86400 },
-  Energy: { J: 1, kJ: 1000, Wh: 3600, kWh: 3600000, eV: 1.602176634e-19 },
-  Pressure: { Pa: 1, kPa: 1000, bar: 100000, atm: 101325, psi: 6894.757293 },
-  Speed: { "m/s": 1, "km/h": 1/3.6, mph: .44704, kn: .514444 },
-};
 export default function MathDesk({initialTab="calculator"}:{initialTab?:MathTab}){
   const [tab,setTab]=useState<MathTab>(initialTab);
   const [expression,setExpression]=useState("sin(pi/2) + sqrt(16)");
   const [result,setResult]=useState("");
   const [plot,setPlot]=useState(["sin(x)","cos(x)"]);
-  const [unitType,setUnitType]=useState("Length");
-  const [from,setFrom]=useState("m");
-  const [to,setTo]=useState("km");
-  const [unitAmount,setUnitAmount]=useState(1000);
   const [notation,setNotation]=useState("12345.678");
   const [otherNumber,setOtherNumber]=useState("2.1");
   const [sigDigits,setSigDigits]=useState(3);
@@ -54,17 +34,11 @@ export default function MathDesk({initialTab="calculator"}:{initialTab?:MathTab}
   let sigResult="Enter valid nonzero numbers";
   try { if(Number.isFinite(preciseResult)) sigResult=roundSignificant(preciseResult,sigDigits); } catch { /* invalid input shown above */ }
   const vectorResult=combineVectors({magnitude,angle},{magnitude:magnitudeB,angle:angleB},vectorOperation==="subtract");
-  const currentUnits=UNITS[unitType];
-  const converted=unitAmount*currentUnits[from]/currentUnits[to];
   const mathHtml=useMemo(()=>{try{return katex.renderToString(latex,{throwOnError:false,trust:false,output:"html"})}catch{return ""}},[latex]);
 
-  function switchUnits(group:string){
-    const names=Object.keys(UNITS[group]);
-    setUnitType(group);setFrom(names[0]);setTo(names[1]);
-  }
   return <section className="panel">
     <p className="eyebrow">MATH WORKBENCH · LOCAL CALCULATIONS</p><h2>Math & science utilities</h2>
-    <p className="subtle">Calculator, graphs, units, vectors, scientific notation, formulas and LaTeX. Calculation runs locally; the graph preview is a simpler subset of the website's advanced grapher.</p>
+    <p className="subtle">Calculator, interactive graphs, complete website formula catalog, units & constants, vectors, scientific notation and LaTeX. Calculations run locally.</p>
     <div className="pill-row" role="group" aria-label="Math tool">{(["calculator","graph","calculus","extras","units","notation","vector","formula","latex"] as const).map(k=><button className={tab===k?"pill active-pill":"pill"} key={k} onClick={()=>{setTab(k);setStatus("");}} type="button">{k[0].toUpperCase()+k.slice(1)}</button>)}</div>
     {tab==="calculator"&&<>
       <label htmlFor="calc-expression" className="field-label">Expression · sin, cos, sqrt, log, pi, matrices</label>
@@ -75,15 +49,7 @@ export default function MathDesk({initialTab="calculator"}:{initialTab?:MathTab}
     {tab==="graph"&&<AdvancedGrapher onChooseY1={expr=>{setPlot([expr]);setTab("calculus");}}/>}
     {tab==="calculus"&&<NumericalWorkbench initialFunction={plot[0]??"x"}/>}
     {tab==="extras"&&<QuickMath/>}
-    {tab==="units"&&<>
-      <label className="field-label">Quantity <select className="field" value={unitType} onChange={e=>switchUnits(e.target.value)}>{Object.keys(UNITS).map(k=><option key={k}>{k}</option>)}</select></label>
-      <div className="tools-pair">
-        <label className="field-label">Value <input type="number" className="field" value={unitAmount} onChange={e=>setUnitAmount(Number(e.target.value))}/></label>
-        <label className="field-label">From <select className="field" value={from} onChange={e=>setFrom(e.target.value)}>{Object.keys(currentUnits).map(k=><option key={k}>{k}</option>)}</select></label>
-        <label className="field-label">To <select className="field" value={to} onChange={e=>setTo(e.target.value)}>{Object.keys(currentUnits).map(k=><option key={k}>{k}</option>)}</select></label>
-      </div><p className="stat-pill" role="status">{Number.isFinite(converted)?converted.toPrecision(9):"Invalid input"} {to}</p>
-      <p className="subtle">Common constants: g≈9.80665 m/s² · c=299,792,458 m/s · h=6.62607015×10⁻³⁴ J·s</p>
-    </>}
+    {tab==="units"&&<UnitsDesk onInsert={value=>{setExpression(value);setTab("calculator");}} />}
     {tab==="notation"&&<>
       <label className="field-label" htmlFor="notation-number">First number (as written)</label>
       <input id="notation-number" className="field" value={notation} onChange={e=>setNotation(e.target.value)}/>
@@ -106,7 +72,7 @@ export default function MathDesk({initialTab="calculator"}:{initialTab?:MathTab}
       <label className="field-label">Combine vectors <select className="field" value={vectorOperation} onChange={e=>setVectorOperation(e.target.value as "add"|"subtract")}><option value="add">A + B</option><option value="subtract">A − B</option></select></label>
       <div className="metrics"><span>Rx = {vectorResult.x.toFixed(5)}</span><span>Ry = {vectorResult.y.toFixed(5)}</span><span>|R| = {vectorResult.magnitude.toFixed(5)}</span><span>θ = {vectorResult.angle.toFixed(3)}°</span></div>
     </>}
-    {tab==="formula"&&<div className="tool-grid">{FORMULAS.map(row=><article key={row.title} className="tool-card"><strong>{row.title}</strong><div className="math-formula" dangerouslySetInnerHTML={{__html:katex.renderToString(row.math,{throwOnError:false,trust:false})}}/><button type="button" className="secondary-button" onClick={()=>{void navigator.clipboard.writeText(row.math).then(()=>setStatus("Copied LaTeX")).catch(()=>setStatus("Clipboard unavailable"));}}>Copy LaTeX</button></article>)}</div>}
+    {tab==="formula"&&<FormulaDesk onPreviewLatex={value=>{setLatex(value);setTab("latex");}} />}
     {tab==="latex"&&<>
       <label className="field-label" htmlFor="latex-input">LaTeX input</label><textarea className="field" rows={5} id="latex-input" value={latex} onChange={e=>setLatex(e.target.value)}/>
       <div className="math-formula math-preview" dangerouslySetInnerHTML={{__html:mathHtml}}/>
