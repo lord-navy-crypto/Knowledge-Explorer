@@ -150,3 +150,7 @@ pre { white-space:pre-wrap; word-break:break-word; }
 /* Standalone stylus/mouse draft board */
 .drawing-canvas { display:block; width:100%; height:auto; aspect-ratio:11/6; border:1px solid #5e6c83; border-radius:12px; background:#111b2b; cursor:crosshair; user-select:none; -webkit-user-select:none; }
 .drawing-canvas:focus-visible { outline:3px solid #8db9ef; }
+
+/* Local reading highlighter: plain-text segments, no untrusted HTML injection. */
+.reading-rendered { white-space:pre-wrap; overflow-wrap:anywhere; background:#fbfcff; color:#273b59; border:1px solid #dfe6f1; border-radius:12px; line-height:1.85; padding:22px; margin:20px 0; min-height:130px; }
+.reading-rendered mark { border-radius:3px; padding:1px 0; }
