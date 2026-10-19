@@ -119,3 +119,11 @@ Historical opportunity queue entries for WAV, icon sizing and palette have now b
 - **Native export bugfix**: macOS Tauri writer now accepts pre-existing ICS/SRT/VTT/WAV outputs and new VCF output, consistent with frontend export buttons. Guarded by Rust tests.
 
 The queued larger-scale folder duplicate search, docx/PDF mail merge, image contrast and AI tools remain future opportunities. v0.23 implements safe baseline workflows rather than claiming feature-for-feature proprietary suite parity.
+
+## v0.24 delivered: workflows and safe subset of ZIP extraction
+
+- **Selective ZIP export** now follows the existing read-only inspection step: choose up to 30 safe entries, validate declared and actual decompressed lengths and CRC-32, and save only user-selected contents as a new ZIP with safe numbered paths and original-name manifest. Archives with unsafe paths, symlinks, ambiguous normalization or unsupported methods cannot be processed. No writing of archive-provided destination paths.
+- **Integrated image workflow** combines existing resize, conversion, renaming and ZIP bundling operations into a single offline process, including per-image stage progress, preview of generated names and optional JSON manifest.
+- Kept explicit byte/pixel ceilings and avoided claims of antivirus capability, unbounded archive extraction or advanced image codec parity.
+
+Next improvements should prioritize independent verified OCR and Office interoperability, visual comparison, selective media conversions and a formal signed/notarized release pipeline after Mac QA.
