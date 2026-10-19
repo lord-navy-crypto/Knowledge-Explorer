@@ -13,7 +13,7 @@ export type UnitGroup=keyof typeof UNIT_GROUPS;
 export type TemperatureUnit="C"|"F"|"K";
 export function convertUnits(group:UnitGroup,value:number,from:string,to:string):number{
   const units=UNIT_GROUPS[group] as Record<string,number>;
-  if(!Number.isFinite(value)||!Object.hasOwn(units,from)||!Object.hasOwn(units,to))throw Error("Invalid unit or value.");
+  if(!Number.isFinite(value)||!Object.prototype.hasOwnProperty.call(units,from)||!Object.prototype.hasOwnProperty.call(units,to))throw Error("Invalid unit or value.");
   const out=value*units[from]/units[to];
   if(!Number.isFinite(out))throw Error("Conversion out of numerical range.");
   return out;
