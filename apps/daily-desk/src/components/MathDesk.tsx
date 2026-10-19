@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
 import { compile, evaluate } from "mathjs";
 import katex from "katex";
+import NumericalWorkbench from "./NumericalWorkbench";
 import { combineVectors, significantFigures, roundSignificant } from "../lib/mathExtras";
 import "katex/dist/katex.min.css";
 
-type MathTab = "calculator" | "graph" | "units" | "notation" | "vector" | "formula" | "latex";
+type MathTab = "calculator" | "graph" | "calculus" | "units" | "notation" | "vector" | "formula" | "latex";
 const FORMULAS = [
   { title: "Newton's second law", math: "F_{net}=ma" },
   { title: "Kinematic displacement", math: "\\Delta x = v_0 t + \\frac12 at^2" },
@@ -90,7 +91,7 @@ export default function MathDesk(){
   return <section className="panel">
     <p className="eyebrow">MATH WORKBENCH · LOCAL CALCULATIONS</p><h2>Math & science utilities</h2>
     <p className="subtle">Calculator, graphs, units, vectors, scientific notation, formulas and LaTeX. Calculation runs locally; the graph preview is a simpler subset of the website's advanced grapher.</p>
-    <div className="pill-row" role="group" aria-label="Math tool">{(["calculator","graph","units","notation","vector","formula","latex"] as const).map(k=><button className={tab===k?"pill active-pill":"pill"} key={k} onClick={()=>{setTab(k);setStatus("");}} type="button">{k[0].toUpperCase()+k.slice(1)}</button>)}</div>
+    <div className="pill-row" role="group" aria-label="Math tool">{(["calculator","graph","calculus","units","notation","vector","formula","latex"] as const).map(k=><button className={tab===k?"pill active-pill":"pill"} key={k} onClick={()=>{setTab(k);setStatus("");}} type="button">{k[0].toUpperCase()+k.slice(1)}</button>)}</div>
     {tab==="calculator"&&<>
       <label htmlFor="calc-expression" className="field-label">Expression · sin, cos, sqrt, log, pi, matrices</label>
       <input className="field" style={{width:"100%"}} id="calc-expression" value={expression} onChange={e=>setExpression(e.target.value)} />
@@ -112,6 +113,7 @@ export default function MathDesk(){
         <defs><clipPath id="clip-graph"><rect width="620" height="400"/></clipPath></defs>
       </svg>
     </>}
+    {tab==="calculus"&&<NumericalWorkbench initialFunction={plot[0]??"x"}/>}
     {tab==="units"&&<>
       <label className="field-label">Quantity <select className="field" value={unitType} onChange={e=>switchUnits(e.target.value)}>{Object.keys(UNITS).map(k=><option key={k}>{k}</option>)}</select></label>
       <div className="tools-pair">
