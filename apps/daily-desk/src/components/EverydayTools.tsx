@@ -38,7 +38,8 @@ export function csvRows(text: string, delimiter = ","): string[][] {
   if (quoted) throw new Error("CSV has an unmatched quoted field");
   cells.push(cell);
   if (cells.some(x => x.trim())) rows.push(cells);
-  return rows.slice(0, 2000);
+  if (rows.length > 2000) throw new Error("CSV exceeds the 2,000-row preview limit. No rows were silently dropped.");
+  return rows;
 }
 
 export function markdownTable(rows: string[][], hasHeader = true): string {
@@ -164,8 +165,10 @@ export default function EverydayTools({ initial = "stats" }: { initial?: Utility
     }catch(error){setStatus(error instanceof Error?error.message:String(error));}
   }
   async function saveQr() {
-    const response=await fetch(qrData);
-    const ok=await exportFile("daily-desk-qr.png",new Uint8Array(await response.arrayBuffer()));
+    const base64 = qrData.split(",")[1] ?? "";
+    const decoded = atob(base64);
+    const bytes = Uint8Array.from(decoded, char => char.charCodeAt(0));
+    const ok=await exportFile("daily-desk-qr.png",bytes);
     setStatus(ok?"QR image saved.":"Save cancelled.");
   }
   async function renameFile(file:File,next:string){
