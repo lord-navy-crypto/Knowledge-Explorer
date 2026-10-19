@@ -2,6 +2,10 @@ import {useEffect,useMemo,useState} from "react";
 
 export type LocalTool = {id:string;name:string;area:string;view:string;module?:string};
 export const LOCAL_TOOLS:LocalTool[] = [
+ {id:"pdf-properties",name:"PDF Properties & Metadata Editor · 文件属性",area:"Files",view:"pdf-mini",module:"metadata"},
+ {id:"pdf-crop",name:"PDF Crop Margins · 页面裁边",area:"Files",view:"pdf-mini",module:"crop"},
+ {id:"pdf-add-blank",name:"Insert Blank Pages into PDF · 添加空白页",area:"Files",view:"pdf-mini",module:"blank"},
+ {id:"pdf-fill-form",name:"Basic PDF Text Form Filler · 填写PDF表单",area:"Office",view:"pdf-mini",module:"form"},
  {id:"xlsx-csv-converter",name:"Free Excel XLSX ↔ CSV / JSON · Offline Spreadsheet Data",area:"Office",view:"free-formats",module:"spreadsheet"},
  {id:"image-difference",name:"Image Difference & Overlay · Compare Two Pictures",area:"Images",view:"free-formats",module:"image-diff"},
  {id:"html-entity-text",name:"HTML Entities & Unicode NFC/NFKC Text Tools",area:"Text",view:"free-formats",module:"text-codec"},
