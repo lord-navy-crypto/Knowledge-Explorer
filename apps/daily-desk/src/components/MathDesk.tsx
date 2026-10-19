@@ -2,22 +2,13 @@ import { useMemo, useState } from "react";
 import { evaluate } from "mathjs";
 import AdvancedGrapher from "./AdvancedGrapher";
 import QuickMath from "./QuickMath";
+import FormulaBoardDesk from "./FormulaBoardDesk";
 import katex from "katex";
 import NumericalWorkbench from "./NumericalWorkbench";
 import { combineVectors, significantFigures, roundSignificant } from "../lib/mathExtras";
 import "katex/dist/katex.min.css";
 
 export type MathTab = "extras" | "calculator" | "graph" | "calculus" | "units" | "notation" | "vector" | "formula" | "latex";
-const FORMULAS = [
-  { title: "Newton's second law", math: "F_{net}=ma" },
-  { title: "Kinematic displacement", math: "\\Delta x = v_0 t + \\frac12 at^2" },
-  { title: "Work", math: "W=Fd\\cos\\theta" },
-  { title: "Electric field", math: "E=\\frac{F}{q}" },
-  { title: "Ohm's law", math: "V=IR" },
-  { title: "Capacitance", math: "C=\\frac{Q}{V}" },
-  { title: "Derivative", math: "\\frac{d}{dx} x^n = nx^{n-1}" },
-  { title: "Normal distribution", math: "z=\\frac{x-\\mu}{\\sigma}" },
-];
 const UNITS: Record<string, Record<string, number>> = {
   Length: { m: 1, km: 1000, cm: .01, mm: .001, mi: 1609.344, ft: .3048, in: .0254 },
   Mass: { kg: 1, g: .001, mg: .000001, lb: .45359237 },
@@ -106,7 +97,7 @@ export default function MathDesk({initialTab="calculator"}:{initialTab?:MathTab}
       <label className="field-label">Combine vectors <select className="field" value={vectorOperation} onChange={e=>setVectorOperation(e.target.value as "add"|"subtract")}><option value="add">A + B</option><option value="subtract">A − B</option></select></label>
       <div className="metrics"><span>Rx = {vectorResult.x.toFixed(5)}</span><span>Ry = {vectorResult.y.toFixed(5)}</span><span>|R| = {vectorResult.magnitude.toFixed(5)}</span><span>θ = {vectorResult.angle.toFixed(3)}°</span></div>
     </>}
-    {tab==="formula"&&<div className="tool-grid">{FORMULAS.map(row=><article key={row.title} className="tool-card"><strong>{row.title}</strong><div className="math-formula" dangerouslySetInnerHTML={{__html:katex.renderToString(row.math,{throwOnError:false,trust:false})}}/><button type="button" className="secondary-button" onClick={()=>{void navigator.clipboard.writeText(row.math).then(()=>setStatus("Copied LaTeX")).catch(()=>setStatus("Clipboard unavailable"));}}>Copy LaTeX</button></article>)}</div>}
+    {tab==="formula"&&<FormulaBoardDesk/>}
     {tab==="latex"&&<>
       <label className="field-label" htmlFor="latex-input">LaTeX input</label><textarea className="field" rows={5} id="latex-input" value={latex} onChange={e=>setLatex(e.target.value)}/>
       <div className="math-formula math-preview" dangerouslySetInnerHTML={{__html:mathHtml}}/>
