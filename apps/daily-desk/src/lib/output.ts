@@ -20,6 +20,7 @@ const MIME: Record<string, string> = {
   ics: "text/calendar;charset=utf-8",
   srt: "application/x-subrip;charset=utf-8",
   vtt: "text/vtt;charset=utf-8",
+  wav: "audio/wav",
 };
 
 /** Save an output from one of our local tools, without network or broad filesystem access. */
