@@ -110,7 +110,7 @@ fn write_output_file(path: String, bytes: Vec<u8>) -> Result<(), String> {
         .to_ascii_lowercase();
     if !matches!(
         extension.as_str(),
-        "pdf" | "txt" | "md" | "csv" | "json" | "png" | "jpg" | "jpeg" | "webp" | "gif" | "docx" | "xlsx" | "pptx" | "zip"
+        "pdf" | "txt" | "md" | "csv" | "json" | "png" | "jpg" | "jpeg" | "webp" | "gif" | "docx" | "xlsx" | "pptx" | "zip" | "svg"
     ) {
         return Err("Unsupported output file extension".into());
     }
