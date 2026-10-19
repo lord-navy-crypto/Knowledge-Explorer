@@ -277,7 +277,7 @@ export default function App() {
           {view === "code" && <CodeDesk snippets={workspace.snippets??[]} onChange={snippets=>setWorkspace(current=>({...current,snippets}))} />}
           {view === "tables" && <DataDesk />}
           {view === "utilities" && <EverydayTools key={toolMode} initial={(toolMode || "stats") as Utility} />}
-          {view === "files" && <FileDesk key={toolMode} initialTab={(toolMode||"pdf") as FileTab} onSendToWriting={markdown => {setWorkspace(current => ({...current, documentMarkdown: markdown})); setView("writing");}} />}
+          {view === "files" && <FileDesk key={toolMode} initialPdfMode={toolMode === "organize" ? "organize" : "merge"} initialTab={(toolMode === "organize" ? "pdf" : toolMode || "pdf") as FileTab} onSendToWriting={markdown => {setWorkspace(current => ({...current, documentMarkdown: markdown})); setView("writing");}} />}
           {view === "math" && <MathDesk key={toolMode} initialTab={(toolMode||"calculator") as MathTab} />}
           {view === "learning" && <StudyExtras key={toolMode} initialMode={(toolMode||"countdown") as StudyMode} workspace={workspace} onChange={setWorkspace} />}
           {view === "reading" && <ReadingHighlights text={workspace.readingText ?? ""} highlights={workspace.highlights ?? []} onChange={(text, highlights)=>setWorkspace(current=>({...current,readingText:text,highlights}))} />}
