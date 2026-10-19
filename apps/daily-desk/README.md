@@ -241,3 +241,14 @@ For scope and evidence from official vendor pricing pages, see **[UNIVERSAL-BOX-
 - **URL inspector:** parse a full HTTP(S) URL locally into scheme, host, origin, path, fragment and decoded query parameter pairs; duplicate query keys are preserved. No navigation, link fetching, reputation service or phishing detection is performed.
 
 The source code remains under `apps/daily-desk/**`, isolated from the AP ReasonLab website. No added advertisements, accounts, uploads, subscription enforcement or remote processing. File conversion limitations and normal local-memory safety ceilings remain visible. Core helpers and geometry have deterministic Vitest coverage; CI builds the Apple Silicon macOS package. Real-device WebView checks remain necessary for image codecs, file dialogs and text rendering.
+
+## v0.22 preview: Universal Box Media & Files
+
+Four new local desktop tools with no account, paywall, cloud upload or forced online conversion:
+
+1. **WAV Studio**: safe bounded processing of **RIFF WAVE uncompressed signed 16-bit PCM** files (mono/stereo, 8–192kHz, ≤20 MB). Trim a selection, normalize conservatively toward 95% peak with gain capped at 4×, and optionally add fades (0–1.5s). Exports a *new* PCM WAV file; **not** MP3, speech recognition, compressed WAV, multitrack mixing or mastering.
+2. **Read-only ZIP Inspector**: parse up to 1,500 central-directory entries, ≤20 MB archive. Show filenames, declared compressed/uncompressed byte counts, file methods, and warnings for suspicious traversal/absolute paths, symlinks, encrypted files, unsupported methods, extreme expansion ratios or >500 MB total declared extraction. **Never extracts or executes files**. Not malware detection, validated decompression or a security guarantee; ZIP64 and multi-disk ZIPs are unsupported.
+3. **Icon Size Bundle**: PNG/JPEG/WebP picture (≤6 MB, ≤8 million pixels) → seven transparent PNG sizes (16, 32, 48, 64, 128, 256, 512 pixels) with proportional letterbox fitting, collected as a ZIP. No platform badge, proprietary template or source image modification.
+4. **Dominant Image Palette**: offline RGBA pixel sampling (max 20,000 samples; transparent pixels excluded) with approximate 4-bit RGB histogram colour groups, top 1–12 HEX colours and relative frequencies. The grouped results are approximate, not official Pantone or design-brand measurements.
+
+These are searchable in All Tools, with a dedicated **Media & Files / 媒体文件工具** sidebar and four deep-link modes. The existing PDF tools, QR tool, photo contact sheet and v0.19–v0.21 utilities remain intact. Sources are explicitly picked by the user, local CPU/memory constraints apply, and export creates new files through the existing user save dialog. Apple Silicon CI covers TypeScript, Vitest, Rust and DMG, but visual macOS WebView acceptance must be checked on an actual Mac.
