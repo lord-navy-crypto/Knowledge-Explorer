@@ -61,7 +61,7 @@ function taskSort(a: DeskTask, b: DeskTask): number {
 export default function App() {
   const [view, setView] = useState<View>("overview");
   const [toolMode,setToolMode] = useState("");
-  function openTool(target: string, module?: string) { setToolMode(module??""); setView(target as View); }
+  function openTool(target: string, module?: string) { if (!menu.some(item => item.id === target)) return; setToolMode(module ?? ""); setView(target as View); }
   const [workspace, setWorkspace] = useState<WorkspaceData>(() => readWorkspace());
   const [savedStatus, setSavedStatus] = useState("Loading local workspace...");
   const [storageReady, setStorageReady] = useState(false);
