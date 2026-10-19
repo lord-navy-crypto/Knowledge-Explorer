@@ -2,7 +2,7 @@ import { type ChangeEvent, type FormEvent, useEffect, useMemo, useRef, useState 
 import Flashcards from "./components/Flashcards";
 import FocusTimer from "./components/FocusTimer";
 import EverydayTools, {type Utility} from "./components/EverydayTools";
-import ToolLaunchpad from "./components/ToolLaunchpad";
+import ToolLaunchpad, {LOCAL_TOOLS} from "./components/ToolLaunchpad";
 import UniversalDesk, {type UniversalMode} from "./components/UniversalDesk";
 import UniversalBoxDesk, {type UniversalBoxMode} from "./components/UniversalBoxDesk";
 import UniversalLabDesk, {type UniversalLabMode} from "./components/UniversalLabDesk";
@@ -10,6 +10,7 @@ import MediaFilesDesk, {type MediaFilesMode} from "./components/MediaFilesDesk";
 import OfficePrivacyDesk, {type OfficePrivacyMode} from "./components/OfficePrivacyDesk";
 import WorkflowDesk, {type WorkflowMode} from "./components/WorkflowDesk";
 import FreeFormatsDesk, {type FreeFormatsMode} from "./components/FreeFormatsDesk";
+import ChartDesk from "./components/ChartDesk";
 import QuickKitDesk, {type QuickKitMode} from "./components/QuickKitDesk";
 import ExternalTools from "./components/ExternalTools";
 import CodeDesk from "./components/CodeDesk";
@@ -35,7 +36,7 @@ import {
   persistWorkspace,
 } from "./lib/nativeStorage";
 
-type View = "free-formats" | "workflows" | "office-privacy" | "media-files" | "universal-lab" | "universal-box" | "universal" | "quick-tools" | "external" | "all-tools" | "code" | "tables" | "overview" | "tasks" | "cards" | "focus" | "notes" | "utilities" | "data" | "files" | "math" | "learning" | "writing" | "drawing" | "reading" | "presets";
+type View = "charts" | "free-formats" | "workflows" | "office-privacy" | "media-files" | "universal-lab" | "universal-box" | "universal" | "quick-tools" | "external" | "all-tools" | "code" | "tables" | "overview" | "tasks" | "cards" | "focus" | "notes" | "utilities" | "data" | "files" | "math" | "learning" | "writing" | "drawing" | "reading" | "presets";
 
 const menu: { id: View; name: string; symbol: string; description: string }[] = [
   { id: "overview", name: "Overview", symbol: "◫", description: "Your workspace at a glance" },
@@ -48,6 +49,7 @@ const menu: { id: View; name: string; symbol: string; description: string }[] = 
   { id: "office-privacy", name: "Office & Privacy / 办公与隐私工具", symbol: "▥", description: "CSV contacts, mail merge, duplicate file hashes, hidden Unicode" },
   { id: "workflows", name: "Workflow Studio / 批处理工作室", symbol: "⇄", description: "Safe selective ZIP export and image resize → convert → rename → ZIP" },
   { id: "free-formats", name: "Free Formats / 格式自由工具", symbol: "▧", description: "Offline Excel interchange, photo differences and HTML / Unicode coding" },
+  { id: "charts", name: "Chart Studio / 数据可视化", symbol: "▥", description: "CSV data → bar/line charts, aggregation and SVG export" },
   { id: "external", name: "External Tools / 外部工具", symbol: "↗", description: "Curated official websites for advanced tools" },
   { id: "code", name: "Code editor", symbol: "</>", description: "Local code drafts and snippet library" },
   { id: "tables", name: "CSV Table Desk", symbol: "▤", description: "Filter, sort and export CSV or TSV data" },
@@ -66,6 +68,14 @@ const menu: { id: View; name: string; symbol: string; description: string }[] = 
   { id: "data", name: "Backup & privacy", symbol: "▤", description: "Save or restore your workspace" },
 ];
 
+const navigationGroups:{title:string;items:View[]}[]=[
+  {title:"DISCOVER",items:["overview","all-tools","charts"]},
+  {title:"FILES & CREATION",items:["files","free-formats","writing","drawing","tables"]},
+  {title:"UNIVERSAL BOX",items:["quick-tools","universal","universal-box","universal-lab","media-files","office-privacy","workflows","utilities","external"]},
+  {title:"STUDY & SCIENCE",items:["math","learning","reading","cards","focus"]},
+  {title:"PERSONAL WORKSPACE",items:["tasks","notes","code","presets","data"]},
+];
+
 function todayIso(): string {
   const date = new Date();
   const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
@@ -81,7 +91,57 @@ function taskSort(a: DeskTask, b: DeskTask): number {
 export default function App() {
   const [view, setView] = useState<View>("overview");
   const [toolMode,setToolMode] = useState("");
-  function openTool(target: string, module?: string) { if (!menu.some(item => item.id === target)) return; setToolMode(module ?? ""); setView(target as View); }
+  const [theme,setTheme] = useState<"light"|"dark">(()=>{
+    try{return localStorage.getItem("universal-box-theme")==="dark"?"dark":"light";}
+    catch{return "light";}
+  });
+  const [favoriteViews,setFavoriteViews]=useState<View[]>(()=>{
+    try{const v=JSON.parse(localStorage.getItem("universal-box-favorite-views")||"[]") as unknown;
+      return Array.isArray(v)?v.filter((x):x is View=>typeof x==="string"&&menu.some(i=>i.id===x)).slice(0,12):[];}
+    catch{return [];}
+  });
+  const [recentViews,setRecentViews]=useState<View[]>(()=>{
+    try{const v=JSON.parse(localStorage.getItem("universal-box-recent-views")||"[]") as unknown;
+      return Array.isArray(v)?v.filter((x):x is View=>typeof x==="string"&&menu.some(i=>i.id===x)).slice(0,8):[];}
+    catch{return [];}
+  });
+  const [commandOpen,setCommandOpen]=useState(false);
+  const [commandQuery,setCommandQuery]=useState("");
+  function openTool(target: string, module?: string) {
+    if (!menu.some(item => item.id === target)) return;
+    const id=target as View;
+    setToolMode(module ?? "");setView(id);setCommandOpen(false);setCommandQuery("");
+    setRecentViews(previous=>[id,...previous.filter(v=>v!==id)].slice(0,8));
+  }
+  function toggleFavorite(id:View){
+    setFavoriteViews(previous=>previous.includes(id)?previous.filter(v=>v!==id):[...previous,id].slice(0,12));
+  }
+  const commands=useMemo(()=>{
+    const term=commandQuery.trim().toLocaleLowerCase();
+    const values=[
+      ...menu.map(item=>({id:"view-"+item.id,name:item.name,description:item.description,view:item.id as string,module:undefined as string|undefined})),
+      ...LOCAL_TOOLS.map(item=>({id:"tool-"+item.id,name:item.name,description:item.area,view:item.view,module:item.module})),
+    ];
+    return (term?values.filter(item=>(item.name+" "+item.description).toLocaleLowerCase().includes(term)):values.filter(item=>["all-tools","workflows","files","charts","office-privacy","free-formats"].includes(item.view))).slice(0,12);
+  },[commandQuery]);
+  useEffect(()=>{
+    try{localStorage.setItem("universal-box-theme",theme);}catch{/* preferences are optional */}
+  },[theme]);
+  useEffect(()=>{
+    try{localStorage.setItem("universal-box-favorite-views",JSON.stringify(favoriteViews));}catch{/* preferences are optional */}
+  },[favoriteViews]);
+  useEffect(()=>{
+    try{localStorage.setItem("universal-box-recent-views",JSON.stringify(recentViews));}catch{/* preferences are optional */}
+  },[recentViews]);
+  useEffect(()=>{
+    const keydown=(event:KeyboardEvent)=>{
+      if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==="k"){
+        event.preventDefault();setCommandOpen(open=>!open);
+      }else if(event.key==="Escape")setCommandOpen(false);
+    };
+    window.addEventListener("keydown",keydown);
+    return ()=>window.removeEventListener("keydown",keydown);
+  },[]);
   const [workspace, setWorkspace] = useState<WorkspaceData>(() => readWorkspace());
   const [savedStatus, setSavedStatus] = useState("Loading local workspace...");
   const [storageReady, setStorageReady] = useState(false);
@@ -262,30 +322,104 @@ export default function App() {
   const activeMenu = menu.find((item) => item.id === view) ?? menu[0];
 
   return (
-    <main className="app-shell">
+    <main className={"app-shell "+(theme==="dark"?"theme-dark":"theme-light")} data-theme={theme}>
       <aside className="sidebar">
-        <div className="brand-mark">D</div><div className="brand-name">Daily Desk</div>
-        <p className="brand-caption">LOCAL-FIRST PRODUCTIVITY</p>
-        <div className="nav-label">WORKSPACES</div>
-        <nav aria-label="Daily Desk navigation">
-          {menu.map((item) => (
-            <button type="button" key={item.id} className={view === item.id ? "nav-item active" : "nav-item"} aria-current={view === item.id ? "page" : undefined} onClick={() => {setToolMode("");setView(item.id);}}>
-              <span aria-hidden="true">{item.symbol}</span><span>{item.name}</span>{item.id === "tasks" && <span className="nav-count">{openTasks}</span>}
-            </button>
-          ))}
+        <button type="button" className="sidebar-brand" onClick={()=>openTool("overview")} aria-label="Universal Box Home">
+          <span className="brand-mark">U</span><span className="sidebar-brand-text">
+            <strong className="brand-name">Universal Box</strong><span className="brand-caption">YOUR TOOLS · YOUR DEVICE</span>
+          </span>
+        </button>
+        <button className="sidebar-quick-search" type="button" onClick={()=>{setCommandOpen(true);setCommandQuery("");}}>
+          <span aria-hidden="true">⌕</span><span>Search tools</span><kbd>⌘ K</kbd>
+        </button>
+        <nav aria-label="Universal Box workspaces" className="sidebar-nav">
+          {navigationGroups.map(group=><details className="nav-group" key={group.title} open>
+            <summary className="nav-label">{group.title}</summary>
+            {group.items.map(id=>{
+              const item=menu.find(value=>value.id===id)!;
+              return <button type="button" key={id} aria-label={item.name} title={item.name} className={view===id?"nav-item active":"nav-item"}
+                aria-current={view===id?"page":undefined} onClick={()=>openTool(id)}>
+                <span className="nav-symbol" aria-hidden="true">{item.symbol}</span>
+                <span className="nav-name">{item.name}</span>
+                {item.id==="tasks"&&<span className="nav-count">{openTasks}</span>}
+              </button>;
+            })}
+          </details>)}
         </nav>
-        <div className="sidebar-bottom"><span className="status-dot" /> <span role="status">{savedStatus}</span><p>No sign-in. No Vercel connection. Native app data is stored locally; export a backup before changing computers.</p></div>
+        <div className="sidebar-bottom">
+          <div className="sidebar-health"><span className="status-dot" /><span role="status">{savedStatus}</span></div>
+          <p>Private by default. Your work stays on your device. Export a backup before switching computers.</p>
+        </div>
       </aside>
 
       <section className="main-panel">
-        <header className="topbar"><span>Daily Desk / {activeMenu.name}</span><span className="version-pill">DESKTOP PREVIEW · v0.25</span></header>
+        <header className="topbar">
+          <div className="topbar-title"><span className="topbar-location">WORKSPACE / {activeMenu.name}</span><strong>{activeMenu.name.split(" / ")[0]}</strong></div>
+          <div className="topbar-actions">
+            <button className="topbar-control topbar-search" type="button" title="Search tools (⌘/Ctrl+K)" onClick={()=>{setCommandOpen(true);setCommandQuery("");}}>⌕ <span>Find a tool</span> <kbd>⌘K</kbd></button>
+            <button className="topbar-control icon-control" type="button" onClick={()=>toggleFavorite(view)} title={favoriteViews.includes(view)?"Remove workspace favorite":"Favorite this workspace"}
+              aria-label={favoriteViews.includes(view)?"Remove favorite":"Add workspace favorite"} aria-pressed={favoriteViews.includes(view)}>{favoriteViews.includes(view)?"★":"☆"}</button>
+            <button className="topbar-control icon-control" type="button" onClick={()=>setTheme(previous=>previous==="light"?"dark":"light")}
+              title={theme==="light"?"Switch to dark mode":"Switch to light mode"} aria-label={theme==="light"?"Switch to dark mode":"Switch to light mode"}>
+              {theme==="light"?"◐":"☀"}
+            </button>
+            <span className="version-pill">v0.26</span>
+          </div>
+        </header>
         <div className="content">
           {view === "overview" && <>
-            <p className="eyebrow">GOOD TO HAVE YOU HERE</p><h1>Your day, in one place.</h1>
-            <p className="intro">Your local workspace for study, planning and lightweight office tools. Every module opens independently of the AP website.</p>
-            <div className="hero-card"><div><p className="card-eyebrow">TODAY AT A GLANCE</p><h2>Small steps add up.</h2><p>{openTasks} things left to do · {workspace.cards.length} flashcards ready</p></div><div className="progress-summary"><strong>{progress}%</strong><span>of tasks complete</span></div></div>
-            <div className="section-heading"><div><h2>Open a tool</h2><p>Choose a focused workspace.</p></div></div>
-            <div className="tool-grid">{menu.filter((item) => item.id !== "overview").map((item) => <button type="button" key={item.id} className="tool-card" onClick={() => {setToolMode("");setView(item.id);}}><span className="tool-icon">{item.symbol}</span><strong>{item.name}</strong><span className="subtle">{item.description}</span><span className="tool-state">OPEN TOOL →</span></button>)}</div>
+            <div className="welcome-heading"><div>
+              <p className="eyebrow">YOUR PRIVATE DIGITAL TOOLBOX</p>
+              <h1>Everything useful. All in one place.</h1>
+              <p className="intro">Create, organize, convert and visualize — with real tools that run on your device. No required account, ads or pay-per-click unlocks.</p>
+            </div></div>
+            <div className="hero-card">
+              <div className="hero-copy">
+                <p className="card-eyebrow">WELCOME TO UNIVERSAL BOX</p>
+                <h2>Your tools.<br/>Your rules.</h2>
+                <p>Work faster with a connected desktop toolbox, not a maze of websites.</p>
+                <div className="hero-actions">
+                  <button type="button" className="hero-primary" onClick={()=>openTool("all-tools")}>Explore {LOCAL_TOOLS.length} tool entries <span aria-hidden="true">↗</span></button>
+                  <button type="button" className="hero-secondary" onClick={()=>{setCommandOpen(true);setCommandQuery("");}}>⌘K Quick launch</button>
+                </div>
+              </div>
+              <div className="hero-visual" aria-hidden="true">
+                <div className="visual-orbit orbit-one"/><div className="visual-orbit orbit-two"/>
+                <div className="visual-core">U</div>
+                <div className="visual-chip chip-top">✦ &nbsp; Create</div>
+                <div className="visual-chip chip-right">◈ &nbsp; Convert</div>
+                <div className="visual-chip chip-bottom">▥ &nbsp; Visualize</div>
+              </div>
+            </div>
+            <div className="overview-insights">
+              <div className="insight-card"><span>READY TO USE</span><strong>{LOCAL_TOOLS.length}</strong><small>searchable tool entries</small></div>
+              <div className="insight-card"><span>YOUR MOMENTUM</span><strong>{progress}%</strong><small>tasks completed</small>
+                <div className="insight-progress"><span style={{width:progress+"%"}} /></div>
+              </div>
+              <div className="insight-card"><span>LOCAL WORKSPACE</span><strong>{workspace.cards.length}</strong><small>flashcards available</small></div>
+            </div>
+            <div className="section-heading"><div><p className="eyebrow">GO STRAIGHT TO WHAT MATTERS</p><h2>{favoriteViews.length?"Your favorites":"Start creating"}</h2>
+              <p className="subtle">Pin workspaces with the star in the top bar. Favorite choices stay on this device.</p></div>
+              <button className="secondary-button" type="button" onClick={()=>openTool("all-tools")}>All tools ↗</button>
+            </div>
+            <div className="tool-grid overview-grid">
+              {(favoriteViews.length?favoriteViews:["files","workflows","free-formats","charts","office-privacy","universal-box"] as View[]).map(id=>{
+                const item=menu.find(m=>m.id===id)!;
+                return <button key={id} type="button" className="tool-card" onClick={()=>openTool(id)}>
+                  <span className="tool-icon">{item.symbol}</span><strong>{item.name}</strong>
+                  <span className="subtle">{item.description}</span><span className="tool-state">OPEN WORKSPACE →</span>
+                </button>;
+              })}
+            </div>
+            {recentViews.length>0&&<>
+              <div className="section-heading"><div><p className="eyebrow">PICK UP WHERE YOU LEFT OFF</p><h2>Recently opened</h2></div></div>
+              <div className="recent-strip">{recentViews.slice(0,6).map(id=>{
+                const item=menu.find(x=>x.id===id)!;
+                return <button className="recent-link" type="button" key={id} onClick={()=>openTool(id)}>
+                  <span aria-hidden="true">{item.symbol}</span>{item.name}<span aria-hidden="true">↗</span>
+                </button>;
+              })}</div>
+            </>}
           </>}
           {view === "tasks" && renderPlanner()}
           {view === "cards" && <Flashcards cards={workspace.cards} onChange={(cards) => setWorkspace((current) => ({ ...current, cards }))} />}
@@ -300,6 +434,7 @@ export default function App() {
           {view === "office-privacy" && <OfficePrivacyDesk key={toolMode} initialMode={(toolMode||"contacts") as OfficePrivacyMode}/> }
           {view === "workflows" && <WorkflowDesk key={toolMode} initialMode={(toolMode||"zip-selective") as WorkflowMode}/> }
           {view === "free-formats" && <FreeFormatsDesk key={toolMode} initialMode={(toolMode||"spreadsheet") as FreeFormatsMode}/> }
+          {view === "charts" && <ChartDesk /> }
           {view === "external" && <ExternalTools onOpenPresets={()=>openTool("presets")} />}
           {view === "code" && <CodeDesk snippets={workspace.snippets??[]} onChange={snippets=>setWorkspace(current=>({...current,snippets}))} />}
           {view === "tables" && <DataDesk />}
@@ -312,9 +447,30 @@ export default function App() {
           {view === "writing" && <WritingDesk markdown={workspace.documentMarkdown ?? ""} onChange={value=>setWorkspace(current=>({...current,documentMarkdown:value}))}/>}
           {view === "drawing" && <DrawingDesk strokes={workspace.drawing ?? []} onChange={value=>setWorkspace(current=>({...current,drawing:value}))}/>}
           {view === "data" && <section className="panel"><p className="eyebrow">PORTABLE WORKSPACE</p><h2>Backup & privacy</h2><p className="subtle">The desktop app now saves tasks, flashcards and notes in its own local app-data file using atomic writes. A browser preview still uses localStorage. Nothing is synced to the AP website or Vercel.</p><div className="actions"><button className="primary-button" type="button" onClick={() => { void exportBackup(); }}>Export JSON backup</button><button className="secondary-button" type="button" onClick={() => { void importFromNativeDialog(); }}>Import with native file picker</button></div><div className="import-group"><label className="field-label" htmlFor="import-workspace">Or restore from a Daily Desk v2 JSON backup using a file input</label><input className="field" type="file" id="import-workspace" accept=".json,application/json" onChange={(event) => { void importBackup(event); }} /></div>{dataMessage && <p className="subtle" role="status">{dataMessage}</p>}<p className="subtle">Tip: Export a backup before reinstalling or changing devices. Import replaces the current workspace only after confirmation.</p></section>}
-          <footer>DAILY DESK <span>Separate desktop app · Knowledge-Explorer monorepo</span></footer>
+          <footer>UNIVERSAL BOX <span>Local-first desktop toolkit · powered by Daily Desk</span></footer>
         </div>
       </section>
+      {commandOpen&&<div className="command-backdrop" onMouseDown={()=>setCommandOpen(false)}>
+        <div className="command-dialog" role="dialog" aria-modal="true" aria-label="Search all Universal Box tools"
+          onMouseDown={event=>event.stopPropagation()}>
+          <div className="command-search-head"><span aria-hidden="true">⌕</span>
+            <input autoFocus className="command-input" type="search" placeholder="Find a tool or workspace…" value={commandQuery} onChange={event=>setCommandQuery(event.target.value)}
+              onKeyDown={event=>{if(event.key==="Enter"&&commands[0])openTool(commands[0].view,commands[0].module);}}/>
+            <button type="button" className="command-close" onClick={()=>setCommandOpen(false)} aria-label="Close tool search">ESC</button>
+          </div>
+          <div className="command-meta">{commandQuery?"MATCHING TOOLS":"SUGGESTED WORKSPACES"}</div>
+          <div className="command-results">
+            {commands.length===0?<p className="empty-state">No matches. Try PDF, Excel, image, chart or ZIP.</p>
+              :commands.map((item,index)=><button key={item.id} type="button" className="command-result"
+                onClick={()=>openTool(item.view,item.module)}>
+                <span className="command-result-icon">{item.module?"◇":"▦"}</span>
+                <span className="command-result-text"><strong>{item.name}</strong><small>{item.description}</small></span>
+                {index===0&&<kbd>↵</kbd>}
+              </button>)}
+          </div>
+          <div className="command-footer"><span>Enter opens first match · Esc closes</span><span>PRIVATE • ON DEVICE</span></div>
+        </div>
+      </div>}
     </main>
   );
 }

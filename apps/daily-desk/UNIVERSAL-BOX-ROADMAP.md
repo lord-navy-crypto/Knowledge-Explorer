@@ -136,3 +136,13 @@ Next improvements should prioritize independent verified OCR and Office interope
 - Added Vitest for actual XLSX roundtrip, shared-string/numeric/formula-cache import, unsafe relationship rejection, macros, CJK, cell limits, pixel masks and numeric HTML entities.
 
 Remaining important future features: packaged offline OCR with real language models, full multi-sheet XLSX editing, video/audio codec integration, durable signed/notarized releases and real-device manual UI testing. Do not represent these as shipped.
+
+## v0.26 completed: visual system and first-class data charts
+
+- Introduced consolidated CSS design tokens for visual consistency across shell, tools, forms and tool cards, plus theme toggle and compact responsive navigation.
+- Modernized the dashboard with featured workspace grid, statistics, favorites and recent destinations. Added global ⌘/Ctrl+K searchable command launcher for all workspaces/tools; optional preferences remain local.
+- All Tools catalog now has horizontal category chips and per-tool favorites, filtered tool count and empty states.
+- Shipped offline CSV Data Chart Studio for bar/line plots, safe aggregations, downloadable SVG and summary CSV with input and category limits.
+- Kept existing tools and routes, no auth/cloud/paid dependency added.
+
+QA follow-up: visual inspection of older modules in dark mode; keyboard focus trapping and tab ordering; audit display contrast and accessibility; replace remaining hardcoded color styles in specialist components. Future functionality includes verified offline OCR, advanced Office document interoperability and signed/notarized releases.
