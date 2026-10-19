@@ -11,7 +11,7 @@ export function encodeHtmlEntities(input:string):string{
 export function decodeHtmlEntities(input:string):string{
  if(input.length>100_000)throw Error("Maximum 100,000 text characters.");
  return input.replace(/&(#(?:[xX][0-9a-fA-F]+|[0-9]+)|[a-zA-Z][a-zA-Z0-9]+);/gu,(source,token:string)=>{
-   if(Object.hasOwn(NAMED,token))return NAMED[token];
+   if(Object.prototype.hasOwnProperty.call(NAMED,token))return NAMED[token];
    if(token.startsWith("#")){
      const hex=/^#x/iu.test(token),value=Number.parseInt(token.slice(hex?2:1),hex?16:10);
      if(!Number.isInteger(value)||value<1||value>0x10ffff||(value>=0xd800&&value<=0xdfff))
