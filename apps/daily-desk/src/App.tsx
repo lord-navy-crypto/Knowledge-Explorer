@@ -3,6 +3,8 @@ import Flashcards from "./components/Flashcards";
 import FocusTimer from "./components/FocusTimer";
 import EverydayTools, {type Utility} from "./components/EverydayTools";
 import ToolLaunchpad from "./components/ToolLaunchpad";
+import QuickKitDesk, {type QuickKitMode} from "./components/QuickKitDesk";
+import ExternalTools from "./components/ExternalTools";
 import CodeDesk from "./components/CodeDesk";
 import DataDesk from "./components/DataDesk";
 import FileDesk, {type FileTab} from "./components/FileDesk";
@@ -26,11 +28,13 @@ import {
   persistWorkspace,
 } from "./lib/nativeStorage";
 
-type View = "all-tools" | "code" | "tables" | "overview" | "tasks" | "cards" | "focus" | "notes" | "utilities" | "data" | "files" | "math" | "learning" | "writing" | "drawing" | "reading" | "presets";
+type View = "quick-tools" | "external" | "all-tools" | "code" | "tables" | "overview" | "tasks" | "cards" | "focus" | "notes" | "utilities" | "data" | "files" | "math" | "learning" | "writing" | "drawing" | "reading" | "presets";
 
 const menu: { id: View; name: string; symbol: string; description: string }[] = [
   { id: "overview", name: "Overview", symbol: "◫", description: "Your workspace at a glance" },
   { id: "all-tools", name: "All tools / 全部工具", symbol: "▦", description: "Search and open every available tool" },
+  { id: "quick-tools", name: "Quick Tools / 快捷小工具", symbol: "✂", description: "Text cleaning, cleaner links, dates and grades" },
+  { id: "external", name: "External Tools / 外部工具", symbol: "↗", description: "Curated official websites for advanced tools" },
   { id: "code", name: "Code editor", symbol: "</>", description: "Local code drafts and snippet library" },
   { id: "tables", name: "CSV Table Desk", symbol: "▤", description: "Filter, sort and export CSV or TSV data" },
   { id: "tasks", name: "Planner", symbol: "✓", description: "Prioritise the next step" },
@@ -260,7 +264,7 @@ export default function App() {
       </aside>
 
       <section className="main-panel">
-        <header className="topbar"><span>Daily Desk / {activeMenu.name}</span><span className="version-pill">DESKTOP PREVIEW · v0.15</span></header>
+        <header className="topbar"><span>Daily Desk / {activeMenu.name}</span><span className="version-pill">DESKTOP PREVIEW · v0.16</span></header>
         <div className="content">
           {view === "overview" && <>
             <p className="eyebrow">GOOD TO HAVE YOU HERE</p><h1>Your day, in one place.</h1>
@@ -274,6 +278,8 @@ export default function App() {
           <div hidden={view !== "focus"}><FocusTimer /></div>
           {view === "notes" && <section className="panel"><p className="eyebrow">LOCAL NOTES</p><h2>Keep ideas close at hand.</h2><p className="subtle">Your notes are automatically saved in this application. Export backups in Backup & privacy.</p><label className="field-label" htmlFor="my-notes">My notebook</label><textarea id="my-notes" className="field text-editor" rows={20} maxLength={50000} placeholder="Capture a thought, write a draft or summarise a concept…" value={workspace.notes} onChange={(event) => setWorkspace((current) => ({ ...current, notes: event.target.value }))}/><p className="subtle">{workspace.notes.length.toLocaleString()} characters</p></section>}
           {view === "all-tools" && <ToolLaunchpad onLaunch={openTool} />}
+          {view === "quick-tools" && <QuickKitDesk key={toolMode} initialMode={(toolMode||"text") as QuickKitMode} />}
+          {view === "external" && <ExternalTools onOpenPresets={()=>openTool("presets")} />}
           {view === "code" && <CodeDesk snippets={workspace.snippets??[]} onChange={snippets=>setWorkspace(current=>({...current,snippets}))} />}
           {view === "tables" && <DataDesk />}
           {view === "utilities" && <EverydayTools key={toolMode} initial={(toolMode || "stats") as Utility} />}

@@ -2,6 +2,10 @@ import {useMemo,useState} from "react";
 
 export type LocalTool = {id:string;name:string;area:string;view:string;module?:string};
 export const LOCAL_TOOLS:LocalTool[] = [
+ {id:"quick-clean-text",name:"Text Cleaner · 一键文本整理",area:"Text",view:"quick-tools",module:"text"},
+ {id:"quick-clean-links",name:"Tracking Link Cleaner · 清理追踪链接",area:"Text",view:"quick-tools",module:"links"},
+ {id:"quick-date",name:"Date Difference & Date Shift",area:"Study",view:"quick-tools",module:"dates"},
+ {id:"quick-grade",name:"Weighted Grade & Exam Target",area:"Study",view:"quick-tools",module:"grades"},
  {id:"calculator",name:"Calculator / 计算器",area:"Math",view:"math",module:"calculator"},
  {id:"graph",name:"Advanced Graph / 高级绘图",area:"Math",view:"math",module:"graph"},
  {id:"calculus",name:"Derivatives, Integrals & Roots",area:"Math",view:"math",module:"calculus"},
@@ -68,6 +72,9 @@ export default function ToolLaunchpad({onLaunch}:{onLaunch:(view:string,module?:
    <div className="tool-grid">{filtered.map(item=><button key={item.id} className="tool-card" type="button" onClick={()=>onLaunch(item.view,item.module)}>
       <strong>{item.name}</strong><span className="subtle">{item.area}</span><span className="tool-state">OPEN TOOL →</span>
    </button>)}</div>
+   <h3>Need more specialized features?</h3>
+   <p className="subtle">The curated External Tools hub opens official third-party websites explicitly in your default browser. No outside website is treated as a local feature.</p>
+   <button className="secondary-button" type="button" onClick={()=>onLaunch("external")}>Browse External Tools ↗</button>
    <h3>Not represented as offline equivalents</h3>
    <p className="subtle">{NOT_LOCAL.join(" · ")}. These cannot be honestly claimed as copied into the local application.</p>
  </section>;

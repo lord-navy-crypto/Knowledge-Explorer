@@ -80,3 +80,7 @@ Units & constants is now a core desktop equivalent. Advanced matrix/complex/stat
 ## v0.15 advanced calculator follow-up
 
 The website `calculator` entry remains **partial**: the desktop Math Workbench now includes a distinct ClassWiz tab for complex arithmetic, 2×2/3×3 matrix operations, paired linear regression and normal/binomial distribution functions. Remaining mode/UI disparities, web-specific calculator conveniences, and on-device Mac GUI checks are not considered finished. The site-wide 21 core / 20 partial / 3 external audit counts are unchanged.
+
+## v0.16 standalone Quick Tools and external navigation
+
+This release **adds** four Daily Desk-only QuickKit helpers (copy/paste text cleanup, link tracking parameter cleanup, date shift/difference and grade planning). The original website's 44-entry equivalence audit is unchanged because these are newly designed desktop conveniences, not ports of existing website entries. The app's separate External Tools catalog explicitly opens real third-party official websites and must **never be counted** as a local feature migration. macOS manual testing is still required.
