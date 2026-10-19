@@ -183,3 +183,17 @@ Tests exercise representative values, malformed inputs, singular matrices, compl
 **External Tools / 外部工具** is now a separate sidebar item with category/search and official URLs for PDF24, ZoteroBib, Overleaf, Desmos, GeoGebra, Wolfram|Alpha, diagrams.net, Excalidraw and Photopea. Each external site is launched explicitly through the Tauri system browser opener (or a separate browser tab in preview). No embedding, silent redirects, automatic file transfer or site credentials.
 
 The full feature suite remains separate from `ap-reasonlab/`; only `apps/daily-desk/` changed. The desktop release is still a preview, and macOS WebView/browser-opening and export UX must be manually tested. Online services have their own account/privacy/pricing terms; listing them is not a guarantee they are ad-free.
+
+## v0.17 preview: PDF Freedom Studio (offline overlays)
+
+The existing **File desk → PDF** now includes **Add text / sign / watermark**, also accessible directly from All tools. It provides four on-device PDF operations, without uploading to the AP website or a paid service:
+- Add a short **selectable text label** at a predefined corner/centre, on all or selected pages.
+- Add a translucent **diagonal watermark** to selected pages.
+- Add **sequential page numbers**, with optional prefix/suffix and start value, in selected-page order.
+- Add a local **PNG/JPEG signature or illustration** as a scaled image overlay on selected pages.
+
+A local **TTF/OTF** file can be optionally embedded for Chinese and other Unicode text. Without a custom font, text is restricted to printable ASCII with clear guidance, rather than mangling glyphs. The editor generates a new PDF preview locally and offers non-destructive save. A generated overlay is not a secure redaction and is not a replacement for editing original PDF text. It does not provide certified electronic/digital signing, flattening interactive forms or an advanced OCR engine.
+
+Safety limits: PDFs ≤25 MB / ≤300 pages, overlays ≤120 characters, image inputs ≤8 MB, font input ≤12 MB, export ≤20 MB. Some rotated pages require visual checking. The original PDF is never overwritten; all output is exported through the existing native file save dialog. CI verifies TypeScript, tests, Rust and Apple Silicon packaging; visual WebView preview and Mac print fidelity require real-device acceptance.
+
+The website `ap-reasonlab/` remains entirely separate; no new cloud upload, authentication or subscription is introduced.
