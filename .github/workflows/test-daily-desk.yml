@@ -45,6 +45,9 @@ jobs:
       - name: Check TypeScript and build frontend
         run: npm run build
 
+      - name: Generate Tauri icons
+        run: npx tauri icon src-tauri/app-icon.svg
+
       - name: Build macOS desktop bundle
         run: npm run tauri:build -- --target aarch64-apple-darwin
 
