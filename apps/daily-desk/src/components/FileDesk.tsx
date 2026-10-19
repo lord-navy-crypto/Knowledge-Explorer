@@ -1,5 +1,6 @@
 import { type ChangeEvent, useEffect, useState } from "react";
 import { PDFDocument, degrees } from "pdf-lib";
+import JSZip from "jszip";
 import { exportFile } from "../lib/output";
 
 type Tab = "pdf" | "images" | "word";
@@ -64,6 +65,7 @@ export default function FileDesk() {
   const [files, setFiles] = useState<File[]>([]);
   const [pages, setPages] = useState("1-");
   const [rotation, setRotation] = useState(90);
+  const [splitEach, setSplitEach] = useState(false);
   const [pdfCount, setPdfCount] = useState(0);
   const [image, setImage] = useState<File | null>(null);
   const [imageMode, setImageMode] = useState<"convert" | "crop">("convert");
@@ -128,11 +130,26 @@ export default function FileDesk() {
         const source = await PDFDocument.load(await file.arrayBuffer());
         const selected = parsePages(pages, source.getPageCount());
         if (pdfMode === "split") {
-          const output = await PDFDocument.create();
-          const copied = await output.copyPages(source, selected);
-          copied.forEach((page) => output.addPage(page));
-          const saved = await exportFile(safeName(file.name) + "-pages.pdf", await output.save());
-          setStatus(saved ? `Exported ${selected.length} pages.` : "Save cancelled.");
+          if (splitEach) {
+            if (selected.length > 50) throw new Error("Batch page ZIP exports support a maximum of 50 pages.");
+            const zip = new JSZip();
+            for (const pageIndex of selected) {
+              const pageFile = await PDFDocument.create();
+              const [page] = await pageFile.copyPages(source, [pageIndex]);
+              pageFile.addPage(page);
+              const outputName = safeName(file.name) + "-page-" + String(pageIndex+1).padStart(3, "0") + ".pdf";
+              zip.file(outputName, await pageFile.save());
+            }
+            const archive = await zip.generateAsync({ type: "uint8array", compression: "DEFLATE", compressionOptions: { level: 3 } });
+            const saved = await exportFile(safeName(file.name) + "-individual-pages.zip", archive);
+            setStatus(saved ? `Saved ${selected.length} one-page PDFs in a ZIP archive.` : "Save cancelled.");
+          } else {
+            const output = await PDFDocument.create();
+            const copied = await output.copyPages(source, selected);
+            copied.forEach((page) => output.addPage(page));
+            const saved = await exportFile(safeName(file.name) + "-pages.pdf", await output.save());
+            setStatus(saved ? `Exported ${selected.length} pages into one PDF.` : "Save cancelled.");
+          }
         } else if (pdfMode === "rotate") {
           for (const index of selected) {
             const page = source.getPage(index);
@@ -235,6 +252,7 @@ export default function FileDesk() {
         <input id="pdf-picker" className="field" type="file" accept=".pdf,application/pdf" multiple={pdfMode === "merge"} onChange={(event) => { void onPdfChange(event); }} />
         {files.length > 0 && <p className="subtle">Selected: {files.map((file) => file.name).join(" · ")} {pdfCount > 0 && `· first PDF ${pdfCount} page(s)`}</p>}
         {(pdfMode === "split" || pdfMode === "rotate") && <><label className="field-label" htmlFor="pdf-pages">Pages (e.g. 1-3,5,7-)</label><input id="pdf-pages" className="field" value={pages} onChange={(e) => setPages(e.target.value)} /></>}
+        {pdfMode === "split" && <label className="field-label"><input type="checkbox" checked={splitEach} onChange={e => setSplitEach(e.target.checked)} /> Export each selected page as its own PDF inside a ZIP (up to 50 pages)</label>}
         {pdfMode === "rotate" && <><label className="field-label" htmlFor="pdf-angle">Degrees clockwise</label><select id="pdf-angle" className="field" value={rotation} onChange={(e) => setRotation(Number(e.target.value))}><option value={90}>90°</option><option value={180}>180°</option><option value={270}>270°</option></select></>}
         {pdfMode === "compress" && <p className="subtle">Like the web's light-compress mode, this reserializes PDF objects. Scanned/image-heavy PDFs may not shrink.</p>}
         <div className="actions"><button type="button" className="primary-button" disabled={!files.length || busy} onClick={() => { void processPdf(); }}>{busy ? "Processing…" : "Process & save PDF"}</button></div>

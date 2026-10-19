@@ -10,6 +10,10 @@ export type DeskCard = {
   id: string;
   front: string;
   back: string;
+  deck?: string;
+  due?: string;
+  interval?: number;
+  reviews?: number;
 };
 export type DeskExam = { id: string; name: string; date: string };
 export type DeskMistake = { id: string; topic: string; correction: string };
@@ -67,6 +71,10 @@ function readCard(value: unknown): DeskCard | null {
     id: typeof value.id === "string" && value.id.length < 100 ? value.id : crypto.randomUUID(),
     front,
     back,
+    deck: typeof value.deck === "string" ? value.deck.trim().slice(0, 50) || "General" : "General",
+    due: typeof value.due === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value.due) ? value.due : "",
+    interval: typeof value.interval === "number" && Number.isFinite(value.interval) ? Math.max(0,Math.min(365,Math.floor(value.interval))) : 0,
+    reviews: typeof value.reviews === "number" && Number.isFinite(value.reviews) ? Math.max(0,Math.min(100000,Math.floor(value.reviews))) : 0,
   };
 }
 
