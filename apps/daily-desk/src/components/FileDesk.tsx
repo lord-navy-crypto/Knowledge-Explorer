@@ -6,7 +6,7 @@ import remarkGfm from "remark-gfm";
 import { exportFile } from "../lib/output";
 import PdfPagePreview from "./PdfPagePreview";
 
-type Tab = "pdf" | "images" | "word";
+export type FileTab = "pdf" | "images" | "word";
 type PdfMode = "merge" | "split" | "rotate" | "compress";
 type ImageFormat = "image/jpeg" | "image/png" | "image/webp";
 
@@ -62,8 +62,8 @@ function htmlToMarkdown(html: string): string {
   return Array.from(parsed.body.childNodes).map(render).join("").replace(/\n{3,}/g,"\n\n").trim();
 }
 
-export default function FileDesk({ onSendToWriting }: { onSendToWriting?: (markdown: string) => void }) {
-  const [tab, setTab] = useState<Tab>("pdf");
+export default function FileDesk({ onSendToWriting, initialTab = "pdf" }: { onSendToWriting?: (markdown: string) => void; initialTab?: FileTab }) {
+  const [tab, setTab] = useState<FileTab>(initialTab);
   const [pdfMode, setPdfMode] = useState<PdfMode>("merge");
   const [files, setFiles] = useState<File[]>([]);
   const [pages, setPages] = useState("1-");
