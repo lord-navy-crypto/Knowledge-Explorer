@@ -101,3 +101,11 @@ The desktop program remains separate from the AP website. These changes are not 
 - **Word preview:** import a `.docx`, review its converted Markdown, send that content into the persistent Writing Desk, and open the system Print / Save PDF dialog where the macOS WebView supports it.
 - DOCX→PDF is **not pixel-identical** to Microsoft Word layout. Complex tables, figures and pagination may differ.
 - v0.7 is gated by TypeScript, Vitest, Rust tests and macOS DMG CI before integration. Real Mac printing interactions still need user verification.
+
+## v0.8 preview: richer offline authoring
+
+- **Advanced Grapher**: Multiple Cartesian graphs, polar and parametric curves, drag/scroll or button zoom, panning and local SVG export.
+- **PDF previews**: Browser-worker-based PDF.js thumbnails (8 at a time), chosen-page preview, and page selection for existing split/rotation tools. Preview is disabled for PDFs over 25 MB.
+- **Document editor**: Local Markdown toolbar, find-and-replace, undo/redo, templates, document outline, split/edit/preview views, Markdown/plain-text import, and basic DOCX generation using the `docx` library.
+- **No cloud uploads** are required for these modules. The desktop source continues to be separate from the `ap-reasonlab/` Next.js website.
+- Word export simplifies rich styles, equations and tables; verify the output using a desktop Word reader. Print-to-PDF still depends on macOS WebView behavior.
