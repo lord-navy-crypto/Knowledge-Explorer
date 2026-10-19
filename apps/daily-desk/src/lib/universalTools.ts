@@ -1,4 +1,4 @@
-import {makeDataTable,tableToCsv} from "./tableTools";
+import {tableToCsv} from "./tableTools";
 
 /** JSON record arrays to spreadsheet-safe CSV. Reverse CSV→JSON is in CSV Table Desk. */
 export function jsonRecordsToCsv(text:string):{csv:string;rows:number;columns:number}{
@@ -21,10 +21,10 @@ export function jsonRecordsToCsv(text:string):{csv:string;rows:number;columns:nu
     return source;
   });
   if(names.length===0||names.length>100)throw new Error("Use 1–100 columns.");
-  const table=makeDataTable([names,...rows.map(row=>names.map(key=>{
+  const table={headers:names,rows:rows.map(row=>names.map(key=>{
     if(!Object.prototype.hasOwnProperty.call(row,key)||row[key]===null)return "";
     return String(row[key]);
-  }))]);
+  }))};
   return {csv:tableToCsv(table),rows:rows.length,columns:names.length};
 }
 
