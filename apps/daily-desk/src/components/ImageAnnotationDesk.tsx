@@ -11,11 +11,12 @@ export default function ImageAnnotationDesk({file}:{file:File|null}){
  const [ready,setReady]=useState(false);
  const [status,setStatus]=useState("");
  const [busy,setBusy]=useState(false);
+ const [undoCount,setUndoCount]=useState(0);
  useEffect(()=>{
   let alive=true;
   const canvas=canvasRef.current;
   setReady(false);setStatus("");
-  undoRef.current=[];
+  undoRef.current=[];setUndoCount(0);
   if(!file||!canvas)return;
   if(!/^image\/(jpeg|png|webp)$/u.test(file.type)){setStatus("Choose a JPEG, PNG or WebP image.");return;}
   if(file.size>8_000_000){setStatus("Annotation accepts images up to 8 MB.");return;}
@@ -48,6 +49,7 @@ export default function ImageAnnotationDesk({file}:{file:File|null}){
   if(!ctx)return;
   undoRef.current.push(ctx.getImageData(0,0,canvas.width,canvas.height));
   if(undoRef.current.length>8)undoRef.current.shift();
+  setUndoCount(undoRef.current.length);
   const p=coords(event);
   ctx.beginPath();ctx.moveTo(p.x,p.y);
   ctx.lineWidth=penWidth;ctx.strokeStyle=color;ctx.lineCap="round";ctx.lineJoin="round";
@@ -68,7 +70,7 @@ export default function ImageAnnotationDesk({file}:{file:File|null}){
  }
  function undo(){
   const canvas=canvasRef.current,ctx=canvas?.getContext("2d"),image=undoRef.current.pop();
-  if(canvas&&ctx&&image){ctx.putImageData(image,0,0);setStatus("Last stroke undone.");}
+  if(canvas&&ctx&&image){ctx.putImageData(image,0,0);setUndoCount(undoRef.current.length);setStatus("Last stroke undone.");}
  }
  async function save(){
   const canvas=canvasRef.current;
@@ -95,7 +97,7 @@ export default function ImageAnnotationDesk({file}:{file:File|null}){
    <label className="field-label">Pen size {penWidth}px
     <input className="field" type="range" min={1} max={24} step={1} value={penWidth} onChange={e=>setPenWidth(Number(e.target.value))}/>
    </label>
-   <button type="button" className="secondary-button" disabled={!ready||!undoRef.current.length} onClick={undo}>Undo stroke</button>
+   <button type="button" className="secondary-button" disabled={!ready||!undoCount} onClick={undo}>Undo stroke</button>
    <button type="button" className="primary-button" disabled={!ready||busy} onClick={()=>{void save();}}>{busy?"Saving…":"Save annotated PNG"}</button>
   </div>
   <canvas ref={canvasRef} onPointerDown={start} onPointerMove={move} onPointerUp={stop} onPointerCancel={stop}
