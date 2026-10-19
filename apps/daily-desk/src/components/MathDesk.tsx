@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
 import { evaluate } from "mathjs";
 import AdvancedGrapher from "./AdvancedGrapher";
+import QuickMath from "./QuickMath";
 import katex from "katex";
 import NumericalWorkbench from "./NumericalWorkbench";
 import { combineVectors, significantFigures, roundSignificant } from "../lib/mathExtras";
 import "katex/dist/katex.min.css";
 
-type MathTab = "calculator" | "graph" | "calculus" | "units" | "notation" | "vector" | "formula" | "latex";
+export type MathTab = "extras" | "calculator" | "graph" | "calculus" | "units" | "notation" | "vector" | "formula" | "latex";
 const FORMULAS = [
   { title: "Newton's second law", math: "F_{net}=ma" },
   { title: "Kinematic displacement", math: "\\Delta x = v_0 t + \\frac12 at^2" },
@@ -25,8 +26,8 @@ const UNITS: Record<string, Record<string, number>> = {
   Pressure: { Pa: 1, kPa: 1000, bar: 100000, atm: 101325, psi: 6894.757293 },
   Speed: { "m/s": 1, "km/h": 1/3.6, mph: .44704, kn: .514444 },
 };
-export default function MathDesk(){
-  const [tab,setTab]=useState<MathTab>("calculator");
+export default function MathDesk({initialTab="calculator"}:{initialTab?:MathTab}){
+  const [tab,setTab]=useState<MathTab>(initialTab);
   const [expression,setExpression]=useState("sin(pi/2) + sqrt(16)");
   const [result,setResult]=useState("");
   const [plot,setPlot]=useState(["sin(x)","cos(x)"]);
@@ -64,7 +65,7 @@ export default function MathDesk(){
   return <section className="panel">
     <p className="eyebrow">MATH WORKBENCH · LOCAL CALCULATIONS</p><h2>Math & science utilities</h2>
     <p className="subtle">Calculator, graphs, units, vectors, scientific notation, formulas and LaTeX. Calculation runs locally; the graph preview is a simpler subset of the website's advanced grapher.</p>
-    <div className="pill-row" role="group" aria-label="Math tool">{(["calculator","graph","calculus","units","notation","vector","formula","latex"] as const).map(k=><button className={tab===k?"pill active-pill":"pill"} key={k} onClick={()=>{setTab(k);setStatus("");}} type="button">{k[0].toUpperCase()+k.slice(1)}</button>)}</div>
+    <div className="pill-row" role="group" aria-label="Math tool">{(["calculator","graph","calculus","extras","units","notation","vector","formula","latex"] as const).map(k=><button className={tab===k?"pill active-pill":"pill"} key={k} onClick={()=>{setTab(k);setStatus("");}} type="button">{k[0].toUpperCase()+k.slice(1)}</button>)}</div>
     {tab==="calculator"&&<>
       <label htmlFor="calc-expression" className="field-label">Expression · sin, cos, sqrt, log, pi, matrices</label>
       <input className="field" style={{width:"100%"}} id="calc-expression" value={expression} onChange={e=>setExpression(e.target.value)} />
@@ -73,6 +74,7 @@ export default function MathDesk(){
     </>}
     {tab==="graph"&&<AdvancedGrapher onChooseY1={expr=>{setPlot([expr]);setTab("calculus");}}/>}
     {tab==="calculus"&&<NumericalWorkbench initialFunction={plot[0]??"x"}/>}
+    {tab==="extras"&&<QuickMath/>}
     {tab==="units"&&<>
       <label className="field-label">Quantity <select className="field" value={unitType} onChange={e=>switchUnits(e.target.value)}>{Object.keys(UNITS).map(k=><option key={k}>{k}</option>)}</select></label>
       <div className="tools-pair">
