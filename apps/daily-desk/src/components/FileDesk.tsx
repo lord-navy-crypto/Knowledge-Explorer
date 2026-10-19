@@ -195,6 +195,7 @@ export default function FileDesk() {
         const blob = await new Promise<Blob>((resolve, reject) =>
           canvas.toBlob((output) => output ? resolve(output) : reject(new Error("Image encoding failed")), imageFormat, quality)
         );
+        if (blob.type && blob.type !== imageFormat) throw new Error("This macOS WebView does not support the requested image output format");
         const extension = imageFormat === "image/jpeg" ? "jpg" : imageFormat === "image/webp" ? "webp" : "png";
         const saved = await exportFile(safeName(image.name) + "-optimized." + extension, new Uint8Array(await blob.arrayBuffer()));
         setStatus(saved ? `Saved ${width}×${height} image · ${(blob.size / 1024).toFixed(1)} KB (original ${(image.size / 1024).toFixed(1)} KB).` : "Save cancelled.");
