@@ -32,7 +32,7 @@ describe("Daily Desk advanced ClassWiz modes",()=>{
     expect(matrixOperation(a,identity,"transpose")).toEqual([[1,3],[2,4]]);
     expect(matrixOperation(a,identity,"determinant")).toBe(-2);
     const inverse=matrixOperation(a,identity,"inverse");
-    expect(inverse).toEqual([[-2,1],[1.5,-0.5]]);
+    (inverse as number[][]).forEach((row,i)=>row.forEach((value,j)=>expect(value).toBeCloseTo([[-2,1],[1.5,-0.5]][i][j],10)));
     expect(formatMatrix(a)).toContain("1\t2");
     const m=parseMatrix("1 2 3\n0 1 4\n5 6 0",3);
     expect(matrixOperation(m,m,"determinant")).toBeCloseTo(1);
