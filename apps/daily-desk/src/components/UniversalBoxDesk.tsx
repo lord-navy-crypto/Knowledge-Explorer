@@ -109,8 +109,8 @@ export default function UniversalBoxDesk({initialMode="qr"}:{initialMode?:Univer
    try{await navigator.clipboard.writeText(content);setStatus("Copied to clipboard.");}
    catch{setStatus("Clipboard access unavailable; select the text and copy manually.");}
  }
- const adjustWifi=<K extends keyof WifiConfig>(key:K,value:WifiConfig[K])=>{setWifi(s=>({...s,[key]:value}));setPreview("");};
- const adjustContact=<K extends keyof ContactConfig>(key:K,value:ContactConfig[K])=>{setContact(s=>({...s,[key]:value}));setPreview("");};
+ const adjustWifi=(key:keyof WifiConfig,value:WifiConfig[keyof WifiConfig])=>{setWifi(s=>({...s,[key]:value}));setPreview("");};
+ const adjustContact=(key:keyof ContactConfig,value:ContactConfig[keyof ContactConfig])=>{setContact(s=>({...s,[key]:value}));setPreview("");};
  return <section className="panel">
    <p className="eyebrow">UNIVERSAL BOX · FREE LOCAL GENERATORS</p>
    <h2>Universal Box / 万用工具箱</h2>
