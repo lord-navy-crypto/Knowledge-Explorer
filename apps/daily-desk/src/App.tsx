@@ -2,7 +2,7 @@ import { type ChangeEvent, type FormEvent, useEffect, useMemo, useRef, useState 
 import Flashcards from "./components/Flashcards";
 import FocusTimer from "./components/FocusTimer";
 import EverydayTools, {type Utility} from "./components/EverydayTools";
-import ToolLaunchpad from "./components/ToolLaunchpad";
+import ToolLaunchpad, {LOCAL_TOOLS} from "./components/ToolLaunchpad";
 import UniversalDesk, {type UniversalMode} from "./components/UniversalDesk";
 import UniversalBoxDesk, {type UniversalBoxMode} from "./components/UniversalBoxDesk";
 import UniversalLabDesk, {type UniversalLabMode} from "./components/UniversalLabDesk";
@@ -10,6 +10,7 @@ import MediaFilesDesk, {type MediaFilesMode} from "./components/MediaFilesDesk";
 import OfficePrivacyDesk, {type OfficePrivacyMode} from "./components/OfficePrivacyDesk";
 import WorkflowDesk, {type WorkflowMode} from "./components/WorkflowDesk";
 import FreeFormatsDesk, {type FreeFormatsMode} from "./components/FreeFormatsDesk";
+import ChartDesk from "./components/ChartDesk";
 import QuickKitDesk, {type QuickKitMode} from "./components/QuickKitDesk";
 import ExternalTools from "./components/ExternalTools";
 import CodeDesk from "./components/CodeDesk";
@@ -35,7 +36,7 @@ import {
   persistWorkspace,
 } from "./lib/nativeStorage";
 
-type View = "free-formats" | "workflows" | "office-privacy" | "media-files" | "universal-lab" | "universal-box" | "universal" | "quick-tools" | "external" | "all-tools" | "code" | "tables" | "overview" | "tasks" | "cards" | "focus" | "notes" | "utilities" | "data" | "files" | "math" | "learning" | "writing" | "drawing" | "reading" | "presets";
+type View = "charts" | "free-formats" | "workflows" | "office-privacy" | "media-files" | "universal-lab" | "universal-box" | "universal" | "quick-tools" | "external" | "all-tools" | "code" | "tables" | "overview" | "tasks" | "cards" | "focus" | "notes" | "utilities" | "data" | "files" | "math" | "learning" | "writing" | "drawing" | "reading" | "presets";
 
 const menu: { id: View; name: string; symbol: string; description: string }[] = [
   { id: "overview", name: "Overview", symbol: "◫", description: "Your workspace at a glance" },
@@ -48,6 +49,7 @@ const menu: { id: View; name: string; symbol: string; description: string }[] = 
   { id: "office-privacy", name: "Office & Privacy / 办公与隐私工具", symbol: "▥", description: "CSV contacts, mail merge, duplicate file hashes, hidden Unicode" },
   { id: "workflows", name: "Workflow Studio / 批处理工作室", symbol: "⇄", description: "Safe selective ZIP export and image resize → convert → rename → ZIP" },
   { id: "free-formats", name: "Free Formats / 格式自由工具", symbol: "▧", description: "Offline Excel interchange, photo differences and HTML / Unicode coding" },
+  { id: "charts", name: "Chart Studio / 数据可视化", symbol: "▥", description: "CSV data → bar/line charts, aggregation and SVG export" },
   { id: "external", name: "External Tools / 外部工具", symbol: "↗", description: "Curated official websites for advanced tools" },
   { id: "code", name: "Code editor", symbol: "</>", description: "Local code drafts and snippet library" },
   { id: "tables", name: "CSV Table Desk", symbol: "▤", description: "Filter, sort and export CSV or TSV data" },
@@ -81,7 +83,57 @@ function taskSort(a: DeskTask, b: DeskTask): number {
 export default function App() {
   const [view, setView] = useState<View>("overview");
   const [toolMode,setToolMode] = useState("");
-  function openTool(target: string, module?: string) { if (!menu.some(item => item.id === target)) return; setToolMode(module ?? ""); setView(target as View); }
+  const [theme,setTheme] = useState<"light"|"dark">(()=>{
+    try{return localStorage.getItem("universal-box-theme")==="dark"?"dark":"light";}
+    catch{return "light";}
+  });
+  const [favoriteViews,setFavoriteViews]=useState<View[]>(()=>{
+    try{const v=JSON.parse(localStorage.getItem("universal-box-favorite-views")||"[]") as unknown;
+      return Array.isArray(v)?v.filter((x):x is View=>typeof x==="string"&&menu.some(i=>i.id===x)).slice(0,12):[];}
+    catch{return [];}
+  });
+  const [recentViews,setRecentViews]=useState<View[]>(()=>{
+    try{const v=JSON.parse(localStorage.getItem("universal-box-recent-views")||"[]") as unknown;
+      return Array.isArray(v)?v.filter((x):x is View=>typeof x==="string"&&menu.some(i=>i.id===x)).slice(0,8):[];}
+    catch{return [];}
+  });
+  const [commandOpen,setCommandOpen]=useState(false);
+  const [commandQuery,setCommandQuery]=useState("");
+  function openTool(target: string, module?: string) {
+    if (!menu.some(item => item.id === target)) return;
+    const id=target as View;
+    setToolMode(module ?? "");setView(id);setCommandOpen(false);setCommandQuery("");
+    setRecentViews(previous=>[id,...previous.filter(v=>v!==id)].slice(0,8));
+  }
+  function toggleFavorite(id:View){
+    setFavoriteViews(previous=>previous.includes(id)?previous.filter(v=>v!==id):[...previous,id].slice(0,12));
+  }
+  const commands=useMemo(()=>{
+    const term=commandQuery.trim().toLocaleLowerCase();
+    const values=[
+      ...menu.map(item=>({id:"view-"+item.id,name:item.name,description:item.description,view:item.id as string,module:undefined as string|undefined})),
+      ...LOCAL_TOOLS.map(item=>({id:"tool-"+item.id,name:item.name,description:item.area,view:item.view,module:item.module})),
+    ];
+    return (term?values.filter(item=>(item.name+" "+item.description).toLocaleLowerCase().includes(term)):values.filter(item=>["all-tools","workflows","files","charts","office-privacy","free-formats"].includes(item.view))).slice(0,12);
+  },[commandQuery]);
+  useEffect(()=>{
+    try{localStorage.setItem("universal-box-theme",theme);}catch{/* preferences are optional */}
+  },[theme]);
+  useEffect(()=>{
+    try{localStorage.setItem("universal-box-favorite-views",JSON.stringify(favoriteViews));}catch{/* preferences are optional */}
+  },[favoriteViews]);
+  useEffect(()=>{
+    try{localStorage.setItem("universal-box-recent-views",JSON.stringify(recentViews));}catch{/* preferences are optional */}
+  },[recentViews]);
+  useEffect(()=>{
+    const keydown=(event:KeyboardEvent)=>{
+      if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==="k"){
+        event.preventDefault();setCommandOpen(open=>!open);
+      }else if(event.key==="Escape")setCommandOpen(false);
+    };
+    window.addEventListener("keydown",keydown);
+    return ()=>window.removeEventListener("keydown",keydown);
+  },[]);
   const [workspace, setWorkspace] = useState<WorkspaceData>(() => readWorkspace());
   const [savedStatus, setSavedStatus] = useState("Loading local workspace...");
   const [storageReady, setStorageReady] = useState(false);
@@ -278,7 +330,7 @@ export default function App() {
       </aside>
 
       <section className="main-panel">
-        <header className="topbar"><span>Daily Desk / {activeMenu.name}</span><span className="version-pill">DESKTOP PREVIEW · v0.25</span></header>
+        <header className="topbar"><span>Daily Desk / {activeMenu.name}</span><span className="version-pill">DESKTOP PREVIEW · v0.26</span></header>
         <div className="content">
           {view === "overview" && <>
             <p className="eyebrow">GOOD TO HAVE YOU HERE</p><h1>Your day, in one place.</h1>
@@ -300,6 +352,7 @@ export default function App() {
           {view === "office-privacy" && <OfficePrivacyDesk key={toolMode} initialMode={(toolMode||"contacts") as OfficePrivacyMode}/> }
           {view === "workflows" && <WorkflowDesk key={toolMode} initialMode={(toolMode||"zip-selective") as WorkflowMode}/> }
           {view === "free-formats" && <FreeFormatsDesk key={toolMode} initialMode={(toolMode||"spreadsheet") as FreeFormatsMode}/> }
+          {view === "charts" && <ChartDesk /> }
           {view === "external" && <ExternalTools onOpenPresets={()=>openTool("presets")} />}
           {view === "code" && <CodeDesk snippets={workspace.snippets??[]} onChange={snippets=>setWorkspace(current=>({...current,snippets}))} />}
           {view === "tables" && <DataDesk />}
