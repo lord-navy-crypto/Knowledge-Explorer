@@ -252,3 +252,18 @@ Four new local desktop tools with no account, paywall, cloud upload or forced on
 4. **Dominant Image Palette**: offline RGBA pixel sampling (max 20,000 samples; transparent pixels excluded) with approximate 4-bit RGB histogram colour groups, top 1–12 HEX colours and relative frequencies. The grouped results are approximate, not official Pantone or design-brand measurements.
 
 These are searchable in All Tools, with a dedicated **Media & Files / 媒体文件工具** sidebar and four deep-link modes. The existing PDF tools, QR tool, photo contact sheet and v0.19–v0.21 utilities remain intact. Sources are explicitly picked by the user, local CPU/memory constraints apply, and export creates new files through the existing user save dialog. Apple Silicon CI covers TypeScript, Vitest, Rust and DMG, but visual macOS WebView acceptance must be checked on an actual Mac.
+
+## v0.23 Universal Box — Office & Privacy (offline desktop)
+
+Added a dedicated **Office & Privacy / 办公与隐私工具** page and four searchable tools:
+
+- **CSV contacts → .vcf**: import a CSV or paste rows, recognize Name/姓名, Phone/电话, Email/邮箱, Organization/公司 and Website/网址, validate 1–300 contacts, escape/fold Unicode vCard 3.0 text, and export one standard .vcf file. Other CSV fields are deliberately not included. Never uploads or syncs a user's contacts.
+- **TXT mail merge → ZIP**: fill an explicit text-only template with exact `{{ColumnName}}` placeholders from user-provided CSV; save up to 100 separately numbered TXT files inside ZIP. Does **not** email recipients or generate executable templates. Output ZIP entry paths use internal sequential numbers rather than user input.
+- **Local SHA-256 duplicate finder**: compare actual bytes of 2–30 user-selected files, max 20 MB each / 80 MB total. Matching SHA-256 fingerprints are strong practical evidence of byte equality, not an authenticity check. Only selected files are read; no automated deletion or folder crawling.
+- **Unicode hidden-mark inspector**: report precise positions of zero-width, bidirectional override/isolate, control and selected formatting characters. No automatic stripping, and presence of a character is not automatically malicious. Not a full Unicode confusable-spoofing detector.
+
+### Native-save regression repair
+
+Previous v0.19–v0.22 frontend exports already offered `.ics`, `.srt`, `.vtt`, and `.wav`, but the Tauri Rust output writer still only allowed the older extensions. v0.23 explicitly updates the Rust output whitelist to accept those prior outputs **and** new `.vcf`; adds Rust tests for allowed/blocked extensions. This fixes the macOS save mismatch without loosening arbitrary executable file exports.
+
+All four features run locally without subscriptions, ads, accounts or background file access. New files are saved only after explicit user action through existing safe desktop dialogs. The AP ReasonLab website is not modified. CI validates frontend typechecks, Vitest, Rust tests and Apple Silicon DMG build; macOS visual/manual acceptance still needs actual-device testing.
