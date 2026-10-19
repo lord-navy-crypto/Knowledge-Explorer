@@ -2,14 +2,16 @@ import { useMemo, useState } from "react";
 import QRCode from "qrcode";
 import JSZip from "jszip";
 import { exportFile } from "../lib/output";
+import TextCompareDesk from "./TextCompareDesk";
+import MarkdownConvertDesk from "./MarkdownConvertDesk";
 
 export type Utility = "json" | "stats" | "csv" | "diff" | "markdown" | "encode" | "groups" | "color" | "qr" | "rename";
 export const UTILITIES: { id: Utility; title: string; description: string }[] = [
   { id: "json", title: "JSON formatter", description: "Validate, pretty print or minify JSON." },
   { id: "stats", title: "Word count & reading time", description: "Words, characters, paragraphs, sentences, reading time." },
   { id: "csv", title: "CSV → Markdown", description: "Convert correctly quoted CSV/TSV into a Markdown table." },
-  { id: "diff", title: "Text comparator", description: "See line differences between drafts." },
-  { id: "markdown", title: "Markdown ↔ plain text", description: "Strip common syntax or make paragraphs." },
+  { id: "diff", title: "Text comparator", description: "Aligned line differences, highlighted words and similarity." },
+  { id: "markdown", title: "Markdown ↔ plain text", description: "Two-way conversion, links, copy, swap and export." },
   { id: "encode", title: "Base64 / URL encoding", description: "Encode and decode UTF-8 text and URLs." },
   { id: "groups", title: "Random groups", description: "Pick one name or shuffle a list into groups." },
   { id: "color", title: "Color contrast", description: "Calculate WCAG contrast and AA text guidance." },
@@ -210,7 +212,7 @@ export default function EverydayTools({ initial = "stats" }: { initial?: Utility
         {UTILITIES.map(item=><button className={tab===item.id?"pill active-pill":"pill"} key={item.id} type="button" onClick={()=>{setTab(item.id);setOutput("");setStatus("");setQrData("");}}>{item.title}</button>)}
       </div>
       <h3>{selected.title}</h3><p className="subtle">{selected.description}</p>
-      {tab==="color"?<div className="tools-pair">
+      {tab==="diff"?<TextCompareDesk/>:tab==="markdown"?<MarkdownConvertDesk/>:tab==="color"?<div className="tools-pair">
         <label className="field-label">Text color <input type="color" value={foreground} onChange={e=>setForeground(e.target.value)} /></label>
         <label className="field-label">Background <input type="color" value={background} onChange={e=>setBackground(e.target.value)} /></label>
         <div className="contrast-preview" style={{color:foreground,backgroundColor:background}}>Readable sample text · Aa 123</div>
