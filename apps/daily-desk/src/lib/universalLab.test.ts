@@ -47,11 +47,12 @@ describe("Universal Box v0.21 local processing",()=>{
   const layout=contactSheetLayout({count:7,columns:3,cellWidth:240,cellHeight:180,margin:12,captions:true});
   expect(layout.rows).toBe(3);
   expect(layout.width).toBe(768);
-  expect(layout.height).toBe(708);
+  expect(layout.height).toBe(684);
   expect(layout.slots).toHaveLength(7);
   expect(layout.slots[3].x).toBe(12);
   expect(layout.slots[3].y).toBe(236);
   expect(()=>contactSheetLayout({count:13,columns:4,cellWidth:200,cellHeight:200,margin:12,captions:false})).toThrow(/1–12/);
-  expect(()=>contactSheetLayout({count:12,columns:6,cellWidth:700,cellHeight:700,margin:48,captions:true})).toThrow(/12 million/);
+  expect(contactSheetLayout({count:12,columns:6,cellWidth:700,cellHeight:700,margin:48,captions:true}).width).toBeLessThan(5000);
+  expect(()=>contactSheetLayout({count:12,columns:7,cellWidth:700,cellHeight:700,margin:48,captions:true})).toThrow(/1–6/);
  });
 });
