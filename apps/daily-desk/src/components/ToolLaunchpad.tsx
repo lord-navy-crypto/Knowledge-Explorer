@@ -36,6 +36,7 @@ export const LOCAL_TOOLS:LocalTool[] = [
  {id:"sha256-check",name:"SHA-256 File Checksum Verifier",area:"Files",view:"universal",module:"checksum"},
  {id:"secure-password",name:"Local Password Generator",area:"Privacy",view:"universal",module:"password"},
  {id:"photo-metadata-clean",name:"Image Metadata Cleaner · 照片隐私清理",area:"Privacy",view:"universal",module:"image-privacy"},
+ {id:"quick-multi-copy",name:"Multi-copy Text Basket · 一次复制多段文字",area:"Text",view:"quick-tools",module:"multi-copy"},
  {id:"quick-clean-text",name:"Text Cleaner · 一键文本整理",area:"Text",view:"quick-tools",module:"text"},
  {id:"quick-clean-links",name:"Tracking Link Cleaner · 清理追踪链接",area:"Text",view:"quick-tools",module:"links"},
  {id:"quick-date",name:"Date Difference & Date Shift",area:"Study",view:"quick-tools",module:"dates"},
