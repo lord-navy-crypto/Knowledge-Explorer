@@ -19,7 +19,7 @@ export async function exportFile(
   bytes: Uint8Array | string,
 ): Promise<boolean> {
   const ext = suggestedName.split(".").pop()?.toLowerCase() ?? "";
-  if (!Object.hasOwn(MIME, ext)) throw new Error("Unsupported export format");
+  if (!MIME[ext]) throw new Error("Unsupported export format");
   const payload = typeof bytes === "string" ? new TextEncoder().encode(bytes) : bytes;
   if (payload.length > 20_000_000) throw new Error("File exceeds the 20 MB output limit");
   if (isTauri()) {
