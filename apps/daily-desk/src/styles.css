@@ -125,3 +125,23 @@ pre { white-space:pre-wrap; word-break:break-word; }
 .panel .tool-card { min-height:140px; }
 .panel .tool-card button { margin-top:auto; }
 .panel .task-copy { overflow-wrap:anywhere; }
+
+
+/* Daily Desk dual-column writing and print-to-PDF preview */
+.writing-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px; }
+.writing-textarea { width:100%; min-height:520px; resize:vertical; font:13px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace; }
+.markdown-preview { min-height:520px; background:#fff; border:1px solid #dfe7f2; border-radius:10px; padding:24px; line-height:1.75; overflow-wrap:anywhere; overflow-x:auto; }
+.markdown-preview h1,.markdown-preview h2,.markdown-preview h3 { margin:1em 0 .4em; }
+.markdown-preview table { border-collapse:collapse; width:100%; margin:1em 0; }
+.markdown-preview th,.markdown-preview td { border:1px solid #dce5ef; padding:7px; text-align:left; }
+.markdown-preview pre { white-space:pre-wrap; word-break:break-word; background:#f2f5fa; padding:12px; border-radius:8px; }
+.markdown-preview blockquote { border-left:3px solid #a5b7d0; color:#5a6f8a; padding-left:14px; }
+.markdown-preview img { max-width:100%; }
+@media(max-width:1050px) { .writing-grid { grid-template-columns:1fr; } }
+@media print {
+  @page { margin:15mm; }
+  body, .app-shell, .main-panel, .content { display:block !important; background:white !important; }
+  body * { visibility:hidden !important; }
+  .printable-document, .printable-document * { visibility:visible !important; }
+  .printable-document { position:absolute !important; left:0 !important; top:0 !important; width:100% !important; border:0 !important; padding:0 !important; overflow:visible !important; }
+}
