@@ -2,6 +2,10 @@ import {useMemo,useState} from "react";
 
 export type LocalTool = {id:string;name:string;area:string;view:string;module?:string};
 export const LOCAL_TOOLS:LocalTool[] = [
+ {id:"wav-studio",name:"WAV Audio Editor · Trim, Normalize, Fade",area:"Media",view:"media-files",module:"audio"},
+ {id:"zip-inspector",name:"ZIP Archive Metadata & Safety Inspector",area:"Files",view:"media-files",module:"zip-inspect"},
+ {id:"icon-maker",name:"Icon Generator · 7 PNG Sizes into ZIP",area:"Images",view:"media-files",module:"icons"},
+ {id:"photo-palette",name:"Photo Color Palette / 图片主色提取",area:"Images",view:"media-files",module:"palette"},
  {id:"line-batch",name:"Batch Text Lines · Sort, Deduplicate, Prefix/Suffix",area:"Text",view:"universal-lab",module:"lines"},
  {id:"subtitle-converter",name:"SRT ↔ WebVTT Subtitle Converter & Time Shifter",area:"Media",view:"universal-lab",module:"subtitles"},
  {id:"photo-contact-sheet",name:"Photo Contact Sheet · 图片网格拼版",area:"Images",view:"universal-lab",module:"photo-sheet"},
