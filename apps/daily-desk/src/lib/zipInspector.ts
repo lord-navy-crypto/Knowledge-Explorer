@@ -1,7 +1,7 @@
 /** Read-only ZIP central-directory inspector: never inflates untrusted entries. */
 export type ZipEntry={
  name:string;compressedBytes:number;uncompressedBytes:number;
- method:number;encrypted:boolean;unsafePath:boolean;symlink:boolean;warnings:string[];
+ method:number;crc32:number;encrypted:boolean;unsafePath:boolean;symlink:boolean;warnings:string[];
 };
 export type ZipInspection={entries:ZipEntry[];totalCompressed:number;totalExpanded:number;warnings:string[]};
 const MAX_ARCHIVE=20_000_000,MAX_ENTRIES=1500;
@@ -36,7 +36,7 @@ export function inspectZip(input:Uint8Array):ZipInspection{
    if(cursor+46>offset+size||!sig(d,cursor,0x02014b50))
      throw Error("Invalid ZIP central directory entry "+(i+1)+".");
    const flag=d.getUint16(cursor+8,true),method=d.getUint16(cursor+10,true);
-   const compressedBytes=d.getUint32(cursor+20,true),uncompressedBytes=d.getUint32(cursor+24,true);
+   const compressedBytes=d.getUint32(cursor+20,true),uncompressedBytes=d.getUint32(cursor+24,true),crc32=d.getUint32(cursor+16,true);
    const nameLength=d.getUint16(cursor+28,true),extraLength=d.getUint16(cursor+30,true);
    const commentLength=d.getUint16(cursor+32,true);
    const attributes=d.getUint32(cursor+38,true),localOffset=d.getUint32(cursor+42,true);
@@ -75,7 +75,7 @@ export function inspectZip(input:Uint8Array):ZipInspection{
    if(uncompressedBytes>0&&uncompressedBytes/Math.max(1,compressedBytes)>200)
      alerts.push("High declared expansion ratio (>200×)");
    totalExpanded+=uncompressedBytes;totalCompressed+=compressedBytes;
-   entries.push({name,compressedBytes,uncompressedBytes,method,unsafePath,symlink,encrypted,warnings:alerts});
+   entries.push({name,compressedBytes,uncompressedBytes,method,crc32,unsafePath,symlink,encrypted,warnings:alerts});
    ranges.push({start:localOffset,end:dataEnd});
    cursor=end;
  }

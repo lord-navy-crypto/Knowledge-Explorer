@@ -114,3 +114,7 @@ Local PCM16 WAV trimming/normalization/fading, ZIP metadata inspection with trav
 ## v0.23 standalone offline office/identity utilities
 
 Four independent desktop tools added: bulk CSV-to-vCard contacts, text-only CSV mail merge ZIP, read-only local selected-file duplicate hashing, and a Unicode hidden-character inspector. These extend the desktop product but do not change the historical web-site parity audit count. In addition, native Rust writer extension alignment repairs macOS saving for prior ICS, subtitles and WAV features; new VCF extension is tested too.
+
+## v0.24 workflow integration
+
+A new Workflow Studio brings two real on-device workflows: selective CRC-verified ZIP repack, and a multi-step batch photo resize/re-encode/rename ZIP pipeline. Archive-controlled paths are never passed to disk writes. These additions do not change the historical web feature parity count; they are desktop additions. Real macOS input/output dialog and WebView graphics tests remain outstanding.
