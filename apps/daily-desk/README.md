@@ -143,3 +143,11 @@ The desktop program remains separate from the AP website. These changes are not 
 - Image desk: on-device mouse/stylus annotation, adjustable pen, undo, save new PNG; constrain image resizing by both width and height, preserving aspect ratio.
 - All changes remain under `apps/daily-desk/**`. No remote API or website changes, no Ollama dependency.
 - The interactive Mac UI (pointer capture, clipboard and file dialogs) still needs real-device acceptance tests.
+
+## v0.13 source parity: image studio, formula library and units
+
+- **Interactive image studio:** drag/click a rectangle, drag inside to reposition it, choose Free/1:1/4:3/16:9/3:2, crop, rotate left/right in 90° steps, annotate by pointer/stylus, undo up to six edits, reset to source, and export a new PNG without touching original files. Input limit 8 MB / 32 megapixels; working preview is resized to fit 1400px to preserve responsiveness.
+- **Formula board:** copied the website's complete five-section, 32-item AP formula catalogue. Search/filter, favorites in local app storage when supported, copy plain or LaTeX, export favorites as Markdown, and insert formula into the local LaTeX preview.
+- **Units and constants:** all eight website unit groups, 14 constants, Kelvin/Fahrenheit/Celsius conversions, copied values and quick calculator handoff. Conversion functions and catalog counts are covered by unit tests.
+- **Audit:** fixed a malformed status-note serializer, documented 21 core equivalents / 20 partial equivalents / 3 external or deliberately unported catalogue entries. These are feature-level classifications, not a claim of identical website interface.
+- **Safety:** only \`apps/daily-desk/**\` changed; no code changes to the web app, no network APIs. Build/test/DMG cannot replace real Mac interaction QA.
