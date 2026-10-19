@@ -46,14 +46,14 @@ export default function UniversalLabDesk({initialMode="lines"}:{initialMode?:Uni
  const [margin,setMargin]=useState(12);
  const [captions,setCaptions]=useState(true);
  const [imageFormat,setImageFormat]=useState<"png"|"jpeg">("png");
- const [imagePreview,setImagePreview]=useState<string>("");
+
  const geometry=useMemo(()=>{
    try{return {value:contactSheetLayout({
      count:images.length,columns,cellWidth,cellHeight,margin,captions,
    }),error:""};}
    catch(error){return {value:null,error:message(error)};}
  },[images,columns,cellWidth,cellHeight,margin,captions]);
- const updateLine=<K extends keyof LineOptions>(key:K,value:LineOptions[K])=>
+ const updateLine=(key:keyof LineOptions,value:LineOptions[keyof LineOptions])=>
    setLineOptions(old=>({...old,[key]:value}));
  async function copy(text:string){
    try{await navigator.clipboard.writeText(text);setStatus("Copied locally to clipboard.");}
@@ -74,12 +74,12 @@ export default function UniversalLabDesk({initialMode="lines"}:{initialMode?:Uni
  }
  function chooseImages(event:ChangeEvent<HTMLInputElement>){
    const selected=[...(event.target.files??[])];event.target.value="";
-   setImages(selected);setImagePreview("");
+   setImages(selected);
    setStatus(selected.length>12?"Select at most 12 pictures.":"");
  }
  async function generateSheet(){
    if(busy||!geometry.value)return;
-   setBusy(true);setStatus("");setImagePreview("");
+   setBusy(true);setStatus("");
    const urls:string[]=[];
    try{
      const {width,height,slots}=geometry.value;
@@ -132,7 +132,7 @@ export default function UniversalLabDesk({initialMode="lines"}:{initialMode?:Uni
    </div>
    {mode==="lines"&&<>
      <p className="subtle">Deduplicate, sort, trim, change case and wrap up to 20,000 copied text lines. Existing input is never modified; optional prefix/suffix apply to every retained line.</p>
-     <label className="field-label" htmlFor="line-source">Source text<input type="hidden" readOnly /></label>
+     <label className="field-label" htmlFor="line-source">Source text</label>
      <textarea id="line-source" className="field text-editor" rows={8} maxLength={200000} value={textSource} onChange={e=>setTextSource(e.target.value)}/>
      <div className="tools-pair">
        <label><input type="checkbox" checked={lineOptions.trim} onChange={e=>updateLine("trim",e.target.checked)}/> Trim each line</label>
@@ -224,7 +224,7 @@ export default function UniversalLabDesk({initialMode="lines"}:{initialMode?:Uni
      <button className="primary-button" type="button" disabled={busy||!geometry.value} onClick={()=>{void generateSheet();}}>
        {busy?"Creating local image…":"Generate & save contact sheet"}
      </button>
-     {imagePreview&&<img src={imagePreview} alt="Contact sheet preview"/>}
+
    </>}
    {mode==="url-inspector"&&<>
      <p className="subtle">Understand the components of a link without visiting it. Query parameter names and values are decoded for inspection, with duplicates kept in their original order. This does not perform security or phishing checks.</p>
