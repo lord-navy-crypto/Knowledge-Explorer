@@ -76,3 +76,7 @@ Website catalogue includes **44 entries**, including hidden aliases/deep-links a
 ## v0.14 units follow-up
 
 Units & constants is now a core desktop equivalent. Advanced matrix/complex/statistical ClassWiz modes and native speech-to-text are still incomplete. This audit remains feature-level, not a guarantee of pixel-identical workflows.
+
+## v0.15 advanced calculator follow-up
+
+The website `calculator` entry remains **partial**: the desktop Math Workbench now includes a distinct ClassWiz tab for complex arithmetic, 2×2/3×3 matrix operations, paired linear regression and normal/binomial distribution functions. Remaining mode/UI disparities, web-specific calculator conveniences, and on-device Mac GUI checks are not considered finished. The site-wide 21 core / 20 partial / 3 external audit counts are unchanged.
