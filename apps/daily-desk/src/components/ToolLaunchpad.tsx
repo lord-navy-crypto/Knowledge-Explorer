@@ -6,7 +6,7 @@ export const LOCAL_TOOLS:LocalTool[] = [
  {id:"graph",name:"Advanced Graph / 高级绘图",area:"Math",view:"math",module:"graph"},
  {id:"calculus",name:"Derivatives, Integrals & Roots",area:"Math",view:"math",module:"calculus"},
  {id:"math-extras",name:"BASE-N, Equations, Statistics, Matrix",area:"Math",view:"math",module:"extras"},
- {id:"formula-board",name:"Formula Board",area:"Math",view:"math",module:"formula"},
+ {id:"formula-board",name:"Full 32-formula AP Formula Board",area:"Math",view:"math",module:"formula"},
  {id:"latex",name:"LaTeX Preview",area:"Math",view:"math",module:"latex"},
  {id:"units",name:"Units & Constants",area:"Math",view:"math",module:"units"},
  {id:"sci-notation",name:"Scientific Notation & Sig Figs",area:"Math",view:"math",module:"notation"},
