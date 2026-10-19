@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { compile, evaluate } from "mathjs";
+import { evaluate } from "mathjs";
+import AdvancedGrapher from "./AdvancedGrapher";
 import katex from "katex";
 import NumericalWorkbench from "./NumericalWorkbench";
 import { combineVectors, significantFigures, roundSignificant } from "../lib/mathExtras";
@@ -24,29 +25,6 @@ const UNITS: Record<string, Record<string, number>> = {
   Pressure: { Pa: 1, kPa: 1000, bar: 100000, atm: 101325, psi: 6894.757293 },
   Speed: { "m/s": 1, "km/h": 1/3.6, mph: .44704, kn: .514444 },
 };
-type Point={x:number;y:number};
-function graphPoints(expression:string):Point[][] {
-  if(!expression.trim())return [];
-  const compiled=compile(expression);
-  const lines:Point[][]=[];
-  let segment:Point[]=[];
-  for(let i=0;i<=500;i++){
-    const x=-10+i/25;
-    try {
-      const result=compiled.evaluate({x});
-      if(typeof result!=="number" || !Number.isFinite(result) || Math.abs(result)>100) {
-        if(segment.length>1)lines.push(segment);
-        segment=[];continue;
-      }
-      segment.push({x,y:result});
-    }catch {
-      if(segment.length>1)lines.push(segment);
-      segment=[];
-    }
-  }
-  if(segment.length>1)lines.push(segment);
-  return lines;
-}
 export default function MathDesk(){
   const [tab,setTab]=useState<MathTab>("calculator");
   const [expression,setExpression]=useState("sin(pi/2) + sqrt(16)");
@@ -67,11 +45,6 @@ export default function MathDesk(){
   const [vectorOperation,setVectorOperation]=useState<"add"|"subtract">("add");
   const [latex,setLatex]=useState("E=mc^2");
   const [status,setStatus]=useState("");
-  const [yScale,setYScale]=useState(10);
-  const graph=useMemo(()=>plot.map(expression=>{try{return graphPoints(expression)}catch{return [] as Point[][]}}),[plot]);
-  const viewBox="0 0 620 400";
-  const px=(x:number)=>310+x*31;
-  const py=(y:number)=>200-y*(200/yScale);
   const formatted=useMemo(()=>{const n=Number(notation);return Number.isFinite(n)?n.toExponential(5):"Not a number";},[notation]);
   const sigCount=significantFigures(notation);
   const sigCountB=significantFigures(otherNumber);
@@ -98,21 +71,7 @@ export default function MathDesk(){
       <div className="actions"><button className="primary-button" type="button" onClick={()=>{try{const value: unknown = evaluate(expression);setResult(String(value));setStatus("");}catch(e){setStatus(String(e));}}}>Calculate</button></div>
       {result&&<p className="stat-pill" role="status">{result}</p>}
     </>}
-    {tab==="graph"&&<>
-      <p className="subtle">Plot functions of x for x = −10 to 10. Discontinuities may not be perfectly represented.</p>
-      {plot.map((expr,i)=><label key={i} className="field-label">Y{i+1} <input className="field" style={{width:"80%"}} value={expr} onChange={e=>setPlot(p=>p.map((s,k)=>k===i?e.target.value:s))}/></label>)}
-      <div className="actions"><button type="button" className="secondary-button" onClick={()=>setPlot(p=>p.length<4?[...p,"x^2"]:p)} disabled={plot.length===4}>Add function</button>
-      <label>Y range ± <input className="field" type="number" min={1} max={1000} value={yScale} onChange={e=>setYScale(Math.max(1,Math.min(1000,Number(e.target.value)||10)))}/></label></div>
-      <svg className="math-graph" viewBox={viewBox} role="img" aria-label="Cartesian graph of selected functions">
-        <rect width="620" height="400" fill="#fff"/>
-        {Array.from({length:21},(_,i)=><line key={"x"+i} x1={i*31} y1="0" x2={i*31} y2="400" stroke="#edf1f6"/>)}
-        {Array.from({length:11},(_,i)=><line key={"y"+i} y1={i*40} x1="0" y2={i*40} x2="620" stroke="#edf1f6"/>)}
-        <line x1="0" y1="200" x2="620" y2="200" stroke="#8d9eb6" strokeWidth="2"/>
-        <line x1="310" y1="0" x2="310" y2="400" stroke="#8d9eb6" strokeWidth="2"/>
-        {graph.flatMap((groups,i)=>groups.map((points,j)=><polyline key={i+"-"+j} points={points.map(p=>`${px(p.x)},${py(p.y)}`).join(" ")} fill="none" stroke={["#3861a5","#bf7047","#548864","#98599a"][i]} strokeWidth="2" clipPath="url(#clip-graph)"/>))}
-        <defs><clipPath id="clip-graph"><rect width="620" height="400"/></clipPath></defs>
-      </svg>
-    </>}
+    {tab==="graph"&&<AdvancedGrapher onChooseY1={expr=>{setPlot([expr]);setTab("calculus");}}/>}
     {tab==="calculus"&&<NumericalWorkbench initialFunction={plot[0]??"x"}/>}
     {tab==="units"&&<>
       <label className="field-label">Quantity <select className="field" value={unitType} onChange={e=>switchUnits(e.target.value)}>{Object.keys(UNITS).map(k=><option key={k}>{k}</option>)}</select></label>

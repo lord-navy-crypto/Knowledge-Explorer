@@ -16,6 +16,7 @@ const MIME: Record<string, string> = {
   xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
   zip: "application/zip",
+  svg: "image/svg+xml",
 };
 
 /** Save an output from one of our local tools, without network or broad filesystem access. */
