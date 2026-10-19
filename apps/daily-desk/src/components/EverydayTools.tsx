@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import QRCode from "qrcode";
 import JSZip from "jszip";
 import { exportFile } from "../lib/output";
+import {fileNameManifest} from "../lib/quickBatchText";
 import TextCompareDesk from "./TextCompareDesk";
 import MarkdownConvertDesk from "./MarkdownConvertDesk";
 
@@ -175,6 +176,12 @@ export default function EverydayTools({ initial = "stats" }: { initial?: Utility
     const ok=await exportFile("daily-desk-qr.png",bytes);
     setStatus(ok?"QR image saved.":"Save cancelled.");
   }
+  async function exportNames(format:"txt"|"csv"){
+    try{
+      const saved=await exportFile("universal-box-file-list."+format,fileNameManifest(files,format));
+      setStatus(saved?"Saved file list locally. Originals unchanged.":"Save cancelled.");
+    }catch(e){setStatus(String(e instanceof Error?e.message:e));}
+  }
   async function renameFile(file:File,next:string){
     const result=await exportFile(next,new Uint8Array(await file.arrayBuffer()));
     setStatus(result?"Saved a renamed file copy. Original file unchanged.":"Save cancelled.");
@@ -221,7 +228,10 @@ export default function EverydayTools({ initial = "stats" }: { initial?: Utility
         <label className="field-label" htmlFor="rename-files">Choose files (originals stay unchanged)</label><input id="rename-files" className="field" type="file" multiple onChange={e=>setFiles([...(e.target.files??[])].slice(0,50))} />
         <div className="tools-pair"><label className="field-label">Prefix <input className="field" value={prefix} onChange={e=>setPrefix(e.target.value)} /></label><label className="field-label">Start number <input className="field" type="number" value={start} onChange={e=>setStart(Number(e.target.value)||1)} /></label>
         <label className="field-label">Find text <input className="field" value={find} onChange={e=>setFind(e.target.value)} /></label><label className="field-label">Replace <input className="field" value={replace} onChange={e=>setReplace(e.target.value)} /></label></div>
-        <div className="actions"><button type="button" className="primary-button" disabled={!renamed.length||renameBusy} onClick={()=>{void exportRenamedZip();}}>{renameBusy?"Creating ZIP…":"Save all renamed copies as ZIP"}</button><span className="subtle">Limit: 50 files, 16 MB input. Each original is preserved.</span></div>
+        <div className="actions">
+          <button type="button" className="secondary-button" disabled={!files.length||renameBusy} onClick={()=>{void exportNames("txt");}}>Export names TXT</button>
+          <button type="button" className="secondary-button" disabled={!files.length||renameBusy} onClick={()=>{void exportNames("csv");}}>Export names CSV</button>
+          <button type="button" className="primary-button" disabled={!renamed.length||renameBusy} onClick={()=>{void exportRenamedZip();}}>{renameBusy?"Creating ZIP…":"Save all renamed copies as ZIP"}</button><span className="subtle">Limit: 50 files, 16 MB input. Each original is preserved.</span></div>
         <div className="task-list">{renamed.map(({file,filename},i)=><div key={i} className="task-row"><span className="task-copy">{file.name} → {filename}</span><button type="button" className="secondary-button" onClick={()=>{void renameFile(file,filename).catch(e=>setStatus(String(e)));}}>Save copy</button></div>)}</div>
       </>:<>
         <label className="field-label" htmlFor="utility-input">{tab==="groups"?"Names, separated by lines or commas":tab==="csv"?"CSV or TSV data":tab==="qr"?"URL or text":"Enter text"}</label>
