@@ -1,6 +1,10 @@
 import { type ChangeEvent, type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Flashcards from "./components/Flashcards";
 import FocusTimer from "./components/FocusTimer";
+import EverydayTools from "./components/EverydayTools";
+import FileDesk from "./components/FileDesk";
+import MathDesk from "./components/MathDesk";
+import StudyExtras from "./components/StudyExtras";
 import {
   type DeskTask,
   type Priority,
@@ -15,7 +19,7 @@ import {
   persistWorkspace,
 } from "./lib/nativeStorage";
 
-type View = "overview" | "tasks" | "cards" | "focus" | "notes" | "utilities" | "data";
+type View = "overview" | "tasks" | "cards" | "focus" | "notes" | "utilities" | "data" | "files" | "math" | "learning";
 
 const menu: { id: View; name: string; symbol: string; description: string }[] = [
   { id: "overview", name: "Overview", symbol: "◫", description: "Your workspace at a glance" },
@@ -23,7 +27,10 @@ const menu: { id: View; name: string; symbol: string; description: string }[] = 
   { id: "cards", name: "Flashcards", symbol: "Aa", description: "Practise active recall" },
   { id: "focus", name: "Focus timer", symbol: "◷", description: "Make space to focus" },
   { id: "notes", name: "Notes", symbol: "✎", description: "Capture ideas locally" },
-  { id: "utilities", name: "Quick tools", symbol: "⌘", description: "Work with text and JSON" },
+  { id: "utilities", name: "Everyday tools", symbol: "⌘", description: "Text, CSV, diff, coding, QR, colors and grouping" },
+  { id: "files", name: "File desk", symbol: "▣", description: "PDF merge/split/rotate, images and Word import" },
+  { id: "math", name: "Math & science", symbol: "∑", description: "Calculator, graph, LaTeX, units and vectors" },
+  { id: "learning", name: "Study & English", symbol: "✦", description: "Mistake log, exam dates, dictation and reading" },
   { id: "data", name: "Backup & privacy", symbol: "▤", description: "Save or restore your workspace" },
 ];
 
@@ -237,7 +244,7 @@ export default function App() {
       </aside>
 
       <section className="main-panel">
-        <header className="topbar"><span>Daily Desk / {activeMenu.name}</span><span className="version-pill">DESKTOP PREVIEW · v0.3</span></header>
+        <header className="topbar"><span>Daily Desk / {activeMenu.name}</span><span className="version-pill">DESKTOP PREVIEW · v0.4</span></header>
         <div className="content">
           {view === "overview" && <>
             <p className="eyebrow">GOOD TO HAVE YOU HERE</p><h1>Your day, in one place.</h1>
@@ -250,7 +257,10 @@ export default function App() {
           {view === "cards" && <Flashcards cards={workspace.cards} onChange={(cards) => setWorkspace((current) => ({ ...current, cards }))} />}
           <div hidden={view !== "focus"}><FocusTimer /></div>
           {view === "notes" && <section className="panel"><p className="eyebrow">LOCAL NOTES</p><h2>Keep ideas close at hand.</h2><p className="subtle">Your notes are automatically saved in this application. Export backups in Backup & privacy.</p><label className="field-label" htmlFor="my-notes">My notebook</label><textarea id="my-notes" className="field text-editor" rows={20} maxLength={50000} placeholder="Capture a thought, write a draft or summarise a concept…" value={workspace.notes} onChange={(event) => setWorkspace((current) => ({ ...current, notes: event.target.value }))}/><p className="subtle">{workspace.notes.length.toLocaleString()} characters</p></section>}
-          {view === "utilities" && renderUtilities()}
+          {view === "utilities" && <EverydayTools />}
+          {view === "files" && <FileDesk />}
+          {view === "math" && <MathDesk />}
+          {view === "learning" && <StudyExtras workspace={workspace} onChange={setWorkspace} />}
           {view === "data" && <section className="panel"><p className="eyebrow">PORTABLE WORKSPACE</p><h2>Backup & privacy</h2><p className="subtle">The desktop app now saves tasks, flashcards and notes in its own local app-data file using atomic writes. A browser preview still uses localStorage. Nothing is synced to the AP website or Vercel.</p><div className="actions"><button className="primary-button" type="button" onClick={() => { void exportBackup(); }}>Export JSON backup</button><button className="secondary-button" type="button" onClick={() => { void importFromNativeDialog(); }}>Import with native file picker</button></div><div className="import-group"><label className="field-label" htmlFor="import-workspace">Or restore from a Daily Desk v2 JSON backup using a file input</label><input className="field" type="file" id="import-workspace" accept=".json,application/json" onChange={(event) => { void importBackup(event); }} /></div>{dataMessage && <p className="subtle" role="status">{dataMessage}</p>}<p className="subtle">Tip: Export a backup before reinstalling or changing devices. Import replaces the current workspace only after confirmation.</p></section>}
           <footer>DAILY DESK <span>Separate desktop app · Knowledge-Explorer monorepo</span></footer>
         </div>
