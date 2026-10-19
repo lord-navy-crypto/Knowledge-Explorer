@@ -1,106 +1,193 @@
-import { type CSSProperties, type FormEvent, useEffect, useMemo, useState } from "react";
+import { type ChangeEvent, type FormEvent, useEffect, useMemo, useState } from "react";
+import Flashcards from "./components/Flashcards";
+import FocusTimer from "./components/FocusTimer";
+import {
+  type DeskTask,
+  type Priority,
+  type WorkspaceData,
+  downloadWorkspace,
+  parseWorkspace,
+  readWorkspace,
+  saveWorkspace,
+} from "./lib/workspace";
 
-type Task = { id: string; title: string; done: boolean };
-type Tool = { title: string; description: string; kind: "ready" | "planned" };
+type View = "overview" | "tasks" | "cards" | "focus" | "notes" | "utilities" | "data";
 
-const STORAGE_KEY = "daily-desk.tasks.v1";
-const tools: Tool[] = [
-  { title: "Quick planner", description: "Capture small tasks and track progress.", kind: "ready" },
-  { title: "Vocabulary cards", description: "Create decks and practise active recall.", kind: "planned" },
-  { title: "Study sessions", description: "Focus timers and reusable study blocks.", kind: "planned" },
-  { title: "Notes & writing", description: "Keep lightweight notes beside your work.", kind: "planned" },
-  { title: "PDF desk", description: "Organise common document tasks locally.", kind: "planned" },
-  { title: "Quick utilities", description: "A focused home for small daily tools.", kind: "planned" },
+const menu: { id: View; name: string; symbol: string; description: string }[] = [
+  { id: "overview", name: "Overview", symbol: "◫", description: "Your workspace at a glance" },
+  { id: "tasks", name: "Planner", symbol: "✓", description: "Prioritise the next step" },
+  { id: "cards", name: "Flashcards", symbol: "Aa", description: "Practise active recall" },
+  { id: "focus", name: "Focus timer", symbol: "◷", description: "Make space to focus" },
+  { id: "notes", name: "Notes", symbol: "✎", description: "Capture ideas locally" },
+  { id: "utilities", name: "Quick tools", symbol: "⌘", description: "Work with text and JSON" },
+  { id: "data", name: "Backup & privacy", symbol: "▤", description: "Save or restore your workspace" },
 ];
 
+function todayIso(): string {
+  const date = new Date();
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 10);
+}
+
+function taskSort(a: DeskTask, b: DeskTask): number {
+  if (a.done !== b.done) return a.done ? 1 : -1;
+  const rank = { high: 0, normal: 1, low: 2 };
+  return rank[a.priority] - rank[b.priority] || (a.due || "9999").localeCompare(b.due || "9999");
+}
+
 export default function App() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [draft, setDraft] = useState("");
-  const [loaded, setLoaded] = useState(false);
+  const [view, setView] = useState<View>("overview");
+  const [workspace, setWorkspace] = useState<WorkspaceData>(() => readWorkspace());
+  const [savedStatus, setSavedStatus] = useState("Saved on this device");
+  const [draftTask, setDraftTask] = useState("");
+  const [taskPriority, setTaskPriority] = useState<Priority>("normal");
+  const [taskDue, setTaskDue] = useState("");
+  const [filter, setFilter] = useState<"all" | "open" | "done">("all");
+  const [textInput, setTextInput] = useState("");
+  const [jsonResult, setJsonResult] = useState("");
+  const [dataMessage, setDataMessage] = useState("");
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const value: unknown = JSON.parse(saved);
-        if (Array.isArray(value)) {
-          setTasks(value.filter((item): item is Task =>
-            item !== null && typeof item === "object" &&
-            typeof item.id === "string" && typeof item.title === "string" &&
-            typeof item.done === "boolean"
-          ).slice(0, 200));
-        }
-      }
-    } catch {
-      // Corrupt or unavailable local storage must not prevent launch.
-    } finally {
-      setLoaded(true);
-    }
-  }, []);
+    setSavedStatus(saveWorkspace(workspace) ? "Saved on this device" : "Storage unavailable — export a backup");
+  }, [workspace]);
 
-  useEffect(() => {
-    if (!loaded) return;
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks)); } catch {
-      // The planner remains usable for this session if storage is unavailable.
-    }
-  }, [tasks, loaded]);
+  const tasks = workspace.tasks;
+  const completed = tasks.filter((task) => task.done).length;
+  const openTasks = tasks.length - completed;
+  const progress = tasks.length ? Math.round(completed / tasks.length * 100) : 0;
+  const visibleTasks = useMemo(
+    () => [...tasks].filter((task) => filter === "all" || (filter === "done" ? task.done : !task.done)).sort(taskSort),
+    [tasks, filter],
+  );
 
-  const complete = tasks.filter((task) => task.done).length;
-  const progress = useMemo(() => tasks.length ? Math.round(complete / tasks.length * 100) : 0, [complete, tasks.length]);
+  function updateTasks(next: DeskTask[]) {
+    setWorkspace((current) => ({ ...current, tasks: next }));
+  }
 
   function addTask(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const title = draft.trim();
-    if (!title) return;
-    setTasks((current) => [{ id: crypto.randomUUID(), title, done: false }, ...current].slice(0, 200));
-    setDraft("");
+    const title = draftTask.trim();
+    if (!title || tasks.length >= 300) return;
+    updateTasks([{ id: crypto.randomUUID(), title: title.slice(0, 180), done: false, priority: taskPriority, due: taskDue }, ...tasks]);
+    setDraftTask("");
+    setTaskDue("");
   }
+
+  function updateTask(id: string, patch: Partial<DeskTask>) {
+    updateTasks(tasks.map((task) => task.id === id ? { ...task, ...patch } : task));
+  }
+
+  async function importBackup(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (file.size > 1_000_000) {
+      setDataMessage("This backup exceeds the 1 MB import limit.");
+      return;
+    }
+    try {
+      const raw: unknown = JSON.parse(await file.text());
+      if (typeof raw !== "object" || raw === null || !("version" in raw) ||
+          (raw as { version: unknown }).version !== 2 ||
+          !("tasks" in raw) || !("cards" in raw) || !("notes" in raw) ||
+          !Array.isArray((raw as { tasks: unknown }).tasks) ||
+          !Array.isArray((raw as { cards: unknown }).cards) ||
+          typeof (raw as { notes: unknown }).notes !== "string") {
+        throw new Error("Not a compatible Daily Desk v2 backup.");
+      }
+      const data = parseWorkspace(raw);
+      if (!window.confirm("Replace your current local tasks, cards, and notes with this backup? Export first if you want to keep them.")) {
+        setDataMessage("Import cancelled. Your current workspace is unchanged.");
+        return;
+      }
+      setWorkspace(data);
+      setDataMessage(`Imported ${data.tasks.length} tasks and ${data.cards.length} flashcards.`);
+    } catch (error) {
+      setDataMessage(error instanceof Error ? error.message : "Could not read this backup.");
+    }
+  }
+
+  function renderPlanner() {
+    return (
+      <section className="panel">
+        <div className="section-heading"><div><p className="eyebrow">DAILY PLANNER</p><h2>Make the next step clear.</h2><p className="subtle">{openTasks} open tasks · {completed} completed</p></div><span className="stat-pill">{progress}% complete</span></div>
+        <form className="task-form structured" onSubmit={addTask}>
+          <label className="sr-only" htmlFor="new-task">New task</label>
+          <input id="new-task" className="field" maxLength={180} value={draftTask} onChange={(event) => setDraftTask(event.target.value)} placeholder="Add a task, e.g. Revise calculus notes" />
+          <label className="sr-only" htmlFor="task-priority">Priority</label>
+          <select id="task-priority" className="field" value={taskPriority} onChange={(event) => setTaskPriority(event.target.value as Priority)}>
+            <option value="normal">Normal</option><option value="high">High</option><option value="low">Low</option>
+          </select>
+          <label className="sr-only" htmlFor="task-due">Due date</label>
+          <input id="task-due" className="field date-field" type="date" value={taskDue} onChange={(event) => setTaskDue(event.target.value)} />
+          <button type="submit" className="primary-button" disabled={!draftTask.trim() || tasks.length >= 300}>Add</button>
+        </form>
+        <div className="pill-row compact" role="group" aria-label="Filter tasks">
+          {(["all", "open", "done"] as const).map((item) => <button type="button" key={item} onClick={() => setFilter(item)} className={filter === item ? "pill active-pill" : "pill"}>{item === "all" ? "All tasks" : item === "open" ? "Open" : "Completed"}</button>)}
+        </div>
+        <div className="task-list">
+          {visibleTasks.length === 0 && <p className="empty-state">No tasks in this view. Add your next step above.</p>}
+          {visibleTasks.map((task) => (
+            <div className="task-row" key={task.id}>
+              <input type="checkbox" checked={task.done} onChange={() => updateTask(task.id, { done: !task.done })} aria-label={`Mark ${task.title} as ${task.done ? "not completed" : "completed"}`} />
+              <div className="task-copy"><span className={task.done ? "task-title done" : "task-title"}>{task.title}</span><span className="task-meta">{task.priority} priority{task.due ? ` · due ${task.due}` : ""}{task.due && task.due < todayIso() && !task.done ? " · overdue" : ""}</span></div>
+              <button type="button" className="icon-button" aria-label={`Remove task ${task.title}`} onClick={() => updateTasks(tasks.filter((item) => item.id !== task.id))}>×</button>
+            </div>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  function renderUtilities() {
+    const words = textInput.trim() ? textInput.trim().split(/\s+/u).length : 0;
+    return (
+      <section className="panel">
+        <p className="eyebrow">QUICK UTILITIES</p><h2>Text desk</h2><p className="subtle">Count words, characters, and lines, or validate and format JSON. Input stays on this screen.</p>
+        <label className="field-label" htmlFor="text-tool-input">Text input</label>
+        <textarea className="field text-editor" id="text-tool-input" rows={10} value={textInput} onChange={(event) => setTextInput(event.target.value)} placeholder="Paste a paragraph, Markdown or JSON…" />
+        <div className="metrics"><span><strong>{words}</strong> words</span><span><strong>{textInput.length}</strong> characters</span><span><strong>{textInput ? textInput.split(/\r?\n/u).length : 0}</strong> lines</span></div>
+        <div className="actions"><button className="primary-button" type="button" onClick={() => { try { setJsonResult(JSON.stringify(JSON.parse(textInput) as unknown, null, 2)); } catch (error) { setJsonResult(error instanceof Error ? `Invalid JSON: ${error.message}` : "Invalid JSON"); } }}>Format JSON</button><button className="secondary-button" type="button" onClick={() => { setTextInput(""); setJsonResult(""); }}>Clear</button></div>
+        {jsonResult && <><label className="field-label" htmlFor="formatted-json">JSON result</label><textarea id="formatted-json" className="field text-editor" value={jsonResult} rows={8} readOnly /></>}
+      </section>
+    );
+  }
+
+  const activeMenu = menu.find((item) => item.id === view) ?? menu[0];
 
   return (
     <main className="app-shell">
       <aside className="sidebar">
-        <div className="brand-mark">D</div>
-        <div className="brand-name">Daily Desk</div>
-        <p className="brand-caption">YOUR PERSONAL WORKSPACE</p>
-        <div className="nav-label">WORKSPACE</div>
-        <div className="nav-item active"><span>◫</span> Overview</div>
-        <div className="nav-item"><span>✓</span> My tasks <span className="nav-count">{tasks.filter((t) => !t.done).length}</span></div>
-        <div className="nav-item"><span>▤</span> Study tools</div>
-        <div className="nav-item"><span>✎</span> Notes <span className="soon">Soon</span></div>
-        <div className="sidebar-bottom"><span className="status-dot" /> Local-first workspace<p>Your tasks stay in this app's browser storage.</p></div>
+        <div className="brand-mark">D</div><div className="brand-name">Daily Desk</div>
+        <p className="brand-caption">LOCAL-FIRST PRODUCTIVITY</p>
+        <div className="nav-label">WORKSPACES</div>
+        <nav aria-label="Daily Desk navigation">
+          {menu.map((item) => (
+            <button type="button" key={item.id} className={view === item.id ? "nav-item active" : "nav-item"} aria-current={view === item.id ? "page" : undefined} onClick={() => setView(item.id)}>
+              <span aria-hidden="true">{item.symbol}</span><span>{item.name}</span>{item.id === "tasks" && <span className="nav-count">{openTasks}</span>}
+            </button>
+          ))}
+        </nav>
+        <div className="sidebar-bottom"><span className="status-dot" /> {savedStatus}<p>No sign-in. No Vercel connection. Export a backup before changing computers.</p></div>
       </aside>
 
       <section className="main-panel">
-        <header className="topbar"><span>Workspace / Overview</span><span className="version-pill">DESKTOP PREVIEW · v0.1.0</span></header>
+        <header className="topbar"><span>Daily Desk / {activeMenu.name}</span><span className="version-pill">DESKTOP PREVIEW · v0.2</span></header>
         <div className="content">
-          <p className="eyebrow">A CLEARER WAY TO WORK</p>
-          <h1>Your day, in one place.</h1>
-          <p className="intro">Plan your next step, make time to focus, and keep your everyday study tools close at hand.</p>
-
-          <section className="hero-card">
-            <div><p className="card-eyebrow">TODAY'S PLAN</p><h2>Small steps add up.</h2><p className="muted">Start with one task you can move forward right now.</p></div>
-            <div className="progress-ring" style={{ "--progress": progress } as CSSProperties}><strong>{progress}%</strong><span>COMPLETE</span></div>
-          </section>
-
-          <div className="section-heading"><div><h2>Task list</h2><p>Quick capture for things you want to get done.</p></div><span className="task-count">{complete} / {tasks.length} done</span></div>
-          <form className="task-form" onSubmit={addTask}>
-            <label className="sr-only" htmlFor="new-task">New task</label>
-            <input id="new-task" value={draft} onChange={(event) => setDraft(event.target.value)} maxLength={160} placeholder="Add a task — e.g. Review today's vocabulary" />
-            <button type="submit" disabled={!draft.trim()}>Add task <span>＋</span></button>
-          </form>
-          <div className="task-list">
-            {!loaded ? <p className="empty-state">Loading saved tasks…</p> : tasks.length === 0 ? <p className="empty-state">Your task list is clear. Add one small next step above.</p> : tasks.map((task) => (
-              <div className="task-row" key={task.id}>
-                <input type="checkbox" checked={task.done} onChange={() => setTasks((current) => current.map((item) => item.id === task.id ? { ...item, done: !item.done } : item))} aria-label={`Mark ${task.title} as ${task.done ? "not done" : "done"}`} />
-                <span className={task.done ? "task-title done" : "task-title"}>{task.title}</span>
-                <button className="remove-button" type="button" onClick={() => setTasks((current) => current.filter((item) => item.id !== task.id))} aria-label={`Remove ${task.title}`}>×</button>
-              </div>
-            )) }
-          </div>
-
-          <div className="section-heading tools-heading"><div><h2>Your toolkit</h2><p>A growing collection of focused everyday tools.</p></div></div>
-          <div className="tool-grid">{tools.map((tool, index) => <article className="tool-card" key={tool.title}><div className={`tool-icon icon-${index}`}>{["✓","Aa","◷","✎","▤","⌘"][index]}</div><div className="tool-card-title">{tool.title}</div><p>{tool.description}</p><span className={tool.kind === "ready" ? "tool-state available" : "tool-state"}>{tool.kind === "ready" ? "AVAILABLE NOW" : "PLANNED MODULE"}</span></article>)}</div>
-          <footer>DAILY DESK <span>Independent desktop application · Not part of the AP website</span></footer>
+          {view === "overview" && <>
+            <p className="eyebrow">GOOD TO HAVE YOU HERE</p><h1>Your day, in one place.</h1>
+            <p className="intro">Your local workspace for study, planning and lightweight office tools. Every module opens independently of the AP website.</p>
+            <div className="hero-card"><div><p className="card-eyebrow">TODAY AT A GLANCE</p><h2>Small steps add up.</h2><p>{openTasks} things left to do · {workspace.cards.length} flashcards ready</p></div><div className="progress-summary"><strong>{progress}%</strong><span>of tasks complete</span></div></div>
+            <div className="section-heading"><div><h2>Open a tool</h2><p>Choose a focused workspace.</p></div></div>
+            <div className="tool-grid">{menu.filter((item) => item.id !== "overview").map((item) => <button type="button" key={item.id} className="tool-card" onClick={() => setView(item.id)}><span className="tool-icon">{item.symbol}</span><strong>{item.name}</strong><span className="subtle">{item.description}</span><span className="tool-state">OPEN TOOL →</span></button>)}</div>
+          </>}
+          {view === "tasks" && renderPlanner()}
+          {view === "cards" && <Flashcards cards={workspace.cards} onChange={(cards) => setWorkspace((current) => ({ ...current, cards }))} />}
+          {view === "focus" && <FocusTimer />}
+          {view === "notes" && <section className="panel"><p className="eyebrow">LOCAL NOTES</p><h2>Keep ideas close at hand.</h2><p className="subtle">Your notes are automatically saved in this application. Export backups in Backup & privacy.</p><label className="field-label" htmlFor="my-notes">My notebook</label><textarea id="my-notes" className="field text-editor" rows={20} maxLength={50000} placeholder="Capture a thought, write a draft or summarise a concept…" value={workspace.notes} onChange={(event) => setWorkspace((current) => ({ ...current, notes: event.target.value }))}/><p className="subtle">{workspace.notes.length.toLocaleString()} characters</p></section>}
+          {view === "utilities" && renderUtilities()}
+          {view === "data" && <section className="panel"><p className="eyebrow">PORTABLE WORKSPACE</p><h2>Backup & privacy</h2><p className="subtle">Tasks, flashcards and notes are stored inside this application's local WebView storage. They are not synced to the AP website or uploaded to Vercel.</p><div className="actions"><button className="primary-button" type="button" onClick={() => { downloadWorkspace(workspace); setDataMessage("Backup download requested. Check your Downloads folder."); }}>Export workspace JSON</button></div><div className="import-group"><label className="field-label" htmlFor="import-workspace">Restore from a Daily Desk v2 JSON backup (replaces current data)</label><input className="field" type="file" id="import-workspace" accept=".json,application/json" onChange={(event) => { void importBackup(event); }} /></div>{dataMessage && <p className="subtle" role="status">{dataMessage}</p>}<p className="subtle">Tip: Keep occasional copies outside this app, especially before reinstalling or switching devices. Import never makes network requests.</p></section>}
+          <footer>DAILY DESK <span>Separate desktop app · Knowledge-Explorer monorepo</span></footer>
         </div>
       </section>
     </main>
