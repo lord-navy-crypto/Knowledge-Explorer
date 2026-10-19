@@ -64,9 +64,9 @@ function htmlToMarkdown(html: string): string {
   return Array.from(parsed.body.childNodes).map(render).join("").replace(/\n{3,}/g,"\n\n").trim();
 }
 
-export default function FileDesk({ onSendToWriting, initialTab = "pdf" }: { onSendToWriting?: (markdown: string) => void; initialTab?: FileTab }) {
+export default function FileDesk({ onSendToWriting, initialTab = "pdf", initialPdfMode = "merge" }: { onSendToWriting?: (markdown: string) => void; initialTab?: FileTab; initialPdfMode?: PdfMode }) {
   const [tab, setTab] = useState<FileTab>(initialTab);
-  const [pdfMode, setPdfMode] = useState<PdfMode>("merge");
+  const [pdfMode, setPdfMode] = useState<PdfMode>(initialPdfMode);
   const [files, setFiles] = useState<File[]>([]);
   const [pages, setPages] = useState("1-");
   const [rotation, setRotation] = useState(90);
