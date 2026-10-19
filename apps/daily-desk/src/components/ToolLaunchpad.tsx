@@ -2,6 +2,7 @@ import {useEffect,useMemo,useState} from "react";
 
 export type LocalTool = {id:string;name:string;area:string;view:string;module?:string};
 export const LOCAL_TOOLS:LocalTool[] = [
+ {id:"charts",name:"Data Chart Studio · CSV 柱状图和折线图",area:"Data",view:"charts"},
  {id:"universal-helper",name:"Universal Helper · 用一句话找到现有本地工具",area:"Access",view:"access"},
  {id:"universal-access",name:"Reading Size, Contrast & Simple Mode / 无障碍设置",area:"Access",view:"access"},
  {id:"pdf-properties",name:"PDF Properties & Metadata Editor · 文件属性",area:"Files",view:"pdf-mini",module:"metadata"},
