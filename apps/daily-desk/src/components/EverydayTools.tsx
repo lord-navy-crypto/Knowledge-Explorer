@@ -2,14 +2,16 @@ import { useMemo, useState } from "react";
 import QRCode from "qrcode";
 import JSZip from "jszip";
 import { exportFile } from "../lib/output";
+import TextCompareDesk from "./TextCompareDesk";
+import MarkdownConvertDesk from "./MarkdownConvertDesk";
 
 export type Utility = "json" | "stats" | "csv" | "diff" | "markdown" | "encode" | "groups" | "color" | "qr" | "rename";
 export const UTILITIES: { id: Utility; title: string; description: string }[] = [
   { id: "json", title: "JSON formatter", description: "Validate, pretty print or minify JSON." },
   { id: "stats", title: "Word count & reading time", description: "Words, characters, paragraphs, sentences, reading time." },
   { id: "csv", title: "CSV → Markdown", description: "Convert correctly quoted CSV/TSV into a Markdown table." },
-  { id: "diff", title: "Text comparator", description: "See line differences between drafts." },
-  { id: "markdown", title: "Markdown ↔ plain text", description: "Strip common syntax or make paragraphs." },
+  { id: "diff", title: "Text comparator", description: "Aligned line differences, highlighted words and similarity." },
+  { id: "markdown", title: "Markdown ↔ plain text", description: "Two-way conversion, links, copy, swap and export." },
   { id: "encode", title: "Base64 / URL encoding", description: "Encode and decode UTF-8 text and URLs." },
   { id: "groups", title: "Random groups", description: "Pick one name or shuffle a list into groups." },
   { id: "color", title: "Color contrast", description: "Calculate WCAG contrast and AA text guidance." },
@@ -210,7 +212,7 @@ export default function EverydayTools({ initial = "stats" }: { initial?: Utility
         {UTILITIES.map(item=><button className={tab===item.id?"pill active-pill":"pill"} key={item.id} type="button" onClick={()=>{setTab(item.id);setOutput("");setStatus("");setQrData("");}}>{item.title}</button>)}
       </div>
       <h3>{selected.title}</h3><p className="subtle">{selected.description}</p>
-      {tab==="color"?<div className="tools-pair">
+      {tab==="diff"?<TextCompareDesk/>:tab==="markdown"?<MarkdownConvertDesk/>:tab==="color"?<div className="tools-pair">
         <label className="field-label">Text color <input type="color" value={foreground} onChange={e=>setForeground(e.target.value)} /></label>
         <label className="field-label">Background <input type="color" value={background} onChange={e=>setBackground(e.target.value)} /></label>
         <div className="contrast-preview" style={{color:foreground,backgroundColor:background}}>Readable sample text · Aa 123</div>
@@ -222,12 +224,10 @@ export default function EverydayTools({ initial = "stats" }: { initial?: Utility
         <div className="actions"><button type="button" className="primary-button" disabled={!renamed.length||renameBusy} onClick={()=>{void exportRenamedZip();}}>{renameBusy?"Creating ZIP…":"Save all renamed copies as ZIP"}</button><span className="subtle">Limit: 50 files, 16 MB input. Each original is preserved.</span></div>
         <div className="task-list">{renamed.map(({file,filename},i)=><div key={i} className="task-row"><span className="task-copy">{file.name} → {filename}</span><button type="button" className="secondary-button" onClick={()=>{void renameFile(file,filename).catch(e=>setStatus(String(e)));}}>Save copy</button></div>)}</div>
       </>:<>
-        <label className="field-label" htmlFor="utility-input">{tab==="groups"?"Names, separated by lines or commas":tab==="csv"?"CSV or TSV data":tab==="qr"?"URL or text":tab==="diff"?"Original text":"Enter text"}</label>
-        <textarea className="field text-editor" id="utility-input" rows={tab==="diff"?8:6} value={input} onChange={e=>setInput(e.target.value)} />
-        {tab==="diff"&&<><label className="field-label" htmlFor="utility-other">Revised text</label><textarea id="utility-other" className="field text-editor" rows={8} value={other} onChange={e=>setOther(e.target.value)}/></>}
+        <label className="field-label" htmlFor="utility-input">{tab==="groups"?"Names, separated by lines or commas":tab==="csv"?"CSV or TSV data":tab==="qr"?"URL or text":"Enter text"}</label>
+        <textarea className="field text-editor" id="utility-input" rows={6} value={input} onChange={e=>setInput(e.target.value)} />
         {tab==="csv"&&<div className="actions"><label className="field-label" htmlFor="csv-file-import">Import CSV or TSV<input type="file" id="csv-file-import" className="field" accept=".csv,.tsv,text/csv,text/tab-separated-values" onChange={e=>{const file=e.target.files?.[0];if(file){if(file.size>2_000_000){setStatus("Maximum CSV import is 2 MB.");return;}void file.text().then(t=>{setInput(t);setStatus("Loaded CSV locally");}).catch(x=>setStatus(String(x)));}e.target.value="";}} /></label><label>Delimiter <select className="field" value={delimiter} onChange={e=>setDelimiter(e.target.value as "," | "\t")}><option value=",">Comma</option><option value="\t">Tab</option></select></label><label><input type="checkbox" checked={header} onChange={e=>setHeader(e.target.checked)}/> First row is header</label></div>}
         {tab==="json"&&<div className="actions"><button type="button" className="secondary-button" onClick={()=>{try{setOutput(JSON.stringify(JSON.parse(input) as unknown));setStatus("");}catch(e){setStatus(String(e));}}}>Minify JSON</button></div>}
-        {tab==="markdown"&&<div className="actions"><button type="button" className="secondary-button" onClick={()=>setOutput(input.split(/\r?\n/u).filter(Boolean).map(x=>"## "+x).join("\n\n"))}>Plain lines → headings</button></div>}
         {tab==="encode"&&<div className="actions"><label>Encoding <select className="field" value={codec} onChange={e=>setCodec(e.target.value as "base64"|"url")}><option value="base64">Base64 (UTF-8)</option><option value="url">URL component</option></select></label></div>}
         {tab==="groups"&&<><label className="field-label">People per group <input type="number" className="field" min={1} max={50} value={groupSize} onChange={e=>setGroupSize(Math.max(1,Math.min(50,Number(e.target.value)||1)))}/></label><button type="button" className="secondary-button" onClick={()=>{const names=input.split(/\r?\n|,/u).map(s=>s.trim()).filter(Boolean);setOutput(names.length ? "Random pick: "+shuffle(names)[0] : "Enter names first.");setStatus("");}}>Pick one randomly</button></>}
         {tab==="stats"?<div className="metrics"><span>{stats.words} words</span><span>{stats.characters} characters</span><span>{stats.sentences} sentences</span><span>{stats.paragraphs} paragraphs</span><span>{stats.lines} lines</span><span>~{stats.reading} min read</span></div>:<div className="actions">

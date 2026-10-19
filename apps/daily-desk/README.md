@@ -134,3 +134,12 @@ The desktop program remains separate from the AP website. These changes are not 
 - **Batch rename** adds one-click ZIP export of renamed copies, not 50 separate save dialogs. It enforces 50-file / 16 MB input bounds, checks duplicate names, and preserves originals. Single-file export remains available.
 - Main app version 0.11.0. All changes are confined to `apps/daily-desk/**`; AP ReasonLab website is unchanged.
 - **Acceptance boundary:** GitHub Actions tests and DMG packaging verify buildability, not macOS WebView PDF preview/print or Word document rendering fidelity. Manual on-device verification is still necessary.
+
+## v0.12 website-parity checkpoint
+
+- Added [44-entry source audit](WEB-TO-DESKTOP-AUDIT.md): **19 core equivalents**, **22 partial/non-identical**, **3 intentionally unported/external**. The catalogue includes hidden aliases, so these numbers do not represent 44 independent applications.
+- Text comparator: aligned line differences and word highlights with safe complexity bounds, case/whitespace options, similarity estimate and full local diff export.
+- Markdown ↔ plain text: two-way conversion, optional URL retention, input/output swap, word counts and local save.
+- Image desk: on-device mouse/stylus annotation, adjustable pen, undo, save new PNG; constrain image resizing by both width and height, preserving aspect ratio.
+- All changes remain under `apps/daily-desk/**`. No remote API or website changes, no Ollama dependency.
+- The interactive Mac UI (pointer capture, clipboard and file dialogs) still needs real-device acceptance tests.

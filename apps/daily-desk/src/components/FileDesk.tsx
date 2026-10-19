@@ -8,6 +8,7 @@ import PdfPagePreview from "./PdfPagePreview";
 import PdfTextDesk from "./PdfTextDesk";
 import { parsePdfOrder } from "../lib/pdfPageOrder";
 import BatchImageDesk from "./BatchImageDesk";
+import ImageAnnotationDesk from "./ImageAnnotationDesk";
 
 export type FileTab = "pdf" | "images" | "word";
 type PdfMode = "merge" | "split" | "rotate" | "organize" | "compress";
@@ -82,6 +83,7 @@ export default function FileDesk({ onSendToWriting, initialTab = "pdf", initialP
   const [caption, setCaption] = useState("");
   const [imageSource, setImageSource] = useState("");
   const [imageWidth, setImageWidth] = useState(1600);
+  const [imageHeight, setImageHeight] = useState(1600);
   const [imageFormat, setImageFormat] = useState<ImageFormat>("image/jpeg");
   const [quality, setQuality] = useState(.82);
   const [doc, setDoc] = useState<File | null>(null);
@@ -200,7 +202,7 @@ export default function FileDesk({ onSendToWriting, initialTab = "pdf", initialP
         const sourceW = imageMode === "crop" ? Math.floor(img.naturalWidth * Math.min(cropWidth, 100 - cropLeft) / 100) : img.naturalWidth;
         const sourceH = imageMode === "crop" ? Math.floor(img.naturalHeight * Math.min(cropHeight, 100 - cropTop) / 100) : img.naturalHeight;
         if (sourceW < 1 || sourceH < 1) throw new Error("Crop rectangle is empty");
-        const scale = Math.min(1, imageWidth / sourceW);
+        const scale = Math.min(1, imageWidth / sourceW, imageHeight / sourceH);
         const width = Math.max(1, Math.round(sourceW * scale));
         const height = Math.max(1, Math.round(sourceH * scale));
         const canvas = document.createElement("canvas");
@@ -278,7 +280,7 @@ export default function FileDesk({ onSendToWriting, initialTab = "pdf", initialP
         <label className="field-label" htmlFor="image-picker">Choose an image</label>
         <input id="image-picker" className="field" type="file" accept="image/*" onChange={(e) => setImage(e.target.files?.[0] ?? null)} />
         {imageSource && <img src={imageSource} alt="Selected file preview" style={{ maxWidth: 320, maxHeight: 220, objectFit: "contain", display: "block", marginTop: 16 }} />}
-        <div className="pill-row compact" role="group" aria-label="Image operation"><button type="button" className={imageMode==="convert"?"pill active-pill":"pill"} onClick={()=>setImageMode("convert")}>Resize & convert</button><button type="button" className={imageMode==="crop"?"pill active-pill":"pill"} onClick={()=>setImageMode("crop")}>Crop & annotate</button></div>
+        <div className="pill-row compact" role="group" aria-label="Image operation"><button type="button" className={imageMode==="convert"?"pill active-pill":"pill"} onClick={()=>setImageMode("convert")}>Resize & convert</button><button type="button" className={imageMode==="crop"?"pill active-pill":"pill"} onClick={()=>setImageMode("crop")}>Crop & caption</button></div>
         {imageMode==="crop"&&<div className="tools-pair">
           <label className="field-label">Left % <input type="number" className="field" min={0} max={99} value={cropLeft} onChange={e=>setCropLeft(Math.max(0,Math.min(99,Number(e.target.value)||0)))}/></label>
           <label className="field-label">Top % <input type="number" className="field" min={0} max={99} value={cropTop} onChange={e=>setCropTop(Math.max(0,Math.min(99,Number(e.target.value)||0)))}/></label>
@@ -288,12 +290,15 @@ export default function FileDesk({ onSendToWriting, initialTab = "pdf", initialP
         <label className="field-label" htmlFor="image-caption">Optional text annotation</label><input id="image-caption" className="field" value={caption} maxLength={100} onChange={e=>setCaption(e.target.value)} placeholder="Add a short label to the output image" style={{width:"100%"}}/>
         <label className="field-label" htmlFor="image-width">Maximum width (keeps aspect ratio)</label>
         <input id="image-width" type="number" className="field" min={64} max={8192} value={imageWidth} onChange={(e) => setImageWidth(Math.max(64,Math.min(8192,Number(e.target.value)||1600)))} />
+        <label className="field-label" htmlFor="image-height">Maximum height (keeps aspect ratio)</label>
+        <input id="image-height" type="number" className="field" min={64} max={8192} value={imageHeight} onChange={(e) => setImageHeight(Math.max(64,Math.min(8192,Number(e.target.value)||1600)))} />
         <label className="field-label" htmlFor="image-format">Output format</label>
         <select id="image-format" className="field" value={imageFormat} onChange={(e) => setImageFormat(e.target.value as ImageFormat)}><option value="image/jpeg">JPEG</option><option value="image/webp">WebP</option><option value="image/png">PNG</option></select>
         <label className="field-label" htmlFor="image-quality">Quality · {Math.round(quality*100)}%</label>
         <input id="image-quality" type="range" min={.3} max={1} step={.05} value={quality} onChange={(e) => setQuality(Number(e.target.value))} />
         <div className="actions"><button type="button" className="primary-button" disabled={!image || busy} onClick={() => { void processImage(); }}>{busy ? "Converting…" : "Convert & save image"}</button></div>
       </>}
+      {tab === "images" && <ImageAnnotationDesk file={image} />}
       {tab === "images" && <BatchImageDesk />}
       {tab === "word" && <>
         <label htmlFor="word-picker" className="field-label">Choose .docx Word document</label>
