@@ -1,0 +1,23 @@
+name: Web Capture Extension CI
+on:
+  pull_request:
+    paths:
+      - 'apps/web-capture-extension/**'
+      - '.github/workflows/test-web-capture.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web-capture-extension/**'
+      - '.github/workflows/test-web-capture.yml'
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify script syntax and extension manifest
+        run: |
+          node --check apps/web-capture-extension/popup.js
+          node -e "const fs=require('node:fs');const m=JSON.parse(fs.readFileSync('apps/web-capture-extension/manifest.json','utf8'));if(m.manifest_version!==3||m.permissions.some(p=>!['activeTab','scripting','clipboardWrite'].includes(p)))process.exit(1);const html=fs.readFileSync('apps/web-capture-extension/popup.html','utf8');for(const v of ['text','markdown','links','tables'])if(!html.includes('data-mode=\"'+v+'\"'))process.exit(1)"
