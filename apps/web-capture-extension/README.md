@@ -21,3 +21,6 @@ Browser extension MVP, not part of the packaged Tauri v0.29 app. Supports compat
 
 ## Suggested next step
 Add automated DOM fixtures and Chromium extension integration tests, then a user-initiated explicit clipboard handoff into Universal Box's Quick Actions launcher. Keep every native filesystem and clipboard permission tightly scoped.
+
+## Additional local actions
+After extraction, **Clean preview** normalizes spaces and excess blank lines in plain text/Markdown only (not CSV), and **Save** downloads the current preview as UTF-8 TXT, Markdown or CSV. Both actions require an explicit click and do not read browser data in the background. Save is subject to browser download configuration; user should verify the resulting file before relying on it.
