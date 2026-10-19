@@ -4,6 +4,7 @@ import JSZip from "jszip";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { exportFile } from "../lib/output";
+import PdfPagePreview from "./PdfPagePreview";
 
 type Tab = "pdf" | "images" | "word";
 type PdfMode = "merge" | "split" | "rotate" | "compress";
@@ -259,6 +260,7 @@ export default function FileDesk({ onSendToWriting }: { onSendToWriting?: (markd
         {pdfMode === "rotate" && <><label className="field-label" htmlFor="pdf-angle">Degrees clockwise</label><select id="pdf-angle" className="field" value={rotation} onChange={(e) => setRotation(Number(e.target.value))}><option value={90}>90°</option><option value={180}>180°</option><option value={270}>270°</option></select></>}
         {pdfMode === "compress" && <p className="subtle">Like the web's light-compress mode, this reserializes PDF objects. Scanned/image-heavy PDFs may not shrink.</p>}
         <div className="actions"><button type="button" className="primary-button" disabled={!files.length || busy} onClick={() => { void processPdf(); }}>{busy ? "Processing…" : "Process & save PDF"}</button></div>
+        {files.length > 0 && <PdfPagePreview file={files[0]} onPickPage={page=>setPages(String(page))} />}
       </>}
       {tab === "images" && <>
         <label className="field-label" htmlFor="image-picker">Choose an image</label>
