@@ -16,7 +16,8 @@
   "dependencies": {
     "@tauri-apps/api": "^2.5.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "@tauri-apps/plugin-dialog": "^2.2.0"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.5.0",
