@@ -156,3 +156,12 @@ QA follow-up: visual inspection of older modules in dark mode; keyboard focus tr
 - Four new searchable tool catalog entries, new dedicated sidebar page, preview-based crop-page choice and regression tests.
 
 Follow-ups worth evaluating for daily use: offline OCR for scanned PDFs, complete form filling with a bundled or licensed CJK font, proper image downsampling PDF compression, safe full redaction, PDF/A checks, accessible tagged PDF inspection, and richer DOCX↔PDF compatibility. These are not shipped v0.27 features.
+
+## v0.28 implemented: Universal Access and no-jargon helper
+
+- Accessibility workspace with opt-in larger interface labels, high contrast, simple home, motion preferences and locally stored settings.
+- Device-only keyword router mapping Chinese/English everyday requests to **existing** tool-index IDs and verified live view/module deep links. Shows clear non-availability for OCR and unmatched tasks.
+- Keyboard-access refinements including persistent skip link and proper focus lifecycle, Tab trapping and inert background for the search dialog.
+- On-device help examples and three-step usage guide, index entries, responsive styles and automated tests for preferences, non-existent route rejection and real-catalog availability.
+
+These are first accessibility steps, not universal WCAG 2.2 AA certification. Test 200% zoom/reflow, real screen reader interaction, high-contrast colors inside legacy tools and Mac keyboard behavior before claiming full accessibility. Next: robust packaged offline OCR language models, verified community templates, and clear source licensing/contribution policies (subject to repository owner's consent).

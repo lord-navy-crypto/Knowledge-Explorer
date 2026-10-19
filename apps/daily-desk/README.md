@@ -315,3 +315,16 @@ A file preview exposes page thumbnails and can select the target crop page. The 
 The official pricing tables from iLovePDF and Smallpdf show that PDF crop, form editing, OCR, organizing and other day-to-day file tasks are marketed in freemium subscription bundles, although many basic operations have mature open-source implementations. That does not establish the relative search popularity of each tool. The project prioritizes high-reuse, local-first utilities and avoids claiming subscription fees are universally illegitimate.
 
 Do not promise full PDF content editing, professional OCR, true redaction, digital certificate signing or complete Office document round trips unless the corresponding engines and QA exist.
+
+## v0.28 Universal Access — a more inclusive offline toolbox
+
+Adds a dedicated **Universal Access / 无障碍与工具助手** workspace with two searchable entrances:
+
+- **No-jargon Universal Helper:** Users can write a short, ordinary-language Chinese/English task such as “把三张照片合成PDF”. A local, deterministic pattern matcher recommends only tool IDs that exist in the shipped `LOCAL_TOOLS` index, links directly to each workspace, and explains step-by-step use and limitations. No language-model API, telemetry, cloud processing, clipboard monitoring or background file access. Unrecognized input yields a truthful no-match state. Unsupported offline OCR is explicitly marked **not implemented**.
+- **Readable interface settings:** opt-in standard/large/extra reading sizes across primary app components, higher-contrast styling, simplified homepage and user-requested reduced motion. Settings persist **only in localStorage**; unavailable storage quietly falls back to in-memory settings. No accessibility certification is claimed: large-print style covers the primary shell and core components, but legacy specialist submodules and full 200% reflow require manual review.
+- **Keyboard and focus improvements:** visible skip-to-main-content link, toolbar entry for accessibility settings, labeled navigation, a global ⌘/Ctrl+K launcher that moves focus to search, traps Tab/Shift+Tab inside the modal and restores previous focus on close; background panels become inert. Escape closes. Tool preferences remain separate from the user's persisted tasks/notes backup.
+- **Brief usage guide:** three simple stages (describe → review → export), sample phrases, honest privacy constraints, direct link to local backup center.
+
+Guidance follows W3C WAI principles including keyboard access, visible focus and sensible resizing. These improvements move toward accessibility, but are not a formal conformance audit. Existing 79 previously searchable entries remain; 2 accessibility entries were added, and the already available Chart Studio received its previously missing searchable index entry.
+
+This work supports digital public-interest software by making common tools easier to discover without required accounts, ads, paid quotas or uploading private files. It does **not** claim that a desktop app alone creates a political or economic system. No new license is imposed on existing repo authors or third-party contributors.

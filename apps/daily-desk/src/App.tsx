@@ -12,6 +12,8 @@ import WorkflowDesk, {type WorkflowMode} from "./components/WorkflowDesk";
 import FreeFormatsDesk, {type FreeFormatsMode} from "./components/FreeFormatsDesk";
 import ChartDesk from "./components/ChartDesk";
 import PdfEverydayDesk, {type PdfEverydayMode} from "./components/PdfEverydayDesk";
+import UniversalAccessDesk from "./components/UniversalAccessDesk";
+import {readAccessPreferences,writeAccessPreferences,type AccessPreferences} from "./lib/accessPreferences";
 import QuickKitDesk, {type QuickKitMode} from "./components/QuickKitDesk";
 import ExternalTools from "./components/ExternalTools";
 import CodeDesk from "./components/CodeDesk";
@@ -37,7 +39,7 @@ import {
   persistWorkspace,
 } from "./lib/nativeStorage";
 
-type View = "pdf-mini" | "charts" | "free-formats" | "workflows" | "office-privacy" | "media-files" | "universal-lab" | "universal-box" | "universal" | "quick-tools" | "external" | "all-tools" | "code" | "tables" | "overview" | "tasks" | "cards" | "focus" | "notes" | "utilities" | "data" | "files" | "math" | "learning" | "writing" | "drawing" | "reading" | "presets";
+type View = "access" | "pdf-mini" | "charts" | "free-formats" | "workflows" | "office-privacy" | "media-files" | "universal-lab" | "universal-box" | "universal" | "quick-tools" | "external" | "all-tools" | "code" | "tables" | "overview" | "tasks" | "cards" | "focus" | "notes" | "utilities" | "data" | "files" | "math" | "learning" | "writing" | "drawing" | "reading" | "presets";
 
 const menu: { id: View; name: string; symbol: string; description: string }[] = [
   { id: "overview", name: "Overview", symbol: "◫", description: "Your workspace at a glance" },
@@ -52,6 +54,7 @@ const menu: { id: View; name: string; symbol: string; description: string }[] = 
   { id: "free-formats", name: "Free Formats / 格式自由工具", symbol: "▧", description: "Offline Excel interchange, photo differences and HTML / Unicode coding" },
   { id: "charts", name: "Chart Studio / 数据可视化", symbol: "▥", description: "CSV data → bar/line charts, aggregation and SVG export" },
   { id: "pdf-mini", name: "PDF Mini Editor / PDF 日常编辑", symbol: "▣", description: "Edit PDF metadata, visually crop margins, insert blanks and fill basic text forms" },
+  { id: "access", name: "Universal Access / 无障碍与工具助手", symbol: "✳", description: "Readable UI, simple home, keyboard guidance and private task-to-tool recommendations" },
   { id: "external", name: "External Tools / 外部工具", symbol: "↗", description: "Curated official websites for advanced tools" },
   { id: "code", name: "Code editor", symbol: "</>", description: "Local code drafts and snippet library" },
   { id: "tables", name: "CSV Table Desk", symbol: "▤", description: "Filter, sort and export CSV or TSV data" },
@@ -71,7 +74,7 @@ const menu: { id: View; name: string; symbol: string; description: string }[] = 
 ];
 
 const navigationGroups:{title:string;items:View[]}[]=[
-  {title:"DISCOVER",items:["overview","all-tools","charts"]},
+  {title:"DISCOVER",items:["overview","access","all-tools","charts"]},
   {title:"FILES & CREATION",items:["files","pdf-mini","free-formats","writing","drawing","tables"]},
   {title:"UNIVERSAL BOX",items:["quick-tools","universal","universal-box","universal-lab","media-files","office-privacy","workflows","utilities","external"]},
   {title:"STUDY & SCIENCE",items:["math","learning","reading","cards","focus"]},
@@ -109,6 +112,9 @@ export default function App() {
   });
   const [commandOpen,setCommandOpen]=useState(false);
   const [commandQuery,setCommandQuery]=useState("");
+  const [accessPreferences,setAccessPreferences]=useState<AccessPreferences>(readAccessPreferences);
+  const commandInputRef=useRef<HTMLInputElement>(null);
+  const commandDialogRef=useRef<HTMLDivElement>(null);
   function openTool(target: string, module?: string) {
     if (!menu.some(item => item.id === target)) return;
     const id=target as View;
@@ -144,6 +150,13 @@ export default function App() {
     window.addEventListener("keydown",keydown);
     return ()=>window.removeEventListener("keydown",keydown);
   },[]);
+  useEffect(()=>{writeAccessPreferences(accessPreferences);},[accessPreferences]);
+  useEffect(()=>{
+    if(!commandOpen)return;
+    const previous=document.activeElement instanceof HTMLElement?document.activeElement:null;
+    commandInputRef.current?.focus();
+    return ()=>previous?.focus();
+  },[commandOpen]);
   const [workspace, setWorkspace] = useState<WorkspaceData>(() => readWorkspace());
   const [savedStatus, setSavedStatus] = useState("Loading local workspace...");
   const [storageReady, setStorageReady] = useState(false);
@@ -324,8 +337,12 @@ export default function App() {
   const activeMenu = menu.find((item) => item.id === view) ?? menu[0];
 
   return (
-    <main className={"app-shell "+(theme==="dark"?"theme-dark":"theme-light")} data-theme={theme}>
-      <aside className="sidebar">
+    <main className={"app-shell "+(theme==="dark"?"theme-dark":"theme-light")+(accessPreferences.highContrast?" access-contrast":"")
+      +(accessPreferences.simplerHome?" access-simple":"")+(accessPreferences.reducedMotion?" access-reduced-motion":"")
+      +" access-reading-"+accessPreferences.reading}
+      data-theme={theme} data-reading={accessPreferences.reading}>
+      <a className="skip-to-content" href="#main-content">跳转到正文 / Skip to content</a>
+      <aside className="sidebar" inert={commandOpen}>
         <button type="button" className="sidebar-brand" onClick={()=>openTool("overview")} aria-label="Universal Box Home">
           <span className="brand-mark">U</span><span className="sidebar-brand-text">
             <strong className="brand-name">Universal Box</strong><span className="brand-caption">YOUR TOOLS · YOUR DEVICE</span>
@@ -354,7 +371,7 @@ export default function App() {
         </div>
       </aside>
 
-      <section className="main-panel">
+      <section className="main-panel" inert={commandOpen}>
         <header className="topbar">
           <div className="topbar-title"><span className="topbar-location">WORKSPACE / {activeMenu.name}</span><strong>{activeMenu.name.split(" / ")[0]}</strong></div>
           <div className="topbar-actions">
@@ -365,10 +382,12 @@ export default function App() {
               title={theme==="light"?"Switch to dark mode":"Switch to light mode"} aria-label={theme==="light"?"Switch to dark mode":"Switch to light mode"}>
               {theme==="light"?"◐":"☀"}
             </button>
-            <span className="version-pill">v0.27</span>
+            <button className="topbar-control topbar-access" type="button" onClick={()=>openTool("access")}
+              aria-label="Open Universal Access: larger text, contrast and help" title="Accessibility & help">Aa <span>无障碍</span></button>
+            <span className="version-pill">v0.28</span>
           </div>
         </header>
-        <div className="content">
+        <div id="main-content" className="content" tabIndex={-1}>
           {view === "overview" && <>
             <div className="welcome-heading"><div>
               <p className="eyebrow">YOUR PRIVATE DIGITAL TOOLBOX</p>
@@ -437,6 +456,7 @@ export default function App() {
           {view === "workflows" && <WorkflowDesk key={toolMode} initialMode={(toolMode||"zip-selective") as WorkflowMode}/> }
           {view === "free-formats" && <FreeFormatsDesk key={toolMode} initialMode={(toolMode||"spreadsheet") as FreeFormatsMode}/> }
           {view === "charts" && <ChartDesk /> }
+          {view === "access" && <UniversalAccessDesk preferences={accessPreferences} onChange={setAccessPreferences} onOpenTool={openTool}/> }
           {view === "pdf-mini" && <PdfEverydayDesk key={toolMode} initialMode={(toolMode||"metadata") as PdfEverydayMode} /> }
           {view === "external" && <ExternalTools onOpenPresets={()=>openTool("presets")} />}
           {view === "code" && <CodeDesk snippets={workspace.snippets??[]} onChange={snippets=>setWorkspace(current=>({...current,snippets}))} />}
@@ -454,10 +474,23 @@ export default function App() {
         </div>
       </section>
       {commandOpen&&<div className="command-backdrop" onMouseDown={()=>setCommandOpen(false)}>
-        <div className="command-dialog" role="dialog" aria-modal="true" aria-label="Search all Universal Box tools"
-          onMouseDown={event=>event.stopPropagation()}>
+        <div className="command-dialog" ref={commandDialogRef} role="dialog" aria-modal="true" aria-label="Search all Universal Box tools"
+          onMouseDown={event=>event.stopPropagation()}
+          onKeyDown={event=>{
+            if(event.key!=="Tab")return;
+            const dialog=commandDialogRef.current;
+            if(!dialog)return;
+            const elements=Array.from(dialog.querySelectorAll<HTMLElement>(
+              'button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
+            )).filter(el=>el.getClientRects().length>0);
+            if(!elements.length){event.preventDefault();return;}
+            const first=elements[0],last=elements[elements.length-1];
+            const focused=document.activeElement;
+            if(event.shiftKey&&(focused===first||!dialog.contains(focused))){event.preventDefault();last.focus();}
+            else if(!event.shiftKey&&(focused===last||!dialog.contains(focused))){event.preventDefault();first.focus();}
+          }}>
           <div className="command-search-head"><span aria-hidden="true">⌕</span>
-            <input autoFocus className="command-input" type="search" placeholder="Find a tool or workspace…" value={commandQuery} onChange={event=>setCommandQuery(event.target.value)}
+            <input ref={commandInputRef} className="command-input" type="search" placeholder="Find a tool or workspace…" value={commandQuery} onChange={event=>setCommandQuery(event.target.value)}
               onKeyDown={event=>{if(event.key==="Enter"&&commands[0])openTool(commands[0].view,commands[0].module);}}/>
             <button type="button" className="command-close" onClick={()=>setCommandOpen(false)} aria-label="Close tool search">ESC</button>
           </div>
