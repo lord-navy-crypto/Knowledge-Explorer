@@ -15,7 +15,6 @@ export default function AdvancedGrapher({ onChooseY1 }: { onChooseY1?: (value: s
   const [parameterMax, setParameterMax] = useState(2*Math.PI);
   const [drag, setDrag] = useState<DragPoint | null>(null);
   const [status, setStatus] = useState("");
-  const [probe, setProbe] = useState<number | null>(null);
 
   const scaleX = WIDTH / (windowRect.xMax - windowRect.xMin);
   const scaleY = HEIGHT / (windowRect.yMax - windowRect.yMin);
@@ -52,7 +51,6 @@ export default function AdvancedGrapher({ onChooseY1 }: { onChooseY1?: (value: s
   }
   function switchMode(next:GraphMode) {
     setMode(next);
-    setProbe(null);
     setWindowRect(DEFAULT_WINDOW);
     setCurves(next==="cartesian" ? initial : next==="polar" ? [{first:"2+sin(5*t)"}] : [{first:"3*cos(t)", second:"2*sin(t)"}]);
   }
@@ -125,7 +123,7 @@ export default function AdvancedGrapher({ onChooseY1 }: { onChooseY1?: (value: s
     </svg>
     <div className="graph-equations">
       {plotted.map((curve,i)=>curve.error&&<p className="subtle" role="status" key={i}>Curve {i+1}: {curve.error}</p>)}
-      <p className="subtle">Window: x [{windowRect.xMin.toFixed(2)}, {windowRect.xMax.toFixed(2)}], y [{windowRect.yMin.toFixed(2)}, {windowRect.yMax.toFixed(2)}]. {probe===null?"":`Probe x = ${probe}`}</p>
+      <p className="subtle">Window: x [{windowRect.xMin.toFixed(2)}, {windowRect.xMax.toFixed(2)}], y [{windowRect.yMin.toFixed(2)}, {windowRect.yMax.toFixed(2)}].</p>
     </div>
     {status&&<p className="subtle" role="status">{status}</p>}
   </section>;
