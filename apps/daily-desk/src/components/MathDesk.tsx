@@ -3,29 +3,18 @@ import { evaluate } from "mathjs";
 import AdvancedGrapher from "./AdvancedGrapher";
 import QuickMath from "./QuickMath";
 import FormulaBoardDesk from "./FormulaBoardDesk";
+import UnitsDesk from "./UnitsDesk";
 import katex from "katex";
 import NumericalWorkbench from "./NumericalWorkbench";
 import { combineVectors, significantFigures, roundSignificant } from "../lib/mathExtras";
 import "katex/dist/katex.min.css";
 
 export type MathTab = "extras" | "calculator" | "graph" | "calculus" | "units" | "notation" | "vector" | "formula" | "latex";
-const UNITS: Record<string, Record<string, number>> = {
-  Length: { m: 1, km: 1000, cm: .01, mm: .001, mi: 1609.344, ft: .3048, in: .0254 },
-  Mass: { kg: 1, g: .001, mg: .000001, lb: .45359237 },
-  Time: { s: 1, ms: .001, min: 60, h: 3600, day: 86400 },
-  Energy: { J: 1, kJ: 1000, Wh: 3600, kWh: 3600000, eV: 1.602176634e-19 },
-  Pressure: { Pa: 1, kPa: 1000, bar: 100000, atm: 101325, psi: 6894.757293 },
-  Speed: { "m/s": 1, "km/h": 1/3.6, mph: .44704, kn: .514444 },
-};
 export default function MathDesk({initialTab="calculator"}:{initialTab?:MathTab}){
   const [tab,setTab]=useState<MathTab>(initialTab);
   const [expression,setExpression]=useState("sin(pi/2) + sqrt(16)");
   const [result,setResult]=useState("");
   const [plot,setPlot]=useState(["sin(x)","cos(x)"]);
-  const [unitType,setUnitType]=useState("Length");
-  const [from,setFrom]=useState("m");
-  const [to,setTo]=useState("km");
-  const [unitAmount,setUnitAmount]=useState(1000);
   const [notation,setNotation]=useState("12345.678");
   const [otherNumber,setOtherNumber]=useState("2.1");
   const [sigDigits,setSigDigits]=useState(3);
@@ -45,14 +34,8 @@ export default function MathDesk({initialTab="calculator"}:{initialTab?:MathTab}
   let sigResult="Enter valid nonzero numbers";
   try { if(Number.isFinite(preciseResult)) sigResult=roundSignificant(preciseResult,sigDigits); } catch { /* invalid input shown above */ }
   const vectorResult=combineVectors({magnitude,angle},{magnitude:magnitudeB,angle:angleB},vectorOperation==="subtract");
-  const currentUnits=UNITS[unitType];
-  const converted=unitAmount*currentUnits[from]/currentUnits[to];
   const mathHtml=useMemo(()=>{try{return katex.renderToString(latex,{throwOnError:false,trust:false,output:"html"})}catch{return ""}},[latex]);
 
-  function switchUnits(group:string){
-    const names=Object.keys(UNITS[group]);
-    setUnitType(group);setFrom(names[0]);setTo(names[1]);
-  }
   return <section className="panel">
     <p className="eyebrow">MATH WORKBENCH · LOCAL CALCULATIONS</p><h2>Math & science utilities</h2>
     <p className="subtle">Calculator, graphs, units, vectors, scientific notation, formulas and LaTeX. Calculation runs locally; the graph preview is a simpler subset of the website's advanced grapher.</p>
@@ -66,15 +49,7 @@ export default function MathDesk({initialTab="calculator"}:{initialTab?:MathTab}
     {tab==="graph"&&<AdvancedGrapher onChooseY1={expr=>{setPlot([expr]);setTab("calculus");}}/>}
     {tab==="calculus"&&<NumericalWorkbench initialFunction={plot[0]??"x"}/>}
     {tab==="extras"&&<QuickMath/>}
-    {tab==="units"&&<>
-      <label className="field-label">Quantity <select className="field" value={unitType} onChange={e=>switchUnits(e.target.value)}>{Object.keys(UNITS).map(k=><option key={k}>{k}</option>)}</select></label>
-      <div className="tools-pair">
-        <label className="field-label">Value <input type="number" className="field" value={unitAmount} onChange={e=>setUnitAmount(Number(e.target.value))}/></label>
-        <label className="field-label">From <select className="field" value={from} onChange={e=>setFrom(e.target.value)}>{Object.keys(currentUnits).map(k=><option key={k}>{k}</option>)}</select></label>
-        <label className="field-label">To <select className="field" value={to} onChange={e=>setTo(e.target.value)}>{Object.keys(currentUnits).map(k=><option key={k}>{k}</option>)}</select></label>
-      </div><p className="stat-pill" role="status">{Number.isFinite(converted)?converted.toPrecision(9):"Invalid input"} {to}</p>
-      <p className="subtle">Common constants: g≈9.80665 m/s² · c=299,792,458 m/s · h=6.62607015×10⁻³⁴ J·s</p>
-    </>}
+    {tab==="units"&&<UnitsDesk onInsert={value=>{setExpression(value);setTab("calculator");}} />}
     {tab==="notation"&&<>
       <label className="field-label" htmlFor="notation-number">First number (as written)</label>
       <input id="notation-number" className="field" value={notation} onChange={e=>setNotation(e.target.value)}/>
