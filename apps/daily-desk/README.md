@@ -171,3 +171,15 @@ The local Math Workbench now has a separate **ClassWiz** tab (also available fro
 - **DIST**: normal PDF and lower-tail CDF (numerical approximation), binomial PMF and lower-tail CDF (max 200 trials).
 
 Tests exercise representative values, malformed inputs, singular matrices, complex divisions and distribution edge cases. All implementations live only in `apps/daily-desk/`. This is a functional expansion, not a claim of complete pixel-identical ClassWiz parity or macOS on-device QA. The existing basic calculator, numerical methods, formula board, image crop, unit conversions, and website source remain untouched.
+
+## v0.16 preview: small daily tools and explicit external links
+
+**Quick Tools / 快捷小工具** (also searchable through All Tools) adds four local-only workbenches:
+- **Text cleaner**: remove invisible artifacts, normalize copy/paste whitespace, optionally deduplicate lines, drop blanks or join wrapped lines. No background clipboard monitoring.
+- **Tracking-link cleaner**: strip common analytics tags such as `utm_*`, `fbclid`, `gclid` while keeping non-tracking parameters and anchors. Manual copy/export. Does not expand redirects or visit websites.
+- **Date planner**: date interval and signed offsets in UTC calendar days, avoiding time-zone/DST hour problems. Date range 1900–2100.
+- **Weighted grade planner**: calculate graded work average, remaining required average and best possible course score. Explicit `?` markers for future categories, and weights must total 100%.
+
+**External Tools / 外部工具** is now a separate sidebar item with category/search and official URLs for PDF24, ZoteroBib, Overleaf, Desmos, GeoGebra, Wolfram|Alpha, diagrams.net, Excalidraw and Photopea. Each external site is launched explicitly through the Tauri system browser opener (or a separate browser tab in preview). No embedding, silent redirects, automatic file transfer or site credentials.
+
+The full feature suite remains separate from `ap-reasonlab/`; only `apps/daily-desk/` changed. The desktop release is still a preview, and macOS WebView/browser-opening and export UX must be manually tested. Online services have their own account/privacy/pricing terms; listing them is not a guarantee they are ad-free.
