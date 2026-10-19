@@ -2,6 +2,9 @@ import {useMemo,useState} from "react";
 
 export type LocalTool = {id:string;name:string;area:string;view:string;module?:string};
 export const LOCAL_TOOLS:LocalTool[] = [
+ {id:"xlsx-csv-converter",name:"Free Excel XLSX ↔ CSV / JSON · Offline Spreadsheet Data",area:"Office",view:"free-formats",module:"spreadsheet"},
+ {id:"image-difference",name:"Image Difference & Overlay · Compare Two Pictures",area:"Images",view:"free-formats",module:"image-diff"},
+ {id:"html-entity-text",name:"HTML Entities & Unicode NFC/NFKC Text Tools",area:"Text",view:"free-formats",module:"text-codec"},
  {id:"zip-selective-export",name:"Safe ZIP Selective Extract & Repack · CRC Checked",area:"Files",view:"workflows",module:"zip-selective"},
  {id:"image-pipeline",name:"Batch Image Pipeline · Resize → Convert → Rename → ZIP",area:"Images",view:"workflows",module:"image-batch"},
  {id:"contacts-csv-vcf",name:"CSV → vCard Contacts (.vcf) · Batch Address Book",area:"Office",view:"office-privacy",module:"contacts"},
