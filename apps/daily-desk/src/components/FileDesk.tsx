@@ -66,6 +66,12 @@ export default function FileDesk() {
   const [rotation, setRotation] = useState(90);
   const [pdfCount, setPdfCount] = useState(0);
   const [image, setImage] = useState<File | null>(null);
+  const [imageMode, setImageMode] = useState<"convert" | "crop">("convert");
+  const [cropLeft, setCropLeft] = useState(0);
+  const [cropTop, setCropTop] = useState(0);
+  const [cropWidth, setCropWidth] = useState(100);
+  const [cropHeight, setCropHeight] = useState(100);
+  const [caption, setCaption] = useState("");
   const [imageSource, setImageSource] = useState("");
   const [imageWidth, setImageWidth] = useState(1600);
   const [imageFormat, setImageFormat] = useState<ImageFormat>("image/jpeg");
@@ -159,9 +165,14 @@ export default function FileDesk() {
           img.onerror = () => reject(new Error("Unsupported image format"));
           img.src = objectUrl;
         });
-        const scale = Math.min(1, imageWidth / img.naturalWidth);
-        const width = Math.max(1, Math.round(img.naturalWidth * scale));
-        const height = Math.max(1, Math.round(img.naturalHeight * scale));
+        const sourceX = imageMode === "crop" ? Math.floor(img.naturalWidth * cropLeft / 100) : 0;
+        const sourceY = imageMode === "crop" ? Math.floor(img.naturalHeight * cropTop / 100) : 0;
+        const sourceW = imageMode === "crop" ? Math.floor(img.naturalWidth * Math.min(cropWidth, 100 - cropLeft) / 100) : img.naturalWidth;
+        const sourceH = imageMode === "crop" ? Math.floor(img.naturalHeight * Math.min(cropHeight, 100 - cropTop) / 100) : img.naturalHeight;
+        if (sourceW < 1 || sourceH < 1) throw new Error("Crop rectangle is empty");
+        const scale = Math.min(1, imageWidth / sourceW);
+        const width = Math.max(1, Math.round(sourceW * scale));
+        const height = Math.max(1, Math.round(sourceH * scale));
         const canvas = document.createElement("canvas");
         canvas.width = width;
         canvas.height = height;
@@ -171,7 +182,16 @@ export default function FileDesk() {
           ctx.fillStyle = "#fff";
           ctx.fillRect(0, 0, width, height);
         }
-        ctx.drawImage(img, 0, 0, width, height);
+        ctx.drawImage(img, sourceX, sourceY, sourceW, sourceH, 0, 0, width, height);
+        if (caption.trim()) {
+          ctx.font = `bold ${Math.max(14, Math.round(width / 32))}px system-ui`;
+          ctx.fillStyle = "#fff";
+          ctx.strokeStyle = "#17253c";
+          ctx.lineWidth = 4;
+          const baseline = height - Math.max(18, Math.round(height / 25));
+          ctx.strokeText(caption.slice(0, 100), 16, baseline, Math.max(1, width - 32));
+          ctx.fillText(caption.slice(0, 100), 16, baseline, Math.max(1, width - 32));
+        }
         const blob = await new Promise<Blob>((resolve, reject) =>
           canvas.toBlob((output) => output ? resolve(output) : reject(new Error("Image encoding failed")), imageFormat, quality)
         );
@@ -222,6 +242,14 @@ export default function FileDesk() {
         <label className="field-label" htmlFor="image-picker">Choose an image</label>
         <input id="image-picker" className="field" type="file" accept="image/*" onChange={(e) => setImage(e.target.files?.[0] ?? null)} />
         {imageSource && <img src={imageSource} alt="Selected file preview" style={{ maxWidth: 320, maxHeight: 220, objectFit: "contain", display: "block", marginTop: 16 }} />}
+        <div className="pill-row compact" role="group" aria-label="Image operation"><button type="button" className={imageMode==="convert"?"pill active-pill":"pill"} onClick={()=>setImageMode("convert")}>Resize & convert</button><button type="button" className={imageMode==="crop"?"pill active-pill":"pill"} onClick={()=>setImageMode("crop")}>Crop & annotate</button></div>
+        {imageMode==="crop"&&<div className="tools-pair">
+          <label className="field-label">Left % <input type="number" className="field" min={0} max={99} value={cropLeft} onChange={e=>setCropLeft(Math.max(0,Math.min(99,Number(e.target.value)||0)))}/></label>
+          <label className="field-label">Top % <input type="number" className="field" min={0} max={99} value={cropTop} onChange={e=>setCropTop(Math.max(0,Math.min(99,Number(e.target.value)||0)))}/></label>
+          <label className="field-label">Width % <input type="number" className="field" min={1} max={100} value={cropWidth} onChange={e=>setCropWidth(Math.max(1,Math.min(100,Number(e.target.value)||100)))}/></label>
+          <label className="field-label">Height % <input type="number" className="field" min={1} max={100} value={cropHeight} onChange={e=>setCropHeight(Math.max(1,Math.min(100,Number(e.target.value)||100)))}/></label>
+        </div>}
+        <label className="field-label" htmlFor="image-caption">Optional text annotation</label><input id="image-caption" className="field" value={caption} maxLength={100} onChange={e=>setCaption(e.target.value)} placeholder="Add a short label to the output image" style={{width:"100%"}}/>
         <label className="field-label" htmlFor="image-width">Maximum width (keeps aspect ratio)</label>
         <input id="image-width" type="number" className="field" min={64} max={8192} value={imageWidth} onChange={(e) => setImageWidth(Math.max(64,Math.min(8192,Number(e.target.value)||1600)))} />
         <label className="field-label" htmlFor="image-format">Output format</label>
