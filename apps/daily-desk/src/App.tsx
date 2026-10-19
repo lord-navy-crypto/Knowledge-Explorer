@@ -115,8 +115,8 @@ export default function App() {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
-    if (file.size > 1_000_000) {
-      setDataMessage("This backup exceeds the 1 MB import limit.");
+    if (file.size > 3_000_000) {
+      setDataMessage("This backup exceeds the 3 MB import limit.");
       return;
     }
     try {
