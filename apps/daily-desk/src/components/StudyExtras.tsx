@@ -2,8 +2,8 @@ import { type FormEvent, useMemo, useState } from "react";
 import type { WorkspaceData } from "../lib/workspace";
 import PasteCards from "./PasteCards";
 
-type Mode = "paste" | "countdown" | "mistakes" | "code" | "dictation" | "rewrite" | "typewriter" | "reading";
-const MODULES:{id:Mode;label:string}[] = [
+export type StudyMode = "paste" | "countdown" | "mistakes" | "code" | "dictation" | "rewrite" | "typewriter" | "reading";
+const MODULES:{id:StudyMode;label:string}[] = [
   {id:"paste",label:"Instant flip cards"},
   {id:"countdown",label:"Exam countdown"},
   {id:"mistakes",label:"Mistake notebook"},
@@ -17,8 +17,8 @@ function localDate(v:Date):string {
   const x=new Date(v.getTime()-v.getTimezoneOffset()*60000);
   return x.toISOString().slice(0,10);
 }
-export default function StudyExtras({workspace,onChange}:{workspace:WorkspaceData;onChange:(value:WorkspaceData)=>void}){
-  const [mode,setMode]=useState<Mode>("countdown");
+export default function StudyExtras({workspace,onChange,initialMode="countdown"}:{workspace:WorkspaceData;onChange:(value:WorkspaceData)=>void;initialMode?:StudyMode}){
+  const [mode,setMode]=useState<StudyMode>(initialMode);
   const [title,setTitle]=useState("");
   const [detail,setDetail]=useState("");
   const [due,setDue]=useState("");

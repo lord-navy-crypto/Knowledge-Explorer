@@ -95,3 +95,11 @@ This first port covers the everyday tool set but is **not 100% feature parity** 
 - **Writing desk**: Markdown formatting toolbar, undo/redo history (up to 60 entries), find/replace, templates, heading outline, editor/preview modes, text/Markdown import and Word (.docx) export with basic heading and paragraph structure.
 - Existing Print / Save PDF remains dependent on the native WebView print dialog; Word export is basic structure, **not a full Word-compatible WYSIWYG editor**. PDF form editing, OCR and annotation are not included in this port.
 - Mac interactive testing remains necessary for PDF.js worker rendering, large documents, native DOCX output and system printing.
+
+## v0.9 consolidated daily-tool migration
+
+- A searchable on-device launcher routes directly into the math, text, document, PDF, image, classroom and study modules without opening the website.
+- Added code editor with language templates, import/export, find/replace, JSON formatting and persistent snippet handoff; **does not execute arbitrary code**.
+- Added BASE-N conversions, quadratic solver, basic 1-variable statistics and 2×2 simultaneous equation solver.
+- CSV→Markdown now accepts local .csv/.tsv input in addition to pasted content.
+- Remaining important non-local features: full website AI chat/local-LLM plumbing, speech-to-text transcription, public shared links, and full advanced ClassWiz modes (complex matrices, distributions, regressions, symbolic calculus). These are deliberately not mislabelled as completed ports.
