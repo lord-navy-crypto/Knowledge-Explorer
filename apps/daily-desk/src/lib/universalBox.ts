@@ -49,15 +49,17 @@ export function bulkQrRows(input:string):{name:string;text:string}[]{
  if(input.length>35_000)throw new Error("Batch list must be 35,000 characters or fewer.");
  const lines=input.split(/\r?\n/u).map(s=>s.trim()).filter(Boolean);
  if(!lines.length||lines.length>40)throw new Error("Enter 1–40 lines, formatted Name | Data.");
- const names=new Map<string,number>();
+ const names=new Set<string>();
  return lines.map((line,index)=>{
    const separator=line.indexOf("|");
    if(separator<0)throw new Error(`Line ${index+1}: add a | between file label and QR data.`);
    const name=limit(line.slice(0,separator),60,"QR filename");
    const text=staticTextQrPayload(line.slice(separator+1));
    const base=name.normalize("NFKC").replace(/[^\p{L}\p{N}._-]/gu,"-").replace(/^\.+/u,"").slice(0,50)||"qr";
-   const used=(names.get(base)??0)+1;names.set(base,used);
-   return {name:base+(used>1?"-"+used:""),text};
+   let candidate=base,sequence=2;
+   while(names.has(candidate)){candidate=base+"-"+sequence;sequence++;}
+   names.add(candidate);
+   return {name:candidate,text};
  });
 }
 export type UtcEvent={summary:string;description:string;location:string;start:string;end:string;uid:string};
