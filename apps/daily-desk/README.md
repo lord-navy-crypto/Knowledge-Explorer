@@ -298,3 +298,20 @@ The desktop UI has a substantial coordinated visual update while preserving exis
 - **New Data Chart Studio:** import CSV (≤120 KB, ≤700 rows, ≤25 columns), choose group/value columns, sum/average/count, and bar or connected-line chart. Produces a sanitized, fully local vector SVG preview/export and aggregated CSV. Up to 24 distinct categories; invalid numeric values are rejected, blanks are skipped for sum/average. SVG text is XML-escaped, contains no embedded scripts, and is usable offline.
 
 The new charts are added to the searchable All Tools catalog and main navigation. The previous PDF, study, office, ZIP, image, WAV and format-conversion modules are left intact. Automated tests include chart statistics, mixed-sign and missing data, SVG escaping and limits. CI builds TypeScript/Vite/Vitest, validates Rust and packages Apple Silicon macOS DMG. **Automated CI is not equivalent to full visual inspection on a physical Mac**; UI acceptance still requires a real-device pass.
+
+## v0.27 — Four free everyday PDF mini editors
+
+A dedicated **PDF Mini Editor / PDF 日常编辑** workspace and four searchable tools extend the existing merge, split, page order, watermark and image conversion features. All user-selected PDFs are processed locally, and all exports go through the existing explicit save dialog.
+
+1. **PDF standard properties** — inspect page count, page size, rotation, title/author/subject/keywords/creator/producer; edit title, author, subject and keyword fields. Max input 15 MB, 1–200 pages. **Not anonymization:** embedded XMP packets, attachments, revision history, invisible data, producer and creator traces may remain.
+2. **Visual PDF crop margins** — trim left/right/top/bottom display margins by percentage on all pages or a selected page using PDF CropBox. Content outside the visible region may remain inside the PDF; **not redaction or deletion**. Dimensions and existing CropBox are respected; percent inputs are bounded.
+3. **Insert blank PDF pages** — choose a 0-based insertion position relative to existing page count, add 1–10 blank A4/Letter/first-page-size pages. Original pages are retained.
+4. **Existing AcroForm text field filler** — inspect standard text form names/values and fill writable text fields. Baseline supports printable English/ASCII only, maximum 40 edits and up to 500 chars/field. XFA, rich text, non-text form controls, digital signatures and Unicode/CJK appearance embedding are not supported.
+
+A file preview exposes page thumbnails and can select the target crop page. The existing PDF features and other Universal Box workspaces remain unchanged. Automated unit tests generate actual PDFs and reopen the edited results for verification. The manual native macOS acceptance/visual review step is still required.
+
+### Why these small utilities?
+
+The official pricing tables from iLovePDF and Smallpdf show that PDF crop, form editing, OCR, organizing and other day-to-day file tasks are marketed in freemium subscription bundles, although many basic operations have mature open-source implementations. That does not establish the relative search popularity of each tool. The project prioritizes high-reuse, local-first utilities and avoids claiming subscription fees are universally illegitimate.
+
+Do not promise full PDF content editing, professional OCR, true redaction, digital certificate signing or complete Office document round trips unless the corresponding engines and QA exist.

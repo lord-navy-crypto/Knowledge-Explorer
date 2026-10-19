@@ -11,6 +11,7 @@ import OfficePrivacyDesk, {type OfficePrivacyMode} from "./components/OfficePriv
 import WorkflowDesk, {type WorkflowMode} from "./components/WorkflowDesk";
 import FreeFormatsDesk, {type FreeFormatsMode} from "./components/FreeFormatsDesk";
 import ChartDesk from "./components/ChartDesk";
+import PdfEverydayDesk, {type PdfEverydayMode} from "./components/PdfEverydayDesk";
 import QuickKitDesk, {type QuickKitMode} from "./components/QuickKitDesk";
 import ExternalTools from "./components/ExternalTools";
 import CodeDesk from "./components/CodeDesk";
@@ -36,7 +37,7 @@ import {
   persistWorkspace,
 } from "./lib/nativeStorage";
 
-type View = "charts" | "free-formats" | "workflows" | "office-privacy" | "media-files" | "universal-lab" | "universal-box" | "universal" | "quick-tools" | "external" | "all-tools" | "code" | "tables" | "overview" | "tasks" | "cards" | "focus" | "notes" | "utilities" | "data" | "files" | "math" | "learning" | "writing" | "drawing" | "reading" | "presets";
+type View = "pdf-mini" | "charts" | "free-formats" | "workflows" | "office-privacy" | "media-files" | "universal-lab" | "universal-box" | "universal" | "quick-tools" | "external" | "all-tools" | "code" | "tables" | "overview" | "tasks" | "cards" | "focus" | "notes" | "utilities" | "data" | "files" | "math" | "learning" | "writing" | "drawing" | "reading" | "presets";
 
 const menu: { id: View; name: string; symbol: string; description: string }[] = [
   { id: "overview", name: "Overview", symbol: "◫", description: "Your workspace at a glance" },
@@ -50,6 +51,7 @@ const menu: { id: View; name: string; symbol: string; description: string }[] = 
   { id: "workflows", name: "Workflow Studio / 批处理工作室", symbol: "⇄", description: "Safe selective ZIP export and image resize → convert → rename → ZIP" },
   { id: "free-formats", name: "Free Formats / 格式自由工具", symbol: "▧", description: "Offline Excel interchange, photo differences and HTML / Unicode coding" },
   { id: "charts", name: "Chart Studio / 数据可视化", symbol: "▥", description: "CSV data → bar/line charts, aggregation and SVG export" },
+  { id: "pdf-mini", name: "PDF Mini Editor / PDF 日常编辑", symbol: "▣", description: "Edit PDF metadata, visually crop margins, insert blanks and fill basic text forms" },
   { id: "external", name: "External Tools / 外部工具", symbol: "↗", description: "Curated official websites for advanced tools" },
   { id: "code", name: "Code editor", symbol: "</>", description: "Local code drafts and snippet library" },
   { id: "tables", name: "CSV Table Desk", symbol: "▤", description: "Filter, sort and export CSV or TSV data" },
@@ -70,7 +72,7 @@ const menu: { id: View; name: string; symbol: string; description: string }[] = 
 
 const navigationGroups:{title:string;items:View[]}[]=[
   {title:"DISCOVER",items:["overview","all-tools","charts"]},
-  {title:"FILES & CREATION",items:["files","free-formats","writing","drawing","tables"]},
+  {title:"FILES & CREATION",items:["files","pdf-mini","free-formats","writing","drawing","tables"]},
   {title:"UNIVERSAL BOX",items:["quick-tools","universal","universal-box","universal-lab","media-files","office-privacy","workflows","utilities","external"]},
   {title:"STUDY & SCIENCE",items:["math","learning","reading","cards","focus"]},
   {title:"PERSONAL WORKSPACE",items:["tasks","notes","code","presets","data"]},
@@ -363,7 +365,7 @@ export default function App() {
               title={theme==="light"?"Switch to dark mode":"Switch to light mode"} aria-label={theme==="light"?"Switch to dark mode":"Switch to light mode"}>
               {theme==="light"?"◐":"☀"}
             </button>
-            <span className="version-pill">v0.26</span>
+            <span className="version-pill">v0.27</span>
           </div>
         </header>
         <div className="content">
@@ -435,6 +437,7 @@ export default function App() {
           {view === "workflows" && <WorkflowDesk key={toolMode} initialMode={(toolMode||"zip-selective") as WorkflowMode}/> }
           {view === "free-formats" && <FreeFormatsDesk key={toolMode} initialMode={(toolMode||"spreadsheet") as FreeFormatsMode}/> }
           {view === "charts" && <ChartDesk /> }
+          {view === "pdf-mini" && <PdfEverydayDesk key={toolMode} initialMode={(toolMode||"metadata") as PdfEverydayMode} /> }
           {view === "external" && <ExternalTools onOpenPresets={()=>openTool("presets")} />}
           {view === "code" && <CodeDesk snippets={workspace.snippets??[]} onChange={snippets=>setWorkspace(current=>({...current,snippets}))} />}
           {view === "tables" && <DataDesk />}
