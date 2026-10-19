@@ -132,3 +132,12 @@ document.getElementById("save").addEventListener("click",()=>{
   setTimeout(()=>URL.revokeObjectURL(url),1000);
   statusEl.textContent="已触发本地文件下载，原网页未修改。";
 });
+
+document.getElementById("print").addEventListener("click",async()=>{
+  try{
+    const [tab]=await chrome.tabs.query({active:true,currentWindow:true});
+    if(!tab?.id||!/^https?:\/\//i.test(tab.url||""))throw Error("只能打印有权限访问的网页。");
+    await chrome.scripting.executeScript({target:{tabId:tab.id},func:()=>window.print()});
+    statusEl.textContent="已请求浏览器打印对话框；可在其中选择保存为 PDF。";
+  }catch(e){statusEl.textContent="无法打印此页面："+(e?.message||String(e));}
+});
