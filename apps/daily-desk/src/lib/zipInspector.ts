@@ -59,6 +59,10 @@ export function inspectZip(input:Uint8Array):ZipInspection{
    const dataEnd=start+compressedBytes;
    if(dataEnd>offset)throw Error("ZIP compressed entry overlaps the central directory.");
    if(d.getUint16(localOffset+8,true)!==method)throw Error("ZIP method differs between headers.");
+   if(d.getUint16(localOffset+6,true)!==flag)throw Error("ZIP flags differ between headers.");
+   if(localNameLength!==nameLength)throw Error("ZIP filenames differ between local and central headers.");
+   for(let k=0;k<nameLength;k++)
+     if(input[localOffset+30+k]!==raw[k])throw Error("ZIP filenames differ between local and central headers.");
    const unsafePath=unsafeZipPath(name);
    const symlink=(attributes>>>28)===0xa; // UNIX S_IFLNK in upper 16 bits
    const encrypted=Boolean(flag&1);
@@ -72,7 +76,7 @@ export function inspectZip(input:Uint8Array):ZipInspection{
      alerts.push("High declared expansion ratio (>200×)");
    totalExpanded+=uncompressedBytes;totalCompressed+=compressedBytes;
    entries.push({name,compressedBytes,uncompressedBytes,method,unsafePath,symlink,encrypted,warnings:alerts});
-   ranges.push({start,end:dataEnd});
+   ranges.push({start:localOffset,end:dataEnd});
    cursor=end;
  }
  if(cursor!==offset+size)throw Error("ZIP central directory entry count or length mismatch.");
