@@ -21,3 +21,5 @@ Browser extension MVP, not part of the packaged Tauri v0.29 app. Supports compat
 
 ## Suggested next step
 Add automated DOM fixtures and Chromium extension integration tests, then a user-initiated explicit clipboard handoff into Universal Box's Quick Actions launcher. Keep every native filesystem and clipboard permission tightly scoped.
+
+User-click local actions: tidy captured non-CSV text, save TXT/MD/CSV to browser Downloads, or invoke the current webpage print dialog to manually Save as PDF. No background monitoring, network calls or system-level permissions are added.
