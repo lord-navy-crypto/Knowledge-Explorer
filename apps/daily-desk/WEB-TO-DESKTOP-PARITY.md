@@ -31,6 +31,7 @@ This first port covers the everyday tool set but is **not 100% feature parity** 
 | image-compress | File desk / Images | Resize, convert JPEG/WebP/PNG, percent-based crop and text caption; freehand annotation pending |
 | word-import | File desk / Word to Markdown | `.docx` HTML extraction converted to safe editable Markdown (some formatting loss) |
 | dual / write-convert / markdown-pdf | Writing workbench | Markdown + math live preview, file export, system print/PDF; Word→PDF print needs manual testing |
+| draft | Drawing desk | Saved black canvas strokes, mouse/stylus freehand marks, undo, PNG export |
 | csv-markdown | Everyday tools / CSV | Quoted CSV/TSV parsing |
 | batch-rename | Everyday tools / Batch rename | Explicit per-file copy export |
 | markdown-plain | Everyday tools / Markdown & plain | Common inline removal, paragraph/heading conversion |
@@ -48,7 +49,7 @@ This first port covers the everyday tool set but is **not 100% feature parity** 
 - Speech-to-text / Whisper local microphone processing: **not ported**. Dictation TTS is not speech recognition.
 - The website's full ClassWiz calculator, calculus graph analysis (derivatives, roots, polar/parametric), advanced unit/math modes: **partial**.
 - PDF page-by-page splitting, GUI page preview, high-quality image compression and image crop/annotation: **partial**.
-- Word→PDF via docx preview/print, black stylus drawing board, full reading highlight UI and link presets: **not ported**. Markdown/LaTeX live editing and system print have basic implementations.
+- Word→PDF via docx preview/print, full reading highlight UI and link presets: **not ported**. Markdown/LaTeX live editing, printing and a saved black drawing canvas have basic implementations.
 - Full code editor and off-site tools are not inherently offline; must remain separate from the desktop's core feature set.
 
 ## Portability, local export and safety
