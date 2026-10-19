@@ -18,8 +18,8 @@ export default function ExternalTools({onOpenPresets}:{onOpenPresets:()=>void}){
       const safe=validatedExternalUrl(url);
       if(isTauri())await openUrl(safe);
       else {
-        const windowRef=window.open(safe,"_blank","noopener,noreferrer");
-        if(!windowRef) {setStatus("Browser blocked the new tab; please allow pop-ups for this action.");return;}
+        // noopener may intentionally return null even when the browser opened the tab.
+        window.open(safe,"_blank","noopener,noreferrer");
       }
       setStatus("External website launch requested. Daily Desk has not sent any of your files.");
     }catch(error){setStatus("Could not open this link: "+String(error instanceof Error?error.message:error));}
