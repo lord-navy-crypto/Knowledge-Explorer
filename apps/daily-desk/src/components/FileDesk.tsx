@@ -31,6 +31,33 @@ function parsePages(value: string, count: number): number[] {
   return [...chosen].sort((a, b) => a - b);
 }
 
+/** Convert Mammoth's inert HTML output to editable Markdown without injecting HTML. */
+function htmlToMarkdown(html: string): string {
+  const parsed = new DOMParser().parseFromString(html, "text/html");
+  const render = (node: Node): string => {
+    if (node.nodeType === Node.TEXT_NODE) return node.textContent ?? "";
+    if (node.nodeType !== Node.ELEMENT_NODE) return "";
+    const el = node as Element;
+    const tag = el.tagName.toLowerCase();
+    const content = Array.from(el.childNodes).map(render).join("");
+    if (/^h[1-6]$/.test(tag)) return "\n" + "#".repeat(Number(tag[1])) + " " + content.trim() + "\n\n";
+    if (tag === "p" || tag === "div") return content.trim() + "\n\n";
+    if (tag === "strong" || tag === "b") return "**" + content + "**";
+    if (tag === "em" || tag === "i") return "*" + content + "*";
+    if (tag === "code") return "`" + content + "`";
+    if (tag === "br") return "\n";
+    if (tag === "li") return "- " + content.trim() + "\n";
+    if (tag === "ul" || tag === "ol") return "\n" + content + "\n";
+    if (tag === "a") {
+      const href = el.getAttribute("href") ?? "";
+      return /^https?:\/\//i.test(href) ? "[" + content + "](" + href.replace(/[()]/g, "") + ")" : content;
+    }
+    if (tag === "img") return el.getAttribute("alt") ?? "[embedded image omitted]";
+    return content;
+  };
+  return Array.from(parsed.body.childNodes).map(render).join("").replace(/\n{3,}/g,"\n\n").trim();
+}
+
 export default function FileDesk() {
   const [tab, setTab] = useState<Tab>("pdf");
   const [pdfMode, setPdfMode] = useState<PdfMode>("merge");
@@ -164,8 +191,8 @@ export default function FileDesk() {
     try {
       if (!/\.docx$/i.test(doc.name)) throw new Error("Only .docx files are supported.");
       const mammoth = await import("mammoth");
-      const result = await mammoth.convertToMarkdown({ arrayBuffer: await doc.arrayBuffer() });
-      setMarkdown(result.value || "");
+      const result = await mammoth.convertToHtml({ arrayBuffer: await doc.arrayBuffer() });
+      setMarkdown(htmlToMarkdown(result.value || ""));
       setStatus(`Converted locally. ${result.messages.length} conversion note(s).`);
     } catch (error) { setStatus("Word import failed: " + errorMessage(error)); }
     finally { setBusy(false); }
