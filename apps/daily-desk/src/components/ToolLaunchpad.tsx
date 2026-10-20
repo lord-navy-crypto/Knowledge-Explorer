@@ -69,6 +69,7 @@ export const LOCAL_TOOLS:LocalTool[] = [
  {id:"word-count",name:"Word Counter",area:"Text",view:"utilities",module:"stats"},
  {id:"text-diff",name:"Text Comparator",area:"Text",view:"utilities",module:"diff"},
  {id:"csv",name:"CSV → Markdown",area:"Text",view:"utilities",module:"csv"},
+ {id:"csv-batch-merge",name:"Merge Multiple CSV Tables · 多张表格合并",area:"Data",view:"tables"},
  {id:"csv-table",name:"CSV / TSV Table Desk · 表格筛选、排序及导出",area:"Files",view:"tables"},
  {id:"markdown-plain",name:"Markdown → Plain Text",area:"Text",view:"utilities",module:"markdown"},
  {id:"write",name:"Markdown / Word Editor",area:"Writing",view:"writing"},
