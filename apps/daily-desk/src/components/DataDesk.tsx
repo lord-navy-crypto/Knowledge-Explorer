@@ -1,6 +1,7 @@
 import {type ChangeEvent,useMemo,useState} from "react";
 import {csvRows} from "./EverydayTools";
 import {exportFile} from "../lib/output";
+import {mergeCsvSources,mergedCsvExport,type MergedCsv} from "../lib/csvMerge";
 import {filterSortTable,makeDataTable,tableToCsv,tableToJson,tableToMarkdown,type DataTable} from "../lib/tableTools";
 
 export default function DataDesk(){
@@ -14,6 +15,8 @@ export default function DataDesk(){
   const [descending,setDescending]=useState(false);
   const [unique,setUnique]=useState(false);
   const [status,setStatus]=useState("");
+  const [merged,setMerged]=useState<MergedCsv|null>(null);
+  const [mergeNames,setMergeNames]=useState<string[]>([]);
 
   const visible=useMemo(()=>table?filterSortTable(table,filter,filterColumn<0?null:filterColumn,sortColumn<0?null:sortColumn,descending,unique):null,
     [table,filter,filterColumn,sortColumn,descending,unique]);
@@ -29,6 +32,27 @@ export default function DataDesk(){
       setTable(null);
       setStatus("Loaded file locally. Select Load table to inspect its contents.");
     }catch(e){setStatus(String(e));}
+  }
+  async function mergeFiles(event:ChangeEvent<HTMLInputElement>){
+    const files=[...(event.target.files??[])];event.target.value="";setStatus("");setMerged(null);
+    try{
+      if(files.length<2||files.length>12)throw Error("Select 2–12 CSV files.");
+      const entries=[];
+      for(const file of files){
+        if(!/\.csv$/iu.test(file.name)||file.size>1_000_000)throw Error("Only CSV files up to 1 MB each are supported.");
+        entries.push({name:file.name,rows:csvRows(await file.text())});
+      }
+      const result=mergeCsvSources(entries);
+      setMerged(result);setMergeNames(files.map(f=>f.name));
+      setStatus("Merged "+result.rows.length+" rows from "+files.length+" selected CSV files; review before saving.");
+    }catch(e){setStatus("Merge failed: "+String(e instanceof Error?e.message:e));}
+  }
+  async function saveMerged(){
+    if(!merged)return;
+    try{
+      const saved=await exportFile("universal-box-merged-csv.csv",mergedCsvExport(merged));
+      setStatus(saved?"Merged CSV saved locally; source files unchanged.":"Save cancelled.");
+    }catch(e){setStatus(String(e instanceof Error?e.message:e));}
   }
   function load(){
     try{
@@ -60,6 +84,19 @@ export default function DataDesk(){
         </select>
       </label>
       <label className="field-label"><input type="checkbox" checked={header} onChange={event=>{setHeader(event.target.checked);setTable(null);}}/> First row contains column headings</label>
+    </div>
+    <div className="panel" style={{marginBottom:16}}>
+      <h3>Merge CSV files · 合并多张表格</h3>
+      <p className="subtle">Choose 2–12 CSV files (up to 1 MB each). Match columns by identical header names, keep source filenames, and leave missing cells blank. No files are overwritten or uploaded. Excel XLSX files should first be converted to CSV in Free Formats.</p>
+      <input aria-label="Choose CSV files to merge" className="field" type="file" accept=".csv,text/csv" multiple onChange={e=>{void mergeFiles(e);}}/>
+      {merged&&<>
+        <p className="subtle">{mergeNames.join(", ")} · {merged.rows.length} rows · {merged.headers.length} columns</p>
+        <div style={{overflowX:"auto",maxHeight:220,overflowY:"auto"}}>
+          <table><thead><tr>{merged.headers.map((h,i)=><th key={i}>{h}</th>)}</tr></thead>
+          <tbody>{merged.rows.slice(0,8).map((row,i)=><tr key={i}>{row.map((v,j)=><td key={j}>{v}</td>)}</tr>)}</tbody></table>
+        </div>
+        <button type="button" className="primary-button" onClick={()=>{void saveMerged();}}>Save merged CSV</button>
+      </>}
     </div>
     <label className="field-label" htmlFor="data-text">Source data · private to this device</label>
     <textarea id="data-text" className="field text-editor" rows={7} maxLength={2000000} value={source} onChange={event=>{setSource(event.target.value);setTable(null);}}/>
