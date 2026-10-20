@@ -7,11 +7,13 @@ import {
  imageWorkflowMime,imageWorkflowScale,planImageWorkflow,
  type ImageWorkflowFormat,type ImageWorkflowOptions,
 } from "../lib/imageWorkflow";
+import {planQuickZip} from "../lib/quickZipPack";
 
-export type WorkflowMode="zip-selective"|"image-batch";
+export type WorkflowMode="zip-selective"|"image-batch"|"zip-pack";
 const TABS:{id:WorkflowMode;label:string}[]=[
  {id:"zip-selective",label:"Safe ZIP selective export / 选择性解压"},
  {id:"image-batch",label:"Image workflow / 图片批量处理"},
+ {id:"zip-pack",label:"Batch ZIP pack / 一键批量压缩"},
 ];
 function message(e:unknown){return e instanceof Error?e.message:String(e);}
 function blobPng(canvas:HTMLCanvasElement,mime:string,quality:number):Promise<Uint8Array>{
@@ -41,6 +43,7 @@ export default function WorkflowDesk({initialMode="zip-selective"}:{initialMode?
  const [archiveIndex,setArchiveIndex]=useState<ZipInspection|null>(null);
  const [selectedNames,setSelectedNames]=useState<string[]>([]);
  const [images,setImages]=useState<File[]>([]);
+ const [packFiles,setPackFiles]=useState<File[]>([]);
  const [options,setOptions]=useState<ImageWorkflowOptions>({
    format:"jpeg",maxDimension:1024,quality:.85,prefix:"image",includeManifest:true,
  });
@@ -48,6 +51,7 @@ export default function WorkflowDesk({initialMode="zip-selective"}:{initialMode?
    try{return {value:planImageWorkflow(images,options),error:""};}
    catch(e){return {value:null,error:message(e)};}
  },[images,options]);
+ const packPlan=useMemo(()=>{try{return {value:planQuickZip(packFiles),error:""};}catch(e){return {value:null,error:message(e)};}},[packFiles]);
  const zipPlan=useMemo(()=>{
    if(!sourceArchive||!selectedNames.length)return {value:null,error:""};
    try{return {value:planSafeZipExtraction(sourceArchive,selectedNames),error:""};}
@@ -83,6 +87,23 @@ export default function WorkflowDesk({initialMode="zip-selective"}:{initialMode?
      const saved=await exportFile("universal-box-selected-safe.zip",result.bytes);
      setStatus(saved?"Saved "+result.count+" CRC-verified files under new safe names, with a manifest. Source ZIP unchanged.":"Save cancelled.");
    }catch(e){setStatus("Selective extraction failed: "+message(e));}
+   finally{setBusy(false);}
+ }
+ async function exportPack(){
+   if(!packPlan.value||busy)return;
+   setBusy(true);setStatus("");
+   try{
+     const zip=new JSZip();
+     for(const item of packPlan.value){
+       setStatus("Packing "+(item.index+1)+"/"+packPlan.value.length);
+       zip.file(item.output,new Uint8Array(await packFiles[item.index].arrayBuffer()));
+     }
+     zip.file("universal-box-manifest.json",JSON.stringify(packPlan.value.map(({source,output,size})=>({source,output,size})),null,2));
+     const bytes=await zip.generateAsync({type:"uint8array",compression:"DEFLATE",compressionOptions:{level:6}});
+     if(bytes.length>20_000_000)throw Error("ZIP exceeds the 20 MB output limit.");
+     const saved=await exportFile("universal-box-batch.zip",bytes);
+     setStatus(saved?"Saved a new ZIP containing "+packFiles.length+" selected files; originals unchanged.":"Save cancelled.");
+   }catch(e){setStatus("Pack failed: "+message(e));}
    finally{setBusy(false);}
  }
  function selectImageFiles(event:ChangeEvent<HTMLInputElement>){
@@ -139,6 +160,14 @@ export default function WorkflowDesk({initialMode="zip-selective"}:{initialMode?
    <div className="pill-row" role="group" aria-label="Batch workflow">
      {TABS.map(item=><button className={item.id===mode?"pill active-pill":"pill"} type="button" key={item.id} onClick={()=>{setMode(item.id);setStatus("");}}>{item.label}</button>)}
    </div>
+   {mode==="zip-pack"&&<>
+     <p className="subtle">Choose 1–50 files (up to 16 MB total), then pack into a new local ZIP with a filename manifest. Existing files are never deleted, overwritten or uploaded. Compressed media may not shrink much.</p>
+     <label className="field-label" htmlFor="zip-pack-files">Select files for ZIP</label>
+     <input className="field" id="zip-pack-files" type="file" multiple onChange={e=>{setPackFiles([...(e.target.files??[])]);e.target.value="";setStatus("");}}/>
+     {packPlan.error&&<p role="alert" className="subtle">{packPlan.error}</p>}
+     {packPlan.value&&<p className="subtle">{packPlan.value.length} files · {packPlan.value.reduce((n,f)=>n+f.size,0).toLocaleString()} bytes · Manifest included</p>}
+     <button type="button" className="primary-button" disabled={!packPlan.value||busy} onClick={()=>{void exportPack();}}>{busy?"Packing…":"Save selected files as ZIP"}</button>
+   </>}
    {mode==="zip-selective"&&<>
      <p className="subtle">First inspect ZIP headers; choose up to 30 normal files (12 MB declared total, 7 MB each). Reject suspicious archive paths, symlinks, encrypted entries, duplicate paths, unsupported formats and very high compression ratios. Verify decompressed sizes and CRC-32. Selected files are renamed as safe numbered filenames and exported to a NEW ZIP with a JSON name mapping. Nothing is written to arbitrary archive-supplied paths. This is not malware scanning.</p>
      <label className="field-label" htmlFor="safe-zip-file">Import ZIP (≤20 MB)</label>
