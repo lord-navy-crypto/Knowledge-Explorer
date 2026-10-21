@@ -154,4 +154,6 @@ test("popup preserves exact target-page extraction error when Chromium injects c
   const status=ctx.document.getElementById("status").textContent;
   assert.match(status,/合并单元格/);
   assert.doesNotMatch(status,/Error occurred while executing function/);
+  assert.match(ctx.document.getElementById("tableNotice").textContent,/合并单元格/);
+  assert.equal(ctx.document.getElementById("tableNotice").hidden,false);
 });
