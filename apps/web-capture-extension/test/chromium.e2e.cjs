@@ -117,12 +117,15 @@ test("real Chromium loads and exercises Web Capture MV3 popup", {timeout:180000}
    await open("merged");
    await popup.getByRole("button",{name:"复制所选表格 CSV"}).click();
    await popup.locator("#status").getByText("合并单元格",{exact:false}).waitFor();
+   await popup.locator("#tableNotice").getByText("合并单元格",{exact:false}).waitFor();
+   assert.equal(await popup.locator("#tableNotice").isVisible(),true);
    await shot(popup,"merged-cell-warning.png");
   });
   await t.test("large CSV fails instead of truncating quoted cells",async()=>{
    await open("long");
    await popup.getByRole("button",{name:"直接保存表格 CSV"}).click();
    await popup.locator("#status").getByText("超过 400,000",{exact:false}).waitFor();
+   await popup.locator("#tableNotice").getByText("超过 400,000",{exact:false}).waitFor();
    await shot(popup,"oversized-csv-warning.png");
   });
   await t.test("Markdown reading updates preview and provenance",async()=>{
