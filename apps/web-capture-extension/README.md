@@ -39,3 +39,13 @@ Users can select **一键提取并保存 Markdown** or **一键提取并保存�
 ## Packaged Chromium testing build
 
 The GitHub Actions `Web Capture Extension CI` workflow packages a tested `universal-box-web-capture-v0.3.0.zip` after the syntax and DOM-fixture tests pass. Unzip the archive into a local folder. In a Chromium-family browser, open Extensions → Developer mode → Load unpacked, then select the unzipped folder containing `manifest.json`. This is a browser extension, **not a macOS DMG** and not a native Safari extension. No extension store publication or browser-side user interaction verification is claimed.
+
+
+## v0.3.1 · Real Chromium browser testing and inline warnings
+
+- A dedicated GitHub Actions workflow now launches an **installed Manifest V3 browser extension in headless Chromium** using Playwright, opens local HTML fixtures, clicks actual popup buttons, saves real downloaded files and validates their CSV bytes. Browser screenshots and sample downloads are attached to each run.
+- Browser tests cover direct single-table saving, selecting a second table, no-table errors, CSV merged-cell and size safety, and Markdown preview/provenance. DOM-fixture tests remain for more granular input cases.
+- Real testing exposed a defect: exceptions thrown by `chrome.scripting.executeScript` in the page were reduced to unhelpful generic messages. Errors are now returned as structured data so users see the actual cause.
+- Table errors also appear **next to the table controls** in an accessible inline alert rather than only at the bottom preview, based on inspected real Chromium screenshots.
+- The E2E runner copies the release popup and uses a **test-only** localhost host grant and inert service worker to discover the extension ID and avoid the lack of toolbar-gesture permissions in automated full-tab popup sessions. The **shipped extension** still only requests `activeTab`, `scripting`, `clipboardWrite`; it adds no background monitoring, global host access or network transmission.
+- Validated scope is Chromium headless on GitHub's Linux runner. It is **not** proof of native Safari or every GUI environment. The production release remains a Load unpacked Chromium extension, not a DMG.
