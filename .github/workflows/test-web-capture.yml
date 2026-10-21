@@ -26,11 +26,11 @@ jobs:
       - name: Package Web Capture Chromium extension
         run: |
           cd apps/web-capture-extension
-          zip -q -r ../../universal-box-web-capture-v0.3.0.zip manifest.json popup.js popup.html README.md
+          zip -q -r ../../universal-box-web-capture-v0.3.1.zip manifest.json popup.js popup.html README.md
       - name: Upload ready-to-test extension ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: universal-box-web-capture-v0.3.0-chromium
-          path: universal-box-web-capture-v0.3.0.zip
+          name: universal-box-web-capture-v0.3.1-chromium
+          path: universal-box-web-capture-v0.3.1.zip
           if-no-files-found: error
           retention-days: 30
