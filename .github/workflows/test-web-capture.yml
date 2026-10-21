@@ -22,3 +22,15 @@ jobs:
           node --check apps/web-capture-extension/popup.js
           node --test apps/web-capture-extension/test/*.test.cjs
           node -e "const fs=require('node:fs');const m=JSON.parse(fs.readFileSync('apps/web-capture-extension/manifest.json','utf8'));if(m.manifest_version!==3||m.permissions.some(p=>!['activeTab','scripting','clipboardWrite'].includes(p)))process.exit(1);const html=fs.readFileSync('apps/web-capture-extension/popup.html','utf8');for(const v of ['text','markdown','links','tables','source','outline'])if(!html.includes('data-mode=\"'+v+'\"'))process.exit(1)"
+
+      - name: Package Web Capture Chromium extension
+        run: |
+          cd apps/web-capture-extension
+          zip -q -r ../../universal-box-web-capture-v0.3.0.zip manifest.json popup.js popup.html README.md
+      - name: Upload ready-to-test extension ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: universal-box-web-capture-v0.3.0-chromium
+          path: universal-box-web-capture-v0.3.0.zip
+          if-no-files-found: error
+          retention-days: 30
