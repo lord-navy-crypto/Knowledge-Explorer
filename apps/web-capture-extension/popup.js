@@ -136,32 +136,98 @@ function capturePage(mode,tableIndex=0){
   walk(root);
   return out.join("").replace(/[ \t]+\n/g,"\n").replace(/\n{3,}/g,"\n\n").trim().slice(0,LIMIT);
 }
-async function perform(mode,saveDirectly=false){
-  buttons.forEach(b=>b.disabled=true);statusEl.textContent="正在提取…";previewEl.value="";
+async function activeTab(){
+  const [tab]=await chrome.tabs.query({active:true,currentWindow:true});
+  if(!tab?.id||!/^https?:\/\//i.test(tab.url||""))
+    throw Error("仅可读取当前有授权的普通 http(s) 网页。");
+  return tab;
+}
+async function scanTables(tab){
+  const results=await chrome.scripting.executeScript({
+    target:{tabId:tab.id},func:inspectPageTables
+  });
+  const metadata=results?.[0]?.result;
+  if(!metadata||metadata.url!==tab.url||!Array.isArray(metadata.tables))
+    throw Error("页面已变化，请重新扫描表格。");
+  if(metadata.tables.length===0){
+    scannedTables=null;
+    tablePicker.hidden=true;
+    throw Error("当前页面没有可提取的可见 HTML 表格。");
+  }
+  scannedTables={tabId:tab.id,url:tab.url,count:metadata.tables.length};
+  tableSelect.replaceChildren();
+  for(const item of metadata.tables){
+    const option=document.createElement("option");
+    option.value=String(item.index);
+    option.textContent="#"+(item.index+1)+" · "+item.rows+" 行 × "+item.columns+" 列 · "+item.label;
+    tableSelect.appendChild(option);
+  }
+  tableSelect.value="0";
+  tablePicker.hidden=false;
+  return metadata.tables.length;
+}
+tableScan.addEventListener("click",async()=>{
+  tableScan.disabled=true;
+  statusEl.textContent="正在扫描当前页表格…";
   try{
-    const [tab]=await chrome.tabs.query({active:true,currentWindow:true});
-    if(!tab?.id)throw Error("未找到当前标签页。");
-    const results=await chrome.scripting.executeScript({target:{tabId:tab.id},func:capturePage,args:[mode]});
+    const tab=await activeTab();
+    const count=await scanTables(tab);
+    statusEl.textContent="已发现 "+count+" 个表格。请选择正确的表格，再点击复制 CSV 或一键保存。";
+  }catch(error){statusEl.textContent="扫描失败："+(error?.message||String(error));}
+  finally{tableScan.disabled=false;}
+});
+async function perform(mode,saveDirectly=false){
+  buttons.forEach(b=>b.disabled=true);
+  tableScan.disabled=true;
+  statusEl.textContent="正在提取…";
+  try{
+    const tab=await activeTab();
+    let tableIndex=0;
+    if(mode==="tables"){
+      if(!scannedTables||scannedTables.tabId!==tab.id||scannedTables.url!==tab.url){
+        const count=await scanTables(tab);
+        if(count>1){
+          statusEl.textContent="发现 "+count+" 个表格。请先从下拉框选择目标表格，再点击此按钮。";
+          tableSelect.focus();
+          return;
+        }
+      }
+      tableIndex=Number(tableSelect.value);
+      if(!Number.isInteger(tableIndex)||tableIndex<0||tableIndex>=scannedTables.count)
+        throw Error("表格选择无效，请重新扫描。");
+    }
+    const results=await chrome.scripting.executeScript({
+      target:{tabId:tab.id},func:capturePage,args:[mode,tableIndex]
+    });
     const text=results?.[0]?.result||"";
-    if(!text)throw Error("没有找到可复制的内容。");
+    if(!text)throw Error("没有找到可提取的内容。");
     previewEl.value=text;
     lastMode=mode;
+    lastSource=tab.url;
+    const domain=new URL(tab.url).hostname;
+    sourceMeta.textContent="来源："+domain+" · 格式："+(mode==="tables"?"CSV 表格 #"+(tableIndex+1):mode)+" · "+text.length.toLocaleString()+" 字符";
+    const cutOff=text.length>=400000 && mode!=="links"&&mode!=="tables";
     if(saveDirectly){
       saveCaptured(text,mode);
-      statusEl.textContent="已直接保存到下载文件夹 · "+text.length+" 字符。没有向外部网站发送内容。";
+      statusEl.textContent="已触发浏览器本地下载："+text.length.toLocaleString()+" 字符。"+(cutOff?"注意：长文本可能在上限处截断。":"")+"请在下载列表确认保存完成。";
       return;
     }
     try{
       await navigator.clipboard.writeText(text);
-      statusEl.textContent="已复制到剪贴板 · "+text.length+" 字符（最多 400,000）";
+      statusEl.textContent="已复制到剪贴板 · "+text.length.toLocaleString()+" 字符。"+(cutOff?"注意：长文本可能截断。":"");
     }catch{
-      statusEl.textContent="浏览器拒绝了剪贴板写入。可在下方文本框手动复制。";
+      statusEl.textContent="剪贴板权限被浏览器拒绝；提取成功，可使用下方“复制预览”或保存文件。";
       previewEl.focus();previewEl.select();
     }
-  }catch(error){statusEl.textContent="提取失败："+(error?.message||String(error))+"。请在普通 http(s) 网页尝试。";}
-  finally{buttons.forEach(b=>b.disabled=false);}
+  }catch(error){statusEl.textContent="提取失败："+(error?.message||String(error))+"。原有预览未被覆盖。";}
+  finally{buttons.forEach(b=>b.disabled=false);tableScan.disabled=false;}
 }
 buttons.forEach(button=>button.addEventListener("click",()=>void perform(button.dataset.mode,button.dataset.save==="true")));
+document.getElementById("copyPreview").addEventListener("click",async()=>{
+  if(!previewEl.value){statusEl.textContent="没有可复制的预览，请先提取。";return;}
+  try{await navigator.clipboard.writeText(previewEl.value);statusEl.textContent="预览内容已复制。";}
+  catch{previewEl.focus();previewEl.select();statusEl.textContent="浏览器拒绝复制，可使用文本框的手动复制。";}
+});
 /** Offline formatting on the explicitly captured preview, never on page source. */
 function tidyText(text){
   return text.replace(/\r\n?/g,"\n").replace(/[\u00a0\u202f]/g," ")
@@ -182,7 +248,11 @@ function saveCaptured(value,mode){
   const blob=new Blob(["\uFEFF",value],{type:mime+";charset=utf-8"});
   const url=URL.createObjectURL(blob);
   const anchor=document.createElement("a");
-  anchor.href=url;anchor.download="universal-box-web-capture."+ext;
+  const stamp=new Date().toISOString().slice(0,19).replace(/[:T]/g,"-");
+  let host="web";
+  try{if(lastSource)host=new URL(lastSource).hostname.toLowerCase().replace(/[^a-z0-9.-]/g,"-").slice(0,60)||"web";}catch{}
+  anchor.href=url;
+  anchor.download="universal-box-"+host+"-"+mode+"-"+stamp+"."+ext;
   document.body.appendChild(anchor);anchor.click();anchor.remove();
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
