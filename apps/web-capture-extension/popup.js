@@ -6,6 +6,9 @@ const buttons=[...document.querySelectorAll("button[data-mode]")];
 const tablePicker=document.getElementById("tablePicker");
 const tableSelect=document.getElementById("tableSelect");
 const tableScan=document.getElementById("scanTables");
+const tableNotice=document.getElementById("tableNotice");
+function clearTableWarning(){tableNotice.hidden=true;tableNotice.textContent="";}
+function showTableWarning(value){tableNotice.hidden=false;tableNotice.textContent="表格处理提示："+value;}
 const sourceMeta=document.getElementById("sourceMeta");
 let lastMode="text";
 let lastSource="";
@@ -187,18 +190,20 @@ async function scanTables(tab){
 }
 tableScan.addEventListener("click",async()=>{
   tableScan.disabled=true;
+  clearTableWarning();
   statusEl.textContent="正在扫描当前页表格…";
   try{
     const tab=await activeTab();
     const count=await scanTables(tab);
     statusEl.textContent="已发现 "+count+" 个表格。请选择正确的表格，再点击复制 CSV 或一键保存。";
-  }catch(error){statusEl.textContent="扫描失败："+(error?.message||String(error));}
+  }catch(error){const message=error?.message||String(error);showTableWarning(message);statusEl.textContent="扫描失败："+message;}
   finally{tableScan.disabled=false;}
 });
 async function perform(mode,saveDirectly=false){
   buttons.forEach(b=>b.disabled=true);
   tableScan.disabled=true;
   statusEl.textContent="正在提取…";
+  if(mode==="tables")clearTableWarning();
   try{
     const tab=await activeTab();
     let tableIndex=0;
@@ -241,7 +246,7 @@ async function perform(mode,saveDirectly=false){
       statusEl.textContent="剪贴板权限被浏览器拒绝；提取成功，可使用下方“复制预览”或保存文件。";
       previewEl.focus();previewEl.select();
     }
-  }catch(error){statusEl.textContent="提取失败："+(error?.message||String(error))+"。原有预览未被覆盖。";}
+  }catch(error){const message=error?.message||String(error);if(mode==="tables")showTableWarning(message);statusEl.textContent="提取失败："+message+"。原有预览未被覆盖。";}
   finally{buttons.forEach(b=>b.disabled=false);tableScan.disabled=false;}
 }
 buttons.forEach(button=>button.addEventListener("click",()=>void perform(button.dataset.mode,button.dataset.save==="true")));
