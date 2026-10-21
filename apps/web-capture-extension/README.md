@@ -35,3 +35,7 @@ Users can select **一键提取并保存 Markdown** or **一键提取并保存�
 - The redesigned popup groups text, tables and source actions and displays the source hostname, format and character count for each captured preview. **Copy preview** or **Save current preview** remains available. Download names include hostname, format and timestamp. Direct saves trigger the browser download manager; they are not claimed to have completed until verified by the browser.
 - The Markdown walker now tracks its character budget incrementally rather than joining the entire buffer on every visited DOM node.
 - Run `node --test apps/web-capture-extension/test/*.test.cjs` for DOM fixture tests and extension permission contract checks. Browser UI tests remain necessary on complex pages and Chromium builds. This extension is not a Safari build and does not access cross-origin frames or bypass page access restrictions.
+
+## Packaged Chromium testing build
+
+The GitHub Actions `Web Capture Extension CI` workflow packages a tested `universal-box-web-capture-v0.3.0.zip` after the syntax and DOM-fixture tests pass. Unzip the archive into a local folder. In a Chromium-family browser, open Extensions → Developer mode → Load unpacked, then select the unzipped folder containing `manifest.json`. This is a browser extension, **not a macOS DMG** and not a native Safari extension. No extension store publication or browser-side user interaction verification is claimed.
