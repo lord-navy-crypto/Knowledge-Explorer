@@ -33,6 +33,7 @@ function inspectPageTables(){
   };
 }
 function capturePage(mode,tableIndex=0){
+  try {
   const LIMIT=400000;
   const clean=s=>(s||"").replace(/\u0000/g,"").trim();
   const blocked=new Set(["SCRIPT","STYLE","NOSCRIPT","TEMPLATE","SVG","CANVAS","NAV","FOOTER","HEADER"]);
@@ -147,6 +148,12 @@ function capturePage(mode,tableIndex=0){
   };
   walk(root);
   return out.join("").replace(/[ \t]+\n/g,"\n").replace(/\n{3,}/g,"\n\n").trim().slice(0,LIMIT);
+  } catch(error) {
+    // chrome.scripting.executeScript normally drops the exception text from
+    // errors thrown in the target tab. Return a structured error to preserve
+    // the precise explanation in the extension popup.
+    return {__captureError:error?.message||String(error)};
+  }
 }
 async function activeTab(){
   const [tab]=await chrome.tabs.query({active:true,currentWindow:true});
@@ -211,7 +218,10 @@ async function perform(mode,saveDirectly=false){
     const results=await chrome.scripting.executeScript({
       target:{tabId:tab.id},func:capturePage,args:[mode,tableIndex]
     });
-    const text=results?.[0]?.result||"";
+    const extracted=results?.[0]?.result;
+    if(extracted&&typeof extracted==="object"&&typeof extracted.__captureError==="string")
+      throw Error(extracted.__captureError);
+    const text=typeof extracted==="string"?extracted:"";
     if(!text)throw Error("没有找到可提取的内容。");
     previewEl.value=text;
     lastMode=mode;
