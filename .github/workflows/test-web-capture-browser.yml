@@ -1,0 +1,42 @@
+name: Web Capture Real Chromium E2E
+
+on:
+  pull_request:
+    paths:
+      - "apps/web-capture-extension/**"
+      - ".github/workflows/test-web-capture-browser.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/web-capture-extension/**"
+      - ".github/workflows/test-web-capture-browser.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  chromium-extension:
+    name: Chromium MV3 popup simulation
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install headless Chromium and browser harness
+        working-directory: apps/web-capture-extension
+        run: |
+          npm install --no-save --no-package-lock playwright@1.58.2
+          npx playwright install --with-deps chromium
+      - name: Real browser click, preview, download, security and error checks
+        working-directory: apps/web-capture-extension
+        run: node --test test/chromium.e2e.cjs
+      - name: Upload real Chromium screenshots and downloaded CSV evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-capture-chromium-e2e-evidence
+          path: apps/web-capture-extension/browser-test-results/
+          if-no-files-found: warn
+          retention-days: 14
