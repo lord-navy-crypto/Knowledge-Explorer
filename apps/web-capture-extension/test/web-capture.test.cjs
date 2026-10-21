@@ -76,7 +76,7 @@ test("exports selected table, never silently exporting the first table",()=>{
     makeRow(["Name","Value"]),makeRow(["Volcano","42"]),
   ])]);
   assert.equal(ctx.capture("tables",1),'"Name","Value"\r\n"Volcano","42"');
-  assert.throws(()=>ctx.capture("tables",2),/表格序号无效/);
+  assert.match(ctx.capture("tables",2).__captureError,/表格序号无效/);
 });
 test("neutralizes spreadsheet formulas and escapes delimiters and quotes",()=>{
   const ctx=inject([makeTable([makeRow([
@@ -92,17 +92,17 @@ test("neutralizes spreadsheet formulas and escapes delimiters and quotes",()=>{
 });
 test("refuses merged cells rather than exporting misleading data",()=>{
   const ctx=inject([makeTable([makeRow([makeCell("Merged",2)])])]);
-  assert.throws(()=>ctx.capture("tables",0),/合并单元格/);
+  assert.match(ctx.capture("tables",0).__captureError,/合并单元格/);
 });
 test("oversized CSV fails instead of truncating half of a quoted cell",()=>{
   const rows=Array.from({length:26},()=>makeRow(Array(2).fill("A".repeat(10000))));
   const ctx=inject([makeTable(rows)]);
-  assert.throws(()=>ctx.capture("tables",0),/超过 400,000/);
+  assert.match(ctx.capture("tables",0).__captureError,/超过 400,000/);
 });
 test("more than 5,000 table rows fail without silently losing data",()=>{
   const rows=Array.from({length:5001},()=>makeRow(["x"]));
   const ctx=inject([makeTable(rows)]);
-  assert.throws(()=>ctx.capture("tables",0),/5,000 行/);
+  assert.match(ctx.capture("tables",0).__captureError,/5,000 行/);
 });
 test("hidden page rows are excluded",()=>{
   const ctx=inject([makeTable([
@@ -146,4 +146,12 @@ test("several tables require selection and keep old preview on failed extraction
   await ctx.perform("tables",true);
   assert.equal(ctx.downloaded.length,1);
   assert.equal(ctx.document.getElementById("preview").value,'"Correct","2"');
+});
+
+test("popup preserves exact target-page extraction error when Chromium injects content script",async()=>{
+  const ctx=inject([makeTable([makeRow([makeCell("Span",2)])])]);
+  await ctx.perform("tables",false);
+  const status=ctx.document.getElementById("status").textContent;
+  assert.match(status,/合并单元格/);
+  assert.doesNotMatch(status,/Error occurred while executing function/);
 });
