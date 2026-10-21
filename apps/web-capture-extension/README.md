@@ -6,7 +6,7 @@ Browser extension MVP, not part of the packaged Tauri v0.29 app. Supports compat
 
 1. Open your Chromium browser's extensions page and enable developer mode.
 2. Load unpacked from `apps/web-capture-extension`.
-3. Open a webpage you are authorized to access, click the extension icon, then choose visible text, article Markdown, links CSV or the first visible HTML table as CSV, a source/title block, or a page-heading outline.
+3. Open a webpage you are authorized to access, click the extension icon, then choose visible text, article Markdown, links CSV or a chosen visible HTML table as CSV, a source/title block, or a page-heading outline.
 4. Verify clipboard paste and result preview in both Chinese and English on at least five page types.
 
 ## Privacy / limitations
@@ -15,7 +15,7 @@ Browser extension MVP, not part of the packaged Tauri v0.29 app. Supports compat
 - Does not run in the background, monitor tabs, store content, bypass logins/paywalls, or make any network requests.
 - Browser internal pages, PDF viewers, extension stores, cross-origin frames and some protected sites may be inaccessible.
 - Visible text follows webpage `innerText`; virtualized/closed, lazy-loaded, shadow DOM, embedded images and canvas text may be incomplete. Markdown is a simple structure-preserving approximation, not a full fidelity HTML-to-Markdown engine.
-- CSV fields are escaped, spreadsheet-formula-like values are neutralized, links deduplicated and non-HTTP(S) links ignored. Table export deliberately rejects merged cells and only supports the first visible HTML table; complex table spans and non-HTML visual tables are outside this MVP. Test spreadsheet-import behavior before broad release.
+- CSV fields are escaped, spreadsheet-formula-like values are neutralized, links deduplicated and non-HTTP(S) links ignored. Table export deliberately rejects merged cells and supports the first 24 visible HTML tables using an explicit selector; complex table spans and non-HTML visual tables are outside this MVP. Test spreadsheet-import behavior before broad release.
 - Content is capped at 400,000 characters and first 2,000 links to bound memory and clipboard impact.
 - This prototype needs browser end-to-end manual testing before release; do not claim Safari compatibility.
 
@@ -27,3 +27,11 @@ User-click local actions: tidy captured non-CSV text, save TXT/MD/CSV to browser
 ## Web Capture v0.2: direct in-extension handoffs
 
 Users can select **一键提取并保存 Markdown** or **一键提取并保存表格 CSV** directly in the popup. A single user click reads only the active tab (via the existing activeTab/scripting permission), shows a preview and triggers a local download; no extra clipboard copy or separate save click is required. Other modes still support copy and review. The extension does not add host permissions, send captured content over the network, or run background page scans. Unsupported/blocked pages show an error without saving.
+
+## v0.3 · multi-table choice, provenance preview and safer one-click save
+
+- Click **查找所有表格** to list up to 24 visible HTML tables with captions, approximate row counts and column counts. Choose the intended table, then click Copy CSV or Direct Save CSV. For a page containing a single table, Direct Save CSV still works with one click; for multiple tables the first click opens the chooser rather than silently taking the wrong table. Scans run only when clicked, against the currently authorized active tab, using the existing `activeTab` + `scripting` permissions. No broad host permissions were added.
+- CSV is escaped and spreadsheet formula-like cells are neutralized. **Oversize CSV is rejected instead of truncated** halfway through rows/cells; tables with merged cells or over 5,000 rows and cells over 20,000 characters produce explicit errors. The existing 400,000 character text cap still applies to plain text and Markdown, with an upper-limit warning where applicable.
+- The redesigned popup groups text, tables and source actions and displays the source hostname, format and character count for each captured preview. **Copy preview** or **Save current preview** remains available. Download names include hostname, format and timestamp. Direct saves trigger the browser download manager; they are not claimed to have completed until verified by the browser.
+- The Markdown walker now tracks its character budget incrementally rather than joining the entire buffer on every visited DOM node.
+- Run `node --test apps/web-capture-extension/test/*.test.cjs` for DOM fixture tests and extension permission contract checks. Browser UI tests remain necessary on complex pages and Chromium builds. This extension is not a Safari build and does not access cross-origin frames or bypass page access restrictions.
