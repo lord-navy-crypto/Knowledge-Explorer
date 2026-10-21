@@ -3,8 +3,36 @@
 const statusEl=document.getElementById("status");
 const previewEl=document.getElementById("preview");
 const buttons=[...document.querySelectorAll("button[data-mode]")];
+const tablePicker=document.getElementById("tablePicker");
+const tableSelect=document.getElementById("tableSelect");
+const tableScan=document.getElementById("scanTables");
+const sourceMeta=document.getElementById("sourceMeta");
 let lastMode="text";
-function capturePage(mode){
+let lastSource="";
+let scannedTables=null;
+
+/** Runs only inside the active user-approved tab, never as a background content script. */
+function inspectPageTables(){
+  const visible=el=>{
+    if(el.closest("[hidden],[aria-hidden='true'],[inert]"))return false;
+    const style=getComputedStyle(el);
+    return style.display!=="none"&&style.visibility!=="hidden";
+  };
+  if(!/^https?:$/.test(location.protocol))return {url:location.href,tables:[]};
+  const tables=[...document.querySelectorAll("table")].filter(t=>visible(t)&&t.querySelector("tr"));
+  return {
+    url:location.href,
+    tables:tables.slice(0,24).map((table,index)=>{
+      const rows=[...table.querySelectorAll("tr")].filter(visible);
+      const first=rows.find(r=>r.children?.length);
+      const caption=table.querySelector("caption");
+      const label=(caption?.innerText||caption?.textContent||first?.innerText||"").replace(/\s+/g," ").trim().slice(0,70);
+      return {index,rows:rows.length,columns:first?[...first.children].filter(c=>c.tagName==="TH"||c.tagName==="TD").length:0,
+        label:label||"未命名表格"};
+    })
+  };
+}
+function capturePage(mode,tableIndex=0){
   const LIMIT=400000;
   const clean=s=>(s||"").replace(/\u0000/g,"").trim();
   const blocked=new Set(["SCRIPT","STYLE","NOSCRIPT","TEMPLATE","SVG","CANVAS","NAV","FOOTER","HEADER"]);
@@ -14,12 +42,20 @@ function capturePage(mode){
     return style.display!=="none"&&style.visibility!=="hidden";
   }
   function csv(rows){
-    return rows.map(cols=>cols.map(value=>{
-      let cell=String(value??"").replace(/\u0000/g,"").replace(/\r?\n/g," ").trim();
-      // Prevent spreadsheet formula evaluation even after quotation or whitespace trimming.
-      if(/^[=+@\-\t\r]/.test(cell))cell="'"+cell;
-      return '"'+cell.replace(/"/g,'""')+'"';
-    }).join(",")).join("\r\n");
+    let result="";
+    for(const cols of rows){
+      const row=cols.map(value=>{
+        let cell=String(value??"").replace(/\u0000/g,"").replace(/\r?\n/g," ").trim();
+        // CSV escaping does not neutralize formulas by itself.
+        if(/^[=+@\-\t\r]/.test(cell))cell="'"+cell;
+        return '"'+cell.replace(/"/g,'""')+'"';
+      }).join(",");
+      const next=(result?"\r\n":"")+row;
+      // Never truncate inside a quoted cell: reject oversized CSV instead.
+      if(result.length+next.length>LIMIT)throw Error("CSV 超过 400,000 字符限制；不会输出被截断的表格。");
+      result+=next;
+    }
+    return result;
   }
   const root=document.querySelector("main article,article,main,[role='main']")||document.body;
   if(!root)throw Error("此页面没有可提取的正文。");
@@ -49,23 +85,27 @@ function capturePage(mode){
       seen.add(url);rows.push([clean(a.innerText||a.textContent).slice(0,300),url]);
       if(rows.length>2001)break;
     }
-    return csv(rows).slice(0,LIMIT);
+    return csv(rows);
   }
   if(mode==="tables"){
-    const table=[...document.querySelectorAll("table")].find(el=>allowed(el)&&el.querySelector("tr"));
-    if(!table)throw Error("没有找到可提取的 HTML 表格。");
+    const tables=[...document.querySelectorAll("table")].filter(el=>allowed(el)&&el.querySelector("tr"));
+    if(!Number.isInteger(tableIndex)||tableIndex<0||tableIndex>=Math.min(tables.length,24))
+      throw Error("表格序号无效，请重新扫描当前网页。");
+    const table=tables[tableIndex];
+    const allRows=[...table.querySelectorAll("tr")].filter(allowed);
+    if(allRows.length>5000)throw Error("表格超过 5,000 行，无法保证完整导出。");
     const rows=[];
-    for(const row of table.querySelectorAll("tr")){
+    for(const row of allRows){
       if(!allowed(row))continue;
       const cells=[...row.children].filter(cell=>["TH","TD"].includes(cell.tagName));
       if(!cells.length)continue;
       if(cells.some(cell=>(cell.colSpan||1)!==1||(cell.rowSpan||1)!==1))
         throw Error("该表格包含合并单元格，暂不支持无损 CSV 导出。");
       rows.push(cells.map(cell=>clean(cell.innerText||cell.textContent).slice(0,20000)));
-      if(rows.length>=5000)break;
+
     }
     if(!rows.length)throw Error("此表格没有可用数据行。");
-    return csv(rows).slice(0,LIMIT);
+    return csv(rows);
   }
   const out=[],walk=(node,depth=0)=>{
     if(out.join("").length>=LIMIT||depth>36)return;
