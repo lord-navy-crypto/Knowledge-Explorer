@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Universal Box Web Capture",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Private on-demand webpage text, Markdown, selected HTML-table CSV capture and preview.",
   "permissions": [
     "activeTab",
