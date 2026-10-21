@@ -26,10 +26,11 @@ function makeTable(rows,caption=""){
 }
 function inject(tables){
   const nodes=new Map();
+  const downloaded=[];
   const element=id=>{
     if(!nodes.has(id))nodes.set(id,{
       id,value:"",hidden:true,dataset:{},disabled:false,
-      textContent:"",children:[],addEventListener(){},
+      textContent:"",children:[],listeners:{},addEventListener(event,callback){this.listeners[event]=callback;},
       appendChild(item){this.children.push(item)},
       replaceChildren(){this.children=[]},focus(){},select(){},
     });
@@ -44,19 +45,19 @@ function inject(tables){
         return [];
       },
       querySelector:()=>null,
-      createElement:()=>({value:"",textContent:""}),
-      body:{},
+      createElement:tag=>tag==="a"?{click(){downloaded.push(this.download);},remove(){}}:{value:"",textContent:""},
+      body:{appendChild(){}},
     },
     location:{protocol:"https:",href:"https://example.org/science?date=2026"},
     getComputedStyle:()=>({display:"block",visibility:"visible"}),
     navigator:{clipboard:{writeText:async()=>{}}},
-    chrome:{tabs:{query:async()=>[]},scripting:{executeScript:async()=>[]}},
-    URL,Date,console,setTimeout:()=>0,
+    chrome:{tabs:{query:async()=>[{id:9,url:"https://example.org/science?date=2026"}]},scripting:{executeScript:async({func,args})=>[{result:func(...(args||[]))}]}},
+    URL,Date,console,setTimeout:()=>0,downloaded,
     btoa:()=>"",Blob,
     Node:{TEXT_NODE:3,ELEMENT_NODE:1},
   };
   vm.createContext(ctx);
-  vm.runInContext(script+"\n;globalThis.capture=capturePage;globalThis.inspect=inspectPageTables;",ctx);
+  vm.runInContext(script+"\n;globalThis.capture=capturePage;globalThis.inspect=inspectPageTables;globalThis.perform=perform;",ctx);
   return ctx;
 }
 test("lists visible page tables so users can choose the intended one",()=>{
@@ -119,4 +120,30 @@ test("manual preview/table selection with no broader permissions",()=>{
     assert.ok(html.includes('id="'+id+'"'),id);
   assert.ok(html.includes('data-mode="tables" data-save="true"'));
   assert.equal(Object.hasOwn(manifest,"host_permissions"),false);
+});
+
+test("one table can be captured and saved in a single explicit action",async()=>{
+  const ctx=inject([makeTable([makeRow(["Source","Value"]),makeRow(["A","9"])],"Report")]);
+  await ctx.perform("tables",true);
+  assert.equal(ctx.downloaded.length,1);
+  assert.match(ctx.downloaded[0],/^universal-box-example\.org-tables-\d{4}-/);
+  assert.match(ctx.downloaded[0],/\.csv$/);
+  assert.equal(ctx.document.getElementById("preview").value,'"Source","Value"\r\n"A","9"');
+});
+test("several tables require selection and keep old preview on failed extraction",async()=>{
+  const ctx=inject([
+    makeTable([makeRow(["Wrong","1"])]),
+    makeTable([makeRow(["Correct","2"])],"Wanted"),
+  ]);
+  const original="Previous successful capture";
+  ctx.document.getElementById("preview").value=original;
+  await ctx.perform("tables",true);
+  assert.equal(ctx.downloaded.length,0);
+  assert.equal(ctx.document.getElementById("preview").value,original);
+  assert.equal(ctx.document.getElementById("tablePicker").hidden,false);
+  assert.equal(ctx.document.getElementById("tableSelect").children.length,2);
+  ctx.document.getElementById("tableSelect").value="1";
+  await ctx.perform("tables",true);
+  assert.equal(ctx.downloaded.length,1);
+  assert.equal(ctx.document.getElementById("preview").value,'"Correct","2"');
 });
