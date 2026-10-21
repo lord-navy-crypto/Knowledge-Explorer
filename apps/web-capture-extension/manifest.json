@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Universal Box Web Capture",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "User-initiated local webpage text, Markdown and link capture.",
   "permissions": [
     "activeTab",

@@ -96,7 +96,7 @@ function capturePage(mode){
   walk(root);
   return out.join("").replace(/[ \t]+\n/g,"\n").replace(/\n{3,}/g,"\n\n").trim().slice(0,LIMIT);
 }
-async function perform(mode){
+async function perform(mode,saveDirectly=false){
   buttons.forEach(b=>b.disabled=true);statusEl.textContent="正在提取…";previewEl.value="";
   try{
     const [tab]=await chrome.tabs.query({active:true,currentWindow:true});
@@ -106,6 +106,11 @@ async function perform(mode){
     if(!text)throw Error("没有找到可复制的内容。");
     previewEl.value=text;
     lastMode=mode;
+    if(saveDirectly){
+      saveCaptured(text,mode);
+      statusEl.textContent="已直接保存到下载文件夹 · "+text.length+" 字符。没有向外部网站发送内容。";
+      return;
+    }
     try{
       await navigator.clipboard.writeText(text);
       statusEl.textContent="已复制到剪贴板 · "+text.length+" 字符（最多 400,000）";
@@ -116,7 +121,7 @@ async function perform(mode){
   }catch(error){statusEl.textContent="提取失败："+(error?.message||String(error))+"。请在普通 http(s) 网页尝试。";}
   finally{buttons.forEach(b=>b.disabled=false);}
 }
-buttons.forEach(button=>button.addEventListener("click",()=>void perform(button.dataset.mode)));
+buttons.forEach(button=>button.addEventListener("click",()=>void perform(button.dataset.mode,button.dataset.save==="true")));
 /** Offline formatting on the explicitly captured preview, never on page source. */
 function tidyText(text){
   return text.replace(/\r\n?/g,"\n").replace(/[\u00a0\u202f]/g," ")
@@ -130,10 +135,9 @@ document.getElementById("clean").addEventListener("click",async()=>{
   try{await navigator.clipboard.writeText(previewEl.value);statusEl.textContent="已整理并复制文字。";}
   catch{statusEl.textContent="已整理预览内容，可手动复制。";}
 });
-document.getElementById("save").addEventListener("click",()=>{
-  const value=previewEl.value;
-  if(!value){statusEl.textContent="请先提取内容。";return;}
-  const ext=lastMode==="links"||lastMode==="tables"?"csv":lastMode==="markdown"?"md":"txt";
+function saveCaptured(value,mode){
+  if(!value)throw Error("没有可保存的内容。");
+  const ext=mode==="links"||mode==="tables"?"csv":mode==="markdown"?"md":"txt";
   const mime=ext==="csv"?"text/csv":ext==="md"?"text/markdown":"text/plain";
   const blob=new Blob(["\uFEFF",value],{type:mime+";charset=utf-8"});
   const url=URL.createObjectURL(blob);
@@ -141,6 +145,10 @@ document.getElementById("save").addEventListener("click",()=>{
   anchor.href=url;anchor.download="universal-box-web-capture."+ext;
   document.body.appendChild(anchor);anchor.click();anchor.remove();
   setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+document.getElementById("save").addEventListener("click",()=>{
+  if(!previewEl.value){statusEl.textContent="请先提取内容。";return;}
+  saveCaptured(previewEl.value,lastMode);
   statusEl.textContent="已触发本地文件下载，原网页未修改。";
 });
 
