@@ -101,37 +101,49 @@ function capturePage(mode,tableIndex=0){
       if(!cells.length)continue;
       if(cells.some(cell=>(cell.colSpan||1)!==1||(cell.rowSpan||1)!==1))
         throw Error("该表格包含合并单元格，暂不支持无损 CSV 导出。");
-      rows.push(cells.map(cell=>clean(cell.innerText||cell.textContent).slice(0,20000)));
+      rows.push(cells.map(cell=>{
+        const value=clean(cell.innerText||cell.textContent);
+        if(value.length>20000)throw Error("单个表格单元格超过 20,000 字符，无法无损导出。");
+        return value;
+      }));
 
     }
     if(!rows.length)throw Error("此表格没有可用数据行。");
     return csv(rows);
   }
-  const out=[],walk=(node,depth=0)=>{
-    if(out.join("").length>=LIMIT||depth>36)return;
+  const out=[];
+  let used=0;
+  function add(value){
+    if(used>=LIMIT)return;
+    const part=value.slice(0,LIMIT-used);
+    out.push(part);
+    used+=part.length;
+  }
+  const walk=(node,depth=0)=>{
+    if(used>=LIMIT||depth>36)return;
     if(node.nodeType===Node.TEXT_NODE){
       const value=clean(node.nodeValue).replace(/\s+/g," ");
-      if(value)out.push(value+" ");
+      if(value)add(value+" ");
       return;
     }
     if(node.nodeType!==Node.ELEMENT_NODE)return;
     const el=node,tag=el.tagName;
     if(blocked.has(tag)||!allowed(el))return;
-    if(tag==="BR"){out.push("\n");return;}
+    if(tag==="BR"){add("\n");return;}
     if(tag==="IMG")return;
     if(/^H[1-6]$/.test(tag)){
-      out.push("\n\n"+"#".repeat(Number(tag[1]))+" "+clean(el.innerText).replace(/\s+/g," ")+"\n\n");return;
+      add("\n\n"+"#".repeat(Number(tag[1]))+" "+clean(el.innerText).replace(/\s+/g," ")+"\n\n");return;
     }
     if(tag==="A"){
       const label=clean(el.innerText).replace(/\s+/g," ").replace(/[\[\]]/g,"");
       const href=el.href;
-      if(label)out.push(/^https?:\/\//i.test(href)?"["+label+"]("+href.replace(/[()]/g,encodeURIComponent)+")":label);
+      if(label)add(/^https?:\/\//i.test(href)?"["+label+"]("+href.replace(/[()]/g,encodeURIComponent)+")":label);
       return;
     }
-    if(tag==="LI"){out.push("\n- ");}
-    if(["P","DIV","SECTION","ARTICLE","UL","OL","BLOCKQUOTE","TR"].includes(tag))out.push("\n");
+    if(tag==="LI"){add("\n- ");}
+    if(["P","DIV","SECTION","ARTICLE","UL","OL","BLOCKQUOTE","TR"].includes(tag))add("\n");
     for(const child of el.childNodes)walk(child,depth+1);
-    if(["P","DIV","SECTION","ARTICLE","UL","OL","BLOCKQUOTE","TR"].includes(tag))out.push("\n");
+    if(["P","DIV","SECTION","ARTICLE","UL","OL","BLOCKQUOTE","TR"].includes(tag))add("\n");
   };
   walk(root);
   return out.join("").replace(/[ \t]+\n/g,"\n").replace(/\n{3,}/g,"\n\n").trim().slice(0,LIMIT);
