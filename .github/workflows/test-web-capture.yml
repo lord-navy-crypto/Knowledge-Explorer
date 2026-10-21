@@ -20,4 +20,5 @@ jobs:
       - name: Verify script syntax and extension manifest
         run: |
           node --check apps/web-capture-extension/popup.js
+          node --test apps/web-capture-extension/test/*.test.cjs
           node -e "const fs=require('node:fs');const m=JSON.parse(fs.readFileSync('apps/web-capture-extension/manifest.json','utf8'));if(m.manifest_version!==3||m.permissions.some(p=>!['activeTab','scripting','clipboardWrite'].includes(p)))process.exit(1);const html=fs.readFileSync('apps/web-capture-extension/popup.html','utf8');for(const v of ['text','markdown','links','tables','source','outline'])if(!html.includes('data-mode=\"'+v+'\"'))process.exit(1)"
