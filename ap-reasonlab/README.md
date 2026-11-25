@@ -1,87 +1,67 @@
-# AP ReasonLab
+# Knowledge Explorer — AP ReasonLab Web Platform
 
-Free AP study website: concept library, half-process practice, and hint coach (no final answers by default).
+This directory contains the main Knowledge Explorer website. It began with AP study resources and has grown into a broader academic-learning and practical-workbench platform. The home experience is organized around **AP & English**, **Convenient Tools & Code**, **Simulation & Download**, and **Sentinel Map / Easy Local AI**.
 
-## Project structure
+## Current platform areas
 
-```text
-ap-reasonlab/
-├── app/
-│   ├── page.tsx              # Home
-│   ├── concepts/             # Concept library
-│   ├── practice/             # Half-process practice
-│   ├── hints/                # Hint Coach UI
-│   ├── about/                # About & ethics
-│   └── api/hints/route.ts    # AI hints API (mock without key)
-├── components/
-├── data/content.ts           # Concepts & questions (edit here first)
-├── lib/types.ts
-├── preview.html              # Static preview (no Node needed)
-└── .env.example              # Gemini API key (optional)
-```
+### AP learning
 
-## Quick start
+- AP subject entry points, concept pages, key-concept guides and formula resources.
+- Practice workflows, question sets, structured question-bank validation and learning-resource uploads.
+- AP-focused AI assistance for hints, concept explanations, formulas, derivations and practice generation.
 
-### Step 1 — Install Node.js
+### English learning
 
-Download and install Node.js 20+ from https://nodejs.org
+- TOEFL iBT and Digital SAT practice lanes organized around their current task/domain formats.
+- Vocabulary, grammar and broader English-skill practice.
+- An English AI tutor for writing feedback, grammar, translation, vocabulary support and exam strategy.
+- In-site practice is original study material, not official ETS or College Board exam content.
 
-Verify:
+### Community and collaboration
+
+- **Forum → Discussions:** public questions, tips and replies.
+- **Forum → Shared library:** shared learning materials for upload and download.
+- **Forum → My Box:** private notes and pictures stored in the user's browser rather than a public discussion thread.
+
+### Tools, code and workshops
+
+- Math Workbench: calculator, graphing, calculus, units, vectors, LaTeX and formulas.
+- Code Workbench: code editing and practice environments, code board, JSON and text utilities, plus a separate AI-for-Code assistant.
+- File Workbench: PDF, image, CSV/Markdown and batch file utilities.
+- Study/classroom tools, simulation-workshop links, project downloads and external resource directories.
+
+### Local and contextual AI
+
+- AP, English and coding assistants are placed inside their relevant workflows rather than treated as one context-free assistant.
+- **Easy Local AI** uses browser WebGPU/WebLLM for local model testing and chat without requiring Ollama or a separate local model server.
+- Other AI routes depend on the provider/configuration selected for that workflow; do not assume every AI feature runs locally.
+
+## Run locally
+
+Requirements: Node.js 20+ and npm.
 
 ```bash
-node -v
-npm -v
-```
-
-### Step 2 — Install dependencies
-
-```bash
-cd ap-reasonlab
 npm install
-```
-
-### Step 3 — Run locally
-
-```bash
 npm run dev
 ```
 
-Open http://localhost:3000
+The development command prepares managed content before starting Next.js.
 
-### Step 4 — (Optional) Enable Gemini AI
+## Validation and production build
 
 ```bash
-cp .env.example .env.local
+npm run test
+npm run test:e2e
+npm run build
 ```
 
-Add your free API key from https://aistudio.google.com/apikey
+- `npm run test` runs Vitest.
+- `npm run test:e2e` runs the Playwright end-to-end suite.
+- `npm run build` checks the pinned WebLLM version, prepares and validates the question bank, then runs the Next.js production build.
 
-Restart `npm run dev`. Without a key, Hint Coach uses mock hints (still works).
+See `docs/ai-workflow.md` for AI/content workflow guidance, `docs/how-to-insert-questionnaires.md` for question-set management, and `docs/DEPLOY-zh.md` for deployment notes.
 
-## What works now
+## Related browser extension
 
-- Home page
-- Concept library (3 sample concepts)
-- Concept detail pages
-- Half-process practice (2 sample questions)
-- Hint Coach UI (mock or Gemini)
-- Ethics banner on key pages
+The separate Chromium Manifest V3 **Universal Box Web Capture** extension lives at `../apps/web-capture-extension/` and is currently version **0.3.1**. It captures user-selected visible webpage content on demand; it is not part of the Next.js website runtime.
 
-## Next steps (your roadmap)
-
-1. Edit `data/content.ts` — add more AP concepts and questions
-2. Add Gemini API key in `.env.local`
-3. Deploy to Vercel (free)
-4. Open-source on GitHub
-5. Add question generator module
-
-## Deploy to Vercel (later)
-
-1. Push project to GitHub
-2. Go to https://vercel.com
-3. Import repo → deploy
-4. Add `GEMINI_API_KEY` in Vercel environment variables
-
-## Ethics
-
-This project is for learning only. Do not use on graded exams or homework unless allowed by your teacher.
