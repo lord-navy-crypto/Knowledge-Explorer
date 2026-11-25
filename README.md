@@ -53,7 +53,7 @@ The production build runs the WebLLM version check and question-bank validation 
 ```text
 ap-reasonlab/                  Main Knowledge Explorer website
 apps/web-capture-extension/   Chromium Web Capture extension
-my-first-project/             Small legacy/static starter page
+my-first-project/             Small standalone starter page
 ```
 
 **Product boundary:** the native Sentinel Box macOS application is maintained in the separate [`sentinel-macos`](https://github.com/lord-navy-crypto/sentinel-macos) repository. This repository contains the Knowledge Explorer website and its browser-extension subproject.
